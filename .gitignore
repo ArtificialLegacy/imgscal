@@ -25,3 +25,4 @@ go.work
 esrgan-tool/
 outputs/
 build/
+resource.syso

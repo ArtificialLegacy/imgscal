@@ -39,5 +39,5 @@
     }
   },
   "IconPath": "./assets/favicon.ico",
-  "ManifestPath": "./imgscal.exe.manifest"
+  "ManifestPath": "./imscal.exe.manifest"
 }

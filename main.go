@@ -1,4 +1,4 @@
-//go:generate goversioninfo
+//go:generate goversioninfo -icon=assets/favicon.ico -manifest=imgscal.exe.manifest
 
 package main
 
