@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
-	statemachine "github.com/ArtificialLegacy/imgscal/modules/state_machine"
+	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var esrganFailEnter statemachine.StateEnterFunction = func(from statemachine.CliState, transition func(to statemachine.CliState) error) {
+var esrganFailEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
 	println(fmt.Sprintf("\n%sCannot continue without ESRGAN, restart the program to attempt to install.%s\n", cli.RED, cli.RESET))
 
 	os.Exit(1)

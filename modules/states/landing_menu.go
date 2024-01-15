@@ -4,24 +4,24 @@ import (
 	"os"
 
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
-	statemachine "github.com/ArtificialLegacy/imgscal/modules/state_machine"
+	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var landingMenuEnter statemachine.StateEnterFunction = func(from statemachine.CliState, transition func(to statemachine.CliState) error) {
+var landingMenuEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
 	cli.Clear()
 
 	response, _ := cli.Menu("Select task to perform", []string{
-		"Run Workload",
+		"Run Workflow",
 		"Manage Real-ESRGAN",
 		"Exit",
 	})
 
 	switch response {
 	case 0:
-		transition(statemachine.WORKLOAD_MENU)
+		sm.Transition(statemachine.WORKFLOW_MENU)
 		return
 	case 1:
-		transition(statemachine.ESRGAN_MANAGE)
+		sm.Transition(statemachine.ESRGAN_MANAGE)
 		return
 	case 2:
 		os.Exit(0)
@@ -29,4 +29,4 @@ var landingMenuEnter statemachine.StateEnterFunction = func(from statemachine.Cl
 	}
 }
 
-var LandingMenu = statemachine.NewState(statemachine.LANDING_MENU, landingMenuEnter, nil, []statemachine.CliState{statemachine.WORKLOAD_MENU, statemachine.ESRGAN_MANAGE})
+var LandingMenu = statemachine.NewState(statemachine.LANDING_MENU, landingMenuEnter, nil, []statemachine.CliState{statemachine.WORKFLOW_MENU, statemachine.ESRGAN_MANAGE})

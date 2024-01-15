@@ -1,8 +1,8 @@
 package statemachine
 
-type StateEnterFunction func(from CliState, transition func(to CliState) error)
+type StateEnterFunction func(from CliState, sm *StateMachine)
 
-type StateExitFunction func(to CliState)
+type StateExitFunction func(to CliState, sm *StateMachine)
 
 type State struct {
 	id          CliState

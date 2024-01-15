@@ -8,11 +8,11 @@ import (
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 )
 
-func workloadInit(infile string, workload string, index int, total int) string {
+func workflowInit(infile string, workflow string, index int, total int) string {
 	fileSplit := strings.Split(infile, "\\")
 	filename := fileSplit[len(fileSplit)-1]
 
-	println(fmt.Sprintf("%s!%s Running %s on %s (Image %d of %d)", cli.CYAN, cli.RESET, workload, filename, index, total))
+	println(fmt.Sprintf("%s!%s Running %s on %s (Image %d of %d)", cli.CYAN, cli.RESET, workflow, filename, index, total))
 
 	pwd, _ := os.Getwd()
 

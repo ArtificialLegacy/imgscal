@@ -3,10 +3,10 @@ package states
 import (
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 	"github.com/ArtificialLegacy/imgscal/modules/esrgan"
-	statemachine "github.com/ArtificialLegacy/imgscal/modules/state_machine"
+	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var esrganManageEnter statemachine.StateEnterFunction = func(from statemachine.CliState, transition func(to statemachine.CliState) error) {
+var esrganManageEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
 	cli.Clear()
 
 	response, _ := cli.Menu("Select task to perform", []string{
@@ -18,14 +18,14 @@ var esrganManageEnter statemachine.StateEnterFunction = func(from statemachine.C
 	switch response {
 	case 0:
 		esrgan.Remove()
-		transition(statemachine.ESRGAN_DOWNLOAD)
+		sm.Transition(statemachine.ESRGAN_DOWNLOAD)
 		return
 	case 1:
 		esrgan.Remove()
-		transition(statemachine.ESRGAN_FAIL)
+		sm.Transition(statemachine.ESRGAN_FAIL)
 		return
 	case 2:
-		transition(statemachine.LANDING_MENU)
+		sm.Transition(statemachine.LANDING_MENU)
 		return
 	}
 }

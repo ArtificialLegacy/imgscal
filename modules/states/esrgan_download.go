@@ -10,7 +10,7 @@ import (
 
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 	"github.com/ArtificialLegacy/imgscal/modules/esrgan"
-	statemachine "github.com/ArtificialLegacy/imgscal/modules/state_machine"
+	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
 func download(transition func(to statemachine.CliState) error) {
@@ -79,18 +79,18 @@ func unzip() error {
 	return unzipResult
 }
 
-var esrganDownloadEnter statemachine.StateEnterFunction = func(from statemachine.CliState, transition func(to statemachine.CliState) error) {
+var esrganDownloadEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
 	println("-------- Downloading ESRGAN --------")
 
 	pwd, _ := os.Getwd()
 
-	download(transition)
+	download(sm.Transition)
 
 	println(fmt.Sprintf("%sDownloaded ESRGAN. Unzipping...%s", cli.GREEN, cli.RESET))
 
 	mkerr := os.Mkdir(fmt.Sprintf("%s\\esrgan-tool", pwd), 0777)
 	if mkerr != nil {
-		transition(statemachine.ESRGAN_FAIL)
+		sm.Transition(statemachine.ESRGAN_FAIL)
 		return
 	}
 
@@ -104,11 +104,11 @@ var esrganDownloadEnter statemachine.StateEnterFunction = func(from statemachine
 	if unzipResult != nil {
 		println(unzipResult.Error())
 		esrgan.Remove()
-		transition(statemachine.ESRGAN_FAIL)
+		sm.Transition(statemachine.ESRGAN_FAIL)
 		return
 	}
 
-	transition(statemachine.LANDING_MENU)
+	sm.Transition(statemachine.LANDING_MENU)
 }
 
 var ESRGANDownload = statemachine.NewState(statemachine.ESRGAN_DOWNLOAD, esrganDownloadEnter, nil, []statemachine.CliState{statemachine.LANDING_MENU, statemachine.ESRGAN_FAIL})

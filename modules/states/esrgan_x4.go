@@ -5,15 +5,15 @@ import (
 
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 	"github.com/ArtificialLegacy/imgscal/modules/esrgan"
-	statemachine "github.com/ArtificialLegacy/imgscal/modules/state_machine"
+	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var esrganx4Enter statemachine.StateEnterFunction = func(from statemachine.CliState, transition func(to statemachine.CliState) error) {
+var esrganx4Enter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
 	cli.Clear()
 
-	answer, err := esrgan.WorkloadBegin()
+	answer, err := esrgan.WorkflowBegin()
 	if err != nil {
-		transition(statemachine.WORKLOAD_FINISH)
+		sm.Transition(statemachine.WORKFLOW_FINISH)
 		return
 	}
 
@@ -22,7 +22,7 @@ var esrganx4Enter statemachine.StateEnterFunction = func(from statemachine.CliSt
 	if file.IsDir() {
 		files, err := os.ReadDir(answer)
 		if err != nil {
-			transition(statemachine.WORKLOAD_FINISH)
+			sm.Transition(statemachine.WORKFLOW_FINISH)
 			return
 		}
 		for index, file := range files {
@@ -32,7 +32,7 @@ var esrganx4Enter statemachine.StateEnterFunction = func(from statemachine.CliSt
 		esrgan.X4(answer, 1, 1)
 	}
 
-	transition(statemachine.WORKLOAD_FINISH)
+	sm.Transition(statemachine.WORKFLOW_FINISH)
 }
 
-var ESRGANX4 = statemachine.NewState(statemachine.ESRGAN_X4, esrganx4Enter, nil, []statemachine.CliState{statemachine.WORKLOAD_FINISH})
+var ESRGANX4 = statemachine.NewState(statemachine.ESRGAN_X4, esrganx4Enter, nil, []statemachine.CliState{statemachine.WORKFLOW_FINISH})

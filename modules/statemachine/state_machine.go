@@ -3,12 +3,17 @@ package statemachine
 import (
 	"errors"
 	"fmt"
+
+	"github.com/ArtificialLegacy/imgscal/modules/workflow"
 )
 
 // A finite state machine used to control the flow of the program.
 type StateMachine struct {
-	states  map[CliState]State
-	current CliState
+	states       map[CliState]State
+	current      CliState
+	programState struct {
+		workflows map[string]*workflow.Workflow
+	}
 }
 
 // Initializes a new state machine, with no states.
@@ -38,7 +43,7 @@ func (sm *StateMachine) Transition(to CliState) error {
 
 	if sm.current == NONE {
 		sm.current = to
-		toState.enter(NONE, sm.Transition)
+		toState.enter(NONE, sm)
 		return nil
 	}
 
@@ -55,11 +60,19 @@ func (sm *StateMachine) Transition(to CliState) error {
 	}
 
 	if sm.states[sm.current].exit != nil {
-		sm.states[sm.current].exit(to)
+		sm.states[sm.current].exit(to, sm)
 	}
 	prev := sm.current
 	sm.current = to
-	toState.enter(prev, sm.Transition)
+	toState.enter(prev, sm)
 
 	return nil
+}
+
+func (sm *StateMachine) SetWorkflowState(workflows map[string]*workflow.Workflow) {
+	sm.programState.workflows = workflows
+}
+
+func (sm *StateMachine) GetWorkflowState() map[string]*workflow.Workflow {
+	return sm.programState.workflows
 }

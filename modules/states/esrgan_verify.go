@@ -5,13 +5,13 @@ import (
 
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 	"github.com/ArtificialLegacy/imgscal/modules/esrgan"
-	statemachine "github.com/ArtificialLegacy/imgscal/modules/state_machine"
+	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var esrganVerifyEnter statemachine.StateEnterFunction = func(from statemachine.CliState, transition func(to statemachine.CliState) error) {
+var esrganVerifyEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
 	exists := esrgan.Verify()
 	if exists {
-		transition(statemachine.LANDING_MENU)
+		sm.Transition(statemachine.LANDING_MENU)
 		return
 	}
 
@@ -24,10 +24,10 @@ var esrganVerifyEnter statemachine.StateEnterFunction = func(from statemachine.C
 	})
 
 	if response == "y" {
-		transition(statemachine.ESRGAN_DOWNLOAD)
+		sm.Transition(statemachine.ESRGAN_DOWNLOAD)
 		return
 	} else if response == "n" {
-		transition(statemachine.ESRGAN_FAIL)
+		sm.Transition(statemachine.ESRGAN_FAIL)
 		return
 	}
 }

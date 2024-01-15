@@ -8,7 +8,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 )
 
-func WorkloadBegin() (string, error) {
+func WorkflowBegin() (string, error) {
 	answer, _ := cli.Question("Enter the path to the image(s) you want to upscale: ", cli.QuestionOptions{
 		Normalize: false,
 		Accepts:   nil,

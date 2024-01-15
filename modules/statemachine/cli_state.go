@@ -9,8 +9,8 @@ const (
 	ESRGAN_FAIL     CliState = 2
 	LANDING_MENU    CliState = 3
 	ESRGAN_MANAGE   CliState = 4
-	WORKLOAD_MENU   CliState = 5
-	WORKLOAD_FINISH CliState = 6
+	WORKFLOW_MENU   CliState = 5
+	WORKFLOW_FINISH CliState = 6
 	ESRGAN_X4       CliState = 7
 	ESRGAN_ANIMEX4  CliState = 8
 )
