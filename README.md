@@ -20,6 +20,8 @@ writing in lua.
 make build-windows
 ```
 
+**❗ Note: Removes the build directory, including any custom made workflows.**
+
 ## Lua Workflow Documentation
 
 * A workflow lua file should include 2 top-level functions:
