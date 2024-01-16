@@ -1,5 +1,5 @@
 
-# <div style="display: flex; align-items: center;"><img style="margin-right: 10px; width: 48px;" src="./assets/favicon-32x32.png" alt="icon"/> ImgScal </div>
+# ![icon](./assets/favicon-32x32.png) ImgScal
 
 A tool for automating image processing. Allows for creating of custom workflows
 writing in lua.
