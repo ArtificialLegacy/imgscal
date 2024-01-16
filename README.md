@@ -42,6 +42,7 @@ main(func) -- Sets the function to be called when the workflow is run on a file.
 * `options.requires` : `{Array<string>}` - An array of libraries that are used by the workflow.
 
 ```lua
+-- The config call for workflows/esrgan_x4.lua
 config({
     name= "ESRGAN_X4",
     version= "1.0.0",
@@ -59,6 +60,7 @@ config({
     this is only the file name not the path, the file is stored in the `/temp/` directory.
 
 ```lua
+-- The main call for workflows/esrgan_x4.lua
 main(function (file)
     job("esrgan.x4", file)
     file = job("imgscal.rename", file, {prefix= "up_"})
