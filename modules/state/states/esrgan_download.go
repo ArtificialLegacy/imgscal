@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ArtificialLegacy/imgscal/modules/cli"
-	"github.com/ArtificialLegacy/imgscal/modules/esrgan"
-	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/libs/esrgan"
+	"github.com/ArtificialLegacy/imgscal/modules/state/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/utility/cli"
 )
 
 func download(transition func(to statemachine.CliState) error) {

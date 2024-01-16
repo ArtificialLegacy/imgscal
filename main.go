@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
-	"github.com/ArtificialLegacy/imgscal/modules/states"
+	"github.com/ArtificialLegacy/imgscal/modules/state/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/state/states"
 	"github.com/ArtificialLegacy/imgscal/modules/workflow"
 )
 
@@ -18,9 +18,6 @@ func main() {
 	pwd, _ := os.Getwd()
 	if _, err := os.Stat(fmt.Sprintf("%s\\outputs", pwd)); os.IsNotExist(err) {
 		os.Mkdir(fmt.Sprintf("%s\\outputs", pwd), 0777)
-	}
-	if _, err := os.Stat(fmt.Sprintf("%s\\temp", pwd)); os.IsNotExist(err) {
-		os.Mkdir(fmt.Sprintf("%s\\temp", pwd), 0777)
 	}
 
 	wfs := workflow.WorkflowsLoad()

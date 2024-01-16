@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ArtificialLegacy/imgscal/modules/cli"
+	"github.com/ArtificialLegacy/imgscal/modules/utility/cli"
 )
 
 // returns the path to the image(s) the user wants to upscale and an error if the path does not exist

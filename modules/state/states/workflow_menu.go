@@ -1,8 +1,8 @@
 package states
 
 import (
-	"github.com/ArtificialLegacy/imgscal/modules/cli"
-	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/state/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/utility/cli"
 )
 
 var workflowMenuEnter statemachine.StateStepFunction = func(sm *statemachine.StateMachine) {

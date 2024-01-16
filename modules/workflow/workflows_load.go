@@ -28,7 +28,7 @@ func registerConfig(state *lua.State, workflow *Workflow) {
 				workflow.Config.Requires = append(workflow.Config.Requires, val)
 			}
 		}
-		return 1
+		return 0
 	})
 }
 

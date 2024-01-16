@@ -3,8 +3,8 @@ package states
 import (
 	"os"
 
-	"github.com/ArtificialLegacy/imgscal/modules/cli"
-	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/state/statemachine"
+	"github.com/ArtificialLegacy/imgscal/modules/utility/cli"
 )
 
 var landingMenuEnter statemachine.StateStepFunction = func(sm *statemachine.StateMachine) {
