@@ -24,5 +24,6 @@ go.work
 
 esrgan-tool/
 outputs/
+temp/
 build/
 resource.syso
