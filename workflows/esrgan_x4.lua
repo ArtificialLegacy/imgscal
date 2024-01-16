@@ -1,7 +1,7 @@
 
 config({
     name= "ESRGAN_X4",
-    version= "0.1.0",
+    version= "1.0.0",
     requires= {
         "imgscal",
         "esrgan",
@@ -10,6 +10,6 @@ config({
 
 main(function (file)
     job("esrgan.x4", file)
-    job("imgscal.rename", file, {prefix= "x4_"})
+    file = job("imgscal.rename", file, {prefix= "up_"})
     job("imgscal.output", file)
 end)
