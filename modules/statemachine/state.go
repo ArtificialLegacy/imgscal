@@ -1,21 +1,17 @@
 package statemachine
 
-type StateEnterFunction func(from CliState, sm *StateMachine)
-
-type StateExitFunction func(to CliState, sm *StateMachine)
+type StateStepFunction func(sm *StateMachine)
 
 type State struct {
 	id          CliState
-	enter       StateEnterFunction
-	exit        StateExitFunction
+	step        StateStepFunction
 	connections []CliState
 }
 
-func NewState(id CliState, enter StateEnterFunction, exit StateExitFunction, connections []CliState) State {
+func NewState(id CliState, step StateStepFunction, connections []CliState) State {
 	return State{
 		id:          id,
-		enter:       enter,
-		exit:        exit,
+		step:        step,
 		connections: connections,
 	}
 }

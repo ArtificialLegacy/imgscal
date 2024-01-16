@@ -8,7 +8,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var esrganVerifyEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
+var esrganVerifyEnter statemachine.StateStepFunction = func(sm *statemachine.StateMachine) {
 	exists := esrgan.Verify()
 	if exists {
 		sm.Transition(statemachine.LANDING_MENU)
@@ -32,4 +32,8 @@ var esrganVerifyEnter statemachine.StateEnterFunction = func(from statemachine.C
 	}
 }
 
-var ESRGANVerify = statemachine.NewState(statemachine.ESRGAN_VERIFY, esrganVerifyEnter, nil, []statemachine.CliState{statemachine.ESRGAN_DOWNLOAD, statemachine.ESRGAN_FAIL, statemachine.LANDING_MENU})
+var ESRGANVerify = statemachine.NewState(
+	statemachine.ESRGAN_VERIFY,
+	esrganVerifyEnter,
+	[]statemachine.CliState{statemachine.ESRGAN_DOWNLOAD, statemachine.ESRGAN_FAIL, statemachine.LANDING_MENU},
+)

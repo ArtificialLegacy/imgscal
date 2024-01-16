@@ -1,13 +1,13 @@
 package workflow
 
 type WorkflowConfig struct {
-	name     string
-	version  string
-	requires []string
+	Name     string
+	Version  string
+	Requires []string
 }
 
 type Workflow struct {
-	file    string
-	succeed bool
-	config  WorkflowConfig
+	File    string
+	Succeed bool
+	Config  WorkflowConfig
 }

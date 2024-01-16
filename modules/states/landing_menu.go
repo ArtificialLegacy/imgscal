@@ -7,7 +7,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var landingMenuEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
+var landingMenuEnter statemachine.StateStepFunction = func(sm *statemachine.StateMachine) {
 	cli.Clear()
 
 	response, _ := cli.Menu("Select task to perform", []string{
@@ -29,4 +29,8 @@ var landingMenuEnter statemachine.StateEnterFunction = func(from statemachine.Cl
 	}
 }
 
-var LandingMenu = statemachine.NewState(statemachine.LANDING_MENU, landingMenuEnter, nil, []statemachine.CliState{statemachine.WORKFLOW_MENU, statemachine.ESRGAN_MANAGE})
+var LandingMenu = statemachine.NewState(
+	statemachine.LANDING_MENU,
+	landingMenuEnter,
+	[]statemachine.CliState{statemachine.WORKFLOW_MENU, statemachine.ESRGAN_MANAGE},
+)

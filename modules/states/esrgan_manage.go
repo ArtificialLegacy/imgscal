@@ -6,7 +6,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/modules/statemachine"
 )
 
-var esrganManageEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
+var esrganManageEnter statemachine.StateStepFunction = func(sm *statemachine.StateMachine) {
 	cli.Clear()
 
 	response, _ := cli.Menu("Select task to perform", []string{
@@ -30,4 +30,8 @@ var esrganManageEnter statemachine.StateEnterFunction = func(from statemachine.C
 	}
 }
 
-var ESRGANManage = statemachine.NewState(statemachine.ESRGAN_MANAGE, esrganManageEnter, nil, []statemachine.CliState{statemachine.ESRGAN_DOWNLOAD, statemachine.ESRGAN_FAIL, statemachine.LANDING_MENU})
+var ESRGANManage = statemachine.NewState(
+	statemachine.ESRGAN_MANAGE,
+	esrganManageEnter,
+	[]statemachine.CliState{statemachine.ESRGAN_DOWNLOAD, statemachine.ESRGAN_FAIL, statemachine.LANDING_MENU},
+)

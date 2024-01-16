@@ -12,7 +12,8 @@ type StateMachine struct {
 	states       map[CliState]State
 	current      CliState
 	programState struct {
-		workflows map[string]*workflow.Workflow
+		workflows       map[string]*workflow.Workflow
+		currentWorkflow string
 	}
 }
 
@@ -25,25 +26,24 @@ func NewStateMachine() *StateMachine {
 	}
 }
 
-// Adds a state to the state machine.
-func (sm *StateMachine) AddState(state State) *StateMachine {
-	sm.states[state.id] = state
-	return sm
+func (sm *StateMachine) AddStates(states []State) {
+	for _, state := range states {
+		sm.states[state.id] = state
+	}
 }
 
-// Transitions to the given state from the current state.
-// Checks if the state exists, and if there is a connection from the current state to the given state.
-// Calls the exit function of the current state, and the enter function of the given state, passing the previous state and the transition function.
-// If the current state is "", the enter function of the given state is called, passing "" as the previous state and the transition function, and no exit function is called, and no connection is checked.
+func (sm *StateMachine) Step() {
+	sm.states[sm.current].step(sm)
+}
+
 func (sm *StateMachine) Transition(to CliState) error {
-	toState, exists := sm.states[to]
+	_, exists := sm.states[to]
 	if !exists {
 		return errors.New(fmt.Sprintf("State %d does not exist.", to))
 	}
 
 	if sm.current == NONE {
 		sm.current = to
-		toState.enter(NONE, sm)
 		return nil
 	}
 
@@ -59,20 +59,22 @@ func (sm *StateMachine) Transition(to CliState) error {
 		return errors.New(fmt.Sprintf("No connection from %d to %d.", sm.current, to))
 	}
 
-	if sm.states[sm.current].exit != nil {
-		sm.states[sm.current].exit(to, sm)
-	}
-	prev := sm.current
 	sm.current = to
-	toState.enter(prev, sm)
-
 	return nil
 }
 
-func (sm *StateMachine) SetWorkflowState(workflows map[string]*workflow.Workflow) {
+func (sm *StateMachine) SetWorkflowsState(workflows map[string]*workflow.Workflow) {
 	sm.programState.workflows = workflows
 }
 
-func (sm *StateMachine) GetWorkflowState() map[string]*workflow.Workflow {
+func (sm *StateMachine) GetWorkflowsState() map[string]*workflow.Workflow {
 	return sm.programState.workflows
+}
+
+func (sm *StateMachine) SetCurrentWorkflowState(workflow string) {
+	sm.programState.currentWorkflow = workflow
+}
+
+func (sm *StateMachine) GetCurrentWorkflowState() string {
+	return sm.programState.currentWorkflow
 }

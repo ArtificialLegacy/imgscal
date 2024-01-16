@@ -11,23 +11,29 @@ func registerConfig(state *lua.State, workflow *Workflow) {
 	state.Register("config", func(state *lua.State) int {
 		if state.IsTable(1) {
 			state.RawGetValue(1, "name")
-			workflow.config.name, _ = state.ToString(-1)
+			workflow.Config.Name, _ = state.ToString(-1)
 
 			state.RawGetValue(1, "version")
-			workflow.config.version, _ = state.ToString(-1)
+			workflow.Config.Version, _ = state.ToString(-1)
 
 			state.RawGetValue(1, "requires")
 			state.Length(-1)
 			len, _ := state.ToInteger(-1)
 
-			workflow.config.requires = make([]string, 0, len)
+			workflow.Config.Requires = make([]string, 0, len)
 
 			for i := 1; i <= len; i++ {
 				state.RawGetInt(-1-i, i)
 				val, _ := state.ToString(-1)
-				workflow.config.requires = append(workflow.config.requires, val)
+				workflow.Config.Requires = append(workflow.Config.Requires, val)
 			}
 		}
+		return 1
+	})
+}
+
+func emptyMain(state *lua.State) {
+	state.Register("main", func(state *lua.State) int {
 		return 1
 	})
 }
@@ -40,25 +46,32 @@ func WorkflowsLoad() map[string]*Workflow {
 		panic(err)
 	}
 
+	var count int8 = 0
+
 	for _, script := range scripts {
 		if script.IsDir() {
 			continue
 		}
 
-		state := lua.NewState()
-		workflow := &Workflow{
-			file:   script.Name(),
-			config: WorkflowConfig{},
+		count++
+		if count >= 127 {
+			break
 		}
 
-		workflows[workflow.file] = workflow
+		workflow := &Workflow{
+			File:   script.Name(),
+			Config: WorkflowConfig{},
+		}
+		workflows[workflow.File] = workflow
 
+		state := lua.NewState()
 		registerConfig(state, workflow)
+		emptyMain(state)
 
 		pwd, _ := os.Getwd()
 
 		err := lua.DoFile(state, fmt.Sprintf("%s\\workflows\\%s", pwd, script.Name()))
-		workflow.succeed = err == nil
+		workflow.Succeed = err == nil
 	}
 
 	return workflows

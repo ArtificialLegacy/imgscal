@@ -79,7 +79,7 @@ func unzip() error {
 	return unzipResult
 }
 
-var esrganDownloadEnter statemachine.StateEnterFunction = func(from statemachine.CliState, sm *statemachine.StateMachine) {
+var esrganDownloadEnter statemachine.StateStepFunction = func(sm *statemachine.StateMachine) {
 	println("-------- Downloading ESRGAN --------")
 
 	pwd, _ := os.Getwd()
@@ -111,4 +111,8 @@ var esrganDownloadEnter statemachine.StateEnterFunction = func(from statemachine
 	sm.Transition(statemachine.LANDING_MENU)
 }
 
-var ESRGANDownload = statemachine.NewState(statemachine.ESRGAN_DOWNLOAD, esrganDownloadEnter, nil, []statemachine.CliState{statemachine.LANDING_MENU, statemachine.ESRGAN_FAIL})
+var ESRGANDownload = statemachine.NewState(
+	statemachine.ESRGAN_DOWNLOAD,
+	esrganDownloadEnter,
+	[]statemachine.CliState{statemachine.LANDING_MENU, statemachine.ESRGAN_FAIL},
+)

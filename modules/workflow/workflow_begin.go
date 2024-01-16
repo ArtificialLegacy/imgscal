@@ -1,4 +1,4 @@
-package esrgan
+package workflow
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/modules/cli"
 )
 
+// returns the path to the image(s) the user wants to upscale and an error if the path does not exist
 func WorkflowBegin() (string, error) {
 	answer, _ := cli.Question("Enter the path to the image(s) you want to upscale: ", cli.QuestionOptions{
 		Normalize: false,

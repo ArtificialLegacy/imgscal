@@ -1,13 +1,15 @@
 
 config({
-    name= "esrgan_x4",
+    name= "ESRGAN_X4",
     version= "0.1.0",
     requires= {
+        "imgscal",
         "esrgan",
     }
 })
 
-function main (file)
-    process("esrgan.animex4", file)
-    process("core.output", file, "up_")
-end
+main(function (file)
+    job("esrgan.x4", file)
+    job("imgscal.rename", file, {prefix= "x4_"})
+    job("imgscal.output", file)
+end)
