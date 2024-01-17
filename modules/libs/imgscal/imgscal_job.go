@@ -34,6 +34,23 @@ func Job(state *lua.State, file string, job string) (string, error) {
 		if err != nil {
 			return filename, err
 		}
+	case "copy":
+		var options map[string]interface{}
+		if state.IsTable(-1) {
+			options = make(map[string]interface{})
+
+			options["name"] = luautility.ParseOption(state, "name")
+			options["prefix"] = luautility.ParseOption(state, "prefix")
+			options["suffix"] = luautility.ParseOption(state, "suffix")
+
+			name, err := copy(filename, options)
+			if err != nil {
+				return filename, err
+			}
+			filename = name
+		} else {
+			return filename, fmt.Errorf("options must be provided to run copy")
+		}
 	default:
 		return filename, fmt.Errorf("unknown imgscal job: %s", job)
 	}
