@@ -1,19 +1,19 @@
 
 config({
     name= "Spritesheet Split",
-    version= "1.0.0",
+    version= "0.1.0",
     author="Blub",
     requires= {
         "imgscal",
+        "imgscal_sheet"
     }
 })
 
 main(function ()
-    dir = imgscal.prompt_dir()
-    imgs = imgscal.load_dir(dir)
+    img = imgscal.prompt_file()
 
-    frames = imgscal.to_frames(imgs[0], 128, 128, 5, 0)
-    walksheet = imgscal.to_sheet(frames)
+    frames = imgscal_sheet.to_frames(img, 128, 128, 5, 0)
+    walksheet = imgscal_sheet.to_sheet(frames)
     imgscal.name(walksheet, "sprWalk")
 
     imgscal.out(walksheet, "./output")

@@ -14,7 +14,6 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
 	script := sm.PopString()
-
 	wf := workflow.NewWorkflow()
 
 	state := lua.WorkflowConfigState(&wf)
@@ -39,6 +38,10 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	switch answer {
 	case "y":
+		sm.PushString(script)
+		for _, s := range wf.Requires {
+			sm.PushString(s)
+		}
 		sm.SetState(STATE_WORKFLOW_RUN)
 	case "n":
 		sm.SetState(STATE_WORKFLOW_LIST)

@@ -17,7 +17,7 @@ func NewStateMachine(stateCount int) *StateMachine {
 		states:       make([]StateFunction, stateCount),
 		currentState: 0,
 		stack:        make([]any, STACK_SIZE),
-		stackPointer: 0,
+		stackPointer: -1,
 	}
 }
 
@@ -34,6 +34,10 @@ func (sm *StateMachine) push(value any) {
 		panic("Attempting to push value to stack when stack is full.")
 	}
 
+	if sm.stackPointer == -1 {
+		sm.stackPointer = 0
+	}
+
 	sm.stack[sm.stackPointer] = value
 	sm.stackPointer++
 }
@@ -47,6 +51,10 @@ func (sm *StateMachine) pop() any {
 	val := sm.stack[sm.stackPointer]
 
 	return val
+}
+
+func (sm *StateMachine) Peek() bool {
+	return sm.stackPointer >= 0
 }
 
 func (sm *StateMachine) PushInt(value int) {
