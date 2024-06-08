@@ -2,6 +2,7 @@
 config({
     name= "Spritesheet Split",
     version= "1.0.0",
+    author="Blub",
     requires= {
         "imgscal",
     }

@@ -14,10 +14,10 @@ const (
 
 var options = []string{
 	MAIN_MENU_OPTION_WORKFLOW: "Run Workflow",
-	MAIN_MENU_OPTION_EXIT:     "Exit",
+	MAIN_MENU_OPTION_EXIT:     fmt.Sprintf("%sExit%s", cli.COLOR_RED, cli.COLOR_RESET),
 }
 
-func MainMenu(setState statemachine.SetStateFunction) error {
+func MainMenu(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
 	result, err := cli.SelectMenu("Imgscal", options)
@@ -27,10 +27,10 @@ func MainMenu(setState statemachine.SetStateFunction) error {
 
 	switch result {
 	case MAIN_MENU_OPTION_WORKFLOW:
-		setState(STATE_WORKFLOW_LIST)
+		sm.SetState(STATE_WORKFLOW_LIST)
 
 	case MAIN_MENU_OPTION_EXIT:
-		setState(STATE_EXIT)
+		sm.SetState(STATE_EXIT)
 
 	default:
 		panic(fmt.Sprintf("MAIN_MENU_OPTION %d is not handled.", result))

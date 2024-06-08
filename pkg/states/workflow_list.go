@@ -1,12 +1,14 @@
 package states
 
 import (
+	"fmt"
+
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/script"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 )
 
-func WorkflowList(setState statemachine.SetStateFunction) error {
+func WorkflowList(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
 	scripts, err := script.WorkflowList()
@@ -20,15 +22,18 @@ func WorkflowList(setState statemachine.SetStateFunction) error {
 		options = append(options, s.Name)
 	}
 
-	options = append(options, "Return")
+	options = append(options, fmt.Sprintf("%sReturn%s", cli.COLOR_RED, cli.COLOR_RESET))
 
-	result, err := cli.SelectMenu("Select workflow to run.", options)
+	result, err := cli.SelectMenu(fmt.Sprintf("Select %sworkflow%s to run.", cli.COLOR_BOLD, cli.COLOR_RESET), options)
 	if err != nil {
 		return err
 	}
 
 	if result == len(options)-1 {
-		setState(STATE_MAIN)
+		sm.SetState(STATE_MAIN)
+	} else {
+		sm.PushString(scripts[result].Filepath)
+		sm.SetState(STATE_WORKFLOW_CONFIRM)
 	}
 
 	return nil

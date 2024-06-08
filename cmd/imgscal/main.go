@@ -13,6 +13,8 @@ func main() {
 	sm.AddState(states.STATE_MAIN, states.MainMenu)
 	sm.AddState(states.STATE_EXIT, states.Exit)
 	sm.AddState(states.STATE_WORKFLOW_LIST, states.WorkflowList)
+	sm.AddState(states.STATE_WORKFLOW_CONFIRM, states.WorkflowConfirm)
+	sm.AddState(states.STATE_WORKFLOW_RUN, states.WorkflowRun)
 
 	for {
 		sm.Step()
