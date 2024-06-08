@@ -3,42 +3,18 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/ArtificialLegacy/imgscal/pkg/state/statemachine"
-	"github.com/ArtificialLegacy/imgscal/pkg/state/states"
-	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
+	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
+	"github.com/ArtificialLegacy/imgscal/pkg/states"
 )
 
 func main() {
-	os.Setenv("ESRGAN_DOWNLOAD_URL", "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/")
-	os.Setenv("ESRGAN_FOLDER_NAME", "realesrgan-ncnn-vulkan-20220424-windows")
+	sm := statemachine.NewStateMachine(states.STATE_COUNT)
 
-	pwd, _ := os.Getwd()
-	if _, err := os.Stat(fmt.Sprintf("%s\\outputs", pwd)); os.IsNotExist(err) {
-		os.Mkdir(fmt.Sprintf("%s\\outputs", pwd), 0777)
-	}
+	sm.AddState(states.STATE_MAIN, states.MainMenu)
+	sm.AddState(states.STATE_EXIT, states.Exit)
+	sm.AddState(states.STATE_WORKFLOW_LIST, states.WorkflowList)
 
-	wfs := workflow.WorkflowsLoad()
-
-	sm := statemachine.NewStateMachine()
-	sm.SetWorkflowsState(wfs)
-
-	sm.AddStates([]statemachine.State{
-		states.ESRGANVerify,
-		states.ESRGANDownload,
-		states.ESRGANFail,
-		states.LandingMenu,
-		states.ESRGANManage,
-		states.WorkflowMenu,
-		states.WorkflowRun,
-		states.WorkflowFinish,
-	})
-
-	sm.Transition(statemachine.ESRGAN_VERIFY)
-
-	for true {
+	for {
 		sm.Step()
 	}
 }
