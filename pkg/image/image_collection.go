@@ -7,7 +7,7 @@ import (
 )
 
 type Image struct {
-	Mutex sync.Mutex
+	Mutex *sync.Mutex
 	Img   *image.Image
 	Name  string
 
@@ -17,10 +17,9 @@ type Image struct {
 
 func NewImage(name string) *Image {
 	return &Image{
-		Mutex:   sync.Mutex{},
+		Mutex:   &sync.Mutex{},
 		Img:     nil,
 		Name:    name,
-		Ready:   false,
 		Cleaned: false,
 	}
 }
@@ -37,13 +36,11 @@ func NewImageCollection() *ImageCollection {
 
 func (ic *ImageCollection) Image(id int) (*Image, error) {
 	img := ic.images[id]
+	img.Mutex.Lock()
 
 	if img.Cleaned {
+		img.Mutex.Unlock()
 		return nil, fmt.Errorf("attempting to get a cleaned image")
-	}
-
-	if img.Ready {
-		return nil, fmt.Errorf("attempting to get a non-ready image")
 	}
 
 	return img, nil

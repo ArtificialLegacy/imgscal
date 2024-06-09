@@ -37,7 +37,6 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 				state.Error()
 			}
 
-			i.Mutex.Lock()
 			i.Name = name
 			i.Mutex.Unlock()
 		}()
@@ -67,32 +66,26 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 
 		i, id := data.IC.AddImage(file.Name())
 
-		go func() {
-			i.Mutex.Lock()
-			defer i.Mutex.Unlock()
+		if file.IsDir() {
+			state.PushString("directory provided to file only prompt")
+			state.Error()
+		}
 
-			if file.IsDir() {
-				state.PushString("directory provided to file only prompt")
-				state.Error()
-			}
+		f, err := os.Open(result)
+		if err != nil {
+			state.PushString("cannot open provided file")
+			state.Error()
+		}
+		defer f.Close()
 
-			f, err := os.Open(result)
-			if err != nil {
-				state.PushString("cannot open provided file")
-				state.Error()
-			}
-			defer f.Close()
+		image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+		image, _, err := image.Decode(f)
+		if err != nil {
+			state.PushString("provided file is an invalid image")
+			state.Error()
+		}
 
-			image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
-			image, _, err := image.Decode(f)
-			if err != nil {
-				state.PushString("provided file is an invalid image")
-				state.Error()
-			}
-
-			i.Img = &image
-			i.Ready = true
-		}()
+		i.Img = &image
 
 		state.PushInteger(id)
 		return 1
@@ -123,8 +116,6 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 				state.PushString("invalid image provided to out")
 				state.Error()
 			}
-
-			i.Mutex.Lock()
 
 			f, err := os.OpenFile(path.Join(outDir, i.Name), os.O_CREATE, 0o666)
 			if err != nil {
