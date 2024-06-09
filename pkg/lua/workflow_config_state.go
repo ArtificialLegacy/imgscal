@@ -19,6 +19,9 @@ func WorkflowConfigState(wf *workflow.Workflow) *lua.State {
 			state.RawGetValue(1, "author")
 			wf.Author, _ = state.ToString(-1)
 
+			state.RawGetValue(1, "desc")
+			wf.Desc, _ = state.ToString(-1)
+
 			state.RawGetValue(1, "requires")
 			state.Length(-1)
 			len, _ := state.ToInteger(-1)

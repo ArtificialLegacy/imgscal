@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 type Script struct {
@@ -44,7 +45,7 @@ func scriptScan(dir, prefix string, scripts *[]Script) error {
 	}
 
 	for _, file := range files {
-		if !file.IsDir() {
+		if !file.IsDir() && filepath.Ext(file.Name()) == ".lua" {
 			pth := path.Join(dir, file.Name())
 			script := Script{Filepath: pth, Name: path.Join(prefix, file.Name())}
 			*scripts = append(*scripts, script)

@@ -6,14 +6,15 @@ config({
     requires= {
         "imgscal",
         "imgscal_sheet"
-    }
+    },
+
+    desc="Extracts an animation spritesheet from a larger spritesheet.",
 })
 
 main(function ()
     img = imgscal.prompt_file()
 
-    frames = imgscal_sheet.to_frames(img, 128, 128, 5, 0)
-    walksheet = imgscal_sheet.to_sheet(frames)
+    walksheet = imgscal_sheet.crop_frames(img, 128, 128, 5, 0)
     imgscal.name(walksheet, "sprWalk")
 
     imgscal.out(walksheet, "./output")

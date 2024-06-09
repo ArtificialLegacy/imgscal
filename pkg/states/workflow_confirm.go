@@ -18,9 +18,16 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	state := lua.WorkflowConfigState(&wf)
 	runner := lua.NewRunner(state)
-	runner.Run(script)
+	err := runner.Run(script)
+
+	if err != nil || len(wf.Requires) == 0 || wf.Version == "" || wf.Name == "" {
+		sm.PushString(script)
+		sm.SetState(STATE_WORKFLOW_FAIL_LOAD)
+		return nil
+	}
 
 	fmt.Printf("\n%s%s%s [%s] by %s.\n\n", cli.COLOR_BOLD, wf.Name, cli.COLOR_RESET, wf.Version, wf.Author)
+	fmt.Printf("%s\n\n", wf.Desc)
 	fmt.Printf("Required plugins: \n - %s\n\n;", strings.Join(wf.Requires, "\n - "))
 
 	answer, err := cli.Question(

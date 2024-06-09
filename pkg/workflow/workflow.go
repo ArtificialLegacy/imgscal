@@ -4,6 +4,7 @@ type Workflow struct {
 	Name     string
 	Version  string
 	Author   string
+	Desc     string
 	Requires []string
 }
 
@@ -12,6 +13,7 @@ func NewWorkflow() Workflow {
 		Name:     "",
 		Version:  "",
 		Author:   "",
+		Desc:     "",
 		Requires: []string{},
 	}
 }
