@@ -1,8 +1,10 @@
 package statemachine
 
+import "fmt"
+
 type StateFunction func(sm *StateMachine) error
 
-const STACK_SIZE = 16
+const STACK_SIZE = 64
 
 type StateMachine struct {
 	states       []StateFunction
@@ -34,21 +36,17 @@ func (sm *StateMachine) push(value any) {
 		panic("Attempting to push value to stack when stack is full.")
 	}
 
-	if sm.stackPointer == -1 {
-		sm.stackPointer = 0
-	}
-
-	sm.stack[sm.stackPointer] = value
 	sm.stackPointer++
+	sm.stack[sm.stackPointer] = value
 }
 
 func (sm *StateMachine) pop() any {
-	if sm.stackPointer == 0 {
+	if sm.stackPointer == -1 {
 		panic("Attempting to pop from stack when stack is empty.")
 	}
 
-	sm.stackPointer--
 	val := sm.stack[sm.stackPointer]
+	sm.stackPointer--
 
 	return val
 }
@@ -72,7 +70,7 @@ func (sm *StateMachine) PopInt() int {
 	case int:
 		return v
 	default:
-		panic("Attemping to pop a non-int off the stack as an int.")
+		panic(fmt.Sprintf("Attemping to pop a non-int off the stack as an int. got=%T", val))
 	}
 }
 
@@ -83,7 +81,7 @@ func (sm *StateMachine) PopString() string {
 	case string:
 		return v
 	default:
-		panic("Attemping to pop a non-string off the stack as an string.")
+		panic(fmt.Sprintf("Attemping to pop a non-string off the stack as an string. got=%T", val))
 	}
 }
 

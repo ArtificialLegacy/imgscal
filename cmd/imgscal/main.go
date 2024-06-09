@@ -16,6 +16,8 @@ func main() {
 	sm.AddState(states.STATE_WORKFLOW_CONFIRM, states.WorkflowConfirm)
 	sm.AddState(states.STATE_WORKFLOW_FAIL_LOAD, states.WorkflowFailLoad)
 	sm.AddState(states.STATE_WORKFLOW_RUN, states.WorkflowRun)
+	sm.AddState(states.STATE_WORKFLOW_FAIL_RUN, states.WorkflowFailRun)
+	sm.AddState(states.STATE_WORKFLOW_FINISH, states.WorkflowFinish)
 
 	for {
 		sm.Step()

@@ -17,7 +17,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	wf := workflow.NewWorkflow()
 
 	state := lua.WorkflowConfigState(&wf)
-	runner := lua.NewRunner(state)
+	runner := lua.NewRunner(state, &struct{}{})
 	err := runner.Run(script)
 
 	if err != nil || len(wf.Requires) == 0 || wf.Version == "" || wf.Name == "" {
@@ -45,10 +45,10 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	switch answer {
 	case "y":
-		sm.PushString(script)
 		for _, s := range wf.Requires {
 			sm.PushString(s)
 		}
+		sm.PushString(script)
 		sm.SetState(STATE_WORKFLOW_RUN)
 	case "n":
 		sm.SetState(STATE_WORKFLOW_LIST)

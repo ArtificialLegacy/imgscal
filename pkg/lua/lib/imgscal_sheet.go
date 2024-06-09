@@ -1,9 +1,12 @@
 package lib
 
-import "github.com/Shopify/go-lua"
+import (
+	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
+	"github.com/Shopify/go-lua"
+)
 
 const LIB_IMGSCALSHEET = "imgscal_sheet"
 
-func RegisterImgscalSheet(state *lua.State) {
+func RegisterImgscalSheet(state *lua.State, data *workflow.WorkflowData) {
 
 }

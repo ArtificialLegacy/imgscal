@@ -12,6 +12,7 @@ func WorkflowRunState() *lua.State {
 	})
 
 	state.Register("main", func(state *lua.State) int {
+		state.Call(0, 0)
 		return 0
 	})
 

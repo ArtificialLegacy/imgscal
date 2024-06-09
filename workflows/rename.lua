@@ -11,7 +11,7 @@ config({
 })
 
 main(function ()
-    img = imgscal.prompt_file()
-    imgscal.name(img, "output_file")
+    img = imgscal.prompt_file("Enter file to rename")
+    imgscal.name(img, "output_file.png")
     imgscal.out(img, "./output")
 end)
