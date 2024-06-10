@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/Shopify/go-lua"
 )
 
@@ -19,8 +20,8 @@ func NewRunner[T any](state *lua.State, data *T) Runner[T] {
 	}
 }
 
-func (r *Runner[T]) Register(fn func(state *lua.State, data *T)) {
-	fn(r.state, r.Data)
+func (r *Runner[T]) Register(fn func(state *lua.State, data *T, lg *log.Logger), lg *log.Logger) {
+	fn(r.state, r.Data, lg)
 }
 
 func (r *Runner[T]) Run(file string) error {

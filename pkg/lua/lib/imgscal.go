@@ -1,39 +1,45 @@
 package lib
 
 import (
+	"fmt"
 	"image"
+	"image/gif"
+	"image/jpeg"
 	"image/png"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
+	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	"github.com/Shopify/go-lua"
 )
 
 const LIB_IMGSCAL = "imgscal"
 
-func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
+func RegisterImgscal(state *lua.State, data *workflow.WorkflowData, lg *log.Logger) {
 	state.NewTable()
 
 	state.PushGoFunction(func(state *lua.State) int {
+		lg.Append("imgscal.name called", log.LEVEL_INFO)
+
 		id, ok := state.ToInteger(-2)
 		if !ok {
-			state.PushString("invalid image id provided to name")
+			state.PushString(lg.Append("invalid image id provided to name", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		name, ok := state.ToString(-1)
 		if !ok {
-			state.PushString("invalid image name provided to name")
+			state.PushString(lg.Append("invalid image name provided to name", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		go func() {
 			i, err := data.IC.Image(id)
 			if err != nil {
-				state.PushString("invalid image provided to name")
+				state.PushString(lg.Append("invalid image provided to name", log.LEVEL_ERROR))
 				state.Error()
 			}
 
@@ -46,34 +52,36 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 	state.SetField(-2, "name")
 
 	state.PushGoFunction(func(state *lua.State) int {
+		lg.Append("imgscal.prompt_file called", log.LEVEL_INFO)
+
 		question, ok := state.ToString(-1)
 		if !ok {
-			state.PushString("invalid question provided to prompt_file")
+			state.PushString(lg.Append("invalid question provided to prompt_file", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		result, err := cli.Question(question, cli.QuestionOptions{})
 		if err != nil {
-			state.PushString("invalid answer provided to prompt")
+			state.PushString(lg.Append("invalid answer provided to prompt", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		file, err := os.Stat(result)
 		if err != nil {
-			state.PushString("invalid answer provided to prompt")
+			state.PushString(lg.Append("invalid answer provided to prompt", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		i, id := data.IC.AddImage(file.Name())
 
 		if file.IsDir() {
-			state.PushString("directory provided to file only prompt")
+			state.PushString(lg.Append("directory provided to file only prompt", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		f, err := os.Open(result)
 		if err != nil {
-			state.PushString("cannot open provided file")
+			state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
 			state.Error()
 		}
 		defer f.Close()
@@ -81,7 +89,7 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 		image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
 		image, _, err := image.Decode(f)
 		if err != nil {
-			state.PushString("provided file is an invalid image")
+			state.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
 			state.Error()
 		}
 
@@ -93,15 +101,17 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 	state.SetField(-2, "prompt_file")
 
 	state.PushGoFunction(func(state *lua.State) int {
+		lg.Append("imgscal.out called", log.LEVEL_INFO)
+
 		id, ok := state.ToInteger(-2)
 		if !ok {
-			state.PushString("invalid image id provided to out")
+			state.PushString(lg.Append("invalid image id provided to out", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		outDir, ok := state.ToString(-1)
 		if !ok {
-			state.PushString("invalid outDir provided to out")
+			state.PushString(lg.Append("invalid outDir provided to out", log.LEVEL_ERROR))
 			state.Error()
 		}
 
@@ -113,13 +123,13 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 		go func() {
 			i, err := data.IC.Image(id)
 			if err != nil {
-				state.PushString("invalid image provided to out")
+				state.PushString(lg.Append("invalid image provided to out", log.LEVEL_ERROR))
 				state.Error()
 			}
 
 			f, err := os.OpenFile(path.Join(outDir, i.Name), os.O_CREATE, 0o666)
 			if err != nil {
-				state.PushString("cannot open provided file")
+				state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
 				state.Error()
 			}
 			defer f.Close()
@@ -128,7 +138,17 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData) {
 
 			switch ext {
 			case ".png":
+				lg.Append("image encoded as png", log.LEVEL_INFO)
 				png.Encode(f, *i.Img)
+			case ".jpg":
+				lg.Append("image encoded as jpg", log.LEVEL_INFO)
+				jpeg.Encode(f, *i.Img, &jpeg.Options{Quality: 100})
+			case ".gif":
+				lg.Append("image encoded as gif", log.LEVEL_INFO)
+				gif.Encode(f, *i.Img, &gif.Options{})
+			default:
+				state.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
+				state.Error()
 			}
 
 			i.Mutex.Unlock()

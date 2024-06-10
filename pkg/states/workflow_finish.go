@@ -8,7 +8,7 @@ import (
 )
 
 func WorkflowFinish(sm *statemachine.StateMachine) error {
-	//cli.Clear()
+	cli.Clear()
 
 	script := sm.PopString()
 

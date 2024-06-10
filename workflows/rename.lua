@@ -11,10 +11,7 @@ config({
 })
 
 main(function ()
-    img1 = imgscal.prompt_file("Enter file to rename")
-    img2 = imgscal.prompt_file("Enter file to rename")
-    imgscal.name(img1, "output_file1.png")
-    imgscal.name(img2, "output_file2.png")
-    imgscal.out(img1, "./output")
-    imgscal.out(img2, "./output")
+    img = imgscal.prompt_file("Enter file to rename")
+    imgscal.name(img, "output_file1.png")
+    imgscal.out(img, "./output")
 end)
