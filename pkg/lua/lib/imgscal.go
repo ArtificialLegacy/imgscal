@@ -52,7 +52,7 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData, lg *log.Logg
 	state.SetField(-2, "name")
 
 	state.PushGoFunction(func(state *lua.State) int {
-		lg.Append("imgscal.prompt_file called", log.LEVEL_INFO)
+		lg.Append("imgscal.prompt called", log.LEVEL_INFO)
 
 		question, ok := state.ToString(-1)
 		if !ok {
@@ -66,39 +66,59 @@ func RegisterImgscal(state *lua.State, data *workflow.WorkflowData, lg *log.Logg
 			state.Error()
 		}
 
+		state.PushString(result)
+		return 1
+	})
+	state.SetField(-2, "prompt")
+
+	state.PushGoFunction(func(state *lua.State) int {
+		lg.Append("imgscal.load_image called", log.LEVEL_INFO)
+
+		result, ok := state.ToString(-1)
+		if !ok {
+			state.PushString(lg.Append("invalid image path provided to load_image", log.LEVEL_ERROR))
+			state.Error()
+		}
+
 		file, err := os.Stat(result)
 		if err != nil {
-			state.PushString(lg.Append("invalid answer provided to prompt", log.LEVEL_ERROR))
+			state.PushString(lg.Append("invalid image path provided to load_image", log.LEVEL_ERROR))
 			state.Error()
 		}
 
 		i, id := data.IC.AddImage(file.Name())
+		i.Mutex.Lock()
 
-		if file.IsDir() {
-			state.PushString(lg.Append("directory provided to file only prompt", log.LEVEL_ERROR))
-			state.Error()
-		}
+		go func() {
+			if file.IsDir() {
+				state.PushString(lg.Append("cannot load directory as image", log.LEVEL_ERROR))
+				state.Error()
+			}
 
-		f, err := os.Open(result)
-		if err != nil {
-			state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
-			state.Error()
-		}
-		defer f.Close()
+			f, err := os.Open(result)
+			if err != nil {
+				state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+				state.Error()
+			}
+			defer f.Close()
 
-		image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
-		image, _, err := image.Decode(f)
-		if err != nil {
-			state.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
-			state.Error()
-		}
+			image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+			image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
+			image.RegisterFormat("gif", "gif", gif.Decode, gif.DecodeConfig)
+			image, _, err := image.Decode(f)
+			if err != nil {
+				state.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
+				state.Error()
+			}
 
-		i.Img = &image
+			i.Img = &image
+			i.Mutex.Unlock()
+		}()
 
 		state.PushInteger(id)
 		return 1
 	})
-	state.SetField(-2, "prompt_file")
+	state.SetField(-2, "load_image")
 
 	state.PushGoFunction(func(state *lua.State) int {
 		lg.Append("imgscal.out called", log.LEVEL_INFO)

@@ -54,3 +54,11 @@ func (ic *ImageCollection) AddImage(name string) (*Image, int) {
 
 	return img, id
 }
+
+func (ic *ImageCollection) Collect() {
+	for _, i := range ic.images {
+		i.Mutex.Lock()
+		i.Cleaned = true
+		i.Mutex.Unlock()
+	}
+}

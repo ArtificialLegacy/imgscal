@@ -51,6 +51,9 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
+	lg.Append("Collecting images", log.LEVEL_INFO)
+	data.IC.Collect()
+
 	lg.Dump("./log")
 
 	sm.PushString(script)
