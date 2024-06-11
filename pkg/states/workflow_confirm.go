@@ -2,6 +2,8 @@ package states
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
@@ -9,6 +11,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
+	golua "github.com/Shopify/go-lua"
 )
 
 func WorkflowConfirm(sm *statemachine.StateMachine) error {
@@ -17,11 +20,17 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	script := sm.PopString()
 	wf := workflow.NewWorkflow()
 
+	pwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
 	lg := log.NewLogger()
+	defer lg.Dump("./log")
+
 	lg.Append("log started for workflow_confirm", log.LEVEL_INFO)
 	state := lua.WorkflowConfigState(&wf, &lg)
-	runner := lua.NewRunner(state, &struct{}{})
-	err := runner.Run(script)
+	err = golua.DoFile(state, path.Join(pwd, script))
 
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
@@ -55,7 +64,6 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	if err != nil {
 		lg.Append(fmt.Sprintf("confirmation aborted from err during prompt: %s", err), log.LEVEL_ERROR)
-		lg.Dump("./log")
 		return err
 	}
 
@@ -72,11 +80,8 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 		lg.Append("confirmation answer n", log.LEVEL_INFO)
 	default:
 		lg.Append("impossible answer provided", log.LEVEL_ERROR)
-		lg.Dump("./log")
 		panic("Impossible answer provided.")
 	}
-
-	lg.Dump("./log")
 
 	return nil
 }

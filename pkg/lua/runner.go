@@ -4,30 +4,29 @@ import (
 	"os"
 	"path"
 
+	"github.com/ArtificialLegacy/imgscal/pkg/image"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/Shopify/go-lua"
 )
 
-type Runner[T any] struct {
-	state *lua.State
-	Data  *T
+type Runner struct {
+	State *lua.State
+	IC    *image.ImageCollection
+	lg    *log.Logger
 }
 
-func NewRunner[T any](state *lua.State, data *T) Runner[T] {
-	return Runner[T]{
-		state: state,
-		Data:  data,
+func NewRunner(state *lua.State, lg *log.Logger) Runner {
+	return Runner{
+		State: state,
+		IC:    image.NewImageCollection(lg),
+		lg:    lg,
 	}
 }
 
-func (r *Runner[T]) Register(fn func(state *lua.State, data *T, lg *log.Logger), lg *log.Logger) {
-	fn(r.state, r.Data, lg)
-}
-
-func (r *Runner[T]) Run(file string) error {
+func (r *Runner) Run(file string) error {
 	pwd, _ := os.Getwd()
 
-	err := lua.DoFile(r.state, path.Join(pwd, file))
+	err := lua.DoFile(r.State, path.Join(pwd, file))
 	if err != nil {
 		return err
 	}

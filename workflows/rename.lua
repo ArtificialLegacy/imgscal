@@ -4,21 +4,22 @@ config({
     version= "0.1.0",
     author="Blub",
     requires= {
-        "imgscal",
+        "std",
+        "io",
+        "cli",
+        "image"
     },
 
-    desc="Renames a file and saves it to ./output",
+    desc="Renames all files in a directory and saves them to ./output",
 })
 
 main(function ()
-    pth1 = imgscal.prompt("Enter file to rename")
-    pth2 = imgscal.prompt("Enter file to rename")
+    pth = cli.question("Enter directory to process")
+    pthList = io.dir_img(pth)
 
-    img1 = imgscal.load_image(pth1)
-    imgscal.name(img1, "output_file1.png")
-    imgscal.out(img1, "./output")
-
-    img2 = imgscal.load_image(pth2)
-    imgscal.name(img2, "output_file2.png")
-    imgscal.out(img2, "./output")
+    for k,v in pairs(pthList) do
+        local img = io.load_image(v)
+        image.name(img, "image_"..img..".png")
+        io.out(img, "./output")
+    end
 end)

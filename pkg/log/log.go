@@ -30,7 +30,7 @@ func NewLogger() Logger {
 }
 
 func (l *Logger) Append(str string, level LogLevel) string {
-	logTime := time.Now().String()
+	logTime := time.Now().Format(time.ANSIC)
 
 	prefix := ""
 
