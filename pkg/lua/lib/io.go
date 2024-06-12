@@ -21,6 +21,9 @@ const LIB_IO = "io"
 func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	r.State.NewTable()
 
+	/// @func load_image()
+	/// @arg path - the path to grab the image from
+	/// @returns int - the image id
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("io.load_image called", log.LEVEL_INFO)
 
@@ -73,6 +76,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	})
 	r.State.SetField(-2, "load_image")
 
+	/// @func out()
+	/// @arg image_id - the image id to encode and save to file.
+	/// @arg path - the directory path to save the file to.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("io.out called", log.LEVEL_INFO)
 
@@ -129,6 +135,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	})
 	r.State.SetField(-2, "out")
 
+	/// @func dir_img()
+	/// @arg path - the directory path to scan for images.
+	/// @returns array containing strings of each valid image in the directory.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("io.dir_img called", log.LEVEL_INFO)
 

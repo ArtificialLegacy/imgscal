@@ -12,6 +12,9 @@ const LIB_IMAGE = "image"
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	r.State.NewTable()
 
+	/// @func name()
+	/// @arg image_id - the id of the image to rename.
+	/// @arg new_name - the new name to use for the image, including the file extension.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("image.name called", log.LEVEL_INFO)
 

@@ -12,6 +12,9 @@ const LIB_CLI = "cli"
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	r.State.NewTable()
 
+	/// @func question()
+	/// @arg question - the message to be displayed.
+	/// @returns string - the answer given by the user
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("cli.question called", log.LEVEL_INFO)
 

@@ -13,6 +13,8 @@ const LIB_STD = "std"
 func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	r.State.NewTable()
 
+	/// @func panic()
+	/// @arg msg - the message to display in the error
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("std.panic called", log.LEVEL_INFO)
 
@@ -29,6 +31,8 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	})
 	r.State.SetField(-2, "panic")
 
+	/// @func log()
+	/// @arg msg - the message to display in the log
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("std.log called", log.LEVEL_INFO)
 

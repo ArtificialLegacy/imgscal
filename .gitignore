@@ -22,7 +22,8 @@ go.work
 
 # End of https://www.toptal.com/developers/gitignore/api/go
 
-output/
-build/
+/output/
+/build/
 /log/
 resource.syso
+/docs/

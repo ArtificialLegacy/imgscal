@@ -21,4 +21,6 @@ make build-windows
 
 **❗ Note: Removes the build directory, including any custom made workflows.**
 
-**Documentation wip.**
+## Documentation
+
+Run `make doc` to generate the lua api documentation to `./docs/`.
