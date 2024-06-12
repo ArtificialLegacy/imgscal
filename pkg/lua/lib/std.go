@@ -43,5 +43,22 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	})
 	r.State.SetField(-2, "log")
 
+	/// @func warn()
+	/// @arg msg - the message to display as a warning in the log
+	r.State.PushGoFunction(func(state *golua.State) int {
+		lg.Append("std.warn called", log.LEVEL_INFO)
+
+		msg, ok := state.ToString(-1)
+		if !ok {
+			state.PushString(lg.Append("invalid msg provided to warn", log.LEVEL_ERROR))
+			state.Error()
+		}
+
+		lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
+
+		return 0
+	})
+	r.State.SetField(-2, "warn")
+
 	r.State.SetGlobal(LIB_STD)
 }
