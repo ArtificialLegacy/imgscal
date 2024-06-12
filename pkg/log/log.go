@@ -1,8 +1,8 @@
 package log
 
 import (
-	"bytes"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"time"
@@ -18,15 +18,27 @@ const (
 
 type Logger struct {
 	logFile string
-	buff    bytes.Buffer
+	logger  *log.Logger
 }
 
-func NewLogger() Logger {
+func NewLogger(dir string) Logger {
 	logTime := time.Now().UTC().UnixMilli()
 
-	return Logger{
+	lg := Logger{
 		logFile: fmt.Sprintf("%d.txt", logTime),
+		logger:  log.Default(),
 	}
+
+	_, err := os.Stat(dir)
+	if err != nil {
+		os.MkdirAll(dir, 0o666)
+	}
+
+	file, _ := os.OpenFile(path.Join(dir, lg.logFile), os.O_CREATE, 0o666)
+
+	lg.logger.SetOutput(file)
+
+	return lg
 }
 
 func (l *Logger) Append(str string, level LogLevel) string {
@@ -43,22 +55,6 @@ func (l *Logger) Append(str string, level LogLevel) string {
 		prefix = "! ERROR"
 	}
 
-	l.buff.WriteString(fmt.Sprintf("%s: [%s] > '%s'\n", prefix, logTime, str))
+	l.logger.Printf("%s: [%s] > '%s'\n", prefix, logTime, str)
 	return str
-}
-
-func (l *Logger) Dump(dir string) error {
-	_, err := os.Stat(dir)
-	if err != nil {
-		os.MkdirAll(dir, 0o666)
-	}
-
-	file, err := os.OpenFile(path.Join(dir, l.logFile), os.O_CREATE, 0o666)
-	if err != nil {
-		return err
-	}
-
-	file.Write(l.buff.Bytes())
-
-	return nil
 }

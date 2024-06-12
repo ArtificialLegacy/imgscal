@@ -20,8 +20,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		req = append(req, sm.PopString())
 	}
 
-	lg := log.NewLogger()
-	defer lg.Dump("./log")
+	lg := log.NewLogger("./log")
 
 	lg.Append("log started for workflow_run", log.LEVEL_INFO)
 	state := lua.WorkflowRunState(&lg)
@@ -48,6 +47,8 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
 		return nil
 	}
+
+	lg.Append("workflow finished", log.LEVEL_INFO)
 
 	sm.PushString(script)
 	sm.SetState(STATE_WORKFLOW_FINISH)

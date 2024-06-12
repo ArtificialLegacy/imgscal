@@ -45,11 +45,7 @@ func (ic *ImageCollection) AddImage(name string) int {
 func (ic *ImageCollection) Collect() {
 	wg := sync.WaitGroup{}
 
-	for id, img := range ic.images {
-		if img.collect {
-			continue
-		}
-
+	for id := range ic.images {
 		wg.Add(1)
 		idHere := id
 		ic.images[idHere].collect = true
@@ -59,6 +55,7 @@ func (ic *ImageCollection) Collect() {
 			func(i *Image) {
 				ic.lg.Append(fmt.Sprintf("image %d collected", idHere), log.LEVEL_INFO)
 				i.Img = nil
+				i.cleaned = true
 				wg.Done()
 			},
 		})
@@ -89,6 +86,7 @@ type Image struct {
 	Name string
 
 	collect bool
+	cleaned bool
 
 	TaskQueue chan *ImageTask
 }
@@ -111,7 +109,7 @@ func (i *Image) process() {
 		task := <-i.TaskQueue
 		task.Fn(i)
 
-		if i.Img == nil {
+		if i.cleaned {
 			break
 		}
 	}
