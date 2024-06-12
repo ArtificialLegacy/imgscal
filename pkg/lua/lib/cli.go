@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"fmt"
+
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
@@ -11,6 +13,24 @@ const LIB_CLI = "cli"
 
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	r.State.NewTable()
+
+	/// @func print()
+	/// @arg msg - the message to print to the console.
+	r.State.PushGoFunction(func(state *golua.State) int {
+		lg.Append("cli.print called", log.LEVEL_INFO)
+
+		msg, ok := state.ToString(-1)
+		if !ok {
+			state.PushString(lg.Append("invalid question provided to cli.question", log.LEVEL_ERROR))
+			state.Error()
+		}
+
+		println(msg)
+		lg.Append(fmt.Sprintf("lua msg printed: %s", msg), log.LEVEL_INFO)
+
+		return 0
+	})
+	r.State.SetField(-2, "print")
 
 	/// @func question()
 	/// @arg question - the message to be displayed.
