@@ -21,5 +21,6 @@ main(function ()
         local img = io.load_image(v)
         image.name(img, "image_"..img..".png")
         io.out(img, "./output")
+        image.collect(img)
     end
 end)

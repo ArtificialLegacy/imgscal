@@ -45,16 +45,20 @@ func (ic *ImageCollection) AddImage(name string) int {
 func (ic *ImageCollection) Collect() {
 	wg := sync.WaitGroup{}
 
-	ic.lg.Append(fmt.Sprintf("total images to collect: %d", len(ic.images)), log.LEVEL_INFO)
+	for id, img := range ic.images {
+		if img.collect {
+			continue
+		}
 
-	for id := range ic.images {
 		wg.Add(1)
 		idHere := id
+		ic.images[idHere].collect = true
+
 		ic.lg.Append(fmt.Sprintf("image %d collection queued", idHere), log.LEVEL_INFO)
 		ic.Schedule(id, &ImageTask{
 			func(i *Image) {
 				ic.lg.Append(fmt.Sprintf("image %d collected", idHere), log.LEVEL_INFO)
-				i.collect = true
+				i.Img = nil
 				wg.Done()
 			},
 		})
@@ -62,6 +66,18 @@ func (ic *ImageCollection) Collect() {
 
 	wg.Wait()
 	ic.lg.Append("all images collected", log.LEVEL_INFO)
+}
+
+func (ic *ImageCollection) CollectImage(id int) {
+	ic.images[id].collect = true
+
+	ic.lg.Append(fmt.Sprintf("image %d collection queued", id), log.LEVEL_INFO)
+	ic.Schedule(id, &ImageTask{
+		func(i *Image) {
+			ic.lg.Append(fmt.Sprintf("image %d collected", id), log.LEVEL_INFO)
+			i.Img = nil
+		},
+	})
 }
 
 type ImageTask struct {
@@ -95,7 +111,7 @@ func (i *Image) process() {
 		task := <-i.TaskQueue
 		task.Fn(i)
 
-		if i.collect {
+		if i.Img == nil {
 			break
 		}
 	}

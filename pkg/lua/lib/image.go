@@ -41,5 +41,22 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	})
 	r.State.SetField(-2, "name")
 
+	/// @func collect()
+	/// @arg image_id - the id of the image to collect
+	r.State.PushGoFunction(func(state *golua.State) int {
+		lg.Append("image.collect called", log.LEVEL_INFO)
+
+		id, ok := r.State.ToInteger(-1)
+		if !ok {
+			r.State.PushString(lg.Append("invalid image id provided to image.collect", log.LEVEL_ERROR))
+			r.State.Error()
+		}
+
+		r.IC.CollectImage(id)
+
+		return 0
+	})
+	r.State.SetField(-2, "collect")
+
 	r.State.SetGlobal(LIB_IMAGE)
 }
