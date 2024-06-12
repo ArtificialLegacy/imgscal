@@ -1,6 +1,9 @@
 package lib
 
 import (
+	"fmt"
+	"strings"
+
 	img "github.com/ArtificialLegacy/imgscal/pkg/image"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
@@ -40,6 +43,60 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		return 0
 	})
 	r.State.SetField(-2, "name")
+
+	/// @func name_ext()
+	/// @arg image_id - the id of the image to rename.
+	/// @arg options - a table containing each rename step. [name, prefix, suffix, ext]
+	r.State.PushGoFunction(func(state *golua.State) int {
+		lg.Append("image.name_ext called", log.LEVEL_INFO)
+
+		id, ok := r.State.ToInteger(-2)
+		if !ok {
+			r.State.PushString(lg.Append("invalid image id provided to image.name", log.LEVEL_ERROR))
+			r.State.Error()
+		}
+
+		state.Field(-1, "prefix")
+		state.Field(-2, "suffix")
+		state.Field(-3, "name")
+		state.Field(-4, "ext")
+
+		prefix, prefixOk := state.ToString(-4)
+		suffix, suffixOk := state.ToString(-3)
+		name, nameOk := state.ToString(-2)
+		ext, extOk := state.ToString(-1)
+
+		r.IC.Schedule(id, &img.ImageTask{
+			Fn: func(i *img.Image) {
+				lg.Append("image.name_ext task ran", log.LEVEL_INFO)
+
+				fileSplit := strings.Split(i.Name, ".")
+				fileName := strings.Join(fileSplit[:len(fileSplit)-1], ".")
+				fileExt := fileSplit[len(fileSplit)-1]
+
+				if nameOk {
+					fileName = name
+				}
+				if prefixOk {
+					fileName = prefix + fileName
+				}
+				if suffixOk {
+					fileName += suffix
+				}
+				if extOk {
+					fileExt = ext
+				}
+
+				i.Name = fileName + fileExt
+
+				lg.Append(fmt.Sprintf("new image name: %s", i.Name), log.LEVEL_INFO)
+				lg.Append("image.name_ext task finished", log.LEVEL_INFO)
+			},
+		})
+
+		return 0
+	})
+	r.State.SetField(-2, "name_ext")
 
 	/// @func collect()
 	/// @arg image_id - the id of the image to collect
