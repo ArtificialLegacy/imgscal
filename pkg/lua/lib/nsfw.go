@@ -33,6 +33,8 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 
 		r.IC.Schedule(id, &img.ImageTask{
 			Fn: func(i *img.Image) {
+				lg.Append("nsfw.skin task called", log.LEVEL_INFO)
+
 				r, err := nude.IsImageNude(i.Img)
 				if err != nil {
 					state.PushString(lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
@@ -40,6 +42,8 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 				}
 				result = r
 				wait <- true
+
+				lg.Append("nsfw.skin task finished", log.LEVEL_INFO)
 			},
 		})
 

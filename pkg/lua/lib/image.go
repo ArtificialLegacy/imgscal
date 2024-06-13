@@ -151,10 +151,14 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 		r.IC.Schedule(id, &img.ImageTask{
 			Fn: func(i *img.Image) {
+				lg.Append("image.size task ran", log.LEVEL_INFO)
+
 				b := i.Img.Bounds()
 				width = b.Dx()
 				height = b.Dy()
 				wait <- true
+
+				lg.Append("image.size task finished", log.LEVEL_INFO)
 			},
 		})
 

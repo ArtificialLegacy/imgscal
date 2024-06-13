@@ -40,6 +40,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 		r.IC.Schedule(id, &image.ImageTask{
 			Fn: func(i *image.Image) {
+				lg.Append("ascii.to_file task called", log.LEVEL_INFO)
+
 				converter := convert.NewImageConverter()
 				str := converter.Image2ASCIIString(i.Img, &convert.Options{
 					Colored:  color,
@@ -54,6 +56,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 				defer f.Close()
 
 				f.WriteString(str)
+
+				lg.Append("ascii.to_file task finished", log.LEVEL_INFO)
 			},
 		})
 
@@ -100,6 +104,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 		r.IC.Schedule(id, &image.ImageTask{
 			Fn: func(i *image.Image) {
+				lg.Append("ascii.to_file_size task called", log.LEVEL_INFO)
+
 				converter := convert.NewImageConverter()
 				str := converter.Image2ASCIIString(i.Img, &convert.Options{
 					FixedWidth:  width,
@@ -116,6 +122,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 				defer f.Close()
 
 				f.WriteString(str)
+
+				lg.Append("ascii.to_file_size task finished", log.LEVEL_INFO)
 			},
 		})
 
@@ -146,6 +154,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 		r.IC.Schedule(id, &image.ImageTask{
 			Fn: func(i *image.Image) {
+				lg.Append("ascii.to_string task called", log.LEVEL_INFO)
+
 				converter := convert.NewImageConverter()
 				str = converter.Image2ASCIIString(i.Img, &convert.Options{
 					Colored:  color,
@@ -153,6 +163,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 				})
 
 				wait <- true
+
+				lg.Append("ascii.to_string task finished", log.LEVEL_INFO)
 			},
 		})
 
@@ -199,6 +211,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 		r.IC.Schedule(id, &image.ImageTask{
 			Fn: func(i *image.Image) {
+				lg.Append("ascii.to_string_size task called", log.LEVEL_INFO)
+
 				converter := convert.NewImageConverter()
 				str = converter.Image2ASCIIString(i.Img, &convert.Options{
 					FixedWidth:  width,
@@ -208,6 +222,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 				})
 
 				wait <- true
+
+				lg.Append("ascii.to_string_size task finished", log.LEVEL_INFO)
 			},
 		})
 
