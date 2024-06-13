@@ -12,6 +12,20 @@ import (
 
 const LIB_IMAGE = "image"
 
+const (
+	model_RGBA int = iota
+	model_RGBA64
+	model_NRGBA
+	model_NRGBA64
+	model_ALPHA
+	model_ALPHA16
+	model_GRAY
+	model_GRAY16
+	model_CMYK
+	model_NYCBCRA
+	model_YCBCR
+)
+
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	r.State.NewTable()
 
@@ -148,6 +162,41 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		return 2
 	})
 	r.State.SetField(-2, "size")
+
+	/// @constants Color Models
+	/// @const RGBA
+	/// @const RGBA64
+	/// @const NRGBA
+	/// @const NRGBA64
+	/// @const ALPHA
+	/// @const ALPHA16
+	/// @const GRAY
+	/// @const GRAY16
+	/// @const CMYK
+	/// @const NYCBCRA
+	/// @const YCBCR
+	r.State.PushInteger(model_RGBA)
+	r.State.SetField(-2, "RGBA")
+	r.State.PushInteger(model_RGBA64)
+	r.State.SetField(-2, "RGBA64")
+	r.State.PushInteger(model_NRGBA)
+	r.State.SetField(-2, "NRGBA")
+	r.State.PushInteger(model_NRGBA64)
+	r.State.SetField(-2, "NRGBA64")
+	r.State.PushInteger(model_ALPHA)
+	r.State.SetField(-2, "ALPHA")
+	r.State.PushInteger(model_ALPHA16)
+	r.State.SetField(-2, "ALPHA16")
+	r.State.PushInteger(model_GRAY)
+	r.State.SetField(-2, "GRAY")
+	r.State.PushInteger(model_GRAY16)
+	r.State.SetField(-2, "GRAY16")
+	r.State.PushInteger(model_CMYK)
+	r.State.SetField(-2, "CMYK")
+	r.State.PushInteger(model_NYCBCRA)
+	r.State.SetField(-2, "NYCBCRA")
+	r.State.PushInteger(model_YCBCR)
+	r.State.SetField(-2, "YCBCR")
 
 	r.State.SetGlobal(LIB_IMAGE)
 }
