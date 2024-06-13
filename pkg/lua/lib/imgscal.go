@@ -10,4 +10,5 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_IMAGE: RegisterImage,
 	LIB_IO:    RegisterIO,
 	LIB_STD:   RegisterStd,
+	LIB_NSFW:  RegisterNSFW,
 }
