@@ -17,6 +17,8 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 	/// @arg image_id - the image to check for nudity using skin content.
 	/// @returns boolean - if the skin content detector is over a threshold.
 	/// @blocking
+	/// @desc
+	/// Not very accurate, but does not require an AI model.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("nsfw.skin called", log.LEVEL_INFO)
 

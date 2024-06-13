@@ -114,6 +114,8 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 	/// @func collect()
 	/// @arg image_id - the id of the image to collect.
+	/// @desc
+	/// Normally should never be needed.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("image.collect called", log.LEVEL_INFO)
 

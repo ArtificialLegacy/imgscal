@@ -16,6 +16,8 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 	/// @func print()
 	/// @arg msg - the message to print to the console.
+	/// @desc
+	/// This is also including in the log similar to std.log.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("cli.print called", log.LEVEL_INFO)
 

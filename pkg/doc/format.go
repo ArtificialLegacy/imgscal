@@ -19,6 +19,14 @@ func Format(out io.StringWriter, lib Lib) {
 			out.WriteString("**❗ Note: This function is blocking, it will interupt concurrent execution.**\n\n")
 		}
 
+		if len(fn.Desc) > 0 {
+			for _, d := range fn.Desc {
+				out.WriteString(fmt.Sprintf("%s\n", d))
+			}
+
+			out.WriteString("\n")
+		}
+
 		if len(fn.Args) > 0 {
 			out.WriteString(fmt.Sprintf("#### Args [%s]\n\n", fn.Fn))
 			for _, arg := range fn.Args {
