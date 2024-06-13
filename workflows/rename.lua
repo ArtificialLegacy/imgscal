@@ -4,7 +4,6 @@ config({
     version= "0.1.0",
     author="Blub",
     requires= {
-        "std",
         "io",
         "cli",
         "image"
@@ -22,6 +21,5 @@ main(function ()
         local width, height = image.size(img)
         image.name_ext(img, {prefix=width.."_"..height, ext=".png"})
         io.out(img, "./output")
-        image.collect(img)
     end
 end)

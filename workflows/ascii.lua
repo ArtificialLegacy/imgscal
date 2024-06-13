@@ -4,10 +4,8 @@ config({
     version= "0.1.0",
     author="Blub",
     requires= {
-        "std",
         "io",
         "cli",
-        "image",
         "ascii"
     },
 
