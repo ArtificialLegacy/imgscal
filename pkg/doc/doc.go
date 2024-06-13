@@ -6,6 +6,7 @@ const (
 	TAG_RETURNS   = "/// @returns "
 	TAG_CONSTANTS = "/// @constants "
 	TAG_CONST     = "/// @const "
+	TAG_BLOCK     = "/// @blocking"
 )
 
 type Lib struct {
@@ -18,6 +19,7 @@ type Fn struct {
 	Fn      string
 	Args    []string
 	Returns []string
+	Block   bool
 }
 
 type Const struct {

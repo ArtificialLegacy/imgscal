@@ -99,7 +99,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	r.State.SetField(-2, "name_ext")
 
 	/// @func collect()
-	/// @arg image_id - the id of the image to collect
+	/// @arg image_id - the id of the image to collect.
 	r.State.PushGoFunction(func(state *golua.State) int {
 		lg.Append("image.collect called", log.LEVEL_INFO)
 
@@ -114,6 +114,40 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		return 0
 	})
 	r.State.SetField(-2, "collect")
+
+	/// @func size()
+	/// @arg image_id - the id of the image to get the size from.
+	/// @returns width
+	/// @returns height
+	/// @blocking
+	r.State.PushGoFunction(func(state *golua.State) int {
+		lg.Append("image.size called", log.LEVEL_INFO)
+
+		id, ok := r.State.ToInteger(-1)
+		if !ok {
+			r.State.PushString(lg.Append("invalid image id provided to image.size", log.LEVEL_ERROR))
+			r.State.Error()
+		}
+
+		wait := make(chan bool, 1)
+		width := 0
+		height := 0
+
+		r.IC.Schedule(id, &img.ImageTask{
+			Fn: func(i *img.Image) {
+				b := i.Img.Bounds()
+				width = b.Dx()
+				height = b.Dy()
+				wait <- true
+			},
+		})
+
+		<-wait
+		r.State.PushInteger(width)
+		r.State.PushInteger(height)
+		return 2
+	})
+	r.State.SetField(-2, "size")
 
 	r.State.SetGlobal(LIB_IMAGE)
 }

@@ -65,7 +65,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 					state.Error()
 				}
 
-				i.Img = &image
+				i.Img = image
 
 				lg.Append("io.load_image task finished", log.LEVEL_INFO)
 			},
@@ -115,13 +115,13 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				switch ext {
 				case ".png":
 					lg.Append("image encoded as png", log.LEVEL_INFO)
-					png.Encode(f, *i.Img)
+					png.Encode(f, i.Img)
 				case ".jpg":
 					lg.Append("image encoded as jpg", log.LEVEL_INFO)
-					jpeg.Encode(f, *i.Img, &jpeg.Options{Quality: 100})
+					jpeg.Encode(f, i.Img, &jpeg.Options{Quality: 100})
 				case ".gif":
 					lg.Append("image encoded as gif", log.LEVEL_INFO)
-					gif.Encode(f, *i.Img, &gif.Options{})
+					gif.Encode(f, i.Img, &gif.Options{})
 				default:
 					state.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
 					state.Error()

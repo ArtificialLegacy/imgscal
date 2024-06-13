@@ -78,11 +78,11 @@ func (ic *ImageCollection) CollectImage(id int) {
 }
 
 type ImageTask struct {
-	Fn func(img *Image)
+	Fn func(i *Image)
 }
 
 type Image struct {
-	Img  *image.Image
+	Img  image.Image
 	Name string
 
 	collect bool

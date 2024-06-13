@@ -19,7 +19,8 @@ main(function ()
 
     for k,v in pairs(pthList) do
         local img = io.load_image(v)
-        image.name_ext(img, {prefix="proc_", ext=".png"})
+        local width, height = image.size(img)
+        image.name_ext(img, {prefix=width.."_"..height, ext=".png"})
         io.out(img, "./output")
         image.collect(img)
     end

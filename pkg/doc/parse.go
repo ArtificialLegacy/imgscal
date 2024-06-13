@@ -12,7 +12,7 @@ func Parse(name string, file []byte) Lib {
 		line := strings.TrimSpace(lines[i])
 
 		if strings.HasPrefix(line, TAG_FUNC) {
-			doc := Fn{}
+			doc := Fn{Block: false}
 			doc.Fn = strings.TrimPrefix(line, TAG_FUNC)
 
 			i++
@@ -24,6 +24,10 @@ func Parse(name string, file []byte) Lib {
 			for ; strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_RETURNS); i++ {
 				line := strings.TrimSpace(lines[i])
 				doc.Returns = append(doc.Returns, strings.TrimPrefix(line, TAG_RETURNS))
+			}
+
+			if strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_BLOCK) {
+				doc.Block = true
 			}
 
 			docs.Fns = append(docs.Fns, doc)
