@@ -12,107 +12,75 @@ import (
 const LIB_CLI = "cli"
 
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
-	r.State.NewTable()
+	lib := lua.NewLib(LIB_CLI, r.State, lg)
 
 	/// @func print()
 	/// @arg msg - the message to print to the console.
 	/// @desc
 	/// This is also including in the log similar to std.log.
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("cli.print called", log.LEVEL_INFO)
-
-		msg, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid question provided to cli.question", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		println(msg)
-		lg.Append(fmt.Sprintf("lua msg printed: %s", msg), log.LEVEL_INFO)
-
-		return 0
-	})
-	r.State.SetField(-2, "print")
+	lib.CreateFunction("print",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			println(args["msg"])
+			lg.Append(fmt.Sprintf("lua msg printed: %s", args["msg"]), log.LEVEL_INFO)
+			return 0
+		})
 
 	/// @func question()
 	/// @arg question - the message to be displayed.
 	/// @returns string - the answer given by the user
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("cli.question called", log.LEVEL_INFO)
+	lib.CreateFunction("question",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "question"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			result, err := cli.Question(args["question"].(string), cli.QuestionOptions{})
+			if err != nil {
+				state.PushString(lg.Append("invalid answer provided to cli.question", log.LEVEL_ERROR))
+				state.Error()
+			}
 
-		question, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid question provided to cli.question", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		result, err := cli.Question(question, cli.QuestionOptions{})
-		if err != nil {
-			state.PushString(lg.Append("invalid answer provided to cli.question", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		state.PushString(result)
-		return 1
-	})
-	r.State.SetField(-2, "question")
+			state.PushString(result)
+			return 1
+		})
 
 	/// @func question_ext()
 	/// @arg question - the message to be displayed.
 	/// @arg options - the options to use for processing the answer. [normalize, accepts, fallback]
 	/// @returns string - the answer given by the user
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("cli.question_ext called", log.LEVEL_INFO)
+	lib.CreateFunction("question_ext",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "question"},
+			{Type: lua.TABLE, Name: "options", Table: &[]lua.Arg{
+				{Type: lua.BOOL, Name: "normalize", Optional: true},
+				lua.ArgArray("accepts", lua.ArrayType{Type: lua.STRING}, true),
+				{Type: lua.STRING, Name: "fallback", Optional: true},
+			}},
+		},
+		func(state *golua.State, args map[string]any) int {
+			acc := args["options"].(map[string]any)["accepts"]
+			accepts := []string{}
+			if str, ok := acc.([]string); ok {
+				accepts = str
+			}
 
-		question, ok := state.ToString(-2)
-		if !ok {
-			state.PushString(lg.Append("invalid question provided to cli.question_ext", log.LEVEL_ERROR))
-			state.Error()
-		}
+			opts := cli.QuestionOptions{
+				Normalize: args["options"].(map[string]any)["normalize"].(bool),
+				Accepts:   accepts,
+				Fallback:  args["options"].(map[string]any)["fallback"].(string),
+			}
 
-		state.Field(-1, "normalize")
-		normalize := state.ToBoolean(-1)
-		state.Pop(1)
-
-		state.Field(-1, "accepts")
-
-		acc := state.ToValue(-1)
-		lg.Append(fmt.Sprintf("%+v", acc), log.LEVEL_INFO)
-
-		accepts := []string{}
-		len := state.RawLength(-1)
-		for i := 1; i <= len; i++ {
-			state.PushInteger(i)
-			state.Table(-2)
-			acc, ok := state.ToString(-1)
-			state.Pop(1)
-			if !ok {
-				state.PushString(lg.Append("invalid accepts option provided to cli.question_ext", log.LEVEL_ERROR))
+			result, err := cli.Question(args["question"].(string), opts)
+			if err != nil {
+				state.PushString(lg.Append(fmt.Sprintf("invalid answer provided to cli.question_ext: %s", err), log.LEVEL_ERROR))
 				state.Error()
 			}
 
-			accepts = append(accepts, acc)
-		}
-		state.Pop(1)
-
-		state.Field(-1, "fallback")
-		fallback, fallbackOk := state.ToString(-1)
-
-		opts := cli.QuestionOptions{Normalize: normalize, Accepts: accepts}
-		if fallbackOk {
-			opts.Fallback = fallback
-		}
-
-		result, err := cli.Question(question, opts)
-		if err != nil {
-			state.PushString(lg.Append(fmt.Sprintf("invalid answer provided to cli.question_ext: %s", err), log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		state.PushString(result)
-		return 1
-	})
-	r.State.SetField(-2, "question_ext")
+			state.PushString(result)
+			return 1
+		})
 
 	/// @constants Control
 	/// @const RESET
@@ -231,6 +199,4 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	r.State.SetField(-2, "UNDERLINE")
 	r.State.PushString(string(cli.COLOR_REVERSED))
 	r.State.SetField(-2, "REVERSED")
-
-	r.State.SetGlobal(LIB_CLI)
 }

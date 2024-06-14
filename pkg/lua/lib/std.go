@@ -11,54 +11,40 @@ import (
 const LIB_STD = "std"
 
 func RegisterStd(r *lua.Runner, lg *log.Logger) {
-	r.State.NewTable()
-
-	/// @func panic()
-	/// @arg msg - the message to display in the error
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("std.panic called", log.LEVEL_INFO)
-
-		msg, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid msg provided to panic", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		state.PushString(lg.Append(fmt.Sprintf("lua panic: %s", msg), log.LEVEL_ERROR))
-		state.Error()
-
-		return 0
-	})
-	r.State.SetField(-2, "panic")
+	lib := lua.NewLib(LIB_STD, r.State, lg)
 
 	/// @func log()
 	/// @arg msg - the message to display in the log
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("std.log called", log.LEVEL_INFO)
-
-		msg := r.State.ToValue(-1)
-		lg.Append(fmt.Sprintf("lua log: %s", msg), log.LEVEL_INFO)
-
-		return 0
-	})
-	r.State.SetField(-2, "log")
+	lib.CreateFunction("log",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "msg"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			lg.Append(fmt.Sprintf("lua log: %s", args["msg"]), log.LEVEL_INFO)
+			return 0
+		})
 
 	/// @func warn()
 	/// @arg msg - the message to display as a warning in the log
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("std.warn called", log.LEVEL_INFO)
+	lib.CreateFunction("warn",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			lg.Append(fmt.Sprintf("lua warn: %s", args["msg"]), log.LEVEL_WARN)
+			return 0
+		})
 
-		msg, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid msg provided to warn", log.LEVEL_ERROR))
+	/// @func panic()
+	/// @arg msg - the message to display in the error
+	lib.CreateFunction("panic",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			state.PushString(lg.Append(fmt.Sprintf("lua panic: %s", args["msg"]), log.LEVEL_ERROR))
 			state.Error()
-		}
 
-		lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
-
-		return 0
-	})
-	r.State.SetField(-2, "warn")
-
-	r.State.SetGlobal(LIB_STD)
+			return 0
+		})
 }

@@ -19,170 +19,143 @@ import (
 const LIB_IO = "io"
 
 func RegisterIO(r *lua.Runner, lg *log.Logger) {
-	r.State.NewTable()
+	lib := lua.NewLib(LIB_IO, r.State, lg)
 
 	/// @func load_image()
 	/// @arg path - the path to grab the image from
 	/// @returns int - the image id
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("io.load_image called", log.LEVEL_INFO)
+	lib.CreateFunction("load_image",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			file, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.PushString(lg.Append("invalid image path provided to io.load_image", log.LEVEL_ERROR))
+				state.Error()
+			}
+			if file.IsDir() {
+				state.PushString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR))
+				state.Error()
+			}
 
-		result, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid image path provided to io.load_image", log.LEVEL_ERROR))
-			state.Error()
-		}
+			id := r.IC.AddImage(file.Name())
 
-		file, err := os.Stat(result)
-		if err != nil {
-			state.PushString(lg.Append("invalid image path provided to io.load_image", log.LEVEL_ERROR))
-			state.Error()
-		}
-		if file.IsDir() {
-			state.PushString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR))
-			state.Error()
-		}
+			r.IC.Schedule(id, &img.ImageTask{
+				Lib:  LIB_IO,
+				Name: "load_image",
+				Fn: func(i *img.Image) {
+					f, err := os.Open(args["path"].(string))
+					if err != nil {
+						state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+						state.Error()
+					}
+					defer f.Close()
 
-		id := r.IC.AddImage(file.Name())
+					image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+					image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
+					image.RegisterFormat("gif", "gif", gif.Decode, gif.DecodeConfig)
+					image, _, err := image.Decode(f)
+					if err != nil {
+						state.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
+						state.Error()
+					}
 
-		r.IC.Schedule(id, &img.ImageTask{
-			Fn: func(i *img.Image) {
-				lg.Append("io.load_image task ran", log.LEVEL_INFO)
+					i.Img = image
+				},
+			})
 
-				f, err := os.Open(result)
-				if err != nil {
-					state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
-					state.Error()
-				}
-				defer f.Close()
-
-				image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
-				image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
-				image.RegisterFormat("gif", "gif", gif.Decode, gif.DecodeConfig)
-				image, _, err := image.Decode(f)
-				if err != nil {
-					state.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
-					state.Error()
-				}
-
-				i.Img = image
-
-				lg.Append("io.load_image task finished", log.LEVEL_INFO)
-			},
+			state.PushInteger(id)
+			return 1
 		})
-
-		state.PushInteger(id)
-		return 1
-	})
-	r.State.SetField(-2, "load_image")
 
 	/// @func out()
 	/// @arg image_id - the image id to encode and save to file.
 	/// @arg path - the directory path to save the file to.
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("io.out called", log.LEVEL_INFO)
+	lib.CreateFunction("out",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			_, err := os.Stat(args["path"].(string))
+			if err != nil {
+				os.MkdirAll(args["path"].(string), 0o666)
+			}
 
-		id, ok := state.ToInteger(-2)
-		if !ok {
-			state.PushString(lg.Append("invalid image id provided to io.out", log.LEVEL_ERROR))
-			state.Error()
-		}
+			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+				Lib:  LIB_IO,
+				Name: "out",
+				Fn: func(i *img.Image) {
+					f, err := os.OpenFile(path.Join(args["path"].(string), i.Name), os.O_CREATE, 0o666)
+					if err != nil {
+						state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+						state.Error()
+					}
+					defer f.Close()
 
-		outDir, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid outDir provided to io.out", log.LEVEL_ERROR))
-			state.Error()
-		}
+					ext := filepath.Ext(i.Name)
 
-		_, err := os.Stat(outDir)
-		if err != nil {
-			os.MkdirAll(outDir, 0o666)
-		}
-
-		r.IC.Schedule(id, &img.ImageTask{
-			Fn: func(i *img.Image) {
-				lg.Append("io.out task ran", log.LEVEL_INFO)
-
-				f, err := os.OpenFile(path.Join(outDir, i.Name), os.O_CREATE, 0o666)
-				if err != nil {
-					state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
-					state.Error()
-				}
-				defer f.Close()
-
-				ext := filepath.Ext(i.Name)
-
-				switch ext {
-				case ".png":
-					lg.Append("image encoded as png", log.LEVEL_INFO)
-					png.Encode(f, i.Img)
-				case ".jpg":
-					lg.Append("image encoded as jpg", log.LEVEL_INFO)
-					jpeg.Encode(f, i.Img, &jpeg.Options{Quality: 100})
-				case ".gif":
-					lg.Append("image encoded as gif", log.LEVEL_INFO)
-					gif.Encode(f, i.Img, &gif.Options{})
-				default:
-					state.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
-					state.Error()
-				}
-
-				lg.Append("io.out task finished", log.LEVEL_INFO)
-			},
+					switch ext {
+					case ".png":
+						lg.Append("image encoded as png", log.LEVEL_INFO)
+						png.Encode(f, i.Img)
+					case ".jpg":
+						lg.Append("image encoded as jpg", log.LEVEL_INFO)
+						jpeg.Encode(f, i.Img, &jpeg.Options{Quality: 100})
+					case ".gif":
+						lg.Append("image encoded as gif", log.LEVEL_INFO)
+						gif.Encode(f, i.Img, &gif.Options{})
+					default:
+						state.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
+						state.Error()
+					}
+				},
+			})
+			return 0
 		})
-
-		return 0
-	})
-	r.State.SetField(-2, "out")
 
 	/// @func dir_img()
 	/// @arg path - the directory path to scan for images.
 	/// @returns array containing strings of each valid image in the directory.
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("io.dir_img called", log.LEVEL_INFO)
-
-		dir, ok := state.ToString(-1)
-		if !ok {
-			state.PushString(lg.Append("invalid dir provided to dir_img", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		f, err := os.Stat(dir)
-		if err != nil {
-			state.PushString(lg.Append("invalid dir path provided to io.dir_img", log.LEVEL_ERROR))
-			state.Error()
-		}
-		if !f.IsDir() {
-			state.PushString(lg.Append("dir provided is not a directory", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		files, err := os.ReadDir(dir)
-		if err != nil {
-			state.PushString(lg.Append("failed to open dir", log.LEVEL_ERROR))
-			state.Error()
-		}
-
-		r.State.NewTable()
-
-		i := 1
-		for _, file := range files {
-			ext := filepath.Ext(file.Name())
-			if ext != ".png" && ext != ".jpg" && ext != ".gif" {
-				continue
+	lib.CreateFunction("dir_img",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			f, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.PushString(lg.Append("invalid dir path provided to io.dir_img", log.LEVEL_ERROR))
+				state.Error()
+			}
+			if !f.IsDir() {
+				state.PushString(lg.Append("dir provided is not a directory", log.LEVEL_ERROR))
+				state.Error()
 			}
 
-			lg.Append(fmt.Sprintf("found file %s with dir_img", file.Name()), log.LEVEL_INFO)
+			files, err := os.ReadDir(args["path"].(string))
+			if err != nil {
+				state.PushString(lg.Append("failed to open dir", log.LEVEL_ERROR))
+				state.Error()
+			}
 
-			pth := path.Join(dir, file.Name())
-			r.State.PushInteger(i)
-			r.State.PushString(pth)
-			r.State.SetTable(-3)
-			i++
-		}
-		return 1
-	})
-	r.State.SetField(-2, "dir_img")
+			r.State.NewTable()
 
-	r.State.SetGlobal(LIB_IO)
+			i := 1
+			for _, file := range files {
+				ext := filepath.Ext(file.Name())
+				if ext != ".png" && ext != ".jpg" && ext != ".gif" {
+					continue
+				}
+
+				lg.Append(fmt.Sprintf("found file %s with dir_img", file.Name()), log.LEVEL_INFO)
+
+				pth := path.Join(args["path"].(string), file.Name())
+				r.State.PushInteger(i)
+				r.State.PushString(pth)
+				r.State.SetTable(-3)
+				i++
+			}
+			return 1
+		})
 }

@@ -34,6 +34,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			lg.Append(fmt.Sprintf("plugin %s does not exist", plugin), log.LEVEL_WARN)
 		} else {
 			builtin(&runner, &lg)
+			state.Pop(1)
 			lg.Append(fmt.Sprintf("registered plugin %s", plugin), log.LEVEL_INFO)
 		}
 	}

@@ -34,7 +34,7 @@ func (ic *ImageCollection) Schedule(id int, task *ImageTask) {
 }
 
 func (ic *ImageCollection) AddImage(name string) int {
-	img := NewImage(name)
+	img := NewImage(name, ic.lg)
 	id := len(ic.images)
 
 	ic.images = append(ic.images, img)
@@ -52,7 +52,9 @@ func (ic *ImageCollection) Collect() {
 
 		ic.lg.Append(fmt.Sprintf("image %d collection queued", idHere), log.LEVEL_INFO)
 		ic.Schedule(id, &ImageTask{
-			func(i *Image) {
+			Lib:  "internal",
+			Name: "collect",
+			Fn: func(i *Image) {
 				ic.lg.Append(fmt.Sprintf("image %d collected", idHere), log.LEVEL_INFO)
 				i.Img = nil
 				i.cleaned = true
@@ -70,7 +72,9 @@ func (ic *ImageCollection) CollectImage(id int) {
 
 	ic.lg.Append(fmt.Sprintf("image %d collection queued", id), log.LEVEL_INFO)
 	ic.Schedule(id, &ImageTask{
-		func(i *Image) {
+		Lib:  "internal",
+		Name: "collect_image",
+		Fn: func(i *Image) {
 			ic.lg.Append(fmt.Sprintf("image %d collected", id), log.LEVEL_INFO)
 			i.Img = nil
 		},
@@ -78,12 +82,16 @@ func (ic *ImageCollection) CollectImage(id int) {
 }
 
 type ImageTask struct {
-	Fn func(i *Image)
+	Lib  string
+	Name string
+	Fn   func(i *Image)
 }
 
 type Image struct {
 	Img  image.Image
 	Name string
+
+	Lg *log.Logger
 
 	collect bool
 	cleaned bool
@@ -91,10 +99,11 @@ type Image struct {
 	TaskQueue chan *ImageTask
 }
 
-func NewImage(name string) *Image {
+func NewImage(name string, lg *log.Logger) *Image {
 	i := &Image{
 		Img:       nil,
 		Name:      name,
+		Lg:        lg,
 		TaskQueue: make(chan *ImageTask, 32),
 		collect:   false,
 	}
@@ -107,9 +116,12 @@ func NewImage(name string) *Image {
 func (i *Image) process() {
 	for {
 		task := <-i.TaskQueue
+		i.Lg.Append(fmt.Sprintf("%s.%s task called", task.Lib, task.Name), log.LEVEL_INFO)
 		task.Fn(i)
+		i.Lg.Append(fmt.Sprintf("%s.%s task finished", task.Lib, task.Name), log.LEVEL_INFO)
 
 		if i.cleaned {
+			i.Lg.Append(fmt.Sprintf("image %s cleaned", i.Name), log.LEVEL_INFO)
 			break
 		}
 	}

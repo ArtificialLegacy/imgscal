@@ -27,147 +27,113 @@ const (
 )
 
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
-	r.State.NewTable()
+	lib := lua.NewLib(LIB_IMAGE, r.State, lg)
 
 	/// @func name()
 	/// @arg image_id - the id of the image to rename.
 	/// @arg new_name - the new name to use for the image, including the file extension.
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("image.name called", log.LEVEL_INFO)
-
-		id, ok := r.State.ToInteger(-2)
-		if !ok {
-			r.State.PushString(lg.Append("invalid image id provided to image.name", log.LEVEL_ERROR))
-			r.State.Error()
-		}
-
-		name, ok := r.State.ToString(-1)
-		if !ok {
-			r.State.PushString(lg.Append("invalid image name provided to image.name", log.LEVEL_ERROR))
-			r.State.Error()
-		}
-
-		r.IC.Schedule(id, &img.ImageTask{
-			Fn: func(i *img.Image) {
-				lg.Append("image.name task ran", log.LEVEL_INFO)
-				i.Name = name
-				lg.Append("image.name task finished", log.LEVEL_INFO)
-			},
+	lib.CreateFunction("name",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+				Lib:  LIB_IMAGE,
+				Name: "name",
+				Fn: func(i *img.Image) {
+					i.Name = args["name"].(string)
+				},
+			})
+			return 0
 		})
-		return 0
-	})
-	r.State.SetField(-2, "name")
 
 	/// @func name_ext()
 	/// @arg image_id - the id of the image to rename.
 	/// @arg options - a table containing each rename step. [name, prefix, suffix, ext]
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("image.name_ext called", log.LEVEL_INFO)
+	lib.CreateFunction("name_ext",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.TABLE, Name: "options", Table: &[]lua.Arg{
+				{Type: lua.STRING, Name: "name", Optional: true},
+				{Type: lua.STRING, Name: "prefix", Optional: true},
+				{Type: lua.STRING, Name: "suffix", Optional: true},
+				{Type: lua.STRING, Name: "ext", Optional: true},
+			}},
+		},
+		func(state *golua.State, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+				Lib:  LIB_IMAGE,
+				Name: "name_ext",
+				Fn: func(i *img.Image) {
+					fileSplit := strings.Split(i.Name, ".")
+					fileName := strings.Join(fileSplit[:len(fileSplit)-1], ".")
+					fileExt := fileSplit[len(fileSplit)-1]
 
-		id, ok := r.State.ToInteger(-2)
-		if !ok {
-			r.State.PushString(lg.Append("invalid image id provided to image.name", log.LEVEL_ERROR))
-			r.State.Error()
-		}
+					if args["name"] != "" {
+						fileName = args["name"].(string)
+					}
+					if args["prefix"] != "" {
+						fileName = args["prefix"].(string) + fileName
+					}
+					if args["suffix"] != "" {
+						fileName += args["suffix"].(string)
+					}
+					if args["ext"] != "" {
+						fileExt = args["ext"].(string)
+					}
 
-		state.Field(-1, "prefix")
-		state.Field(-2, "suffix")
-		state.Field(-3, "name")
-		state.Field(-4, "ext")
-
-		prefix, prefixOk := state.ToString(-4)
-		suffix, suffixOk := state.ToString(-3)
-		name, nameOk := state.ToString(-2)
-		ext, extOk := state.ToString(-1)
-
-		r.IC.Schedule(id, &img.ImageTask{
-			Fn: func(i *img.Image) {
-				lg.Append("image.name_ext task ran", log.LEVEL_INFO)
-
-				fileSplit := strings.Split(i.Name, ".")
-				fileName := strings.Join(fileSplit[:len(fileSplit)-1], ".")
-				fileExt := fileSplit[len(fileSplit)-1]
-
-				if nameOk {
-					fileName = name
-				}
-				if prefixOk {
-					fileName = prefix + fileName
-				}
-				if suffixOk {
-					fileName += suffix
-				}
-				if extOk {
-					fileExt = ext
-				}
-
-				i.Name = fileName + fileExt
-
-				lg.Append(fmt.Sprintf("new image name: %s", i.Name), log.LEVEL_INFO)
-				lg.Append("image.name_ext task finished", log.LEVEL_INFO)
-			},
+					i.Name = fileName + fileExt
+					lg.Append(fmt.Sprintf("new image name: %s", i.Name), log.LEVEL_INFO)
+				},
+			})
+			return 0
 		})
-
-		return 0
-	})
-	r.State.SetField(-2, "name_ext")
 
 	/// @func collect()
 	/// @arg image_id - the id of the image to collect.
 	/// @desc
 	/// Normally should never be needed.
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("image.collect called", log.LEVEL_INFO)
-
-		id, ok := r.State.ToInteger(-1)
-		if !ok {
-			r.State.PushString(lg.Append("invalid image id provided to image.collect", log.LEVEL_ERROR))
-			r.State.Error()
-		}
-
-		r.IC.CollectImage(id)
-
-		return 0
-	})
-	r.State.SetField(-2, "collect")
+	lib.CreateFunction("collect",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			r.IC.CollectImage(args["id"].(int))
+			return 0
+		})
 
 	/// @func size()
 	/// @arg image_id - the id of the image to get the size from.
 	/// @returns width
 	/// @returns height
 	/// @blocking
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("image.size called", log.LEVEL_INFO)
+	lib.CreateFunction("size",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.State, args map[string]any) int {
+			wait := make(chan bool, 1)
+			width := 0
+			height := 0
 
-		id, ok := r.State.ToInteger(-1)
-		if !ok {
-			r.State.PushString(lg.Append("invalid image id provided to image.size", log.LEVEL_ERROR))
-			r.State.Error()
-		}
+			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+				Lib:  LIB_IMAGE,
+				Name: "size",
+				Fn: func(i *img.Image) {
+					b := i.Img.Bounds()
+					width = b.Dx()
+					height = b.Dy()
 
-		wait := make(chan bool, 1)
-		width := 0
-		height := 0
+					wait <- true
+				},
+			})
 
-		r.IC.Schedule(id, &img.ImageTask{
-			Fn: func(i *img.Image) {
-				lg.Append("image.size task ran", log.LEVEL_INFO)
-
-				b := i.Img.Bounds()
-				width = b.Dx()
-				height = b.Dy()
-				wait <- true
-
-				lg.Append("image.size task finished", log.LEVEL_INFO)
-			},
+			<-wait
+			r.State.PushInteger(width)
+			r.State.PushInteger(height)
+			return 2
 		})
-
-		<-wait
-		r.State.PushInteger(width)
-		r.State.PushInteger(height)
-		return 2
-	})
-	r.State.SetField(-2, "size")
 
 	/// @constants Color Models
 	/// @const RGBA
@@ -203,6 +169,4 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	r.State.SetField(-2, "NYCBCRA")
 	r.State.PushInteger(model_YCBCR)
 	r.State.SetField(-2, "YCBCR")
-
-	r.State.SetGlobal(LIB_IMAGE)
 }

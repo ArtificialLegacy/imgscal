@@ -12,20 +12,16 @@ import (
 const LIB_UUID = "uuid"
 
 func RegisterUUID(r *lua.Runner, lg *log.Logger) {
-	r.State.NewTable()
+	lib := lua.NewLib(LIB_UUID, r.State, lg)
 
 	/// @func string()
 	/// @returns string - the generated uuid.
-	r.State.PushGoFunction(func(state *golua.State) int {
-		lg.Append("uuid.string called", log.LEVEL_INFO)
+	lib.CreateFunction("string", []lua.Arg{},
+		func(state *golua.State, args map[string]any) int {
+			uuid := uuid.NewString()
+			lg.Append(fmt.Sprintf("got uuid: %s", uuid), log.LEVEL_INFO)
 
-		uuid := uuid.NewString()
-		lg.Append(fmt.Sprintf("got uuid: %s", uuid), log.LEVEL_INFO)
-
-		r.State.PushString(uuid)
-		return 1
-	})
-	r.State.SetField(-2, "string")
-
-	r.State.SetGlobal(LIB_UUID)
+			r.State.PushString(uuid)
+			return 1
+		})
 }
