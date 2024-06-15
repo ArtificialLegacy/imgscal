@@ -125,7 +125,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			})
 
 			r.State.PushString(str)
-			return 0
+			return 1
 		},
 	)
 
@@ -163,7 +163,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			})
 
 			r.State.PushString(str)
-			return 0
+			return 1
 		},
 	)
 

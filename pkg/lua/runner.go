@@ -15,6 +15,7 @@ import (
 type Runner struct {
 	State *lua.State
 	IC    *collection.Collection[image.Image]
+	FC    *collection.Collection[os.File]
 	lg    *log.Logger
 }
 
@@ -22,7 +23,13 @@ func NewRunner(state *lua.State, lg *log.Logger) Runner {
 	return Runner{
 		State: state,
 		IC:    collection.NewCollection[image.Image](lg),
-		lg:    lg,
+		FC: collection.NewCollection[os.File](lg).OnCollect(
+			func(i *collection.Item[os.File]) {
+				if i.Self != nil {
+					i.Self.Close()
+				}
+			}),
+		lg: lg,
 	}
 }
 
@@ -92,77 +99,78 @@ func ArgArray(name string, arrType ArrayType, optional bool) Arg {
 	}
 }
 
-func (l *Lib) ParseArgs(name string, args []Arg) map[string]any {
+func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 	argMap := map[string]any{}
 
 	for i, a := range args {
+		ind := -ln + i
 		switch a.Type {
 		case INT:
-			v, ok := l.State.ToInteger(i - len(args))
-			if !ok && !a.Optional {
+			v, ok := l.State.ToInteger(ind)
+			if (!ok || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid int provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
-			} else if !ok && a.Optional {
+			} else if (!ok || ind == 0) && a.Optional {
 				argMap[a.Name] = 0
 			} else {
-				rm := l.State.AbsIndex(i - len(args))
+				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
 				argMap[a.Name] = v
 			}
 
 		case FLOAT:
-			v, ok := l.State.ToNumber(i - len(args))
-			if !ok && !a.Optional {
+			v, ok := l.State.ToNumber(ind)
+			if (!ok || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid float provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
-			} else if !ok && a.Optional {
+			} else if (!ok || ind == 0) && a.Optional {
 				argMap[a.Name] = 0.0
 			} else {
-				rm := l.State.AbsIndex(i - len(args))
+				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
 				argMap[a.Name] = v
 			}
 
 		case BOOL:
-			v := l.State.ToBoolean(i - len(args))
+			v := l.State.ToBoolean(ind)
 			argMap[a.Name] = v
 
 		case STRING:
-			v, ok := l.State.ToString(i - len(args))
-			if !ok && !a.Optional {
+			v, ok := l.State.ToString(ind)
+			if (!ok || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid string provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
-			} else if !ok && a.Optional {
+			} else if (!ok || ind == 0) && a.Optional {
 				argMap[a.Name] = ""
 			} else {
-				rm := l.State.AbsIndex(i - len(args))
+				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
 				argMap[a.Name] = v
 			}
 
 		case TABLE:
-			exists := l.State.IsTable(i - len(args))
-			if !exists && !a.Optional {
+			exists := l.State.IsTable(ind)
+			if (!exists || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid table provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
-			} else if !exists && a.Optional {
+			} else if (!exists || ind == 0) && a.Optional {
 				argMap[a.Name] = map[string]any{}
 			} else {
 				l.flattenTable(*a.Table)
-				argMap[a.Name] = l.ParseArgs(name, *a.Table)
-				rm := l.State.AbsIndex(i - len(args))
+				argMap[a.Name] = l.ParseArgs(name, *a.Table, len(*a.Table))
+				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
 			}
 
 		case ARRAY:
-			exists := l.State.IsTable(i - len(args))
-			if !exists && !a.Optional {
+			exists := l.State.IsTable(ind)
+			if (!exists || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid array provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
-			} else if !exists && a.Optional {
+			} else if (!exists || ind == 0) && a.Optional {
 				argMap[a.Name] = []any{}
 			} else {
-				ln := l.State.RawLength(i - len(args))
+				ln := l.State.RawLength(ind)
 				argTable := []Arg{}
 
 				for i := 1; i <= ln; i++ {
@@ -179,14 +187,14 @@ func (l *Lib) ParseArgs(name string, args []Arg) map[string]any {
 					l.State.Table(-i - 2)
 				}
 
-				argMap[a.Name] = l.ParseArgs(name, argTable)
-				rm := l.State.AbsIndex(i - len(args))
+				argMap[a.Name] = l.ParseArgs(name, argTable, ln)
+				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
 			}
 
 		case ANY:
-			v := l.State.ToValue(i - len(args))
-			rm := l.State.AbsIndex(i - len(args))
+			v := l.State.ToValue(ind)
+			rm := l.State.AbsIndex(ind)
 			l.State.Remove(rm)
 			argMap[a.Name] = v
 		default:
@@ -207,7 +215,7 @@ func (l *Lib) CreateFunction(name string, args []Arg, fn func(state *lua.State, 
 	l.State.PushGoFunction(func(state *lua.State) int {
 		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_INFO)
 
-		argMap := l.ParseArgs(name, args)
+		argMap := l.ParseArgs(name, args, l.State.Top())
 
 		return fn(state, argMap)
 	})

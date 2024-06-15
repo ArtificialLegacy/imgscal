@@ -19,7 +19,7 @@ const (
 
 type logoutput interface {
 	Printf(format string, v ...any)
-	SetPrefix(prefix string)
+	SetFlags(flag int)
 	SetOutput(w io.Writer)
 }
 
@@ -36,7 +36,7 @@ func NewLogger(dir string) Logger {
 		logger:  log.Default(),
 	}
 
-	lg.logger.SetPrefix("")
+	lg.logger.SetFlags(0)
 
 	_, err := os.Stat(dir)
 	if err != nil {
@@ -54,7 +54,7 @@ type emptyLog struct {
 }
 
 func (el emptyLog) Printf(format string, v ...any) {}
-func (el emptyLog) SetPrefix(prefix string)        {}
+func (el emptyLog) SetFlags(flag int)              {}
 func (el emptyLog) SetOutput(w io.Writer)          {}
 
 func NewLoggerEmpty() Logger {

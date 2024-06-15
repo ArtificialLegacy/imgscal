@@ -41,6 +41,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	err := runner.Run(script)
 	runner.IC.Collect()
+	runner.FC.Collect()
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
 		sm.PushString(err.Error())

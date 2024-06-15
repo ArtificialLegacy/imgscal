@@ -6,7 +6,8 @@ config({
     requires= {
         "io",
         "cli",
-        "ascii"
+        "ascii",
+        "txt",
     },
 
     desc="Converts all images in a dir to ascii art.",
@@ -18,6 +19,8 @@ main(function ()
 
     for k,v in pairs(pthList) do
         local img = io.load_image(v)
-        ascii.to_file_size(img, "./output/"..k..".txt", 64, 64, false, false)
+        local str = ascii.to_string_size(img, 64, 64, false, false)
+        local file = txt.file_open("./output", k..".txt")
+        txt.write(file, str)
     end
 end)
