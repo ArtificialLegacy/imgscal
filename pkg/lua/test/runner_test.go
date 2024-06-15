@@ -10,7 +10,8 @@ import (
 
 func setupLib() *lua.Lib {
 	state := golua.NewState()
-	lib := lua.NewLib("testing", state, &log.Logger{})
+	lg := log.NewLoggerEmpty()
+	lib := lua.NewLib("testing", state, &lg)
 
 	return lib
 }
@@ -222,5 +223,33 @@ func TestParseArgs_Array(t *testing.T) {
 		}
 	} else {
 		t.Error("failed to parse array1 argument")
+	}
+}
+
+func TestParseArgs_Optional(t *testing.T) {
+	lib := setupLib()
+
+	argMap := lib.ParseArgs("test_optional", []lua.Arg{
+		{Type: lua.STRING, Name: "test", Optional: true},
+	})
+
+	if argMap["test"] != "" {
+		t.Errorf("got incorrect value, expected=0, got=%v", argMap["test"])
+	}
+}
+
+func TestParseArgs_OptionalTableField(t *testing.T) {
+	lib := setupLib()
+
+	lib.State.NewTable()
+
+	argMap := lib.ParseArgs("test_optional", []lua.Arg{
+		{Type: lua.TABLE, Name: "test_table", Table: &[]lua.Arg{
+			{Type: lua.STRING, Name: "test", Optional: true},
+		}},
+	})
+
+	if argMap["test_table"].(map[string]any)["test"] != "" {
+		t.Errorf("got incorrect value, expected='', got=%v", argMap["test"])
 	}
 }

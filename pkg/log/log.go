@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -16,9 +17,15 @@ const (
 	LEVEL_ERROR
 )
 
+type logoutput interface {
+	Printf(format string, v ...any)
+	SetPrefix(prefix string)
+	SetOutput(w io.Writer)
+}
+
 type Logger struct {
 	logFile string
-	logger  *log.Logger
+	logger  logoutput
 }
 
 func NewLogger(dir string) Logger {
@@ -29,6 +36,8 @@ func NewLogger(dir string) Logger {
 		logger:  log.Default(),
 	}
 
+	lg.logger.SetPrefix("")
+
 	_, err := os.Stat(dir)
 	if err != nil {
 		os.MkdirAll(dir, 0o666)
@@ -37,6 +46,22 @@ func NewLogger(dir string) Logger {
 	file, _ := os.OpenFile(path.Join(dir, lg.logFile), os.O_CREATE, 0o666)
 
 	lg.logger.SetOutput(file)
+
+	return lg
+}
+
+type emptyLog struct {
+}
+
+func (el emptyLog) Printf(format string, v ...any) {}
+func (el emptyLog) SetPrefix(prefix string)        {}
+func (el emptyLog) SetOutput(w io.Writer)          {}
+
+func NewLoggerEmpty() Logger {
+	lg := Logger{
+		logFile: "",
+		logger:  emptyLog{},
+	}
 
 	return lg
 }

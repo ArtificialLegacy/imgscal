@@ -1,6 +1,10 @@
 package workflow
 
-import "github.com/ArtificialLegacy/imgscal/pkg/image"
+import (
+	"image"
+
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+)
 
 type Workflow struct {
 	Name     string
@@ -21,5 +25,5 @@ func NewWorkflow() Workflow {
 }
 
 type WorkflowData struct {
-	IC image.ImageCollection
+	IC collection.Collection[image.Image]
 }

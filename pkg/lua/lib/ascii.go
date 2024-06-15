@@ -1,9 +1,10 @@
 package lib
 
 import (
+	"image"
 	"os"
 
-	"github.com/ArtificialLegacy/imgscal/pkg/image"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/Shopify/go-lua"
@@ -28,12 +29,12 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "reverse"},
 		},
 		func(state *golua.State, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &image.ImageTask{
+			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_ASCII,
 				Name: "to_file",
-				Fn: func(i *image.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					converter := convert.NewImageConverter()
-					str := converter.Image2ASCIIString(i.Img, &convert.Options{
+					str := converter.Image2ASCIIString(*i.Self, &convert.Options{
 						Colored:  args["color"].(bool),
 						Reversed: args["reverse"].(bool),
 					})
@@ -69,12 +70,12 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "reverse"},
 		},
 		func(state *golua.State, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &image.ImageTask{
+			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_ASCII,
 				Name: "to_file_size",
-				Fn: func(i *image.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					converter := convert.NewImageConverter()
-					str := converter.Image2ASCIIString(i.Img, &convert.Options{
+					str := converter.Image2ASCIIString(*i.Self, &convert.Options{
 						FixedWidth:  args["width"].(int),
 						FixedHeight: args["height"].(int),
 						Colored:     args["color"].(bool),
@@ -110,23 +111,19 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.State, args map[string]any) int {
 			str := ""
-			wait := make(chan bool)
 
-			r.IC.Schedule(args["id"].(int), &image.ImageTask{
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_ASCII,
 				Name: "to_string",
-				Fn: func(i *image.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					converter := convert.NewImageConverter()
-					str = converter.Image2ASCIIString(i.Img, &convert.Options{
+					str = converter.Image2ASCIIString(*i.Self, &convert.Options{
 						Colored:  args["color"].(bool),
 						Reversed: args["reverse"].(bool),
 					})
-
-					wait <- true
 				},
 			})
 
-			<-wait
 			r.State.PushString(str)
 			return 0
 		},
@@ -150,25 +147,21 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.State, args map[string]any) int {
 			str := ""
-			wait := make(chan bool)
 
-			r.IC.Schedule(args["id"].(int), &image.ImageTask{
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_ASCII,
 				Name: "to_string_size",
-				Fn: func(i *image.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					converter := convert.NewImageConverter()
-					str = converter.Image2ASCIIString(i.Img, &convert.Options{
+					str = converter.Image2ASCIIString(*i.Self, &convert.Options{
 						FixedWidth:  args["width"].(int),
 						FixedHeight: args["height"].(int),
 						Colored:     args["color"].(bool),
 						Reversed:    args["reverse"].(bool),
 					})
-
-					wait <- true
 				},
 			})
 
-			<-wait
 			r.State.PushString(str)
 			return 0
 		},

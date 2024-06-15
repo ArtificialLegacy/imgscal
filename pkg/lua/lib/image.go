@@ -2,9 +2,10 @@ package lib
 
 import (
 	"fmt"
+	"image"
 	"strings"
 
-	img "github.com/ArtificialLegacy/imgscal/pkg/image"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/Shopify/go-lua"
@@ -38,10 +39,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "name"},
 		},
 		func(state *golua.State, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_IMAGE,
 				Name: "name",
-				Fn: func(i *img.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					i.Name = args["name"].(string)
 				},
 			})
@@ -62,44 +63,33 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			}},
 		},
 		func(state *golua.State, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_IMAGE,
 				Name: "name_ext",
-				Fn: func(i *img.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					fileSplit := strings.Split(i.Name, ".")
 					fileName := strings.Join(fileSplit[:len(fileSplit)-1], ".")
 					fileExt := fileSplit[len(fileSplit)-1]
 
-					if args["name"] != "" {
-						fileName = args["name"].(string)
+					opt := args["options"].(map[string]any)
+
+					if opt["name"] != "" {
+						fileName = opt["name"].(string)
 					}
-					if args["prefix"] != "" {
-						fileName = args["prefix"].(string) + fileName
+					if opt["prefix"] != "" {
+						fileName = opt["prefix"].(string) + fileName
 					}
-					if args["suffix"] != "" {
-						fileName += args["suffix"].(string)
+					if opt["suffix"] != "" {
+						fileName += opt["suffix"].(string)
 					}
-					if args["ext"] != "" {
-						fileExt = args["ext"].(string)
+					if opt["ext"] != "" {
+						fileExt = opt["ext"].(string)
 					}
 
 					i.Name = fileName + fileExt
 					lg.Append(fmt.Sprintf("new image name: %s", i.Name), log.LEVEL_INFO)
 				},
 			})
-			return 0
-		})
-
-	/// @func collect()
-	/// @arg image_id - the id of the image to collect.
-	/// @desc
-	/// Normally should never be needed.
-	lib.CreateFunction("collect",
-		[]lua.Arg{
-			{Type: lua.INT, Name: "id"},
-		},
-		func(state *golua.State, args map[string]any) int {
-			r.IC.CollectImage(args["id"].(int))
 			return 0
 		})
 
@@ -113,23 +103,19 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.State, args map[string]any) int {
-			wait := make(chan bool, 1)
 			width := 0
 			height := 0
 
-			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_IMAGE,
 				Name: "size",
-				Fn: func(i *img.Image) {
-					b := i.Img.Bounds()
+				Fn: func(i *collection.Item[image.Image]) {
+					b := (*i.Self).Bounds()
 					width = b.Dx()
 					height = b.Dy()
-
-					wait <- true
 				},
 			})
 
-			<-wait
 			r.State.PushInteger(width)
 			r.State.PushInteger(height)
 			return 2

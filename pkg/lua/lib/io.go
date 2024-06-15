@@ -10,7 +10,7 @@ import (
 	"path"
 	"path/filepath"
 
-	img "github.com/ArtificialLegacy/imgscal/pkg/image"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/Shopify/go-lua"
@@ -39,12 +39,12 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				state.Error()
 			}
 
-			id := r.IC.AddImage(file.Name())
+			id := r.IC.AddItem(file.Name())
 
-			r.IC.Schedule(id, &img.ImageTask{
+			r.IC.Schedule(id, &collection.Task[image.Image]{
 				Lib:  LIB_IO,
 				Name: "load_image",
-				Fn: func(i *img.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					f, err := os.Open(args["path"].(string))
 					if err != nil {
 						state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
@@ -61,7 +61,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 						state.Error()
 					}
 
-					i.Img = image
+					i.Self = &image
 				},
 			})
 
@@ -83,10 +83,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				os.MkdirAll(args["path"].(string), 0o666)
 			}
 
-			r.IC.Schedule(args["id"].(int), &img.ImageTask{
+			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
 				Lib:  LIB_IO,
 				Name: "out",
-				Fn: func(i *img.Image) {
+				Fn: func(i *collection.Item[image.Image]) {
 					f, err := os.OpenFile(path.Join(args["path"].(string), i.Name), os.O_CREATE, 0o666)
 					if err != nil {
 						state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
@@ -99,13 +99,13 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 					switch ext {
 					case ".png":
 						lg.Append("image encoded as png", log.LEVEL_INFO)
-						png.Encode(f, i.Img)
+						png.Encode(f, *i.Self)
 					case ".jpg":
 						lg.Append("image encoded as jpg", log.LEVEL_INFO)
-						jpeg.Encode(f, i.Img, &jpeg.Options{Quality: 100})
+						jpeg.Encode(f, *i.Self, &jpeg.Options{Quality: 100})
 					case ".gif":
 						lg.Append("image encoded as gif", log.LEVEL_INFO)
-						gif.Encode(f, i.Img, &gif.Options{})
+						gif.Encode(f, *i.Self, &gif.Options{})
 					default:
 						state.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
 						state.Error()

@@ -2,25 +2,26 @@ package lua
 
 import (
 	"fmt"
+	"image"
 	"os"
 	"path"
 	"strconv"
 
-	"github.com/ArtificialLegacy/imgscal/pkg/image"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/Shopify/go-lua"
 )
 
 type Runner struct {
 	State *lua.State
-	IC    *image.ImageCollection
+	IC    *collection.Collection[image.Image]
 	lg    *log.Logger
 }
 
 func NewRunner(state *lua.State, lg *log.Logger) Runner {
 	return Runner{
 		State: state,
-		IC:    image.NewImageCollection(lg),
+		IC:    collection.NewCollection[image.Image](lg),
 		lg:    lg,
 	}
 }
@@ -101,20 +102,26 @@ func (l *Lib) ParseArgs(name string, args []Arg) map[string]any {
 			if !ok && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid int provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
+			} else if !ok && a.Optional {
+				argMap[a.Name] = 0
+			} else {
+				rm := l.State.AbsIndex(i - len(args))
+				l.State.Remove(rm)
+				argMap[a.Name] = v
 			}
-			rm := l.State.AbsIndex(i - len(args))
-			l.State.Remove(rm)
-			argMap[a.Name] = v
 
 		case FLOAT:
 			v, ok := l.State.ToNumber(i - len(args))
 			if !ok && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid float provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
+			} else if !ok && a.Optional {
+				argMap[a.Name] = 0.0
+			} else {
+				rm := l.State.AbsIndex(i - len(args))
+				l.State.Remove(rm)
+				argMap[a.Name] = v
 			}
-			rm := l.State.AbsIndex(i - len(args))
-			l.State.Remove(rm)
-			argMap[a.Name] = v
 
 		case BOOL:
 			v := l.State.ToBoolean(i - len(args))
@@ -125,10 +132,13 @@ func (l *Lib) ParseArgs(name string, args []Arg) map[string]any {
 			if !ok && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid string provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
+			} else if !ok && a.Optional {
+				argMap[a.Name] = ""
+			} else {
+				rm := l.State.AbsIndex(i - len(args))
+				l.State.Remove(rm)
+				argMap[a.Name] = v
 			}
-			rm := l.State.AbsIndex(i - len(args))
-			l.State.Remove(rm)
-			argMap[a.Name] = v
 
 		case TABLE:
 			exists := l.State.IsTable(i - len(args))
