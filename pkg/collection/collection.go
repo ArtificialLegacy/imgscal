@@ -16,6 +16,7 @@ type Item[T any] struct {
 	lg *log.Logger
 
 	cleaned bool
+	collect bool
 
 	TaskQueue chan *Task[T]
 }
@@ -27,6 +28,7 @@ func NewItem[T any](name string, lg *log.Logger) *Item[T] {
 		lg:   lg,
 
 		cleaned:   false,
+		collect:   false,
 		TaskQueue: make(chan *Task[T], TASK_QUEUE_SIZE),
 	}
 
@@ -104,17 +106,54 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	return wait
 }
 
-func (c *Collection[T]) Collect() {
+func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
+	c.lg.Append(fmt.Sprintf("tasks scheduled for all items: [%T]", c), log.LEVEL_INFO)
+
+	wait := make(chan struct{}, 1)
+	wg := sync.WaitGroup{}
+
+	for _, i := range c.items {
+		if i.collect {
+			continue
+		}
+
+		wg.Add(1)
+		task := &Task[T]{
+			Lib:  tk.Lib,
+			Name: tk.Name,
+			Fn: func(i *Item[T]) {
+				tk.Fn(i)
+				wg.Done()
+			},
+		}
+
+		i.TaskQueue <- task
+	}
+
+	go func() {
+		wg.Wait()
+		wait <- struct{}{}
+	}()
+
+	return wait
+}
+
+func (c *Collection[T]) CollectAll() {
 	wg := sync.WaitGroup{}
 
 	for id, i := range c.items {
+		if i.collect {
+			continue
+		}
+
 		wg.Add(1)
 		idHere := id
+		i.collect = true
 
 		c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", idHere, i.Self), log.LEVEL_INFO)
 		c.Schedule(id, &Task[T]{
 			Lib:  "internal",
-			Name: "collect",
+			Name: "collect_all",
 			Fn: func(i *Item[T]) {
 				c.lg.Append(fmt.Sprintf("item %d collected  [%T]", idHere, i.Self), log.LEVEL_INFO)
 
@@ -130,5 +169,25 @@ func (c *Collection[T]) Collect() {
 	}
 
 	wg.Wait()
-	c.lg.Append("all item collected", log.LEVEL_INFO)
+	c.lg.Append("all items collected", log.LEVEL_INFO)
+}
+
+func (c *Collection[T]) Collect(id int) {
+	i := c.items[id]
+	i.collect = true
+
+	c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", id, i.Self), log.LEVEL_INFO)
+	c.Schedule(id, &Task[T]{
+		Lib:  "internal",
+		Name: "collect",
+		Fn: func(i *Item[T]) {
+			c.lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
+
+			if c.onCollect != nil {
+				c.onCollect(i)
+			}
+			i.Self = nil
+			i.cleaned = true
+		},
+	})
 }

@@ -217,7 +217,9 @@ func (l *Lib) CreateFunction(name string, args []Arg, fn func(state *lua.State, 
 
 		argMap := l.ParseArgs(name, args, l.State.Top())
 
-		return fn(state, argMap)
+		ret := fn(state, argMap)
+		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_INFO)
+		return ret
 	})
 	l.State.SetField(-2, name)
 }
