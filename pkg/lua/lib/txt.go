@@ -19,16 +19,17 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	/// @func file_open()
 	/// @arg path - the directory path to the file
 	/// @arg file - the name of the file
-	/// @arg truncate - boolean
+	/// @arg flag - int, defaults to O_CREATE.
 	/// @returns id - id of the opened file
 	/// @desc
 	/// Will create the file if it does not exist,
 	/// but will not create non-existant directories.
+	/// Use bitwise OR to combine flags.
 	lib.CreateFunction("file_open",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
 			{Type: lua.STRING, Name: "file"},
-			{Type: lua.BOOL, Name: "truncate", Optional: true},
+			{Type: lua.INT, Name: "flag", Optional: true},
 		},
 		func(state *golua.State, args map[string]any) int {
 			fi, err := os.Stat(args["path"].(string))
@@ -48,9 +49,9 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 				Lib:  LIB_TXT,
 				Name: "file_open",
 				Fn: func(i *collection.Item[os.File]) {
-					flag := os.O_CREATE
-					if args["truncate"].(bool) {
-						flag |= os.O_TRUNC
+					flag := args["flag"].(int)
+					if flag == 0 {
+						flag = os.O_CREATE
 					}
 					f, err := os.OpenFile(path.Join(args["path"].(string), args["file"].(string)), flag, 0o666)
 					if err != nil {
@@ -87,4 +88,27 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			})
 			return 0
 		})
+
+	/// @constants File open flags
+	/// @const O_CREATE
+	/// @const O_TRUNC
+	/// @const O_EXCL
+	/// @const O_APPEND
+	/// @const O_RDWR
+	/// @const O_RDONLY
+	/// @const O_WRONLY
+	r.State.PushInteger(os.O_CREATE)
+	r.State.SetField(-1, "O_CREATE")
+	r.State.PushInteger(os.O_TRUNC)
+	r.State.SetField(-1, "O_TRUNC")
+	r.State.PushInteger(os.O_EXCL)
+	r.State.SetField(-1, "O_EXCL")
+	r.State.PushInteger(os.O_APPEND)
+	r.State.SetField(-1, "O_APPEND")
+	r.State.PushInteger(os.O_RDWR)
+	r.State.SetField(-1, "O_RDWR")
+	r.State.PushInteger(os.O_RDONLY)
+	r.State.SetField(-1, "O_RDONLY")
+	r.State.PushInteger(os.O_WRONLY)
+	r.State.SetField(-1, "O_WRONLY")
 }

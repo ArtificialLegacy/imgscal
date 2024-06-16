@@ -13,21 +13,22 @@ func Format(out io.StringWriter, lib Lib) {
 	}
 
 	for _, fn := range lib.Fns {
-		out.WriteString(fmt.Sprintf("\n### %s\n\n", fn.Fn))
+		out.WriteString(fmt.Sprintf("\n### %s\n", fn.Fn))
 
 		if fn.Block {
-			out.WriteString("**❗ Note: This function is blocking, it will interupt concurrent execution.**\n\n")
+			out.WriteString("\n")
+			out.WriteString("**❗ Note: This function is blocking, it will interupt concurrent execution.**\n")
 		}
 
 		if len(fn.Desc) > 0 {
+			out.WriteString("\n")
 			for _, d := range fn.Desc {
 				out.WriteString(fmt.Sprintf("%s\n", d))
 			}
-
-			out.WriteString("\n")
 		}
 
 		if len(fn.Args) > 0 {
+			out.WriteString("\n")
 			out.WriteString(fmt.Sprintf("#### Args [%s]\n\n", fn.Fn))
 			for _, arg := range fn.Args {
 				out.WriteString(fmt.Sprintf("* %s\n", arg))

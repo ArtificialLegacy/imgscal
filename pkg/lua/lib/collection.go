@@ -34,7 +34,6 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.State, args map[string]any) int {
-
 			switch args["type"].(int) {
 			case int(TYPE_IMAGE):
 				<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
