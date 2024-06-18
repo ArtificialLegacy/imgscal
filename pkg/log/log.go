@@ -17,6 +17,8 @@ const (
 	LEVEL_ERROR
 )
 
+const LOG_DIR = "./log"
+
 type logoutput interface {
 	Printf(format string, v ...any)
 	SetFlags(flag int)
@@ -24,28 +26,33 @@ type logoutput interface {
 }
 
 type Logger struct {
-	logFile string
-	logger  logoutput
+	logFile      string
+	name         string
+	logger       logoutput
+	file         *os.File
+	Parent       *Logger
+	childrenGrab []string
 }
 
-func NewLogger(dir string) Logger {
+func NewLogger(name string) Logger {
 	logTime := time.Now().UTC().UnixMilli()
+	fileName := fmt.Sprintf("%s_%d.txt", name, logTime)
+
+	file, _ := os.OpenFile(path.Join(LOG_DIR, fileName), os.O_CREATE, 0o666)
 
 	lg := Logger{
-		logFile: fmt.Sprintf("%d.txt", logTime),
-		logger:  log.Default(),
+		logFile:      fileName,
+		name:         name,
+		logger:       log.New(file, "", 0),
+		file:         file,
+		Parent:       nil,
+		childrenGrab: []string{},
 	}
 
-	lg.logger.SetFlags(0)
-
-	_, err := os.Stat(dir)
+	_, err := os.Stat(LOG_DIR)
 	if err != nil {
-		os.MkdirAll(dir, 0o666)
+		os.MkdirAll(LOG_DIR, 0o666)
 	}
-
-	file, _ := os.OpenFile(path.Join(dir, lg.logFile), os.O_CREATE, 0o666)
-
-	lg.logger.SetOutput(file)
 
 	return lg
 }
@@ -61,12 +68,17 @@ func NewLoggerEmpty() Logger {
 	lg := Logger{
 		logFile: "",
 		logger:  emptyLog{},
+		Parent:  nil,
 	}
 
 	return lg
 }
 
 func (l *Logger) Append(str string, level LogLevel) string {
+	if l.Parent != nil {
+		l.Parent.Append(str, level)
+	}
+
 	logTime := time.Now().Format(time.ANSIC)
 
 	prefix := ""
@@ -82,4 +94,24 @@ func (l *Logger) Append(str string, level LogLevel) string {
 
 	l.logger.Printf("%s: [%s] > '%s'\n", prefix, logTime, str)
 	return str
+}
+
+func (l *Logger) Close() {
+	if l.Parent != nil {
+		l.Parent.childrenGrab = append(l.Parent.childrenGrab, l.file.Name())
+	}
+
+	for _, c := range l.childrenGrab {
+		b, err := os.ReadFile(c)
+		if err != nil {
+			l.Append(fmt.Sprintf("failed to read child log: %s with err=%s", c, err), LEVEL_ERROR)
+			continue
+		}
+
+		l.file.WriteString(fmt.Sprintf("\n\n\nCHILD LOG: %s\n", c))
+		l.file.Write(b)
+		os.Remove(c)
+	}
+
+	l.file.Close()
 }

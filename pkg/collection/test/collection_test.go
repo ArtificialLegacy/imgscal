@@ -11,7 +11,7 @@ func TestCollection(t *testing.T) {
 	lg := log.NewLoggerEmpty()
 	c := collection.NewCollection[string](&lg)
 
-	id := c.AddItem("test_item")
+	id := c.AddItem("test_item", &lg)
 	value := ""
 
 	c.Schedule(id, &collection.Task[string]{

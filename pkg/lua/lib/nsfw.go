@@ -6,7 +6,6 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 	"github.com/koyachi/go-nude"
 )
 
@@ -25,20 +24,20 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			result := false
 
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
-				Lib:  LIB_NSFW,
-				Name: "skin",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[image.Image]) {
-					r, err := nude.IsImageNude(*i.Self)
+					res, err := nude.IsImageNude(*i.Self)
 					if err != nil {
-						state.PushString(lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
-						state.Error()
+						r.State.PushString(lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
+						r.State.Error()
 					}
 
-					result = r
+					result = res
 				},
 			})
 

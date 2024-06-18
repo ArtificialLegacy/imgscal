@@ -211,13 +211,18 @@ func (l *Lib) flattenTable(args []Arg) {
 	}
 }
 
-func (l *Lib) CreateFunction(name string, args []Arg, fn func(state *lua.State, args map[string]any) int) {
+type TaskData struct {
+	Lib  string
+	Name string
+}
+
+func (l *Lib) CreateFunction(name string, args []Arg, fn func(d TaskData, args map[string]any) int) {
 	l.State.PushGoFunction(func(state *lua.State) int {
 		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_INFO)
 
 		argMap := l.ParseArgs(name, args, l.State.Top())
 
-		ret := fn(state, argMap)
+		ret := fn(TaskData{Lib: l.Lib, Name: name}, argMap)
 		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_INFO)
 		return ret
 	})

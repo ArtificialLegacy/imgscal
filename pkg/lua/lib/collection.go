@@ -8,18 +8,9 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 )
 
 const LIB_COLLECTION = "collection"
-
-type CollectionType int
-
-const (
-	TYPE_TASK CollectionType = iota
-	TYPE_IMAGE
-	TYPE_FILE
-)
 
 func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	lib := lua.NewLib(LIB_COLLECTION, r.State, lg)
@@ -33,15 +24,15 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "type"},
 			{Type: lua.INT, Name: "id"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			switch args["type"].(int) {
-			case int(TYPE_IMAGE):
+			case int(collection.TYPE_IMAGE):
 				<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
-					Lib:  LIB_COLLECTION,
-					Name: "wait",
+					Lib:  d.Lib,
+					Name: d.Name,
 					Fn:   func(i *collection.Item[image.Image]) {},
 				})
-			case int(TYPE_FILE):
+			case int(collection.TYPE_FILE):
 				<-r.FC.Schedule(args["id"].(int), &collection.Task[os.File]{
 					Lib:  LIB_COLLECTION,
 					Name: "wait",
@@ -59,16 +50,16 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "type"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 
 			switch args["type"].(int) {
-			case int(TYPE_IMAGE):
+			case int(collection.TYPE_IMAGE):
 				<-r.IC.ScheduleAll(&collection.Task[image.Image]{
-					Lib:  LIB_COLLECTION,
-					Name: "wait_all",
+					Lib:  d.Lib,
+					Name: d.Name,
 					Fn:   func(i *collection.Item[image.Image]) {},
 				})
-			case int(TYPE_FILE):
+			case int(collection.TYPE_FILE):
 				<-r.FC.ScheduleAll(&collection.Task[os.File]{
 					Lib:  LIB_COLLECTION,
 					Name: "wait_all",
@@ -85,17 +76,17 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// This waits for all items across all collections to sync.
 	lib.CreateFunction("wait_extensive",
 		[]lua.Arg{},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			chans := []<-chan struct{}{}
 
 			chans = append(chans, r.IC.ScheduleAll(&collection.Task[image.Image]{
-				Lib:  LIB_COLLECTION,
-				Name: "wait_extensive",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn:   func(i *collection.Item[image.Image]) {},
 			}))
 			chans = append(chans, r.FC.ScheduleAll(&collection.Task[os.File]{
-				Lib:  LIB_COLLECTION,
-				Name: "wait_extensive",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn:   func(i *collection.Item[os.File]) {},
 			}))
 
@@ -125,11 +116,11 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "type"},
 			{Type: lua.INT, Name: "id"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			switch args["type"].(int) {
-			case int(TYPE_IMAGE):
+			case int(collection.TYPE_IMAGE):
 				r.IC.Collect(args["id"].(int))
-			case int(TYPE_FILE):
+			case int(collection.TYPE_FILE):
 				r.FC.Collect(args["id"].(int))
 			}
 			return 0
@@ -139,10 +130,10 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// @const TYPE_TASK
 	/// @const TYPE_IMAGE
 	/// @const TYPE_FILE
-	lib.State.PushInteger(int(TYPE_TASK))
+	lib.State.PushInteger(int(collection.TYPE_TASK))
 	lib.State.SetField(-2, "TYPE_TASK")
-	lib.State.PushInteger(int(TYPE_IMAGE))
+	lib.State.PushInteger(int(collection.TYPE_IMAGE))
 	lib.State.SetField(-2, "TYPE_IMAGE")
-	lib.State.PushInteger(int(TYPE_FILE))
+	lib.State.PushInteger(int(collection.TYPE_FILE))
 	lib.State.SetField(-2, "TYPE_FILE")
 }

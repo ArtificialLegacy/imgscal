@@ -6,7 +6,6 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 )
 
 const LIB_CLI = "cli"
@@ -22,7 +21,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			println(args["msg"])
 			lg.Append(fmt.Sprintf("lua msg printed: %s", args["msg"]), log.LEVEL_INFO)
 			return 0
@@ -35,14 +34,14 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "question"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			result, err := cli.Question(args["question"].(string), cli.QuestionOptions{})
 			if err != nil {
-				state.PushString(lg.Append("invalid answer provided to cli.question", log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append("invalid answer provided to cli.question", log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
-			state.PushString(result)
+			r.State.PushString(result)
 			return 1
 		})
 
@@ -59,7 +58,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.STRING, Name: "fallback", Optional: true},
 			}},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			acc := args["options"].(map[string]any)["accepts"]
 			accepts := []string{}
 			if str, ok := acc.([]string); ok {
@@ -74,11 +73,11 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			result, err := cli.Question(args["question"].(string), opts)
 			if err != nil {
-				state.PushString(lg.Append(fmt.Sprintf("invalid answer provided to cli.question_ext: %s", err), log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append(fmt.Sprintf("invalid answer provided to cli.question_ext: %s", err), log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
-			state.PushString(result)
+			r.State.PushString(result)
 			return 1
 		})
 

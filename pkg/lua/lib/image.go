@@ -8,7 +8,6 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 )
 
 const LIB_IMAGE = "image"
@@ -38,10 +37,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
-				Lib:  LIB_IMAGE,
-				Name: "name",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[image.Image]) {
 					i.Name = args["name"].(string)
 				},
@@ -62,10 +61,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.STRING, Name: "ext", Optional: true},
 			}},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
-				Lib:  LIB_IMAGE,
-				Name: "name_ext",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[image.Image]) {
 					fileSplit := strings.Split(i.Name, ".")
 					fileName := strings.Join(fileSplit[:len(fileSplit)-1], ".")
@@ -102,13 +101,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			width := 0
 			height := 0
 
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
-				Lib:  LIB_IMAGE,
-				Name: "size",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[image.Image]) {
 					b := (*i.Self).Bounds()
 					width = b.Dx()

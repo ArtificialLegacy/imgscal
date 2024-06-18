@@ -9,6 +9,14 @@ import (
 
 const TASK_QUEUE_SIZE = 64
 
+type CollectionType int
+
+const (
+	TYPE_TASK CollectionType = iota
+	TYPE_IMAGE
+	TYPE_FILE
+)
+
 type Item[T any] struct {
 	Self *T
 	Name string
@@ -77,8 +85,8 @@ func (c *Collection[T]) OnCollect(fn func(i *Item[T])) *Collection[T] {
 	return c
 }
 
-func (c *Collection[T]) AddItem(name string) int {
-	item := NewItem[T](name, c.lg)
+func (c *Collection[T]) AddItem(name string, lg *log.Logger) int {
+	item := NewItem[T](name, lg)
 	id := len(c.items)
 
 	c.items = append(c.items, item)
@@ -87,8 +95,6 @@ func (c *Collection[T]) AddItem(name string) int {
 }
 
 func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
-	c.lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_INFO)
-
 	wait := make(chan struct{}, 1)
 
 	task := &Task[T]{
@@ -101,6 +107,7 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	}
 
 	item := c.items[id]
+	item.lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_INFO)
 	item.TaskQueue <- task
 
 	return wait
@@ -148,14 +155,16 @@ func (c *Collection[T]) CollectAll() {
 
 		wg.Add(1)
 		idHere := id
-		i.collect = true
+		iHere := i
+		iHere.collect = true
 
-		c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", idHere, i.Self), log.LEVEL_INFO)
-		c.Schedule(id, &Task[T]{
+		iHere.lg.Append(fmt.Sprintf("item %d collection queued [%T]", idHere, i.Self), log.LEVEL_INFO)
+		c.Schedule(idHere, &Task[T]{
 			Lib:  "internal",
 			Name: "collect_all",
 			Fn: func(i *Item[T]) {
-				c.lg.Append(fmt.Sprintf("item %d collected  [%T]", idHere, i.Self), log.LEVEL_INFO)
+				i.lg.Append(fmt.Sprintf("item %d collected  [%T]", idHere, i.Self), log.LEVEL_INFO)
+				i.lg.Close()
 
 				if c.onCollect != nil {
 					c.onCollect(i)
@@ -181,7 +190,8 @@ func (c *Collection[T]) Collect(id int) {
 		Lib:  "internal",
 		Name: "collect",
 		Fn: func(i *Item[T]) {
-			c.lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
+			i.lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
+			i.lg.Close()
 
 			if c.onCollect != nil {
 				c.onCollect(i)

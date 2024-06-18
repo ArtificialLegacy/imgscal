@@ -8,7 +8,6 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 )
 
 const LIB_TXT = "txt"
@@ -31,23 +30,26 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "file"},
 			{Type: lua.INT, Name: "flag", Optional: true},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			fi, err := os.Stat(args["path"].(string))
 			if err != nil {
-				state.PushString(lg.Append(fmt.Sprintf("cannot find directory to txt file: %s", args["path"].(string)), log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append(fmt.Sprintf("cannot find directory to txt file: %s", args["path"].(string)), log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
 			if !fi.IsDir() {
-				state.PushString(lg.Append(fmt.Sprintf("path provided is not a dir: %s", args["path"].(string)), log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append(fmt.Sprintf("path provided is not a dir: %s", args["path"].(string)), log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
-			id := r.FC.AddItem(args["path"].(string))
+			chLog := log.NewLogger(fmt.Sprintf("file_%s", fi.Name()))
+			chLog.Parent = lg
+
+			id := r.FC.AddItem(args["path"].(string), &chLog)
 
 			r.FC.Schedule(id, &collection.Task[os.File]{
-				Lib:  LIB_TXT,
-				Name: "file_open",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[os.File]) {
 					flag := args["flag"].(int)
 					if flag == 0 {
@@ -55,8 +57,8 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 					}
 					f, err := os.OpenFile(path.Join(args["path"].(string), args["file"].(string)), flag, 0o666)
 					if err != nil {
-						state.PushString(lg.Append(fmt.Sprintf("failed to open txt file: %s", args["file"].(string)), log.LEVEL_ERROR))
-						state.Error()
+						r.State.PushString(lg.Append(fmt.Sprintf("failed to open txt file: %s", args["file"].(string)), log.LEVEL_ERROR))
+						r.State.Error()
 					}
 
 					i.Self = f
@@ -75,14 +77,14 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "txt"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			r.FC.Schedule(args["id"].(int), &collection.Task[os.File]{
-				Lib:  LIB_TXT,
-				Name: "write",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[os.File]) {
 					_, err := i.Self.WriteString(args["txt"].(string))
 					if err != nil {
-						state.PushString(lg.Append(fmt.Sprintf("failed to write to txt file: %d", args["id"]), log.LEVEL_ERROR))
+						r.State.PushString(lg.Append(fmt.Sprintf("failed to write to txt file: %d", args["id"]), log.LEVEL_ERROR))
 					}
 				},
 			})
@@ -98,17 +100,17 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	/// @const O_RDONLY
 	/// @const O_WRONLY
 	r.State.PushInteger(os.O_CREATE)
-	r.State.SetField(-1, "O_CREATE")
+	r.State.SetField(-2, "O_CREATE")
 	r.State.PushInteger(os.O_TRUNC)
-	r.State.SetField(-1, "O_TRUNC")
+	r.State.SetField(-2, "O_TRUNC")
 	r.State.PushInteger(os.O_EXCL)
-	r.State.SetField(-1, "O_EXCL")
+	r.State.SetField(-2, "O_EXCL")
 	r.State.PushInteger(os.O_APPEND)
-	r.State.SetField(-1, "O_APPEND")
+	r.State.SetField(-2, "O_APPEND")
 	r.State.PushInteger(os.O_RDWR)
-	r.State.SetField(-1, "O_RDWR")
+	r.State.SetField(-2, "O_RDWR")
 	r.State.PushInteger(os.O_RDONLY)
-	r.State.SetField(-1, "O_RDONLY")
+	r.State.SetField(-2, "O_RDONLY")
 	r.State.PushInteger(os.O_WRONLY)
-	r.State.SetField(-1, "O_WRONLY")
+	r.State.SetField(-2, "O_WRONLY")
 }

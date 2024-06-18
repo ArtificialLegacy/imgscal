@@ -13,7 +13,6 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 )
 
 const LIB_IO = "io"
@@ -28,27 +27,31 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			file, err := os.Stat(args["path"].(string))
 			if err != nil {
-				state.PushString(lg.Append("invalid image path provided to io.load_image", log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append("invalid image path provided to io.load_image", log.LEVEL_ERROR))
+				r.State.Error()
 			}
 			if file.IsDir() {
-				state.PushString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
-			id := r.IC.AddItem(file.Name())
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", file.Name()))
+			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: image_%s", file.Name()), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(file.Name(), &chLog)
 
 			r.IC.Schedule(id, &collection.Task[image.Image]{
-				Lib:  LIB_IO,
-				Name: "load_image",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[image.Image]) {
 					f, err := os.Open(args["path"].(string))
 					if err != nil {
-						state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
-						state.Error()
+						r.State.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+						r.State.Error()
 					}
 					defer f.Close()
 
@@ -57,15 +60,15 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 					image.RegisterFormat("gif", "gif", gif.Decode, gif.DecodeConfig)
 					image, _, err := image.Decode(f)
 					if err != nil {
-						state.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
-						state.Error()
+						r.State.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
+						r.State.Error()
 					}
 
 					i.Self = &image
 				},
 			})
 
-			state.PushInteger(id)
+			r.State.PushInteger(id)
 			return 1
 		})
 
@@ -77,20 +80,20 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "path"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			_, err := os.Stat(args["path"].(string))
 			if err != nil {
 				os.MkdirAll(args["path"].(string), 0o666)
 			}
 
 			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
-				Lib:  LIB_IO,
-				Name: "out",
+				Lib:  d.Lib,
+				Name: d.Name,
 				Fn: func(i *collection.Item[image.Image]) {
 					f, err := os.OpenFile(path.Join(args["path"].(string), i.Name), os.O_CREATE, 0o666)
 					if err != nil {
-						state.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
-						state.Error()
+						r.State.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+						r.State.Error()
 					}
 					defer f.Close()
 
@@ -107,8 +110,8 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 						lg.Append("image encoded as gif", log.LEVEL_INFO)
 						gif.Encode(f, *i.Self, &gif.Options{})
 					default:
-						state.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
-						state.Error()
+						r.State.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
+						r.State.Error()
 					}
 				},
 			})
@@ -122,21 +125,21 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
 		},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			f, err := os.Stat(args["path"].(string))
 			if err != nil {
-				state.PushString(lg.Append("invalid dir path provided to io.dir_img", log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append("invalid dir path provided to io.dir_img", log.LEVEL_ERROR))
+				r.State.Error()
 			}
 			if !f.IsDir() {
-				state.PushString(lg.Append("dir provided is not a directory", log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append("dir provided is not a directory", log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
 			files, err := os.ReadDir(args["path"].(string))
 			if err != nil {
-				state.PushString(lg.Append("failed to open dir", log.LEVEL_ERROR))
-				state.Error()
+				r.State.PushString(lg.Append("failed to open dir", log.LEVEL_ERROR))
+				r.State.Error()
 			}
 
 			r.State.NewTable()

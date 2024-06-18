@@ -6,7 +6,8 @@ config({
     requires= {
         "io",
         "cli",
-        "image"
+        "image",
+        "collection"
     },
 
     desc="Renames all files in a directory and saves them to ./output",

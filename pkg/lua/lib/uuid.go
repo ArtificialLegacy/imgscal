@@ -5,7 +5,6 @@ import (
 
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +16,7 @@ func RegisterUUID(r *lua.Runner, lg *log.Logger) {
 	/// @func string()
 	/// @returns string - the generated uuid.
 	lib.CreateFunction("string", []lua.Arg{},
-		func(state *golua.State, args map[string]any) int {
+		func(d lua.TaskData, args map[string]any) int {
 			uuid := uuid.NewString()
 			lg.Append(fmt.Sprintf("got uuid: %s", uuid), log.LEVEL_INFO)
 
