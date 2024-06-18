@@ -2,7 +2,6 @@ package log
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -21,8 +20,6 @@ const LOG_DIR = "./log"
 
 type logoutput interface {
 	Printf(format string, v ...any)
-	SetFlags(flag int)
-	SetOutput(w io.Writer)
 }
 
 type Logger struct {
@@ -61,8 +58,6 @@ type emptyLog struct {
 }
 
 func (el emptyLog) Printf(format string, v ...any) {}
-func (el emptyLog) SetFlags(flag int)              {}
-func (el emptyLog) SetOutput(w io.Writer)          {}
 
 func NewLoggerEmpty() Logger {
 	lg := Logger{
