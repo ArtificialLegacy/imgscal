@@ -44,6 +44,7 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 
 			chLog := log.NewLogger(fmt.Sprintf("file_%s", fi.Name()))
 			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: file_%s", fi.Name()), log.LEVEL_INFO)
 
 			id := r.FC.AddItem(args["path"].(string), &chLog)
 
@@ -57,7 +58,7 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 					}
 					f, err := os.OpenFile(path.Join(args["path"].(string), args["file"].(string)), flag, 0o666)
 					if err != nil {
-						r.State.PushString(lg.Append(fmt.Sprintf("failed to open txt file: %s", args["file"].(string)), log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("failed to open txt file: %s", args["file"].(string)), log.LEVEL_ERROR))
 						r.State.Error()
 					}
 
@@ -84,7 +85,7 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[os.File]) {
 					_, err := i.Self.WriteString(args["txt"].(string))
 					if err != nil {
-						r.State.PushString(lg.Append(fmt.Sprintf("failed to write to txt file: %d", args["id"]), log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("failed to write to txt file: %d", args["id"]), log.LEVEL_ERROR))
 					}
 				},
 			})

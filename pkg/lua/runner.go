@@ -10,31 +10,42 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/Shopify/go-lua"
+	"github.com/fogleman/gg"
 )
 
 type Runner struct {
 	State *lua.State
 	IC    *collection.Collection[image.Image]
 	FC    *collection.Collection[os.File]
+	CC    *collection.Collection[gg.Context]
 	lg    *log.Logger
 }
 
 func NewRunner(state *lua.State, lg *log.Logger) Runner {
 	return Runner{
 		State: state,
-		IC:    collection.NewCollection[image.Image](lg),
+		lg:    lg,
+
+		// collections
+		IC: collection.NewCollection[image.Image](lg),
 		FC: collection.NewCollection[os.File](lg).OnCollect(
 			func(i *collection.Item[os.File]) {
 				if i.Self != nil {
 					i.Self.Close()
 				}
 			}),
-		lg: lg,
+		CC: collection.NewCollection[gg.Context](lg),
 	}
 }
 
 func (r *Runner) Run(file string) error {
 	pwd, _ := os.Getwd()
+
+	defer func() {
+		if p := recover(); p != nil {
+			r.lg.Append("recovered from panic during lua runtime.", log.LEVEL_ERROR)
+		}
+	}()
 
 	err := lua.DoFile(r.State, path.Join(pwd, file))
 	if err != nil {

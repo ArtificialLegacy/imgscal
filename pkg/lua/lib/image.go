@@ -86,7 +86,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 					}
 
 					i.Name = fileName + fileExt
-					lg.Append(fmt.Sprintf("new image name: %s", i.Name), log.LEVEL_INFO)
+					i.Lg.Append(fmt.Sprintf("new image name: %s", i.Name), log.LEVEL_INFO)
 				},
 			})
 			return 0

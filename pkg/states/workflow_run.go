@@ -21,6 +21,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	lg := log.NewLogger("main")
+	defer lg.Close()
 
 	lg.Append("log started for workflow_run", log.LEVEL_INFO)
 	state := lua.WorkflowRunState(&lg)
@@ -40,21 +41,44 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	err := runner.Run(script)
-	runner.IC.CollectAll()
-	runner.FC.CollectAll()
+	errIC := runner.IC.CollectAll()
+	errFC := runner.FC.CollectAll()
+	errCC := runner.CC.CollectAll()
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
+
 		sm.PushString(err.Error())
 		sm.PushString(script)
 		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+
+		return nil
+	}
+
+	eri := collErr(errIC, "IC", script, &lg, sm)
+	erf := collErr(errFC, "FC", script, &lg, sm)
+	erc := collErr(errCC, "CC", script, &lg, sm)
+	if eri || erf || erc {
 		return nil
 	}
 
 	lg.Append("workflow finished", log.LEVEL_INFO)
-	lg.Close()
 
 	sm.PushString(script)
 	sm.SetState(STATE_WORKFLOW_FINISH)
 
 	return nil
+}
+
+func collErr(err error, name, script string, lg *log.Logger, sm *statemachine.StateMachine) bool {
+	if err != nil {
+		lg.Append(fmt.Sprintf("error occured within %s collection: %s", name, err), log.LEVEL_ERROR)
+
+		sm.PushString(err.Error())
+		sm.PushString(script)
+		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+
+		return true
+	}
+
+	return false
 }

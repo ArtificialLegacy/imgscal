@@ -33,7 +33,7 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[image.Image]) {
 					res, err := nude.IsImageNude(*i.Self)
 					if err != nil {
-						r.State.PushString(lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 

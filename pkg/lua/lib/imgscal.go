@@ -15,4 +15,5 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_ASCII:      RegisterASCII,
 	LIB_TXT:        RegisterTXT,
 	LIB_COLLECTION: RegisterCollection,
+	LIB_CONTEXT:    RegisterContext,
 }

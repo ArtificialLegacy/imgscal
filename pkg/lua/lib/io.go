@@ -50,7 +50,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[image.Image]) {
 					f, err := os.Open(args["path"].(string))
 					if err != nil {
-						r.State.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 					defer f.Close()
@@ -60,7 +60,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 					image.RegisterFormat("gif", "gif", gif.Decode, gif.DecodeConfig)
 					image, _, err := image.Decode(f)
 					if err != nil {
-						r.State.PushString(lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 
@@ -92,7 +92,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[image.Image]) {
 					f, err := os.OpenFile(path.Join(args["path"].(string), i.Name), os.O_CREATE, 0o666)
 					if err != nil {
-						r.State.PushString(lg.Append("cannot open provided file", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 					defer f.Close()
@@ -101,16 +101,16 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 					switch ext {
 					case ".png":
-						lg.Append("image encoded as png", log.LEVEL_INFO)
+						i.Lg.Append("image encoded as png", log.LEVEL_INFO)
 						png.Encode(f, *i.Self)
 					case ".jpg":
-						lg.Append("image encoded as jpg", log.LEVEL_INFO)
+						i.Lg.Append("image encoded as jpg", log.LEVEL_INFO)
 						jpeg.Encode(f, *i.Self, &jpeg.Options{Quality: 100})
 					case ".gif":
-						lg.Append("image encoded as gif", log.LEVEL_INFO)
+						i.Lg.Append("image encoded as gif", log.LEVEL_INFO)
 						gif.Encode(f, *i.Self, &gif.Options{})
 					default:
-						r.State.PushString(lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
 						r.State.Error()
 					}
 				},

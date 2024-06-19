@@ -54,8 +54,7 @@ func NewLogger(name string) Logger {
 	return lg
 }
 
-type emptyLog struct {
-}
+type emptyLog struct{}
 
 func (el emptyLog) Printf(format string, v ...any) {}
 

@@ -40,7 +40,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 					f, err := os.OpenFile(args["path"].(string), os.O_CREATE|os.O_TRUNC, 0o666)
 					if err != nil {
-						r.State.PushString(lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 					defer f.Close()
@@ -83,7 +83,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 					f, err := os.OpenFile(args["path"].(string), os.O_CREATE|os.O_TRUNC, 0o666)
 					if err != nil {
-						r.State.PushString(lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 					defer f.Close()
