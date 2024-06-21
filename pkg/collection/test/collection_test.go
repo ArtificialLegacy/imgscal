@@ -31,5 +31,6 @@ func TestCollection(t *testing.T) {
 		t.Errorf("got wrong item after task run, expected=test_item got=%s", value)
 	}
 
-	c.CollectAll()
+	for c, b := c.TaskCount(); b || c > 0; {
+	}
 }

@@ -25,8 +25,10 @@ type Item[T any] struct {
 
 	cleaned bool
 	collect bool
+	waiting bool
 
 	failed bool
+	Err    error
 
 	TaskQueue chan *Task[T]
 }
@@ -40,6 +42,7 @@ func NewItem[T any](name string, lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 		cleaned:   false,
 		collect:   false,
 		failed:    false,
+		waiting:   true,
 		TaskQueue: make(chan *Task[T], TASK_QUEUE_SIZE),
 	}
 
@@ -56,17 +59,23 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 				fn(i)
 			}
 			i.failed = true
-			for len(i.TaskQueue) > 0 {
+			i.waiting = true
+			i.cleaned = true
+			i.Err = fmt.Errorf("%+v", p)
+			for c := 0; len(i.TaskQueue) > 0; c++ {
 				task := <-i.TaskQueue
-				if task.Lib == "internal" {
-					task.Fn(i)
+				if task.Fail != nil {
+					task.Fail(i)
 				}
+				i.Lg.Append(fmt.Sprintf("drained task %d from item [%T]", c, i.Self), log.LEVEL_WARN)
 			}
 		}
 	}()
 
 	for {
+		i.waiting = true
 		task := <-i.TaskQueue
+		i.waiting = false
 		i.Lg.Append(fmt.Sprintf("%s.%s task called", task.Lib, task.Name), log.LEVEL_INFO)
 		task.Fn(i)
 		i.Lg.Append(fmt.Sprintf("%s.%s task finished", task.Lib, task.Name), log.LEVEL_INFO)
@@ -79,7 +88,8 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 }
 
 type Task[T any] struct {
-	Fn func(i *Item[T])
+	Fn   func(i *Item[T])
+	Fail func(i *Item[T])
 
 	Lib  string
 	Name string
@@ -89,6 +99,8 @@ type Collection[T any] struct {
 	items []*Item[T]
 	lg    *log.Logger
 
+	Errs []error
+
 	onCollect func(i *Item[T])
 }
 
@@ -96,6 +108,7 @@ func NewCollection[T any](lg *log.Logger) *Collection[T] {
 	return &Collection[T]{
 		items: []*Item[T]{},
 		lg:    lg,
+		Errs:  []error{},
 	}
 }
 
@@ -123,9 +136,22 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 			tk.Fn(i)
 			wait <- struct{}{}
 		},
+		Fail: func(i *Item[T]) {
+			if tk.Fail != nil {
+				tk.Fail(i)
+			}
+			wait <- struct{}{}
+		},
 	}
 
 	item := c.items[id]
+
+	if item.failed {
+		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id), log.LEVEL_WARN)
+		wait <- struct{}{}
+		return wait
+	}
+
 	item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_INFO)
 	item.TaskQueue <- task
 
@@ -164,49 +190,37 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 	return wait
 }
 
-func (c *Collection[T]) CollectAll() error {
-	wg := sync.WaitGroup{}
+func (c *Collection[T]) TaskCount() (int, bool) {
+	count := 0
 
-	var err error
+	errList := []error{}
+	busy := false
 
-	for id, i := range c.items {
-		wg.Add(1)
-		idHere := id
-		iHere := i
-		iHere.collect = true
-
-		iHere.Lg.Append(fmt.Sprintf("item %d collection queued [%T]", idHere, i.Self), log.LEVEL_INFO)
-		c.Schedule(idHere, &Task[T]{
-			Lib:  "internal",
-			Name: "collect_all",
-			Fn: func(i *Item[T]) {
-				if i.cleaned && i.failed {
-					wg.Done()
-					return
-				}
-
-				i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", idHere, i.Self), log.LEVEL_INFO)
-
-				if i.failed {
-					err = fmt.Errorf(i.Lg.Append(fmt.Sprintf("item %d was marked as failed  [%T]", idHere, i.Self), log.LEVEL_ERROR))
-				}
-				i.Lg.Close()
-
-				if c.onCollect != nil {
-					c.onCollect(i)
-				}
-				i.Self = nil
-				i.cleaned = true
-
-				wg.Done()
-			},
-		})
+	for _, i := range c.items {
+		if i.Err != nil {
+			errList = append(errList, i.Err)
+		}
+		if !i.waiting && !i.failed {
+			busy = true
+		}
+		count += len(i.TaskQueue)
 	}
 
-	wg.Wait()
-	c.lg.Append("all items collected", log.LEVEL_INFO)
+	c.Errs = errList
+	return count, busy
+}
 
-	return err
+func (c *Collection[T]) CollectAll() {
+	for id, i := range c.items {
+		i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
+		i.Lg.Close()
+
+		if c.onCollect != nil {
+			c.onCollect(i)
+		}
+		i.Self = nil
+		i.cleaned = true
+	}
 }
 
 func (c *Collection[T]) Collect(id int) {

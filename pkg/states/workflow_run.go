@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua/lib"
@@ -41,9 +42,14 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	err := runner.Run(script)
-	errIC := runner.IC.CollectAll()
-	errFC := runner.FC.CollectAll()
-	errCC := runner.CC.CollectAll()
+
+	for checkState(runner.IC) || checkState(runner.FC) || checkState(runner.CC) {
+	}
+
+	runner.IC.CollectAll()
+	runner.FC.CollectAll()
+	runner.CC.CollectAll()
+
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
 
@@ -54,9 +60,9 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
-	eri := collErr(errIC, "IC", script, &lg, sm)
-	erf := collErr(errFC, "FC", script, &lg, sm)
-	erc := collErr(errCC, "CC", script, &lg, sm)
+	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm)
+	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm)
+	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
 	if eri || erf || erc {
 		return nil
 	}
@@ -69,16 +75,26 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	return nil
 }
 
-func collErr(err error, name, script string, lg *log.Logger, sm *statemachine.StateMachine) bool {
-	if err != nil {
-		lg.Append(fmt.Sprintf("error occured within %s collection: %s", name, err), log.LEVEL_ERROR)
+func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine.StateMachine) bool {
+	errExists := false
 
-		sm.PushString(err.Error())
-		sm.PushString(script)
-		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+	for _, err := range errs {
+		if err != nil {
+			lg.Append(fmt.Sprintf("error occured within %s collection: %s", name, err), log.LEVEL_ERROR)
 
-		return true
+			sm.PushString(err.Error())
+			sm.PushString(script)
+			sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+
+			errExists = true
+		}
 	}
 
-	return false
+	return errExists
+}
+
+func checkState[T any](c *collection.Collection[T]) bool {
+	co, b := c.TaskCount()
+
+	return co > 0 || b
 }

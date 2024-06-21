@@ -3,6 +3,8 @@ package lib
 import (
 	"fmt"
 	"image"
+	"path/filepath"
+	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -41,6 +43,56 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func distance()
+	/// @arg x1 - float
+	/// @arg y1 - float
+	/// @arg x2 - float
+	/// @arg y2 - float
+	/// @returns float
+	lib.CreateFunction("distance",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x1"},
+			{Type: lua.FLOAT, Name: "y1"},
+			{Type: lua.FLOAT, Name: "x2"},
+			{Type: lua.FLOAT, Name: "y2"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			p1 := gg.Point{X: args["x1"].(float64), Y: args["y1"].(float64)}
+			p2 := gg.Point{X: args["x2"].(float64), Y: args["y2"].(float64)}
+
+			dist := p1.Distance(p2)
+
+			r.State.PushNumber(dist)
+			return 1
+		})
+
+	/// @func interpolate()
+	/// @arg x1 - float
+	/// @arg y1 - float
+	/// @arg x2 - float
+	/// @arg y2 - float
+	/// @arg t - float
+	/// @returns x
+	/// @returns y
+	lib.CreateFunction("interpolate",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x1"},
+			{Type: lua.FLOAT, Name: "y1"},
+			{Type: lua.FLOAT, Name: "x2"},
+			{Type: lua.FLOAT, Name: "y2"},
+			{Type: lua.FLOAT, Name: "t"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			p1 := gg.Point{X: args["x1"].(float64), Y: args["y1"].(float64)}
+			p2 := gg.Point{X: args["x2"].(float64), Y: args["y2"].(float64)}
+
+			pi := p1.Interpolate(p2, args["t"].(float64))
+
+			r.State.PushNumber(pi.X)
+			r.State.PushNumber(pi.Y)
+			return 2
+		})
+
 	/// @func new()
 	/// @arg width - int
 	/// @arg height - int
@@ -73,6 +125,58 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func new_image()
+	/// @arg id - image id to create a context for
+	/// @returns - new context id
+	lib.CreateFunction("new_image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			imageFinish := make(chan struct{}, 1)
+			imageReady := make(chan struct{}, 1)
+			var img image.Image
+			var name string
+
+			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[image.Image]) {
+					img = *i.Self
+					name = strings.TrimSuffix(i.Name, filepath.Ext(i.Name))
+					imageReady <- struct{}{}
+					<-imageFinish
+				},
+				Fail: func(i *collection.Item[image.Image]) {
+					imageReady <- struct{}{}
+				},
+			})
+
+			tempName := fmt.Sprintf("context_%d", r.CC.Next())
+
+			chLog := log.NewLogger(tempName)
+			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: %s", tempName), log.LEVEL_INFO)
+
+			id := r.CC.AddItem(tempName, &chLog)
+
+			r.CC.Schedule(id, &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					<-imageReady
+
+					i.Self = gg.NewContextForImage(img)
+					i.Name = name
+
+					imageFinish <- struct{}{}
+				},
+			})
+
+			r.State.PushInteger(id)
+			return 1
+		})
+
 	/// @func to_image()
 	/// @arg id
 	/// @arg ext - defaults to png
@@ -87,27 +191,34 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			if args["ext"] != "" {
 				ext = args["ext"].(string)
 			}
-			name := fmt.Sprintf("image_context_%d.%s", args["id"], ext)
 
-			chLog := log.NewLogger(name)
-			chLog.Parent = lg
-			lg.Append(fmt.Sprintf("child log created: %s", name), log.LEVEL_INFO)
-
-			id := r.IC.AddItem(name, &chLog)
 			contextFinish := make(chan struct{}, 1)
 			contextReady := make(chan struct{}, 1)
 
 			var context *gg.Context
+			var name string
 
-			r.CC.Schedule(id, &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[gg.Context]) {
 					context = i.Self
+					name = fmt.Sprintf("%s.%s", i.Name, ext)
 					contextReady <- struct{}{}
 					<-contextFinish
 				},
+				Fail: func(i *collection.Item[gg.Context]) {
+					contextReady <- struct{}{}
+				},
 			})
+
+			tempName := fmt.Sprintf("context_%d", r.IC.Next())
+
+			chLog := log.NewLogger(tempName)
+			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: %s", tempName), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(tempName, &chLog)
 
 			r.IC.Schedule(id, &collection.Task[image.Image]{
 				Lib:  d.Lib,
@@ -117,6 +228,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 					img := context.Image()
 					i.Self = &img
+					i.Name = name
 
 					contextFinish <- struct{}{}
 				},
@@ -264,6 +376,38 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			r.State.PushNumber(y)
 			r.State.PushBoolean(exists)
 			return 3
+		})
+
+	/// @arg transform_point()
+	/// @arg id
+	/// @arg x
+	/// @arg y
+	/// @returns x
+	/// @returns y
+	/// @blocking
+	/// @desc
+	/// multiplies a point by the current matrix.
+	lib.CreateFunction("transform_point",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			x := 0.0
+			y := 0.0
+
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					x, y = i.Self.TransformPoint(args["x"].(float64), args["y"].(float64))
+				},
+			})
+
+			r.State.PushNumber(x)
+			r.State.PushNumber(y)
+			return 2
 		})
 
 	/// @func clear()
@@ -909,7 +1053,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 						args["ay"].(float64),
 						args["width"].(float64),
 						args["spacing"].(float64),
-						args["align"].(gg.Align),
+						lua.ParseEnum(args["align"].(int), alignment, lib),
 					)
 				},
 			})
@@ -938,6 +1082,26 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 					} else {
 						i.Self.Fill()
 					}
+				},
+			})
+
+			return 0
+		})
+
+	/// @func fill_rule()
+	/// @arg id
+	/// @arg rule
+	lib.CreateFunction("fill_rule",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "rule"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetFillRule(lua.ParseEnum(args["rule"].(int), fillRules, lib))
 				},
 			})
 
@@ -1205,6 +1369,132 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func color_rgb()
+	/// @arg id
+	/// @arg r
+	/// @arg g
+	/// @arg b
+	/// @desc
+	/// values between 0 and 1.
+	lib.CreateFunction("color_rgb",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "r"},
+			{Type: lua.FLOAT, Name: "g"},
+			{Type: lua.FLOAT, Name: "b"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetRGB(
+						args["r"].(float64),
+						args["g"].(float64),
+						args["b"].(float64),
+					)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func color_rgb255()
+	/// @arg id
+	/// @arg r
+	/// @arg g
+	/// @arg b
+	/// @desc
+	/// interger values between 0 and 255.
+	lib.CreateFunction("color_rgb255",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "r"},
+			{Type: lua.INT, Name: "g"},
+			{Type: lua.INT, Name: "b"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetRGB255(
+						args["r"].(int),
+						args["g"].(int),
+						args["b"].(int),
+					)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func color_rgba()
+	/// @arg id
+	/// @arg r
+	/// @arg g
+	/// @arg b
+	/// @arg a
+	/// @desc
+	/// values between 0 and 1.
+	lib.CreateFunction("color_rgba",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "r"},
+			{Type: lua.FLOAT, Name: "g"},
+			{Type: lua.FLOAT, Name: "b"},
+			{Type: lua.FLOAT, Name: "a"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetRGBA(
+						args["r"].(float64),
+						args["g"].(float64),
+						args["b"].(float64),
+						args["a"].(float64),
+					)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func color_rgba255()
+	/// @arg id
+	/// @arg r
+	/// @arg g
+	/// @arg b
+	/// @arg a
+	/// @desc
+	/// interger values between 0 and 255.
+	lib.CreateFunction("color_rgba255",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "r"},
+			{Type: lua.INT, Name: "g"},
+			{Type: lua.INT, Name: "b"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetRGBA255(
+						args["r"].(int),
+						args["g"].(int),
+						args["b"].(int),
+						args["a"].(int),
+					)
+				},
+			})
+
+			return 0
+		})
+
 	/// @func dash_set()
 	/// @arg id
 	/// @arg pattern - [length...]
@@ -1244,6 +1534,169 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[gg.Context]) {
 					i.Self.SetDashOffset(args["offset"].(float64))
+				},
+			})
+
+			return 0
+		})
+
+	/// @func line_cap()
+	/// @arg id
+	/// @arg cap
+	lib.CreateFunction("line_cap",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "cap"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetLineCap(lua.ParseEnum(args["cap"].(int), lineCaps, lib))
+				},
+			})
+
+			return 0
+		})
+
+	/// @func line_join()
+	/// @arg id
+	/// @arg join
+	lib.CreateFunction("line_join",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "join"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetLineJoin(lua.ParseEnum(args["join"].(int), lineJoins, lib))
+				},
+			})
+
+			return 0
+		})
+
+	/// @func line_width()
+	/// @arg id
+	/// @arg width
+	lib.CreateFunction("line_width",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "width"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetLineWidth(args["width"].(float64))
+				},
+			})
+
+			return 0
+		})
+
+	/// @func pixel_set()
+	/// @arg id
+	/// @arg x
+	/// @arg y
+	lib.CreateFunction("pixel_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.SetPixel(args["x"].(int), args["y"].(int))
+				},
+			})
+
+			return 0
+		})
+
+	/// @func shear()
+	/// @arg id
+	/// @arg x
+	/// @arg y
+	/// @desc
+	/// updates the current matrix with a shearing angle, at the origin.
+	lib.CreateFunction("shear",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.Shear(args["x"].(float64), args["y"].(float64))
+				},
+			})
+
+			return 0
+		})
+
+	/// @func shear_about()
+	/// @arg id
+	/// @arg sx
+	/// @arg sy
+	/// @arg x
+	/// @arg y
+	/// @desc
+	/// updates the current matrix with a shearing angle, at the given point.
+	lib.CreateFunction("shear_about",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "sx"},
+			{Type: lua.FLOAT, Name: "sy"},
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.ShearAbout(
+						args["sx"].(float64),
+						args["sy"].(float64),
+						args["x"].(float64),
+						args["y"].(float64),
+					)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func translate()
+	/// @arg id
+	/// @arg x
+	/// @arg y
+	/// @desc
+	/// updates the current matrix with a translation.
+	lib.CreateFunction("translate",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[gg.Context]) {
+					i.Self.Translate(args["x"].(float64), args["y"].(float64))
 				},
 			})
 
@@ -1301,4 +1754,33 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib.State.SetField(-2, "ALIGN_CENTER")
 	lib.State.PushInteger(int(gg.AlignRight))
 	lib.State.SetField(-2, "ALIGN_RIGHT")
+}
+
+var fillRules = []gg.FillRule{
+	gg.FillRuleWinding,
+	gg.FillRuleEvenOdd,
+}
+
+var lineCaps = []gg.LineCap{
+	gg.LineCapRound,
+	gg.LineCapButt,
+	gg.LineCapSquare,
+}
+
+var lineJoins = []gg.LineJoin{
+	gg.LineJoinRound,
+	gg.LineJoinBevel,
+}
+
+var repeatOps = []gg.RepeatOp{
+	gg.RepeatBoth,
+	gg.RepeatX,
+	gg.RepeatY,
+	gg.RepeatNone,
+}
+
+var alignment = []gg.Align{
+	gg.AlignLeft,
+	gg.AlignCenter,
+	gg.AlignRight,
 }
