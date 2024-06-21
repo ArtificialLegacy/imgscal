@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -118,17 +119,17 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func dir_img()
-	/// @arg path - the directory path to scan for images.
-	/// @returns array containing strings of each valid image in the directory.
-	lib.CreateFunction("dir_img",
+	/// @func dir()
+	/// @arg path
+	/// @returns array containing all file paths in directory.
+	lib.CreateFunction("dir",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			f, err := os.Stat(args["path"].(string))
 			if err != nil {
-				r.State.PushString(lg.Append("invalid dir path provided to io.dir_img", log.LEVEL_ERROR))
+				r.State.PushString(lg.Append("invalid dir path provided to io.dir", log.LEVEL_ERROR))
 				r.State.Error()
 			}
 			if !f.IsDir() {
@@ -146,12 +147,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			i := 1
 			for _, file := range files {
-				ext := filepath.Ext(file.Name())
-				if ext != ".png" && ext != ".jpg" && ext != ".gif" {
-					continue
-				}
-
-				lg.Append(fmt.Sprintf("found file %s with dir_img", file.Name()), log.LEVEL_INFO)
+				lg.Append(fmt.Sprintf("found file %s with dir", file.Name()), log.LEVEL_INFO)
 
 				pth := path.Join(args["path"].(string), file.Name())
 				r.State.PushInteger(i)
@@ -159,6 +155,96 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				r.State.SetTable(-3)
 				i++
 			}
+
 			return 1
 		})
+
+	/// @func dir_img()
+	/// @arg path - the directory path to scan for images.
+	/// @returns array containing strings of each valid image in the directory.
+	lib.CreateFunction("dir_img",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			parseDir("io.dir_img", args["path"].(string), []string{".png", ".jpg", ".gif"}, lib)
+			return 1
+		})
+
+	// @func dir_txt()
+	/// @arg path - the directory path to scan for txt.
+	/// @returns array containing strings of each valid txt in the directory.
+	lib.CreateFunction("dir_txt",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			parseDir("io.dir_txt", args["path"].(string), []string{".txt"}, lib)
+			return 1
+		})
+
+	// @func dir_json()
+	/// @arg path - the directory path to scan for json.
+	/// @returns array containing strings of each valid json in the directory.
+	lib.CreateFunction("dir_json",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			parseDir("io.dir_json", args["path"].(string), []string{".json"}, lib)
+			return 1
+		})
+
+	/// @func mkdir()
+	/// @arg path
+	/// @arg all - if to create all directories going to the given path
+	lib.CreateFunction("mkdir",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.BOOL, Name: "all", Optional: true},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			if args["all"].(bool) {
+				os.MkdirAll(args["path"].(string), 0o666)
+			} else {
+				os.Mkdir(args["path"].(string), 0o666)
+			}
+			return 0
+		})
+}
+
+func parseDir(fn string, pathstr string, filter []string, lib *lua.Lib) {
+	f, err := os.Stat(pathstr)
+	if err != nil {
+		lib.State.PushString(lib.Lg.Append(fmt.Sprintf("invalid dir path provided to %s", fn), log.LEVEL_ERROR))
+		lib.State.Error()
+	}
+	if !f.IsDir() {
+		lib.State.PushString(lib.Lg.Append("dir provided is not a directory", log.LEVEL_ERROR))
+		lib.State.Error()
+	}
+
+	files, err := os.ReadDir(pathstr)
+	if err != nil {
+		lib.State.PushString(lib.Lg.Append("failed to open dir", log.LEVEL_ERROR))
+		lib.State.Error()
+	}
+
+	lib.State.NewTable()
+
+	i := 1
+	for _, file := range files {
+		ext := filepath.Ext(file.Name())
+		if !slices.Contains(filter, ext) {
+			continue
+		}
+
+		lib.Lg.Append(fmt.Sprintf("found file %s with %s", file.Name(), fn), log.LEVEL_INFO)
+
+		pth := path.Join(pathstr, file.Name())
+		lib.State.PushInteger(i)
+		lib.State.PushString(pth)
+		lib.State.SetTable(-3)
+		i++
+	}
 }
