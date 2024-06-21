@@ -14,6 +14,8 @@ import (
 
 const LIB_CONTEXT = "context"
 
+type Point map[string]float64
+
 func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib := lua.NewLib(LIB_CONTEXT, r.State, lg)
 
@@ -43,22 +45,47 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func point()
+	/// @arg x
+	/// @arg y
+	/// returns point{x, y}
+	lib.CreateFunction("point",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.State.NewTable()
+
+			r.State.PushNumber(args["x"].(float64))
+			r.State.SetField(-2, "x")
+			r.State.PushNumber(args["y"].(float64))
+			r.State.SetField(-2, "y")
+
+			return 1
+		})
+
 	/// @func distance()
-	/// @arg x1 - float
-	/// @arg y1 - float
-	/// @arg x2 - float
-	/// @arg y2 - float
+	/// @arg p1 - point{x, y}
+	/// @arg p2 - point{x, y}
 	/// @returns float
 	lib.CreateFunction("distance",
 		[]lua.Arg{
-			{Type: lua.FLOAT, Name: "x1"},
-			{Type: lua.FLOAT, Name: "y1"},
-			{Type: lua.FLOAT, Name: "x2"},
-			{Type: lua.FLOAT, Name: "y2"},
+			{Type: lua.TABLE, Name: "p1", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "x"},
+				{Type: lua.FLOAT, Name: "y"},
+			}},
+			{Type: lua.TABLE, Name: "p2", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "x"},
+				{Type: lua.FLOAT, Name: "y"},
+			}},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			p1 := gg.Point{X: args["x1"].(float64), Y: args["y1"].(float64)}
-			p2 := gg.Point{X: args["x2"].(float64), Y: args["y2"].(float64)}
+			ap1 := args["p1"].(Point)
+			ap2 := args["b2"].(Point)
+
+			p1 := gg.Point{X: ap1["x"], Y: ap1["y"]}
+			p2 := gg.Point{X: ap2["x"], Y: ap2["y"]}
 
 			dist := p1.Distance(p2)
 
@@ -67,30 +94,38 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func interpolate()
-	/// @arg x1 - float
-	/// @arg y1 - float
-	/// @arg x2 - float
-	/// @arg y2 - float
+	/// @arg p1 - point{x, y}
+	/// @arg p2 - point{x, y}
 	/// @arg t - float
-	/// @returns x
-	/// @returns y
+	/// @returns point{x, y}
 	lib.CreateFunction("interpolate",
 		[]lua.Arg{
-			{Type: lua.FLOAT, Name: "x1"},
-			{Type: lua.FLOAT, Name: "y1"},
-			{Type: lua.FLOAT, Name: "x2"},
-			{Type: lua.FLOAT, Name: "y2"},
+			{Type: lua.TABLE, Name: "p1", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "x"},
+				{Type: lua.FLOAT, Name: "y"},
+			}},
+			{Type: lua.TABLE, Name: "p2", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "x"},
+				{Type: lua.FLOAT, Name: "y"},
+			}},
 			{Type: lua.FLOAT, Name: "t"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			p1 := gg.Point{X: args["x1"].(float64), Y: args["y1"].(float64)}
-			p2 := gg.Point{X: args["x2"].(float64), Y: args["y2"].(float64)}
+			ap1 := args["p1"].(Point)
+			ap2 := args["b2"].(Point)
+
+			p1 := gg.Point{X: ap1["x"], Y: ap1["y"]}
+			p2 := gg.Point{X: ap2["x"], Y: ap2["y"]}
 
 			pi := p1.Interpolate(p2, args["t"].(float64))
 
+			r.State.NewTable()
+
 			r.State.PushNumber(pi.X)
+			r.State.SetField(-2, "x")
 			r.State.PushNumber(pi.Y)
-			return 2
+			r.State.SetField(-2, "y")
+			return 1
 		})
 
 	/// @func new()
@@ -127,7 +162,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 	/// @func new_image()
 	/// @arg id - image id to create a context for
-	/// @returns - new context id
+	/// @returns new context id
 	lib.CreateFunction("new_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1027,7 +1062,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg ay
 	/// @arg width
 	/// @arg spacing
-	/// @arg  align
+	/// @arg align
 	lib.CreateFunction("draw_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1256,14 +1291,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func rotate()
+	/// @func rotate_about()
 	/// @arg id
 	/// @arg angle
 	/// @arg x
 	/// @arg y
 	/// @desc
 	/// rotates the transformation matrix around the point
-	lib.CreateFunction("rotate",
+	lib.CreateFunction("rotate_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "angle"},

@@ -212,6 +212,10 @@ func (c *Collection[T]) TaskCount() (int, bool) {
 
 func (c *Collection[T]) CollectAll() {
 	for id, i := range c.items {
+		if i.collect {
+			continue
+		}
+
 		i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
 		i.Lg.Close()
 
