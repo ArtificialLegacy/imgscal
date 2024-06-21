@@ -81,6 +81,50 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func confirm()
+	/// @arg msg
+	/// @desc
+	/// waits for enter to be pressed before continuing.
+	lib.CreateFunction("confirm",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			cli.Question(fmt.Sprintf("%s [ENTER]", args["msg"].(string)), cli.QuestionOptions{})
+			return 0
+		})
+
+	/// @func select()
+	/// @arg msg
+	/// @arg options - array of strings
+	/// @returns index of selected option, or 0.
+	lib.CreateFunction("select",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+			{Type: lua.ARRAY, Name: "options", Table: &[]lua.Arg{{Type: lua.STRING}}},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			opts := []string{}
+
+			for _, v := range args["options"].(map[string]any) {
+				opts = append(opts, v.(string))
+			}
+
+			ind, err := cli.SelectMenu(
+				args["msg"].(string),
+				opts,
+			)
+			if err != nil {
+				lg.Append("selection failed", log.LEVEL_WARN)
+			}
+
+			lg.Append(fmt.Sprintf("selection option picked: %d", ind+1), log.LEVEL_INFO)
+
+			r.State.PushInteger(ind + 1)
+
+			return 1
+		})
+
 	/// @constants Control
 	/// @const RESET
 	r.State.PushString(string(cli.COLOR_RESET))
