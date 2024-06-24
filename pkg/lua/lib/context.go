@@ -1543,7 +1543,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction("dash_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ARRAY, Name: "pattern", Table: &[]lua.Arg{{Type: lua.FLOAT}}},
+			lua.ArgArray("pattern", lua.ArrayType{Type: lua.FLOAT}, false),
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{

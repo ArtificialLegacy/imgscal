@@ -236,15 +236,14 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					upLeft := image.Point{args["x1"].(int), args["y1"].(int)}
-					lowRight := image.Point{args["x2"].(int), args["y2"].(int)}
-					rect := image.Rectangle{upLeft, lowRight}
-
-					dimg := i.Self.Image
-					rgba := dimg.(*image.RGBA)
-
-					simg := rgba.SubImage(rect)
-					i.Self.Image = simg
+					i.Self.Image = imageutil.SubImage(
+						i.Self.Image,
+						args["x1"].(int),
+						args["y1"].(int),
+						args["x2"].(int),
+						args["y2"].(int),
+						false,
+					)
 				},
 			})
 
@@ -277,7 +276,15 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					simg = imageutil.SubImage(i.Self.Image, args["x1"].(int), args["y1"].(int), args["x2"].(int), args["y2"].(int))
+					simg = imageutil.SubImage(
+						i.Self.Image,
+						args["x1"].(int),
+						args["y1"].(int),
+						args["x2"].(int),
+						args["y2"].(int),
+						true,
+					)
+
 					encoding = i.Self.Encoding
 					simgReady <- struct{}{}
 				},

@@ -101,7 +101,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction("select",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
-			{Type: lua.ARRAY, Name: "options", Table: &[]lua.Arg{{Type: lua.STRING}}},
+			lua.ArgArray("options", lua.ArrayType{Type: lua.STRING}, false),
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			opts := []string{}

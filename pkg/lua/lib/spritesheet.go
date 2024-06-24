@@ -71,7 +71,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 					bottomy := topy + height
 
 					for ind := 0; ind < count; ind++ {
-						simg := imageutil.SubImage(i.Self.Image, topx, topy, bottomx, bottomy)
+						simg := imageutil.SubImage(i.Self.Image, topx, topy, bottomx, bottomy, true)
 						frameSimg[ind] <- simg
 
 						if (ind+1)%args["perRow"].(int) == 0 {

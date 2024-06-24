@@ -186,6 +186,37 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	// @func dir_dir()
+	/// @arg path - the directory path to scan for directories.
+	/// @returns array containing strings of each valid dir in the directory.
+	lib.CreateFunction("dir_dir",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			parseDirDir("io.dir_dir", args["path"].(string), lib)
+			return 1
+		})
+
+	/// @func dir_filter()
+	/// @arg path - the directory path to scan
+	/// @arg filter - array of file paths to include
+	/// @returns array containing all files that match the filter
+	lib.CreateFunction("dir_filter",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			lua.ArgArray("filter", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			filter := []string{}
+			for _, v := range args["filter"].(map[string]any) {
+				filter = append(filter, v.(string))
+			}
+
+			parseDir("dir_filter", args["path"].(string), filter, lib)
+			return 1
+		})
+
 	/// @func mkdir()
 	/// @arg path
 	/// @arg all - if to create all directories going to the given path
@@ -231,6 +262,41 @@ func parseDir(fn string, pathstr string, filter []string, lib *lua.Lib) {
 		}
 
 		lib.Lg.Append(fmt.Sprintf("found file %s with %s", file.Name(), fn), log.LEVEL_INFO)
+
+		pth := path.Join(pathstr, file.Name())
+		lib.State.PushInteger(i)
+		lib.State.PushString(pth)
+		lib.State.SetTable(-3)
+		i++
+	}
+}
+
+func parseDirDir(fn string, pathstr string, lib *lua.Lib) {
+	f, err := os.Stat(pathstr)
+	if err != nil {
+		lib.State.PushString(lib.Lg.Append(fmt.Sprintf("invalid dir path provided to %s", fn), log.LEVEL_ERROR))
+		lib.State.Error()
+	}
+	if !f.IsDir() {
+		lib.State.PushString(lib.Lg.Append("dir provided is not a directory", log.LEVEL_ERROR))
+		lib.State.Error()
+	}
+
+	files, err := os.ReadDir(pathstr)
+	if err != nil {
+		lib.State.PushString(lib.Lg.Append("failed to open dir", log.LEVEL_ERROR))
+		lib.State.Error()
+	}
+
+	lib.State.NewTable()
+
+	i := 1
+	for _, file := range files {
+		if !file.IsDir() {
+			continue
+		}
+
+		lib.Lg.Append(fmt.Sprintf("found dir %s with %s", file.Name(), fn), log.LEVEL_INFO)
 
 		pth := path.Join(pathstr, file.Name())
 		lib.State.PushInteger(i)
