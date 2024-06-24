@@ -356,10 +356,10 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func border_toggle()
+	/// @func border_set()
 	/// @arg id
 	/// @arg border
-	lib.CreateFunction("border_toggle",
+	lib.CreateFunction("border_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.BOOL, Name: "border", Optional: true},
@@ -373,6 +373,48 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 			return 0
+		})
+
+	/// @func content_set()
+	/// @arg id
+	/// @arg content
+	lib.CreateFunction("content_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemQR]) {
+					i.Self.QR.Content = args["content"].(string)
+				},
+			})
+			return 0
+		})
+
+	/// @func content()
+	/// @arg id
+	/// @returns string
+	/// @blocking
+	lib.CreateFunction("content",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			var content string
+
+			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemQR]) {
+					content = i.Self.QR.Content
+				},
+			})
+
+			r.State.PushString(content)
+			return 1
 		})
 
 	/// @constants Recovery Levels

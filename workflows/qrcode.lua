@@ -26,7 +26,7 @@ main(function ()
         blue=255,
         alpha=255
     })
-    qrcode.border_toggle(qr)
+    qrcode.border_set(qr)
     local img = qrcode.to_image(qr, "qrcode", -1, image.ENCODING_PNG)
     io.out(img, "./output")
 end)
