@@ -535,6 +535,42 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func convert_color()
+	/// @arg model
+	/// @arg color {red, green, blue, alpha}
+	/// @returns new color {red, green, blue, alpha}
+	lib.CreateFunction("convert_color",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "model"},
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			color := args["color"].(map[string]any)
+			red, green, blue, alpha := imageutil.ConvertColor(
+				lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib),
+				color["red"].(int),
+				color["green"].(int),
+				color["blue"].(int),
+				color["alpha"].(int),
+			)
+
+			r.State.NewTable()
+			r.State.PushInteger(red)
+			r.State.SetField(-2, "red")
+			r.State.PushInteger(green)
+			r.State.SetField(-2, "green")
+			r.State.PushInteger(blue)
+			r.State.SetField(-2, "blue")
+			r.State.PushInteger(alpha)
+			r.State.SetField(-2, "alpha")
+			return 1
+		})
+
 	/// @constants Color Models
 	/// @const RGBA
 	/// @const RGBA64
