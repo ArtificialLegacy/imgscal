@@ -16,6 +16,7 @@ type Runner struct {
 	IC    *collection.Collection[collection.ItemImage]
 	FC    *collection.Collection[collection.ItemFile]
 	CC    *collection.Collection[collection.ItemContext]
+	QR    *collection.Collection[collection.ItemQR]
 	lg    *log.Logger
 }
 
@@ -33,6 +34,7 @@ func NewRunner(state *lua.State, lg *log.Logger) Runner {
 				}
 			}),
 		CC: collection.NewCollection[collection.ItemContext](lg),
+		QR: collection.NewCollection[collection.ItemQR](lg),
 	}
 }
 
@@ -116,6 +118,9 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 		switch a.Type {
 		case INT:
 			v, ok := l.State.ToInteger(ind)
+			if i >= ln {
+				ok = false
+			}
 			if (!ok || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid int provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
@@ -129,6 +134,9 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 
 		case FLOAT:
 			v, ok := l.State.ToNumber(ind)
+			if i >= ln {
+				ok = false
+			}
 			if (!ok || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid float provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
@@ -141,11 +149,20 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 			}
 
 		case BOOL:
-			v := l.State.ToBoolean(ind)
-			argMap[a.Name] = v
+			if i >= ln {
+				argMap[a.Name] = false
+			} else {
+				v := l.State.ToBoolean(ind)
+				argMap[a.Name] = v
+				rm := l.State.AbsIndex(ind)
+				l.State.Remove(rm)
+			}
 
 		case STRING:
 			v, ok := l.State.ToString(ind)
+			if i >= ln {
+				ok = false
+			}
 			if (!ok || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid string provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
@@ -159,6 +176,9 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 
 		case TABLE:
 			exists := l.State.IsTable(ind)
+			if i >= ln {
+				exists = false
+			}
 			if (!exists || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid table provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
@@ -173,6 +193,9 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 
 		case ARRAY:
 			exists := l.State.IsTable(ind)
+			if i >= ln {
+				exists = false
+			}
 			if (!exists || ind == 0) && !a.Optional {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid array provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
@@ -202,10 +225,14 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 			}
 
 		case ANY:
-			v := l.State.ToValue(ind)
-			rm := l.State.AbsIndex(ind)
-			l.State.Remove(rm)
-			argMap[a.Name] = v
+			if i >= ln {
+				argMap[a.Name] = nil
+			} else {
+				v := l.State.ToValue(ind)
+				rm := l.State.AbsIndex(ind)
+				l.State.Remove(rm)
+				argMap[a.Name] = v
+			}
 		default:
 			panic(fmt.Sprintf("attempting to parse an arg with an unknown type: %d", a.Type))
 		}

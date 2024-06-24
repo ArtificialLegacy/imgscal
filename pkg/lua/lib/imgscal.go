@@ -17,4 +17,5 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_COLLECTION:  RegisterCollection,
 	LIB_CONTEXT:     RegisterContext,
 	LIB_SPRITESHEET: RegisterSpritesheet,
+	LIB_QRCODE:      RegisterQRCode,
 }

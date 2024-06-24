@@ -43,12 +43,13 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	err := runner.Run(script)
 
-	for checkState(runner.IC) || checkState(runner.FC) || checkState(runner.CC) {
+	for checkState(runner.IC) || checkState(runner.FC) || checkState(runner.CC) || checkState(runner.QR) {
 	}
 
 	runner.IC.CollectAll()
 	runner.FC.CollectAll()
 	runner.CC.CollectAll()
+	runner.QR.CollectAll()
 
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
@@ -63,7 +64,8 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm)
 	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm)
 	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
-	if eri || erf || erc {
+	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
+	if eri || erf || erc || erq {
 		return nil
 	}
 

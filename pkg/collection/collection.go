@@ -9,6 +9,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/fogleman/gg"
+	"github.com/skip2/go-qrcode"
 )
 
 const TASK_QUEUE_SIZE = 64
@@ -39,13 +40,19 @@ type ItemFile struct {
 	Name string
 }
 
-func (img ItemFile) Identifier() string { return "ItemFile" }
+func (file ItemFile) Identifier() string { return "ItemFile" }
 
 type ItemContext struct {
 	Context *gg.Context
 }
 
-func (img ItemContext) Identifier() string { return "ItemContext" }
+func (context ItemContext) Identifier() string { return "ItemContext" }
+
+type ItemQR struct {
+	QR *qrcode.QRCode
+}
+
+func (qr ItemQR) Identifier() string { return "ItemQR" }
 
 type Item[T ItemSelf] struct {
 	Self *T
