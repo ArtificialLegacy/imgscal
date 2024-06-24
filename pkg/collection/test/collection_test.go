@@ -7,28 +7,41 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 )
 
+type ItemString struct {
+	Value string
+}
+
+func (img ItemString) Identifier() string { return "ItemString" }
+
 func TestCollection(t *testing.T) {
 	lg := log.NewLoggerEmpty()
-	c := collection.NewCollection[string](&lg)
+	c := collection.NewCollection[ItemString](&lg)
 
-	id := c.AddItem("test_item", &lg)
+	id := c.AddItem(&lg)
 	value := ""
 
-	c.Schedule(id, &collection.Task[string]{
-		Fn: func(i *collection.Item[string]) {
-			str := "test"
-			i.Self = &str
+	const expected = "test"
+
+	c.Schedule(id, &collection.Task[ItemString]{
+		Lib:  "test",
+		Name: "first",
+		Fn: func(i *collection.Item[ItemString]) {
+			i.Self = &ItemString{
+				Value: expected,
+			}
 		},
 	})
 
-	<-c.Schedule(id, &collection.Task[string]{
-		Fn: func(i *collection.Item[string]) {
-			value = *i.Self
+	<-c.Schedule(id, &collection.Task[ItemString]{
+		Lib:  "test",
+		Name: "second",
+		Fn: func(i *collection.Item[ItemString]) {
+			value = i.Self.Value
 		},
 	})
 
-	if value != "test" {
-		t.Errorf("got wrong item after task run, expected=test_item got=%s", value)
+	if value != expected {
+		t.Errorf("got wrong item after task run, expected=%s got=%s", expected, value)
 	}
 
 	for c, b := c.TaskCount(); b || c > 0; {

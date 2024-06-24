@@ -1,8 +1,6 @@
 package lib
 
 import (
-	"image"
-
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
@@ -27,11 +25,11 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 		func(d lua.TaskData, args map[string]any) int {
 			result := false
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
-					res, err := nude.IsImageNude(*i.Self)
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					res, err := nude.IsImageNude(i.Self.Image)
 					if err != nil {
 						r.State.PushString(i.Lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
 						r.State.Error()

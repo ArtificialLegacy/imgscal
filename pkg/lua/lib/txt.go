@@ -46,12 +46,12 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			chLog.Parent = lg
 			lg.Append(fmt.Sprintf("child log created: file_%s", fi.Name()), log.LEVEL_INFO)
 
-			id := r.FC.AddItem(args["path"].(string), &chLog)
+			id := r.FC.AddItem(&chLog)
 
-			r.FC.Schedule(id, &collection.Task[os.File]{
+			r.FC.Schedule(id, &collection.Task[collection.ItemFile]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[os.File]) {
+				Fn: func(i *collection.Item[collection.ItemFile]) {
 					flag := args["flag"].(int)
 					if flag == 0 {
 						flag = os.O_CREATE
@@ -62,7 +62,10 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 						r.State.Error()
 					}
 
-					i.Self = f
+					i.Self = &collection.ItemFile{
+						Name: args["path"].(string),
+						File: f,
+					}
 				},
 			})
 
@@ -79,11 +82,11 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "txt"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.FC.Schedule(args["id"].(int), &collection.Task[os.File]{
+			r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[os.File]) {
-					_, err := i.Self.WriteString(args["txt"].(string))
+				Fn: func(i *collection.Item[collection.ItemFile]) {
+					_, err := i.Self.File.WriteString(args["txt"].(string))
 					if err != nil {
 						r.State.PushString(i.Lg.Append(fmt.Sprintf("failed to write to txt file: %d", args["id"]), log.LEVEL_ERROR))
 					}

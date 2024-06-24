@@ -24,9 +24,11 @@ main(function ()
         context.color_hex(ctx, "#000000EE")
 
         context.draw_polygon(ctx, 3, 150, 220, 180, 0)
-        context.fill(ctx)
+        context.dash_set(ctx, {20, 20, 15, 30})
+        context.line_width(ctx, 10)
+        context.stroke(ctx)
 
-        local imgAfter = context.to_image(ctx, "png")
+        local imgAfter = context.to_image(ctx, "output_"..k, image.ENCODING_PNG)
         io.out(imgAfter, "./output")
     end
 end)

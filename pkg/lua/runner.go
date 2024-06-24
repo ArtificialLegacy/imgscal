@@ -2,7 +2,6 @@ package lua
 
 import (
 	"fmt"
-	"image"
 	"os"
 	"path"
 	"strconv"
@@ -10,14 +9,13 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/Shopify/go-lua"
-	"github.com/fogleman/gg"
 )
 
 type Runner struct {
 	State *lua.State
-	IC    *collection.Collection[image.Image]
-	FC    *collection.Collection[os.File]
-	CC    *collection.Collection[gg.Context]
+	IC    *collection.Collection[collection.ItemImage]
+	FC    *collection.Collection[collection.ItemFile]
+	CC    *collection.Collection[collection.ItemContext]
 	lg    *log.Logger
 }
 
@@ -27,14 +25,14 @@ func NewRunner(state *lua.State, lg *log.Logger) Runner {
 		lg:    lg,
 
 		// collections
-		IC: collection.NewCollection[image.Image](lg),
-		FC: collection.NewCollection[os.File](lg).OnCollect(
-			func(i *collection.Item[os.File]) {
+		IC: collection.NewCollection[collection.ItemImage](lg),
+		FC: collection.NewCollection[collection.ItemFile](lg).OnCollect(
+			func(i *collection.Item[collection.ItemFile]) {
 				if i.Self != nil {
-					i.Self.Close()
+					i.Self.File.Close()
 				}
 			}),
-		CC: collection.NewCollection[gg.Context](lg),
+		CC: collection.NewCollection[collection.ItemContext](lg),
 	}
 }
 
@@ -122,7 +120,7 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid int provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
 			} else if (!ok || ind == 0) && a.Optional {
-				argMap[a.Name] = 0
+				argMap[a.Name] = l.getDefault(a)
 			} else {
 				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
@@ -135,7 +133,7 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid float provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
 			} else if (!ok || ind == 0) && a.Optional {
-				argMap[a.Name] = 0.0
+				argMap[a.Name] = l.getDefault(a)
 			} else {
 				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
@@ -152,7 +150,7 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid string provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
 			} else if (!ok || ind == 0) && a.Optional {
-				argMap[a.Name] = ""
+				argMap[a.Name] = l.getDefault(a)
 			} else {
 				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
@@ -165,7 +163,7 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid table provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
 			} else if (!exists || ind == 0) && a.Optional {
-				argMap[a.Name] = map[string]any{}
+				argMap[a.Name] = l.getDefault(a)
 			} else {
 				l.flattenTable(*a.Table)
 				argMap[a.Name] = l.ParseArgs(name, *a.Table, len(*a.Table))
@@ -179,7 +177,7 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid array provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
 				l.State.Error()
 			} else if (!exists || ind == 0) && a.Optional {
-				argMap[a.Name] = []any{}
+				argMap[a.Name] = l.getDefault(a)
 			} else {
 				ln := l.State.RawLength(ind)
 				argTable := []Arg{}
@@ -219,6 +217,37 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 func (l *Lib) flattenTable(args []Arg) {
 	for i, arg := range args {
 		l.State.Field(-i-1, arg.Name)
+	}
+}
+
+func (l *Lib) getDefault(a Arg) any {
+	switch a.Type {
+	case INT:
+		return 0
+
+	case FLOAT:
+		return 0.0
+
+	case BOOL:
+		return false
+
+	case STRING:
+		return ""
+
+	case TABLE:
+		tab := map[string]any{}
+		for _, v := range *a.Table {
+			tab[v.Name] = l.getDefault(v)
+		}
+		return tab
+
+	case ARRAY:
+		return []any{}
+
+	case ANY:
+		fallthrough
+	default:
+		return nil
 	}
 }
 

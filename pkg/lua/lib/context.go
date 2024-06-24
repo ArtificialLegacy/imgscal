@@ -3,10 +3,9 @@ package lib
 import (
 	"fmt"
 	"image"
-	"path/filepath"
-	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/fogleman/gg"
@@ -144,14 +143,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			chLog.Parent = lg
 			lg.Append(fmt.Sprintf("child log created: %s", name), log.LEVEL_INFO)
 
-			id := r.CC.AddItem(name, &chLog)
+			id := r.CC.AddItem(&chLog)
 
-			r.CC.Schedule(id, &collection.Task[gg.Context]{
+			r.CC.Schedule(id, &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
+				Fn: func(i *collection.Item[collection.ItemContext]) {
 					c := gg.NewContext(args["width"].(int), args["height"].(int))
-					i.Self = c
+					i.Self.Context = c
 					i.Lg.Append("new context created", log.LEVEL_INFO)
 				},
 			})
@@ -168,21 +167,19 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			imageFinish := make(chan struct{}, 1)
-			imageReady := make(chan struct{}, 1)
+			imageFinish := make(chan struct{}, 2)
+			imageReady := make(chan struct{}, 2)
 			var img image.Image
-			var name string
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
-					img = *i.Self
-					name = strings.TrimSuffix(i.Name, filepath.Ext(i.Name))
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
 					imageReady <- struct{}{}
 					<-imageFinish
 				},
-				Fail: func(i *collection.Item[image.Image]) {
+				Fail: func(i *collection.Item[collection.ItemImage]) {
 					imageReady <- struct{}{}
 				},
 			})
@@ -193,17 +190,21 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			chLog.Parent = lg
 			lg.Append(fmt.Sprintf("child log created: %s", tempName), log.LEVEL_INFO)
 
-			id := r.CC.AddItem(tempName, &chLog)
+			id := r.CC.AddItem(&chLog)
 
-			r.CC.Schedule(id, &collection.Task[gg.Context]{
+			r.CC.Schedule(id, &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
+				Fn: func(i *collection.Item[collection.ItemContext]) {
 					<-imageReady
 
-					i.Self = gg.NewContextForImage(img)
-					i.Name = name
+					i.Self = &collection.ItemContext{
+						Context: gg.NewContextForImage(img),
+					}
 
+					imageFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemContext]) {
 					imageFinish <- struct{}{}
 				},
 			})
@@ -214,57 +215,60 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 	/// @func to_image()
 	/// @arg id
-	/// @arg ext - defaults to png
+	/// @arg name
+	/// @arg encoding
+	/// @arg model
 	/// @returns id - new image id
 	lib.CreateFunction("to_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.STRING, Name: "ext", Optional: true},
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "model", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			ext := "png"
-			if args["ext"] != "" {
-				ext = args["ext"].(string)
-			}
-
-			contextFinish := make(chan struct{}, 1)
-			contextReady := make(chan struct{}, 1)
+			contextFinish := make(chan struct{}, 2)
+			contextReady := make(chan struct{}, 2)
 
 			var context *gg.Context
-			var name string
 
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					context = i.Self
-					name = fmt.Sprintf("%s.%s", i.Name, ext)
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					context = i.Self.Context
 					contextReady <- struct{}{}
 					<-contextFinish
 				},
-				Fail: func(i *collection.Item[gg.Context]) {
+				Fail: func(i *collection.Item[collection.ItemContext]) {
 					contextReady <- struct{}{}
 				},
 			})
 
-			tempName := fmt.Sprintf("context_%d", r.IC.Next())
-
-			chLog := log.NewLogger(tempName)
+			chLog := log.NewLogger(args["name"].(string))
 			chLog.Parent = lg
-			lg.Append(fmt.Sprintf("child log created: %s", tempName), log.LEVEL_INFO)
+			lg.Append(fmt.Sprintf("child log created: %s", args["name"].(string)), log.LEVEL_INFO)
 
-			id := r.IC.AddItem(tempName, &chLog)
+			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[image.Image]{
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
+				Fn: func(i *collection.Item[collection.ItemImage]) {
 					<-contextReady
 
 					img := context.Image()
-					i.Self = &img
-					i.Name = name
 
+					i.Self = &collection.ItemImage{
+						Image:    img,
+						Name:     args["name"].(string),
+						Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
+						Model:    lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib),
+					}
+
+					contextFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
 					contextFinish <- struct{}{}
 				},
 			})
@@ -286,12 +290,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			width := 0
 			height := 0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					width = i.Self.Width()
-					height = i.Self.Height()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					width = i.Self.Context.Width()
+					height = i.Self.Context.Height()
 				},
 			})
 
@@ -311,11 +315,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 		func(d lua.TaskData, args map[string]any) int {
 			height := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					height = i.Self.FontHeight()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					height = i.Self.Context.FontHeight()
 				},
 			})
 
@@ -338,11 +342,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			width := 0.0
 			height := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					width, height = i.Self.MeasureString(args["str"].(string))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					width, height = i.Self.Context.MeasureString(args["str"].(string))
 				},
 			})
 
@@ -368,11 +372,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			width := 0.0
 			height := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					width, height = i.Self.MeasureMultilineString(args["str"].(string), args["spacing"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					width, height = i.Self.Context.MeasureMultilineString(args["str"].(string), args["spacing"].(float64))
 				},
 			})
 
@@ -396,11 +400,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			y := 0.0
 			exists := false
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					point, e := i.Self.GetCurrentPoint()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					point, e := i.Self.Context.GetCurrentPoint()
 					x = point.X
 					y = point.Y
 					exists = e
@@ -432,11 +436,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			x := 0.0
 			y := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					x, y = i.Self.TransformPoint(args["x"].(float64), args["y"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					x, y = i.Self.Context.TransformPoint(args["x"].(float64), args["y"].(float64))
 				},
 			})
 
@@ -454,11 +458,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Clear()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Clear()
 				},
 			})
 
@@ -476,14 +480,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
+				Fn: func(i *collection.Item[collection.ItemContext]) {
 					if args["preserve"].(bool) {
-						i.Self.ClipPreserve()
+						i.Self.Context.ClipPreserve()
 					} else {
-						i.Self.Clip()
+						i.Self.Context.Clip()
 					}
 				},
 			})
@@ -500,11 +504,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.ResetClip()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.ResetClip()
 				},
 			})
 
@@ -520,11 +524,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.ClearPath()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.ClearPath()
 				},
 			})
 
@@ -540,11 +544,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.ClosePath()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.ClosePath()
 				},
 			})
 
@@ -564,11 +568,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.MoveTo(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.MoveTo(
 						args["x"].(float64),
 						args["y"].(float64),
 					)
@@ -588,11 +592,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.NewSubPath()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.NewSubPath()
 				},
 			})
 
@@ -621,11 +625,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y3"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.CubicTo(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.CubicTo(
 						args["x1"].(float64),
 						args["y1"].(float64),
 						args["x2"].(float64),
@@ -657,11 +661,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y2"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.QuadraticTo(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.QuadraticTo(
 						args["x1"].(float64),
 						args["y1"].(float64),
 						args["x2"].(float64),
@@ -690,11 +694,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle2"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawArc(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawArc(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["r"].(float64),
@@ -720,11 +724,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawCircle(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawCircle(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["r"].(float64),
@@ -750,11 +754,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "ry"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawEllipse(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawEllipse(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["rx"].(float64),
@@ -785,11 +789,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle2"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawEllipticalArc(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawEllipticalArc(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["rx"].(float64),
@@ -818,11 +822,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y2"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawLine(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawLine(
 						args["x1"].(float64),
 						args["y1"].(float64),
 						args["x2"].(float64),
@@ -847,11 +851,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.LineTo(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.LineTo(
 						args["x"].(float64),
 						args["y"].(float64),
 					)
@@ -877,11 +881,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawPoint(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawPoint(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["r"].(float64),
@@ -907,11 +911,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "height"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawRectangle(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawRectangle(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["width"].(float64),
@@ -940,11 +944,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawRoundedRectangle(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawRoundedRectangle(
 						args["x"].(float64),
 						args["y"].(float64),
 						args["width"].(float64),
@@ -974,11 +978,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "rotation"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawRegularPolygon(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawRegularPolygon(
 						args["n"].(int),
 						args["x"].(float64),
 						args["y"].(float64),
@@ -1004,11 +1008,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawString(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawString(
 						args["str"].(string),
 						args["x"].(float64),
 						args["y"].(float64),
@@ -1036,11 +1040,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "ay"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawStringAnchored(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawStringAnchored(
 						args["str"].(string),
 						args["x"].(float64),
 						args["y"].(float64),
@@ -1076,11 +1080,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "align"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.DrawStringWrapped(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.DrawStringWrapped(
 						args["str"].(string),
 						args["x"].(float64),
 						args["y"].(float64),
@@ -1108,14 +1112,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
+				Fn: func(i *collection.Item[collection.ItemContext]) {
 					if args["preserve"].(bool) {
-						i.Self.FillPreserve()
+						i.Self.Context.FillPreserve()
 					} else {
-						i.Self.Fill()
+						i.Self.Context.Fill()
 					}
 				},
 			})
@@ -1132,11 +1136,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "rule"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetFillRule(lua.ParseEnum(args["rule"].(int), fillRules, lib))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetFillRule(lua.ParseEnum(args["rule"].(int), fillRules, lib))
 				},
 			})
 
@@ -1154,14 +1158,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
+				Fn: func(i *collection.Item[collection.ItemContext]) {
 					if args["preserve"].(bool) {
-						i.Self.StrokePreserve()
+						i.Self.Context.StrokePreserve()
 					} else {
-						i.Self.Stroke()
+						i.Self.Context.Stroke()
 					}
 				},
 			})
@@ -1178,11 +1182,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Identity()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Identity()
 				},
 			})
 
@@ -1198,11 +1202,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.InvertMask()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.InvertMask()
 				},
 			})
 
@@ -1218,11 +1222,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.InvertY()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.InvertY()
 				},
 			})
 
@@ -1238,11 +1242,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Push()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Push()
 				},
 			})
 
@@ -1258,11 +1262,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Pop()
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Pop()
 				},
 			})
 
@@ -1280,11 +1284,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Rotate(args["angle"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Rotate(args["angle"].(float64))
 				},
 			})
 
@@ -1306,11 +1310,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.RotateAbout(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.RotateAbout(
 						args["angle"].(float64),
 						args["x"].(float64),
 						args["y"].(float64),
@@ -1334,11 +1338,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Scale(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Scale(
 						args["x"].(float64),
 						args["y"].(float64),
 					)
@@ -1365,11 +1369,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.ScaleAbout(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.ScaleAbout(
 						args["sx"].(float64),
 						args["sy"].(float64),
 						args["x"].(float64),
@@ -1393,11 +1397,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "hex"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetHexColor(args["hex"].(string))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetHexColor(args["hex"].(string))
 				},
 			})
 
@@ -1419,11 +1423,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "b"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetRGB(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetRGB(
 						args["r"].(float64),
 						args["g"].(float64),
 						args["b"].(float64),
@@ -1449,11 +1453,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "b"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetRGB255(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetRGB255(
 						args["r"].(int),
 						args["g"].(int),
 						args["b"].(int),
@@ -1481,11 +1485,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "a"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetRGBA(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetRGBA(
 						args["r"].(float64),
 						args["g"].(float64),
 						args["b"].(float64),
@@ -1514,11 +1518,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "a"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetRGBA255(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetRGBA255(
 						args["r"].(int),
 						args["g"].(int),
 						args["b"].(int),
@@ -1542,11 +1546,16 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ARRAY, Name: "pattern", Table: &[]lua.Arg{{Type: lua.FLOAT}}},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetDash(args["pattern"].([]float64)...)
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					pattern := []float64{}
+					for _, v := range args["pattern"].(map[string]any) {
+						pattern = append(pattern, v.(float64))
+					}
+
+					i.Self.Context.SetDash(pattern...)
 				},
 			})
 
@@ -1564,11 +1573,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "offset"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetDashOffset(args["offset"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetDashOffset(args["offset"].(float64))
 				},
 			})
 
@@ -1584,11 +1593,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "cap"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetLineCap(lua.ParseEnum(args["cap"].(int), lineCaps, lib))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetLineCap(lua.ParseEnum(args["cap"].(int), lineCaps, lib))
 				},
 			})
 
@@ -1604,11 +1613,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "join"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetLineJoin(lua.ParseEnum(args["join"].(int), lineJoins, lib))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetLineJoin(lua.ParseEnum(args["join"].(int), lineJoins, lib))
 				},
 			})
 
@@ -1624,11 +1633,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "width"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetLineWidth(args["width"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetLineWidth(args["width"].(float64))
 				},
 			})
 
@@ -1646,11 +1655,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.SetPixel(args["x"].(int), args["y"].(int))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.SetPixel(args["x"].(int), args["y"].(int))
 				},
 			})
 
@@ -1670,11 +1679,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Shear(args["x"].(float64), args["y"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Shear(args["x"].(float64), args["y"].(float64))
 				},
 			})
 
@@ -1698,11 +1707,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.ShearAbout(
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.ShearAbout(
 						args["sx"].(float64),
 						args["sy"].(float64),
 						args["x"].(float64),
@@ -1727,11 +1736,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[gg.Context]{
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[gg.Context]) {
-					i.Self.Translate(args["x"].(float64), args["y"].(float64))
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.Translate(args["x"].(float64), args["y"].(float64))
 				},
 			})
 

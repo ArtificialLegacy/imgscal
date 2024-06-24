@@ -1,11 +1,5 @@
 package workflow
 
-import (
-	"image"
-
-	"github.com/ArtificialLegacy/imgscal/pkg/collection"
-)
-
 type Workflow struct {
 	Name     string
 	Version  string
@@ -22,8 +16,4 @@ func NewWorkflow() Workflow {
 		Desc:     "",
 		Requires: []string{},
 	}
-}
-
-type WorkflowData struct {
-	IC collection.Collection[image.Image]
 }

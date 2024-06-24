@@ -2,9 +2,13 @@ package collection
 
 import (
 	"fmt"
+	"image"
+	"os"
 	"sync"
 
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
+	"github.com/fogleman/gg"
 )
 
 const TASK_QUEUE_SIZE = 64
@@ -17,11 +21,35 @@ const (
 	TYPE_FILE
 )
 
-type Item[T any] struct {
-	Self *T
-	Name string
+type ItemSelf interface {
+	Identifier() string
+}
 
-	Lg *log.Logger
+type ItemImage struct {
+	Image    image.Image
+	Name     string
+	Encoding imageutil.ImageEncoding
+	Model    imageutil.ColorModel
+}
+
+func (img ItemImage) Identifier() string { return "ItemImage" }
+
+type ItemFile struct {
+	File *os.File
+	Name string
+}
+
+func (img ItemFile) Identifier() string { return "ItemFile" }
+
+type ItemContext struct {
+	Context *gg.Context
+}
+
+func (img ItemContext) Identifier() string { return "ItemContext" }
+
+type Item[T ItemSelf] struct {
+	Self *T
+	Lg   *log.Logger
 
 	cleaned bool
 	collect bool
@@ -33,10 +61,9 @@ type Item[T any] struct {
 	TaskQueue chan *Task[T]
 }
 
-func NewItem[T any](name string, lg *log.Logger, fn func(i *Item[T])) *Item[T] {
+func NewItem[T ItemSelf](lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 	i := &Item[T]{
 		Self: nil,
-		Name: name,
 		Lg:   lg,
 
 		cleaned:   false,
@@ -54,7 +81,7 @@ func NewItem[T any](name string, lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 func (i *Item[T]) process(fn func(i *Item[T])) {
 	defer func() {
 		if p := recover(); p != nil {
-			i.Lg.Append("recovered from panic within collection item.", log.LEVEL_ERROR)
+			i.Lg.Append(fmt.Sprintf("recovered from panic within collection item: %+v", p), log.LEVEL_ERROR)
 			if fn != nil {
 				fn(i)
 			}
@@ -81,13 +108,13 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 		i.Lg.Append(fmt.Sprintf("%s.%s task finished", task.Lib, task.Name), log.LEVEL_INFO)
 
 		if i.cleaned {
-			i.Lg.Append(fmt.Sprintf("item %s cleaned", i.Name), log.LEVEL_INFO)
+			i.Lg.Append(fmt.Sprintf("item [%T] cleaned", i.Self), log.LEVEL_INFO)
 			break
 		}
 	}
 }
 
-type Task[T any] struct {
+type Task[T ItemSelf] struct {
 	Fn   func(i *Item[T])
 	Fail func(i *Item[T])
 
@@ -95,7 +122,7 @@ type Task[T any] struct {
 	Name string
 }
 
-type Collection[T any] struct {
+type Collection[T ItemSelf] struct {
 	items []*Item[T]
 	lg    *log.Logger
 
@@ -104,7 +131,7 @@ type Collection[T any] struct {
 	onCollect func(i *Item[T])
 }
 
-func NewCollection[T any](lg *log.Logger) *Collection[T] {
+func NewCollection[T ItemSelf](lg *log.Logger) *Collection[T] {
 	return &Collection[T]{
 		items: []*Item[T]{},
 		lg:    lg,
@@ -117,8 +144,8 @@ func (c *Collection[T]) OnCollect(fn func(i *Item[T])) *Collection[T] {
 	return c
 }
 
-func (c *Collection[T]) AddItem(name string, lg *log.Logger) int {
-	item := NewItem(name, lg, c.onCollect)
+func (c *Collection[T]) AddItem(lg *log.Logger) int {
+	item := NewItem(lg, c.onCollect)
 	id := len(c.items)
 
 	c.items = append(c.items, item)

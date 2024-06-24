@@ -2,16 +2,14 @@ package lib
 
 import (
 	"fmt"
-	"image"
-	"image/gif"
-	"image/jpeg"
-	"image/png"
 	"os"
 	"path"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 )
@@ -43,12 +41,12 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			chLog.Parent = lg
 			lg.Append(fmt.Sprintf("child log created: image_%s", file.Name()), log.LEVEL_INFO)
 
-			id := r.IC.AddItem(file.Name(), &chLog)
+			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[image.Image]{
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
+				Fn: func(i *collection.Item[collection.ItemImage]) {
 					f, err := os.Open(args["path"].(string))
 					if err != nil {
 						r.State.PushString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR))
@@ -56,16 +54,18 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 					}
 					defer f.Close()
 
-					image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
-					image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
-					image.RegisterFormat("gif", "gif", gif.Decode, gif.DecodeConfig)
-					image, _, err := image.Decode(f)
+					encoding := imageutil.ExtensionEncoding(path.Ext(file.Name()))
+					img, err := imageutil.Decode(f, encoding)
 					if err != nil {
-						r.State.PushString(i.Lg.Append("provided file is an invalid image", log.LEVEL_ERROR))
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("provided file is an invalid image: %s", err), log.LEVEL_ERROR))
 						r.State.Error()
 					}
 
-					i.Self = &image
+					i.Self = &collection.ItemImage{
+						Name:     strings.TrimSuffix(file.Name(), path.Ext(file.Name())),
+						Image:    img,
+						Encoding: encoding,
+					}
 				},
 			})
 
@@ -87,31 +87,22 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				os.MkdirAll(args["path"].(string), 0o666)
 			}
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
-					f, err := os.OpenFile(path.Join(args["path"].(string), i.Name), os.O_CREATE, 0o666)
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					ext := imageutil.EncodingExtension(i.Self.Encoding)
+					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+ext), os.O_CREATE, 0o666)
 					if err != nil {
 						r.State.PushString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR))
 						r.State.Error()
 					}
 					defer f.Close()
 
-					ext := filepath.Ext(i.Name)
-
-					switch ext {
-					case ".png":
-						i.Lg.Append("image encoded as png", log.LEVEL_INFO)
-						png.Encode(f, *i.Self)
-					case ".jpg":
-						i.Lg.Append("image encoded as jpg", log.LEVEL_INFO)
-						jpeg.Encode(f, *i.Self, &jpeg.Options{Quality: 100})
-					case ".gif":
-						i.Lg.Append("image encoded as gif", log.LEVEL_INFO)
-						gif.Encode(f, *i.Self, &gif.Options{})
-					default:
-						r.State.PushString(i.Lg.Append(fmt.Sprintf("unknown encoding used: %s", ext), log.LEVEL_ERROR))
+					lg.Append(fmt.Sprintf("encoding using %d", i.Self.Encoding), log.LEVEL_INFO)
+					err = imageutil.Encode(f, i.Self.Image, i.Self.Encoding)
+					if err != nil {
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("cannot write image to file: %s", err), log.LEVEL_ERROR))
 						r.State.Error()
 					}
 				},

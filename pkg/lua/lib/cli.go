@@ -105,7 +105,6 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			opts := []string{}
-
 			for _, v := range args["options"].(map[string]any) {
 				opts = append(opts, v.(string))
 			}

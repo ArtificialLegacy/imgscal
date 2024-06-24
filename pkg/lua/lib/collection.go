@@ -1,8 +1,6 @@
 package lib
 
 import (
-	"image"
-	"os"
 	"sync"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -27,16 +25,16 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(d lua.TaskData, args map[string]any) int {
 			switch args["type"].(int) {
 			case int(collection.TYPE_IMAGE):
-				<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
-					Fn:   func(i *collection.Item[image.Image]) {},
+					Fn:   func(i *collection.Item[collection.ItemImage]) {},
 				})
 			case int(collection.TYPE_FILE):
-				<-r.FC.Schedule(args["id"].(int), &collection.Task[os.File]{
+				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
 					Lib:  LIB_COLLECTION,
 					Name: "wait",
-					Fn:   func(i *collection.Item[os.File]) {},
+					Fn:   func(i *collection.Item[collection.ItemFile]) {},
 				})
 			}
 
@@ -54,16 +52,16 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 			switch args["type"].(int) {
 			case int(collection.TYPE_IMAGE):
-				<-r.IC.ScheduleAll(&collection.Task[image.Image]{
+				<-r.IC.ScheduleAll(&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
-					Fn:   func(i *collection.Item[image.Image]) {},
+					Fn:   func(i *collection.Item[collection.ItemImage]) {},
 				})
 			case int(collection.TYPE_FILE):
-				<-r.FC.ScheduleAll(&collection.Task[os.File]{
+				<-r.FC.ScheduleAll(&collection.Task[collection.ItemFile]{
 					Lib:  LIB_COLLECTION,
 					Name: "wait_all",
-					Fn:   func(i *collection.Item[os.File]) {},
+					Fn:   func(i *collection.Item[collection.ItemFile]) {},
 				})
 			}
 
@@ -79,15 +77,15 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(d lua.TaskData, args map[string]any) int {
 			chans := []<-chan struct{}{}
 
-			chans = append(chans, r.IC.ScheduleAll(&collection.Task[image.Image]{
+			chans = append(chans, r.IC.ScheduleAll(&collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn:   func(i *collection.Item[image.Image]) {},
+				Fn:   func(i *collection.Item[collection.ItemImage]) {},
 			}))
-			chans = append(chans, r.FC.ScheduleAll(&collection.Task[os.File]{
+			chans = append(chans, r.FC.ScheduleAll(&collection.Task[collection.ItemFile]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn:   func(i *collection.Item[os.File]) {},
+				Fn:   func(i *collection.Item[collection.ItemFile]) {},
 			}))
 
 			wg := sync.WaitGroup{}

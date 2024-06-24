@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"image"
 	"os"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -28,12 +27,12 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "reverse"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
+				Fn: func(i *collection.Item[collection.ItemImage]) {
 					converter := convert.NewImageConverter()
-					str := converter.Image2ASCIIString(*i.Self, &convert.Options{
+					str := converter.Image2ASCIIString(i.Self.Image, &convert.Options{
 						Colored:  args["color"].(bool),
 						Reversed: args["reverse"].(bool),
 					})
@@ -69,12 +68,12 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "reverse"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
+				Fn: func(i *collection.Item[collection.ItemImage]) {
 					converter := convert.NewImageConverter()
-					str := converter.Image2ASCIIString(*i.Self, &convert.Options{
+					str := converter.Image2ASCIIString(i.Self.Image, &convert.Options{
 						FixedWidth:  args["width"].(int),
 						FixedHeight: args["height"].(int),
 						Colored:     args["color"].(bool),
@@ -111,12 +110,12 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 		func(d lua.TaskData, args map[string]any) int {
 			str := ""
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
+				Fn: func(i *collection.Item[collection.ItemImage]) {
 					converter := convert.NewImageConverter()
-					str = converter.Image2ASCIIString(*i.Self, &convert.Options{
+					str = converter.Image2ASCIIString(i.Self.Image, &convert.Options{
 						Colored:  args["color"].(bool),
 						Reversed: args["reverse"].(bool),
 					})
@@ -147,12 +146,12 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 		func(d lua.TaskData, args map[string]any) int {
 			str := ""
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[image.Image]{
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
-				Fn: func(i *collection.Item[image.Image]) {
+				Fn: func(i *collection.Item[collection.ItemImage]) {
 					converter := convert.NewImageConverter()
-					str = converter.Image2ASCIIString(*i.Self, &convert.Options{
+					str = converter.Image2ASCIIString(i.Self.Image, &convert.Options{
 						FixedWidth:  args["width"].(int),
 						FixedHeight: args["height"].(int),
 						Colored:     args["color"].(bool),

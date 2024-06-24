@@ -93,7 +93,7 @@ func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine
 	return errExists
 }
 
-func checkState[T any](c *collection.Collection[T]) bool {
+func checkState[T collection.ItemSelf](c *collection.Collection[T]) bool {
 	co, b := c.TaskCount()
 
 	return co > 0 || b
