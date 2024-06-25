@@ -25,7 +25,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 		return err
 	}
 
-	lg := log.NewLogger("main")
+	lg := log.NewLogger("config")
 
 	lg.Append("log started for workflow_confirm", log.LEVEL_INFO)
 	state := lua.WorkflowConfigState(&wf, &lg)

@@ -20,10 +20,20 @@ const (
 	TYPE_TASK CollectionType = iota
 	TYPE_IMAGE
 	TYPE_FILE
+	TYPE_CONTEXT
+	TYPE_QR
 )
 
+var CollectionList = []CollectionType{
+	TYPE_TASK,
+	TYPE_IMAGE,
+	TYPE_FILE,
+	TYPE_CONTEXT,
+	TYPE_QR,
+}
+
 type ItemSelf interface {
-	Identifier() string
+	Identifier() CollectionType
 }
 
 type ItemImage struct {
@@ -33,26 +43,32 @@ type ItemImage struct {
 	Model    imageutil.ColorModel
 }
 
-func (img ItemImage) Identifier() string { return "ItemImage" }
+func (img ItemImage) Identifier() CollectionType { return TYPE_IMAGE }
 
 type ItemFile struct {
 	File *os.File
 	Name string
 }
 
-func (file ItemFile) Identifier() string { return "ItemFile" }
+func (file ItemFile) Identifier() CollectionType { return TYPE_FILE }
 
 type ItemContext struct {
 	Context *gg.Context
 }
 
-func (context ItemContext) Identifier() string { return "ItemContext" }
+func (context ItemContext) Identifier() CollectionType { return TYPE_CONTEXT }
 
 type ItemQR struct {
 	QR *qrcode.QRCode
 }
 
-func (qr ItemQR) Identifier() string { return "ItemQR" }
+func (qr ItemQR) Identifier() CollectionType { return TYPE_QR }
+
+type ItemTask struct {
+	Name string
+}
+
+func (qr ItemTask) Identifier() CollectionType { return TYPE_TASK }
 
 type Item[T ItemSelf] struct {
 	Self *T

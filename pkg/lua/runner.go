@@ -13,11 +13,13 @@ import (
 
 type Runner struct {
 	State *lua.State
-	IC    *collection.Collection[collection.ItemImage]
-	FC    *collection.Collection[collection.ItemFile]
-	CC    *collection.Collection[collection.ItemContext]
-	QR    *collection.Collection[collection.ItemQR]
 	lg    *log.Logger
+
+	TC *collection.Collection[collection.ItemTask]
+	IC *collection.Collection[collection.ItemImage]
+	FC *collection.Collection[collection.ItemFile]
+	CC *collection.Collection[collection.ItemContext]
+	QR *collection.Collection[collection.ItemQR]
 }
 
 func NewRunner(state *lua.State, lg *log.Logger) Runner {
@@ -35,6 +37,7 @@ func NewRunner(state *lua.State, lg *log.Logger) Runner {
 			}),
 		CC: collection.NewCollection[collection.ItemContext](lg),
 		QR: collection.NewCollection[collection.ItemQR](lg),
+		TC: collection.NewCollection[collection.ItemTask](lg),
 	}
 }
 

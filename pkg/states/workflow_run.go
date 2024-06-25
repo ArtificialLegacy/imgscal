@@ -21,7 +21,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		req = append(req, sm.PopString())
 	}
 
-	lg := log.NewLogger("main")
+	lg := log.NewLogger("execute")
 	defer lg.Close()
 
 	lg.Append("log started for workflow_run", log.LEVEL_INFO)
@@ -46,6 +46,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	for checkState(runner.IC) || checkState(runner.FC) || checkState(runner.CC) || checkState(runner.QR) {
 	}
 
+	runner.TC.CollectAll()
 	runner.IC.CollectAll()
 	runner.FC.CollectAll()
 	runner.CC.CollectAll()
@@ -61,11 +62,12 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
+	ert := collErr(runner.TC.Errs, "TC", script, &lg, sm)
 	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm)
 	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm)
 	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
 	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
-	if eri || erf || erc || erq {
+	if ert || eri || erf || erc || erq {
 		return nil
 	}
 

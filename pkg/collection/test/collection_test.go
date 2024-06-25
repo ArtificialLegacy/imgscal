@@ -11,7 +11,7 @@ type ItemString struct {
 	Value string
 }
 
-func (img ItemString) Identifier() string { return "ItemString" }
+func (img ItemString) Identifier() collection.CollectionType { return collection.TYPE_IMAGE }
 
 func TestCollection(t *testing.T) {
 	lg := log.NewLoggerEmpty()
