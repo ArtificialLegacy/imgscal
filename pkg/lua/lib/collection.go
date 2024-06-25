@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -23,32 +24,32 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			switch args["type"].(int) {
-			case int(collection.TYPE_TASK):
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
 				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemTask]) {},
 				})
-			case int(collection.TYPE_IMAGE):
+			case collection.TYPE_IMAGE:
 				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemImage]) {},
 				})
-			case int(collection.TYPE_FILE):
+			case collection.TYPE_FILE:
 				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemFile]) {},
 				})
-			case int(collection.TYPE_CONTEXT):
+			case collection.TYPE_CONTEXT:
 				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemContext]) {},
 				})
-			case int(collection.TYPE_QR):
+			case collection.TYPE_QR:
 				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -67,32 +68,32 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "type"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
-			switch args["type"].(int) {
-			case int(collection.TYPE_TASK):
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
 				<-r.TC.ScheduleAll(&collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemTask]) {},
 				})
-			case int(collection.TYPE_IMAGE):
+			case collection.TYPE_IMAGE:
 				<-r.IC.ScheduleAll(&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemImage]) {},
 				})
-			case int(collection.TYPE_FILE):
+			case collection.TYPE_FILE:
 				<-r.FC.ScheduleAll(&collection.Task[collection.ItemFile]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemFile]) {},
 				})
-			case int(collection.TYPE_CONTEXT):
+			case collection.TYPE_CONTEXT:
 				<-r.CC.ScheduleAll(&collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemContext]) {},
 				})
-			case int(collection.TYPE_QR):
+			case collection.TYPE_QR:
 				<-r.QR.ScheduleAll(&collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -177,6 +178,182 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 				r.CC.Collect(args["id"].(int))
 			case collection.TYPE_QR:
 				r.QR.Collect(args["id"].(int))
+			}
+			return 0
+		})
+
+	/// @func log()
+	/// @arg type - collection type
+	/// @arg id - id of the item to log to
+	/// @arg msg
+	lib.CreateFunction("log",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			msg := args["msg"].(string)
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemTask]) {
+						i.Lg.Append(fmt.Sprintf("lua log: %s", msg), log.LEVEL_INFO)
+					},
+				})
+			case collection.TYPE_IMAGE:
+				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						i.Lg.Append(fmt.Sprintf("lua log: %s", msg), log.LEVEL_INFO)
+					},
+				})
+			case collection.TYPE_FILE:
+				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemFile]) {
+						i.Lg.Append(fmt.Sprintf("lua log: %s", msg), log.LEVEL_INFO)
+					},
+				})
+			case collection.TYPE_CONTEXT:
+				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemContext]) {
+						i.Lg.Append(fmt.Sprintf("lua log: %s", msg), log.LEVEL_INFO)
+					},
+				})
+			case collection.TYPE_QR:
+				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemQR]) {
+						i.Lg.Append(fmt.Sprintf("lua log: %s", msg), log.LEVEL_INFO)
+					},
+				})
+			}
+			return 0
+		})
+
+	/// @func warn()
+	/// @arg type - collection type
+	/// @arg id - id of the item to log to
+	/// @arg msg
+	lib.CreateFunction("warn",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			msg := args["msg"].(string)
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemTask]) {
+						i.Lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
+					},
+				})
+			case collection.TYPE_IMAGE:
+				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						i.Lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
+					},
+				})
+			case collection.TYPE_FILE:
+				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemFile]) {
+						i.Lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
+					},
+				})
+			case collection.TYPE_CONTEXT:
+				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemContext]) {
+						i.Lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
+					},
+				})
+			case collection.TYPE_QR:
+				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemQR]) {
+						i.Lg.Append(fmt.Sprintf("lua warn: %s", msg), log.LEVEL_WARN)
+					},
+				})
+			}
+			return 0
+		})
+
+	/// @func panic()
+	/// @arg type - collection type
+	/// @arg id - id of the item to panic
+	/// @arg msg
+	lib.CreateFunction("panic",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "msg"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			msg := args["msg"].(string)
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemTask]) {
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("lua panic: %s", msg), log.LEVEL_ERROR))
+						r.State.Error()
+					},
+				})
+			case collection.TYPE_IMAGE:
+				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("lua panic: %s", msg), log.LEVEL_ERROR))
+						r.State.Error()
+					},
+				})
+			case collection.TYPE_FILE:
+				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemFile]) {
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("lua panic: %s", msg), log.LEVEL_ERROR))
+						r.State.Error()
+					},
+				})
+			case collection.TYPE_CONTEXT:
+				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemContext]) {
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("lua panic: %s", msg), log.LEVEL_ERROR))
+						r.State.Error()
+					},
+				})
+			case collection.TYPE_QR:
+				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemQR]) {
+						r.State.PushString(i.Lg.Append(fmt.Sprintf("lua panic: %s", msg), log.LEVEL_ERROR))
+						r.State.Error()
+					},
+				})
 			}
 			return 0
 		})
