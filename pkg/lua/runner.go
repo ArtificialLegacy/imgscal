@@ -86,6 +86,7 @@ const (
 	TABLE
 	ARRAY
 	ANY
+	FUNC
 )
 
 type Arg struct {
@@ -235,6 +236,14 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 				rm := l.State.AbsIndex(ind)
 				l.State.Remove(rm)
 				argMap[a.Name] = v
+			}
+
+		case FUNC:
+			if i >= ln || !l.State.IsFunction(ind) {
+				argMap[a.Name] = nil
+			} else {
+				aind := l.State.AbsIndex(ind)
+				argMap[a.Name] = aind
 			}
 		default:
 			panic(fmt.Sprintf("attempting to parse an arg with an unknown type: %d", a.Type))

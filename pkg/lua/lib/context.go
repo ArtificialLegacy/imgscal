@@ -277,6 +277,119 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func to_mask()
+	/// @arg id
+	/// @arg name
+	/// @arg encoding
+	/// @returns id - new alpha image
+	lib.CreateFunction("to_mask",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			contextFinish := make(chan struct{}, 2)
+			contextReady := make(chan struct{}, 2)
+
+			var context *gg.Context
+
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					context = i.Self.Context
+					contextReady <- struct{}{}
+					<-contextFinish
+				},
+				Fail: func(i *collection.Item[collection.ItemContext]) {
+					contextReady <- struct{}{}
+				},
+			})
+
+			chLog := log.NewLogger(args["name"].(string))
+			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: %s", args["name"].(string)), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					<-contextReady
+
+					img := context.AsMask()
+
+					i.Self = &collection.ItemImage{
+						Image:    img,
+						Name:     args["name"].(string),
+						Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
+						Model:    imageutil.MODEL_ALPHA,
+					}
+
+					contextFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					contextFinish <- struct{}{}
+				},
+			})
+
+			r.State.PushInteger(id)
+			return 1
+		})
+
+	/// @func mask()
+	/// @arg id
+	/// @arg img_id
+	lib.CreateFunction("mask",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "img"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			imgFinish := make(chan struct{}, 2)
+			imgReady := make(chan struct{}, 2)
+
+			var img image.Image
+
+			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+					imgReady <- struct{}{}
+					<-imgFinish
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgReady <- struct{}{}
+				},
+			})
+
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					<-imgReady
+					aimg, ok := img.(*image.Alpha)
+					if !ok {
+						r.State.PushString(lg.Append("invalid image provided to context.mask", log.LEVEL_ERROR))
+						r.State.Error()
+					}
+					err := i.Self.Context.SetMask(aimg)
+					if err != nil {
+						r.State.PushString(lg.Append("failed to set image mask, image may be the wrong size.", log.LEVEL_ERROR))
+						r.State.Error()
+					}
+					imgFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemContext]) {
+					imgFinish <- struct{}{}
+				},
+			})
+			return 0
+		})
+
 	/// @func size()
 	/// @arg id
 	/// @returns width
@@ -804,6 +917,104 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
+			return 0
+		})
+
+	/// @func draw_image()
+	/// @arg id
+	/// @arg img_id
+	/// @arg x
+	/// @arg y
+	lib.CreateFunction("draw_image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "img"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			imgFinish := make(chan struct{}, 2)
+			imgReady := make(chan struct{}, 2)
+
+			var img image.Image
+
+			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+					imgReady <- struct{}{}
+					<-imgFinish
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgReady <- struct{}{}
+				},
+			})
+
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					<-imgReady
+					i.Self.Context.DrawImage(img, args["x"].(int), args["y"].(int))
+					imgFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemContext]) {
+					imgFinish <- struct{}{}
+				},
+			})
+			return 0
+		})
+
+	/// @func draw_image_anchor()
+	/// @arg id
+	/// @arg img_id
+	/// @arg x
+	/// @arg y
+	/// @arg ax - float
+	/// @arg ay - float
+	/// @desc
+	/// anchor is between 0 and 1, so 0.5 is centered.
+	lib.CreateFunction("draw_image_anchor",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "img"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.FLOAT, Name: "ax"},
+			{Type: lua.FLOAT, Name: "ay"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			imgFinish := make(chan struct{}, 2)
+			imgReady := make(chan struct{}, 2)
+
+			var img image.Image
+
+			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+					imgReady <- struct{}{}
+					<-imgFinish
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgReady <- struct{}{}
+				},
+			})
+
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					<-imgReady
+					i.Self.Context.DrawImageAnchored(img, args["x"].(int), args["y"].(int), args["ax"].(float64), args["ay"].(float64))
+					imgFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemContext]) {
+					imgFinish <- struct{}{}
+				},
+			})
 			return 0
 		})
 

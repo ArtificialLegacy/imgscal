@@ -14,6 +14,96 @@ const LIB_COLLECTION = "collection"
 func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	lib := lua.NewLib(LIB_COLLECTION, r.State, lg)
 
+	/// @func task()
+	/// @arg name
+	/// @returns id
+	lib.CreateFunction("task",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("task_%s", name))
+			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: task_%s", name), log.LEVEL_INFO)
+
+			id := r.TC.AddItem(&chLog)
+
+			r.TC.Schedule(id, &collection.Task[collection.ItemTask]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemTask]) {
+					i.Self = &collection.ItemTask{
+						Name: name,
+					}
+				},
+			})
+
+			r.State.PushInteger(id)
+			return 1
+		})
+
+	/// @func schedule()
+	/// @arg type - collection type
+	/// @arg id
+	/// @arg func
+	/// @desc
+	/// Schedules a lua func to be called from the queue.
+	lib.CreateFunction("schedule",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemTask]) {
+						callScheduledFunction(r, args["func"].(int))
+					},
+				})
+			case collection.TYPE_IMAGE:
+				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						callScheduledFunction(r, args["func"].(int))
+					},
+				})
+			case collection.TYPE_FILE:
+				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemFile]) {
+						callScheduledFunction(r, args["func"].(int))
+					},
+				})
+			case collection.TYPE_CONTEXT:
+				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemContext]) {
+						callScheduledFunction(r, args["func"].(int))
+					},
+				})
+			case collection.TYPE_QR:
+				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemQR]) {
+						callScheduledFunction(r, args["func"].(int))
+					},
+				})
+			}
+
+			return 0
+		})
+
 	/// @func wait()
 	/// @arg type - collection type
 	/// @arg id - id of item in the collection
@@ -374,4 +464,9 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	lib.State.SetField(-2, "TYPE_CONTEXT")
 	lib.State.PushInteger(int(collection.TYPE_QR))
 	lib.State.SetField(-2, "TYPE_QR")
+}
+
+func callScheduledFunction(r *lua.Runner, index int) {
+	r.State.PushValue(index)
+	r.State.Call(0, 0)
 }
