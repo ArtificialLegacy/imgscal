@@ -45,39 +45,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					upLeft := image.Point{0, 0}
-					lowRight := image.Point{args["width"].(int), args["height"].(int)}
-					rect := image.Rectangle{upLeft, lowRight}
-
 					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
 
-					var img image.Image
-
-					switch model {
-					case imageutil.MODEL_RGBA:
-						img = image.NewRGBA(rect)
-					case imageutil.MODEL_RGBA64:
-						img = image.NewRGBA64(rect)
-					case imageutil.MODEL_NRGBA:
-						img = image.NewNRGBA(rect)
-					case imageutil.MODEL_NRGBA64:
-						img = image.NewNRGBA64(rect)
-					case imageutil.MODEL_ALPHA:
-						img = image.NewAlpha(rect)
-					case imageutil.MODEL_ALPHA16:
-						img = image.NewAlpha16(rect)
-					case imageutil.MODEL_GRAY:
-						img = image.NewGray(rect)
-					case imageutil.MODEL_GRAY16:
-						img = image.NewGray16(rect)
-					case imageutil.MODEL_CMYK:
-						img = image.NewCMYK(rect)
-					default:
-						i.Lg.Append(fmt.Sprintf("invalid model: %d", args["model"].(int)), log.LEVEL_ERROR)
-					}
-
 					i.Self = &collection.ItemImage{
-						Image:    img,
+						Image:    imageutil.NewImage(args["width"].(int), args["height"].(int), model),
 						Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
 						Name:     args["name"].(string),
 						Model:    model,

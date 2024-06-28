@@ -217,10 +217,10 @@ func (l *Lib) ParseArgs(name string, args []Arg, ln int) map[string]any {
 					})
 				}
 
-				for i, arg := range argTable {
-					ind, _ := strconv.ParseInt(arg.Name, 10, 64)
-					l.State.PushInteger(int(ind))
-					l.State.Table(-i - 2)
+				for _, arg := range argTable {
+					n, _ := strconv.ParseInt(arg.Name, 10, 64)
+					l.State.PushInteger(int(n))
+					l.State.Table(ind - int(n))
 				}
 
 				argMap[a.Name] = l.ParseArgs(name, argTable, ln)

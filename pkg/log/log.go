@@ -14,6 +14,7 @@ const (
 	LEVEL_INFO LogLevel = iota
 	LEVEL_WARN
 	LEVEL_ERROR
+	LEVEL_IMPORTANT
 )
 
 const LOG_DIR = "./log"
@@ -84,6 +85,8 @@ func (l *Logger) Append(str string, level LogLevel) string {
 		prefix = "? WARN"
 	case LEVEL_ERROR:
 		prefix = "! ERROR"
+	case LEVEL_IMPORTANT:
+		prefix = "!! IMPORTANT"
 	}
 
 	l.logger.Printf("%s: [%s] > '%s'\n", prefix, logTime, str)
@@ -108,4 +111,21 @@ func (l *Logger) Close() {
 	}
 
 	l.file.Close()
+
+	if l.Parent == nil {
+		f, err := os.OpenFile(path.Join(LOG_DIR, "@latest.txt"), os.O_CREATE|os.O_TRUNC, 0o666)
+		if err != nil {
+			return
+		}
+
+		b, err := os.ReadFile(path.Join(LOG_DIR, l.logFile))
+		if err != nil {
+			return
+		}
+
+		_, err = f.Write(b)
+		if err != nil {
+			return
+		}
+	}
 }

@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"strconv"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
@@ -47,6 +48,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			count := args["count"].(int)
 			frameSimg := []chan image.Image{}
 			var encoding imageutil.ImageEncoding
+			var model imageutil.ColorModel
 
 			for i := 0; i < count; i++ {
 				frameSimg = append(frameSimg, make(chan image.Image, 2))
@@ -57,6 +59,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					encoding = i.Self.Encoding
+					model = i.Self.Model
 
 					width := args["width"].(int)
 					height := args["height"].(int)
@@ -105,17 +108,16 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				id := r.IC.AddItem(&chLog)
 				frames = append(frames, id)
 
-				indHere := ind
-
 				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
-						simg := <-frameSimg[indHere]
+						simg := <-frameSimg[ind]
 						i.Self = &collection.ItemImage{
 							Image:    simg,
 							Encoding: encoding,
 							Name:     name,
+							Model:    model,
 						}
 					},
 				})
@@ -123,10 +125,101 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			r.State.NewTable()
 			for i, f := range frames {
-				r.State.PushInteger(i)
+				r.State.PushInteger(i + 1)
 				r.State.PushInteger(f)
 				r.State.SetTable(-3)
 			}
 			return 1
 		})
+
+	/// @func from_frames()
+	/// @arg ids - array of image ids
+	/// @arg name
+	/// @arg width
+	/// @arg height
+	/// @arg model
+	/// @arg encoding
+	/// @returns new image
+	lib.CreateFunction("from_frames",
+		[]lua.Arg{
+			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.INT, Name: "model"},
+			{Type: lua.INT, Name: "encoding"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			imgs := args["ids"].(map[string]any)
+			simg := make(chan *imgData, len(imgs)+1)
+
+			width := args["width"].(int)
+			height := args["height"].(int)
+
+			for ind, v := range imgs {
+				id := v.(int)
+				indHere64, _ := strconv.ParseInt(ind, 10, 64)
+				indHere := int(indHere64) - 1
+
+				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						finish := make(chan struct{}, 2)
+						simg <- &imgData{
+							Img:    i.Self.Image,
+							Index:  indHere,
+							Finish: finish,
+						}
+
+						<-finish
+					},
+				})
+			}
+
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
+			chLog.Parent = lg
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+					i.Self = &collection.ItemImage{
+						Image:    imageutil.NewImage(width*len(imgs), height, model),
+						Name:     name,
+						Encoding: encoding,
+						Model:    model,
+					}
+
+					for range imgs {
+						si := <-simg
+						imageutil.Draw(i.Self.Image, si.Img, args["width"].(int)*si.Index, 0, args["width"].(int), args["height"].(int))
+
+						si.Finish <- struct{}{}
+					}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					for range len(simg) {
+						si := <-simg
+						si.Finish <- struct{}{}
+					}
+				},
+			})
+
+			r.State.PushInteger(id)
+			return 1
+		})
+}
+
+type imgData struct {
+	Img    image.Image
+	Index  int
+	Finish chan struct{}
 }

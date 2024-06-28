@@ -1,6 +1,6 @@
 module github.com/ArtificialLegacy/imgscal
 
-go 1.21.2
+go 1.22
 
 require (
 	github.com/Shopify/go-lua v0.0.0-20221004153744-91867de107cf

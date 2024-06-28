@@ -7,30 +7,70 @@ func SubImage(img image.Image, x1, y1, x2, y2 int, copy bool) image.Image {
 	lowRight := image.Point{x2, y2}
 	rect := image.Rectangle{upLeft, lowRight}
 
-	n := img
-	if copy {
-		n = CopyImage(img)
-	}
-
-	switch nimg := n.(type) {
+	switch nimg := img.(type) {
 	case *image.RGBA:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.RGBA64:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.NRGBA:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.NRGBA64:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.Alpha:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.Alpha16:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.Gray:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.Gray16:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	case *image.CMYK:
-		return nimg.SubImage(rect)
+		i := nimg.SubImage(rect)
+		if copy {
+			return CopyImage(i)
+		} else {
+			return i
+		}
 	}
 
 	return nil
