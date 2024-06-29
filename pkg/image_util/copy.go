@@ -5,48 +5,36 @@ import (
 	"image/draw"
 )
 
-func CopyImage(src image.Image) image.Image {
+func CopyImage(src image.Image, model ColorModel) image.Image {
 
 	r := image.Rect(0, 0, src.Bounds().Dx(), src.Bounds().Dy())
+	var c draw.Image
 
-	switch img := src.(type) {
-	case *image.RGBA:
-		c := image.NewRGBA(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.RGBA64:
-		c := image.NewRGBA64(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.NRGBA:
-		c := image.NewNRGBA(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.NRGBA64:
-		c := image.NewNRGBA64(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.Alpha:
-		c := image.NewAlpha(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.Alpha16:
-		c := image.NewAlpha16(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.Gray:
-		c := image.NewGray(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.Gray16:
-		c := image.NewGray16(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
-	case *image.CMYK:
-		c := image.NewCMYK(r)
-		draw.Draw(c, c.Rect, img, img.Rect.Min, draw.Src)
-		return c
+	switch model {
+	case MODEL_RGBA:
+		c = image.NewRGBA(r)
+	case MODEL_RGBA64:
+		c = image.NewRGBA64(r)
+	case MODEL_NRGBA:
+		c = image.NewNRGBA(r)
+	case MODEL_NRGBA64:
+		c = image.NewNRGBA64(r)
+	case MODEL_ALPHA:
+		c = image.NewAlpha(r)
+	case MODEL_ALPHA16:
+		c = image.NewAlpha16(r)
+	case MODEL_GRAY:
+		c = image.NewGray(r)
+	case MODEL_GRAY16:
+		c = image.NewGray16(r)
+	case MODEL_CMYK:
+		c = image.NewCMYK(r)
 	}
 
-	return nil
+	copyImage(c, src)
+	return c
+}
+
+func copyImage(dst draw.Image, src image.Image) {
+	draw.Draw(dst, dst.Bounds(), src, src.Bounds().Min, draw.Src)
 }

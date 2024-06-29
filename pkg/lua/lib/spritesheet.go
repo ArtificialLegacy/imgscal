@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"math"
 	"strconv"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -36,10 +37,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "height"},
 			{Type: lua.INT, Name: "perRow"},
 			{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "hpixel"},
-				{Type: lua.INT, Name: "vpixel"},
-				{Type: lua.INT, Name: "hcell"},
-				{Type: lua.INT, Name: "vcell"},
+				{Type: lua.INT, Name: "hpixel", Optional: true},
+				{Type: lua.INT, Name: "vpixel", Optional: true},
+				{Type: lua.INT, Name: "hcell", Optional: true},
+				{Type: lua.INT, Name: "vcell", Optional: true},
 			}},
 			{Type: lua.INT, Name: "hsep", Optional: true},
 			{Type: lua.INT, Name: "vsep", Optional: true},
@@ -68,10 +69,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 					offsetx := offsets["hpixel"].(int) + (offsets["hcell"].(int) * width)
 					offsety := offsets["vpixel"].(int) + (offsets["vcell"].(int) * height)
 
-					topx := offsetx
-					topy := offsety
-					bottomx := topx + width
-					bottomy := topy + height
+					topx := offsetx + i.Self.Image.Bounds().Min.X
+					topy := offsety + i.Self.Image.Bounds().Min.Y
+					bottomx := topx + width + i.Self.Image.Bounds().Min.X
+					bottomy := topy + height + i.Self.Image.Bounds().Min.Y
 
 					for ind := 0; ind < count; ind++ {
 						simg := imageutil.SubImage(i.Self.Image, topx, topy, bottomx, bottomy, true)
@@ -139,6 +140,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg height
 	/// @arg model
 	/// @arg encoding
+	/// @arg perRow
+	/// @arg offsets - {hpixel, vpixel, hcell, vcell}
+	/// @arg hsep
+	/// @arg vsep
 	/// @returns new image
 	lib.CreateFunction("from_frames",
 		[]lua.Arg{
@@ -148,6 +153,15 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "height"},
 			{Type: lua.INT, Name: "model"},
 			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "perRow", Optional: true},
+			{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "hpixel", Optional: true},
+				{Type: lua.INT, Name: "vpixel", Optional: true},
+				{Type: lua.INT, Name: "hcell", Optional: true},
+				{Type: lua.INT, Name: "vcell", Optional: true},
+			}},
+			{Type: lua.INT, Name: "hsep", Optional: true},
+			{Type: lua.INT, Name: "vsep", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			imgs := args["ids"].(map[string]any)
@@ -174,6 +188,13 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 						<-finish
 					},
+					Fail: func(i *collection.Item[collection.ItemImage]) {
+						simg <- &imgData{
+							Img:    nil,
+							Index:  -1,
+							Finish: make(chan struct{}, 2),
+						}
+					},
 				})
 			}
 
@@ -191,8 +212,28 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
 					encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+
+					offsets := args["offsets"].(map[string]any)
+					offsetx := offsets["hpixel"].(int) + (offsets["hcell"].(int) * width)
+					offsety := offsets["vpixel"].(int) + (offsets["vcell"].(int) * height)
+
+					count := len(imgs)
+
+					perRow := args["perRow"].(int)
+					if perRow == 0 {
+						perRow = count
+					}
+
+					rows := int(math.Ceil(float64(count) / float64(perRow)))
+
+					hsep := args["hsep"].(int)
+					vsep := args["vsep"].(int)
+
+					ssWidth := offsetx*2 + perRow*width + hsep*(perRow-1)
+					ssHeight := offsety*2 + rows*height + vsep*(rows-1)
+
 					i.Self = &collection.ItemImage{
-						Image:    imageutil.NewImage(width*len(imgs), height, model),
+						Image:    imageutil.NewImage(ssWidth, ssHeight, model),
 						Name:     name,
 						Encoding: encoding,
 						Model:    model,
@@ -200,7 +241,13 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 					for range imgs {
 						si := <-simg
-						imageutil.Draw(i.Self.Image, si.Img, args["width"].(int)*si.Index, 0, args["width"].(int), args["height"].(int))
+
+						col := si.Index % perRow
+						row := si.Index / perRow
+						x := offsetx + col*width + hsep*col
+						y := offsety + row*height + vsep*row
+
+						imageutil.Draw(i.Self.Image, si.Img, x, y, args["width"].(int), args["height"].(int))
 
 						si.Finish <- struct{}{}
 					}

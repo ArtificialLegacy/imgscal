@@ -21,10 +21,12 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 	/// @func load_image()
 	/// @arg path - the path to grab the image from
+	/// @arg model - used only to specify default of unsupported color models
 	/// @returns int - the image id
 	lib.CreateFunction("load_image",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
+			{Type: lua.INT, Name: "model", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			file, err := os.Stat(args["path"].(string))
@@ -61,10 +63,14 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 						r.State.Error()
 					}
 
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
 					i.Self = &collection.ItemImage{
 						Name:     strings.TrimSuffix(file.Name(), path.Ext(file.Name())),
 						Image:    img,
 						Encoding: encoding,
+						Model:    model,
 					}
 				},
 			})

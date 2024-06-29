@@ -22,11 +22,27 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	lg := log.NewLogger("execute")
-	defer lg.Close()
 
 	lg.Append("log started for workflow_run", log.LEVEL_INFO)
 	state := lua.WorkflowRunState(&lg)
 	runner := lua.NewRunner(state, &lg)
+
+	defer func() {
+		if r := recover(); r != nil {
+			tcCount, tcBusy := runner.TC.TaskCount()
+			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.TC, tcCount, tcBusy), log.LEVEL_WARN)
+			icCount, icBusy := runner.IC.TaskCount()
+			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.IC, icCount, icBusy), log.LEVEL_WARN)
+			fcCount, fcBusy := runner.FC.TaskCount()
+			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.FC, fcCount, fcBusy), log.LEVEL_WARN)
+			ccCount, ccBusy := runner.CC.TaskCount()
+			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.CC, ccCount, ccBusy), log.LEVEL_WARN)
+			qrCount, qrBusy := runner.QR.TaskCount()
+			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.QR, qrCount, qrBusy), log.LEVEL_WARN)
+		} else {
+			lg.Close()
+		}
+	}()
 
 	golua.Require(state, "basic", golua.BaseOpen, true)
 

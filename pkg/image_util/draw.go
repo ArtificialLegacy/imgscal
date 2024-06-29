@@ -3,8 +3,6 @@ package imageutil
 import (
 	"image"
 	"image/draw"
-
-	"github.com/fogleman/gg"
 )
 
 func Draw(base image.Image, sub image.Image, x, y, width, height int) {
@@ -30,9 +28,4 @@ func Draw(base image.Image, sub image.Image, x, y, width, height int) {
 	case *image.CMYK:
 		draw.Draw(img, r, sub, sub.Bounds().Min, draw.Src)
 	}
-
-	ctx := gg.NewContextForImage(base)
-	ctx.DrawImage(sub, x, y)
-	//return ctx.Image()
-
 }

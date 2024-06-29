@@ -207,13 +207,18 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
+					x1 := args["x1"].(int) + i.Self.Image.Bounds().Min.X
+					y1 := args["y1"].(int) + i.Self.Image.Bounds().Min.Y
+					x2 := args["x2"].(int) + i.Self.Image.Bounds().Min.X
+					y2 := args["y2"].(int) + i.Self.Image.Bounds().Min.Y
+
 					i.Self.Image = imageutil.SubImage(
 						i.Self.Image,
-						args["x1"].(int),
-						args["y1"].(int),
-						args["x2"].(int),
-						args["y2"].(int),
-						false,
+						x1,
+						y1,
+						x2,
+						y2,
+						true,
 					)
 				},
 			})
@@ -228,6 +233,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg y1
 	/// @arg x2
 	/// @arg y2
+	/// @arg copy
 	/// @returns new_id
 	lib.CreateFunction("subimg",
 		[]lua.Arg{
@@ -237,6 +243,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y1"},
 			{Type: lua.INT, Name: "x2"},
 			{Type: lua.INT, Name: "y2"},
+			{Type: lua.BOOL, Name: "copy", Optional: true},
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			var simg image.Image
@@ -247,13 +254,18 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
+					x1 := args["x1"].(int) + i.Self.Image.Bounds().Min.X
+					y1 := args["y1"].(int) + i.Self.Image.Bounds().Min.Y
+					x2 := args["x2"].(int) + i.Self.Image.Bounds().Min.X
+					y2 := args["y2"].(int) + i.Self.Image.Bounds().Min.Y
+
 					simg = imageutil.SubImage(
 						i.Self.Image,
-						args["x1"].(int),
-						args["y1"].(int),
-						args["x2"].(int),
-						args["y2"].(int),
-						true,
+						x1,
+						y1,
+						x2,
+						y2,
+						args["copy"].(bool),
 					)
 
 					encoding = i.Self.Encoding
@@ -290,22 +302,31 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @func copy()
 	/// @arg id
 	/// @arg name
+	/// @arg model - use -1 to maintain color model
 	/// @returns new_id
 	lib.CreateFunction("copy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "model"},
 		},
 		func(d lua.TaskData, args map[string]any) int {
 			var cimg image.Image
 			var encoding imageutil.ImageEncoding
 			cimgReady := make(chan struct{}, 1)
 
+			var model imageutil.ColorModel
+
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					cimg = imageutil.CopyImage(i.Self.Image)
+					model = i.Self.Model
+					if args["model"].(int) != -1 {
+						model = lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					}
+
+					cimg = imageutil.CopyImage(i.Self.Image, model)
 					encoding = i.Self.Encoding
 					cimgReady <- struct{}{}
 				},
@@ -332,12 +353,57 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 						Image:    cimg,
 						Name:     name,
 						Encoding: encoding,
+						Model:    model,
 					}
 				},
 			})
 
 			r.State.PushInteger(id)
 			return 1
+		})
+
+	/// @func convert()
+	/// @arg id
+	/// @arg model
+	/// @desc
+	/// replaces the image inplace with a new image with the new model
+	lib.CreateFunction("convert",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "model"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					i.Self.Image = imageutil.CopyImage(i.Self.Image, model)
+					i.Self.Model = model
+				},
+			})
+
+			return 0
+		})
+
+	/// @func refresh()
+	/// @arg id
+	/// @desc
+	/// shortcut for redrawing the image to guarantee the bounds of the image start at (0,0)
+	lib.CreateFunction("refresh",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					i.Self.Image = imageutil.CopyImage(i.Self.Image, i.Self.Model)
+				},
+			})
+
+			return 0
 		})
 
 	/// @func pixel()
@@ -359,7 +425,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					col := i.Self.Image.At(args["x"].(int), args["y"].(int))
+					x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+					y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+
+					col := i.Self.Image.At(x, y)
 					red, green, blue, alpha = col.RGBA()
 				},
 			})
@@ -374,6 +443,46 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			r.State.PushInteger(int(alpha))
 			r.State.SetField(-2, "alpha")
 			return 4
+		})
+
+	/// @func pixel_set()
+	/// @arg id
+	/// @arg x
+	/// @arg y
+	/// @arg {red, green, blue, alpha}
+	lib.CreateFunction("pixel_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					color := args["color"].(map[string]any)
+					x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+					y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+
+					imageutil.Set(
+						i.Self.Image,
+						x,
+						y,
+						color["red"].(int),
+						color["green"].(int),
+						color["blue"].(int),
+						color["alpha"].(int),
+					)
+				},
+			})
+			return 0
 		})
 
 	/// @func color_hex()
@@ -467,43 +576,6 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			r.State.PushInteger(alpha)
 			r.State.SetField(-2, "alpha")
 			return 1
-		})
-
-	/// @func pixel_set()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg {red, green, blue, alpha}
-	lib.CreateFunction("pixel_set",
-		[]lua.Arg{
-			{Type: lua.INT, Name: "id"},
-			{Type: lua.INT, Name: "x"},
-			{Type: lua.INT, Name: "y"},
-			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "red"},
-				{Type: lua.INT, Name: "green"},
-				{Type: lua.INT, Name: "blue"},
-				{Type: lua.INT, Name: "alpha"},
-			}},
-		},
-		func(d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					color := args["color"].(map[string]any)
-					imageutil.Set(
-						i.Self.Image,
-						args["x"].(int),
-						args["y"].(int),
-						color["red"].(int),
-						color["green"].(int),
-						color["blue"].(int),
-						color["alpha"].(int),
-					)
-				},
-			})
-			return 0
 		})
 
 	/// @func convert_color()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"os"
+	"runtime/debug"
 	"sync"
 
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
@@ -104,7 +105,7 @@ func NewItem[T ItemSelf](lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 func (i *Item[T]) process(fn func(i *Item[T])) {
 	defer func() {
 		if p := recover(); p != nil {
-			i.Lg.Append(fmt.Sprintf("recovered from panic within collection item: %+v", p), log.LEVEL_ERROR)
+			i.Lg.Append(fmt.Sprintf("recovered from panic within collection item: %+v\n%s", p, debug.Stack()), log.LEVEL_ERROR)
 			if fn != nil {
 				fn(i)
 			}

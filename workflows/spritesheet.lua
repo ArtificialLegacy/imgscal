@@ -19,12 +19,12 @@ main(function ()
     pth = cli.question("Enter image to process")
     img = io.load_image(pth)
 
-    subimgs = spritesheet.to_frames(img, "frame", 8, 160, 160, 8)
+    subimgs = spritesheet.to_frames(img, "frame", 8, 8, 8, 8)
 
     for v,k in pairs(subimgs) do
-        io.out(v, "./output")
+        io.out(k, "./output")
     end
 
-    ss = spritesheet.from_frames(subimgs, "ss", 160, 160, image.MODEL_NRGBA, image.ENCODING_PNG)
+    ss = spritesheet.from_frames(subimgs, "ss", 8, 8, image.MODEL_RGBA, image.ENCODING_PNG, 2, nil, 2, 2)
     io.out(ss, "./output")
 end)

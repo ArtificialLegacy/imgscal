@@ -22,7 +22,7 @@ func TestParseArgs_Int(t *testing.T) {
 	lib.State.PushInteger(1)
 	lib.State.PushInteger(2)
 
-	argMap := lib.ParseArgs("test_int", []lua.Arg{{Type: lua.INT, Name: "int1"}, {Type: lua.INT, Name: "int2"}}, 2)
+	argMap := lib.ParseArgs("test_int", []lua.Arg{{Type: lua.INT, Name: "int1"}, {Type: lua.INT, Name: "int2"}}, 2, 0)
 
 	if v, ok := argMap["int1"]; ok {
 		if v.(int) != 1 {
@@ -47,7 +47,7 @@ func TestParseArgs_Float(t *testing.T) {
 	lib.State.PushNumber(1.5)
 	lib.State.PushNumber(2.5)
 
-	argMap := lib.ParseArgs("test_float", []lua.Arg{{Type: lua.FLOAT, Name: "float1"}, {Type: lua.FLOAT, Name: "float2"}}, 2)
+	argMap := lib.ParseArgs("test_float", []lua.Arg{{Type: lua.FLOAT, Name: "float1"}, {Type: lua.FLOAT, Name: "float2"}}, 2, 0)
 
 	if v, ok := argMap["float1"]; ok {
 		if v.(float64) != 1.5 {
@@ -72,7 +72,7 @@ func TestParseArgs_Bool(t *testing.T) {
 	lib.State.PushBoolean(true)
 	lib.State.PushBoolean(false)
 
-	argMap := lib.ParseArgs("test_bool", []lua.Arg{{Type: lua.BOOL, Name: "bool1"}, {Type: lua.BOOL, Name: "bool2"}}, 2)
+	argMap := lib.ParseArgs("test_bool", []lua.Arg{{Type: lua.BOOL, Name: "bool1"}, {Type: lua.BOOL, Name: "bool2"}}, 2, 0)
 
 	if v, ok := argMap["bool1"]; ok {
 		if v.(bool) != true {
@@ -97,7 +97,7 @@ func TestParseArgs_String(t *testing.T) {
 	lib.State.PushString("test1")
 	lib.State.PushString("test2")
 
-	argMap := lib.ParseArgs("test_string", []lua.Arg{{Type: lua.STRING, Name: "string1"}, {Type: lua.STRING, Name: "string2"}}, 2)
+	argMap := lib.ParseArgs("test_string", []lua.Arg{{Type: lua.STRING, Name: "string1"}, {Type: lua.STRING, Name: "string2"}}, 2, 0)
 
 	if v, ok := argMap["string1"]; ok {
 		if v.(string) != "test1" {
@@ -122,7 +122,7 @@ func TestParseArgs_Any(t *testing.T) {
 	lib.State.PushString("test1")
 	lib.State.PushString("test2")
 
-	argMap := lib.ParseArgs("test_any", []lua.Arg{{Type: lua.ANY, Name: "string1"}, {Type: lua.ANY, Name: "string2"}}, 2)
+	argMap := lib.ParseArgs("test_any", []lua.Arg{{Type: lua.ANY, Name: "string1"}, {Type: lua.ANY, Name: "string2"}}, 2, 0)
 
 	if v, ok := argMap["string1"]; ok {
 		if v.(string) != "test1" {
@@ -152,7 +152,7 @@ func TestParseArgs_Table(t *testing.T) {
 		{Type: lua.TABLE, Name: "table1", Table: &[]lua.Arg{
 			{Type: lua.STRING, Name: "test"},
 		}},
-	}, 1)
+	}, 1, 0)
 
 	if v, ok := argMap["table1"]; ok {
 		if v, ok := v.(map[string]any)["test"]; ok {
@@ -182,7 +182,7 @@ func TestParseArgs_TableNested(t *testing.T) {
 				{Type: lua.STRING, Name: "test"},
 			}},
 		}},
-	}, 1)
+	}, 1, 0)
 
 	if v, ok := argMap["table1"]; ok {
 		if v, ok := v.(map[string]any)["table2"]; ok {
@@ -211,7 +211,7 @@ func TestParseArgs_Array(t *testing.T) {
 
 	argMap := lib.ParseArgs("test_array", []lua.Arg{
 		lua.ArgArray("array1", lua.ArrayType{Type: lua.STRING}, false),
-	}, 1)
+	}, 1, 0)
 
 	if v, ok := argMap["array1"]; ok {
 		if v, ok := v.(map[string]any)["1"]; ok {
@@ -231,7 +231,7 @@ func TestParseArgs_Optional(t *testing.T) {
 
 	argMap := lib.ParseArgs("test_optional", []lua.Arg{
 		{Type: lua.STRING, Name: "test", Optional: true},
-	}, 0)
+	}, 0, 0)
 
 	if argMap["test"] != "" {
 		t.Errorf("got incorrect value, expected=0, got=%v", argMap["test"])
@@ -247,7 +247,7 @@ func TestParseArgs_OptionalTableField(t *testing.T) {
 		{Type: lua.TABLE, Name: "test_table", Table: &[]lua.Arg{
 			{Type: lua.STRING, Name: "test", Optional: true},
 		}},
-	}, 1)
+	}, 1, 0)
 
 	if argMap["test_table"].(map[string]any)["test"] != "" {
 		t.Errorf("got incorrect value, expected='', got=%v", argMap["test"])
