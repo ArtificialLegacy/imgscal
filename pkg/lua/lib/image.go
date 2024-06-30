@@ -614,6 +614,69 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func draw()
+	/// @arg id
+	/// @arg id - to draw onto the base image
+	/// @arg x
+	/// @arg y
+	/// @arg? width
+	/// @arg? height
+	lib.CreateFunction("draw",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "src"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "width", Optional: true},
+			{Type: lua.INT, Name: "height", Optional: true},
+		},
+		func(d lua.TaskData, args map[string]any) int {
+			imgReady := make(chan struct{}, 2)
+			imgFinished := make(chan struct{}, 2)
+
+			var img image.Image
+
+			r.IC.Schedule(args["src"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+					imgReady <- struct{}{}
+					<-imgFinished
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgReady <- struct{}{}
+				},
+			})
+
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					<-imgReady
+					x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+					y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+					width := args["width"].(int)
+					height := args["height"].(int)
+
+					if width == 0 {
+						width = i.Self.Image.Bounds().Dx() - args["x"].(int)
+					}
+					if height == 0 {
+						height = i.Self.Image.Bounds().Dy() - args["y"].(int)
+					}
+
+					imageutil.Draw(i.Self.Image, img, x, y, width, height)
+					imgFinished <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgFinished <- struct{}{}
+				},
+			})
+
+			return 0
+		})
+
 	/// @constants Color Models
 	/// @const RGBA
 	/// @const RGBA64
