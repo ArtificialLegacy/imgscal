@@ -21,7 +21,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 	/// @func load_image()
 	/// @arg path - the path to grab the image from
-	/// @arg model - used only to specify default of unsupported color models
+	/// @arg? model - used only to specify default of unsupported color models
 	/// @returns int - the image id
 	lib.CreateFunction("load_image",
 		[]lua.Arg{
@@ -225,7 +225,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 	/// @func mkdir()
 	/// @arg path
-	/// @arg all - if to create all directories going to the given path
+	/// @arg? all - if to create all directories going to the given path
 	lib.CreateFunction("mkdir",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},

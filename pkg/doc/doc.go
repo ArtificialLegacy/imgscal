@@ -4,7 +4,9 @@ const (
 	TAG_EMPTY     = "/// "
 	TAG_EXISTS    = "/// @"
 	TAG_FUNC      = "/// @func "
-	TAG_ARG       = "/// @arg "
+	TAG_ARG       = "/// @arg"
+	TAG_ARG_REQ   = "/// @arg "
+	TAG_ARG_OPT   = "/// @arg? "
 	TAG_RETURNS   = "/// @returns "
 	TAG_CONSTANTS = "/// @constants "
 	TAG_CONST     = "/// @const "
@@ -18,9 +20,14 @@ type Lib struct {
 	Cns  []Const
 }
 
+type Arg struct {
+	Str string
+	Opt bool
+}
+
 type Fn struct {
 	Fn      string
-	Args    []string
+	Args    []Arg
 	Returns []string
 	Block   bool
 	Desc    []string

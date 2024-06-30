@@ -358,7 +358,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 
 	/// @func border_set()
 	/// @arg id
-	/// @arg border
+	/// @arg? border
 	lib.CreateFunction("border_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},

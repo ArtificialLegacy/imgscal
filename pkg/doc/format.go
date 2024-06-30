@@ -31,7 +31,11 @@ func Format(out io.StringWriter, lib Lib) {
 			out.WriteString("\n")
 			out.WriteString(fmt.Sprintf("#### Args [%s]\n\n", fn.Fn))
 			for _, arg := range fn.Args {
-				out.WriteString(fmt.Sprintf("* %s\n", arg))
+				if arg.Opt {
+					out.WriteString(fmt.Sprintf("* *\\*%s*\n", arg.Str))
+				} else {
+					out.WriteString(fmt.Sprintf("* %s\n", arg.Str))
+				}
 			}
 		}
 

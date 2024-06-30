@@ -24,9 +24,9 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg width
 	/// @arg height
 	/// @arg perRow
-	/// @arg offsets - {hpixel, vpixel, hcell, vcell}
-	/// @arg hsep
-	/// @arg vsep
+	/// @arg? offsets - {hpixel, vpixel, hcell, vcell}
+	/// @arg? hsep
+	/// @arg? vsep
 	/// @returns array of new images
 	lib.CreateFunction("to_frames",
 		[]lua.Arg{
@@ -140,10 +140,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg height
 	/// @arg model
 	/// @arg encoding
-	/// @arg perRow
-	/// @arg offsets - {hpixel, vpixel, hcell, vcell}
-	/// @arg hsep
-	/// @arg vsep
+	/// @arg? perRow
+	/// @arg? offsets - {hpixel, vpixel, hcell, vcell}
+	/// @arg? hsep
+	/// @arg? vsep
 	/// @returns new image
 	lib.CreateFunction("from_frames",
 		[]lua.Arg{

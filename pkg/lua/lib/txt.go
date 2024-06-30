@@ -18,7 +18,7 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	/// @func file_open()
 	/// @arg path - the directory path to the file
 	/// @arg file - the name of the file
-	/// @arg flag - int, defaults to O_CREATE.
+	/// @arg? flag - int, defaults to O_CREATE.
 	/// @returns id - id of the opened file
 	/// @desc
 	/// Will create the file if it does not exist,

@@ -18,7 +18,17 @@ func Parse(name string, file []byte) Lib {
 			i++
 			for ; strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_ARG); i++ {
 				line := strings.TrimSpace(lines[i])
-				doc.Args = append(doc.Args, strings.TrimPrefix(line, TAG_ARG))
+				d := Arg{}
+
+				if strings.HasPrefix(line, TAG_ARG_REQ) {
+					d.Str = strings.TrimPrefix(line, TAG_ARG_REQ)
+					d.Opt = false
+				} else if strings.HasPrefix(line, TAG_ARG_OPT) {
+					d.Str = strings.TrimPrefix(line, TAG_ARG_OPT)
+					d.Opt = true
+				}
+
+				doc.Args = append(doc.Args, d)
 			}
 
 			for ; strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_RETURNS); i++ {

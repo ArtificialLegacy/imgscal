@@ -22,7 +22,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg encoding
 	/// @arg width
 	/// @arg height
-	/// @arg model
+	/// @arg? model
 	/// @returns id
 	lib.CreateFunction("new",
 		[]lua.Arg{
@@ -233,7 +233,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg y1
 	/// @arg x2
 	/// @arg y2
-	/// @arg copy
+	/// @arg? copy
 	/// @returns new_id
 	lib.CreateFunction("subimg",
 		[]lua.Arg{

@@ -217,7 +217,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @arg name
 	/// @arg encoding
-	/// @arg model
+	/// @arg? model
 	/// @returns id - new image id
 	lib.CreateFunction("to_image",
 		[]lua.Arg{
@@ -584,7 +584,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 	/// @func clip()
 	/// @arg id
-	/// @arg preserve - keep the path or not
+	/// @arg? preserve - keep the path or not
 	/// @desc
 	/// updates the clipping region by intersecting the current clipping region with the current path as it would be filled by fill().
 	lib.CreateFunction("clip",
@@ -1313,7 +1313,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 	/// @func fill()
 	/// @arg id
-	/// @arg preserve
+	/// @arg? preserve
 	/// @desc
 	/// fills the current path with the current color.
 	/// closes open paths.
@@ -1360,7 +1360,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 	/// @func stroke()
 	/// @arg id
-	/// @arg preserve
+	/// @arg? preserve
 	/// @desc
 	/// strokes the current path with the current color.
 	lib.CreateFunction("stroke",
@@ -2027,12 +2027,14 @@ var lineJoins = []gg.LineJoin{
 	gg.LineJoinBevel,
 }
 
+/*
 var repeatOps = []gg.RepeatOp{
 	gg.RepeatBoth,
 	gg.RepeatX,
 	gg.RepeatY,
 	gg.RepeatNone,
 }
+*/
 
 var alignment = []gg.Align{
 	gg.AlignLeft,
