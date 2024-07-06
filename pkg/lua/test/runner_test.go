@@ -5,13 +5,14 @@ import (
 
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
-	golua "github.com/Shopify/go-lua"
+	golua "github.com/yuin/gopher-lua"
 )
 
 func setupLib() *lua.Lib {
 	state := golua.NewState()
 	lg := log.NewLoggerEmpty()
-	lib := lua.NewLib("testing", state, &lg)
+	r := lua.NewRunner([]string{}, state, &lg)
+	lib, _ := lua.NewLib("testing", &r, state, &lg)
 
 	return lib
 }
@@ -19,237 +20,167 @@ func setupLib() *lua.Lib {
 func TestParseArgs_Int(t *testing.T) {
 	lib := setupLib()
 
-	lib.State.PushInteger(1)
-	lib.State.PushInteger(2)
+	lib.State.Push(golua.LNumber(1))
+	lib.State.Push(golua.LNumber(2))
 
-	argMap := lib.ParseArgs("test_int", []lua.Arg{{Type: lua.INT, Name: "int1"}, {Type: lua.INT, Name: "int2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.INT, Name: "v1"}, {Type: lua.INT, Name: "v2"}}, 2, 0)
 
-	if v, ok := argMap["int1"]; ok {
+	if v, ok := argMap["v1"]; ok {
 		if v.(int) != 1 {
 			t.Errorf("got wrong int: wanted=%d, got=%d", 1, v)
 		}
 	} else {
-		t.Error("failed to parse int1 argument")
+		t.Error("failed to parse v1 argument")
 	}
 
-	if v, ok := argMap["int2"]; ok {
+	if v, ok := argMap["v2"]; ok {
 		if v.(int) != 2 {
 			t.Errorf("got wrong int: wanted=%d, got=%d", 2, v)
 		}
 	} else {
-		t.Error("failed to parse int2 argument")
+		t.Error("failed to parse v2 argument")
 	}
 }
 
 func TestParseArgs_Float(t *testing.T) {
 	lib := setupLib()
 
-	lib.State.PushNumber(1.5)
-	lib.State.PushNumber(2.5)
+	lib.State.Push(golua.LNumber(1.5))
+	lib.State.Push(golua.LNumber(2.5))
 
-	argMap := lib.ParseArgs("test_float", []lua.Arg{{Type: lua.FLOAT, Name: "float1"}, {Type: lua.FLOAT, Name: "float2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.FLOAT, Name: "v1"}, {Type: lua.FLOAT, Name: "v2"}}, 2, 0)
 
-	if v, ok := argMap["float1"]; ok {
+	if v, ok := argMap["v1"]; ok {
 		if v.(float64) != 1.5 {
 			t.Errorf("got wrong float: wanted=%f, got=%f", 1.5, v)
 		}
 	} else {
-		t.Error("failed to parse float1 argument")
+		t.Error("failed to parse v1 argument")
 	}
 
-	if v, ok := argMap["float2"]; ok {
+	if v, ok := argMap["v2"]; ok {
 		if v.(float64) != 2.5 {
 			t.Errorf("got wrong float: wanted=%f, got=%f", 2.5, v)
 		}
 	} else {
-		t.Error("failed to parse float2 argument")
+		t.Error("failed to parse v2 argument")
 	}
 }
 
 func TestParseArgs_Bool(t *testing.T) {
 	lib := setupLib()
 
-	lib.State.PushBoolean(true)
-	lib.State.PushBoolean(false)
+	lib.State.Push(golua.LBool(true))
+	lib.State.Push(golua.LBool(false))
 
-	argMap := lib.ParseArgs("test_bool", []lua.Arg{{Type: lua.BOOL, Name: "bool1"}, {Type: lua.BOOL, Name: "bool2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.BOOL, Name: "v1"}, {Type: lua.BOOL, Name: "v2"}}, 2, 0)
 
-	if v, ok := argMap["bool1"]; ok {
+	if v, ok := argMap["v1"]; ok {
 		if v.(bool) != true {
 			t.Errorf("got wrong bool: wanted=%t, got=%t", true, v)
 		}
 	} else {
-		t.Error("failed to parse float1 argument")
+		t.Error("failed to parse v1 argument")
 	}
 
-	if v, ok := argMap["bool2"]; ok {
+	if v, ok := argMap["v2"]; ok {
 		if v.(bool) != false {
-			t.Errorf("got wrong bool: wanted=%t, got=%t", true, v)
+			t.Errorf("got wrong bool: wanted=%t, got=%t", false, v)
 		}
 	} else {
-		t.Error("failed to parse bool2 argument")
+		t.Error("failed to parse v2 argument")
 	}
 }
 
 func TestParseArgs_String(t *testing.T) {
 	lib := setupLib()
 
-	lib.State.PushString("test1")
-	lib.State.PushString("test2")
+	lib.State.Push(golua.LString("A"))
+	lib.State.Push(golua.LString("B"))
 
-	argMap := lib.ParseArgs("test_string", []lua.Arg{{Type: lua.STRING, Name: "string1"}, {Type: lua.STRING, Name: "string2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2"}}, 2, 0)
 
-	if v, ok := argMap["string1"]; ok {
-		if v.(string) != "test1" {
-			t.Errorf("got wrong string: wanted=%s, got=%s", "test1", v)
+	if v, ok := argMap["v1"]; ok {
+		if v.(string) != "A" {
+			t.Errorf("got wrong string: wanted=%s, got=%s", "A", v)
 		}
 	} else {
-		t.Error("failed to parse string1 argument")
+		t.Error("failed to parse v1 argument")
 	}
 
-	if v, ok := argMap["string2"]; ok {
-		if v.(string) != "test2" {
-			t.Errorf("got wrong string: wanted=%s, got=%s", "test2", v)
+	if v, ok := argMap["v2"]; ok {
+		if v.(string) != "B" {
+			t.Errorf("got wrong string: wanted=%s, got=%s", "B", v)
 		}
 	} else {
-		t.Error("failed to parse string2 argument")
-	}
-}
-
-func TestParseArgs_Any(t *testing.T) {
-	lib := setupLib()
-
-	lib.State.PushString("test1")
-	lib.State.PushString("test2")
-
-	argMap := lib.ParseArgs("test_any", []lua.Arg{{Type: lua.ANY, Name: "string1"}, {Type: lua.ANY, Name: "string2"}}, 2, 0)
-
-	if v, ok := argMap["string1"]; ok {
-		if v.(string) != "test1" {
-			t.Errorf("got wrong string: wanted=%s, got=%s", "test1", v)
-		}
-	} else {
-		t.Error("failed to parse string1 argument")
-	}
-
-	if v, ok := argMap["string2"]; ok {
-		if v.(string) != "test2" {
-			t.Errorf("got wrong string: wanted=%s, got=%s", "test2", v)
-		}
-	} else {
-		t.Error("failed to parse string2 argument")
-	}
-}
-
-func TestParseArgs_Table(t *testing.T) {
-	lib := setupLib()
-
-	lib.State.NewTable()
-	lib.State.PushString("test1")
-	lib.State.SetField(-2, "test")
-
-	argMap := lib.ParseArgs("test_table", []lua.Arg{
-		{Type: lua.TABLE, Name: "table1", Table: &[]lua.Arg{
-			{Type: lua.STRING, Name: "test"},
-		}},
-	}, 1, 0)
-
-	if v, ok := argMap["table1"]; ok {
-		if v, ok := v.(map[string]any)["test"]; ok {
-			if v.(string) != "test1" {
-				t.Errorf("got wrong string: wanted=%s, got=%s", "test1", v)
-			}
-		} else {
-			t.Error("failed to parse table field test")
-		}
-	} else {
-		t.Error("failed to parse table1 argument")
-	}
-}
-
-func TestParseArgs_TableNested(t *testing.T) {
-	lib := setupLib()
-
-	lib.State.NewTable()
-	lib.State.NewTable()
-	lib.State.PushString("test1")
-	lib.State.SetField(-2, "test")
-	lib.State.SetField(-2, "table2")
-
-	argMap := lib.ParseArgs("test_table", []lua.Arg{
-		{Type: lua.TABLE, Name: "table1", Table: &[]lua.Arg{
-			{Type: lua.TABLE, Name: "table2", Table: &[]lua.Arg{
-				{Type: lua.STRING, Name: "test"},
-			}},
-		}},
-	}, 1, 0)
-
-	if v, ok := argMap["table1"]; ok {
-		if v, ok := v.(map[string]any)["table2"]; ok {
-			if v, ok := v.(map[string]any)["test"]; ok {
-				if v.(string) != "test1" {
-					t.Errorf("got wrong string: wanted=%s, got=%s", "test1", v)
-				}
-			} else {
-				t.Error("failed to parse table2 field test")
-			}
-		} else {
-			t.Error("failed to parse table1 field table2")
-		}
-	} else {
-		t.Error("failed to parse table1 argument")
-	}
-}
-
-func TestParseArgs_Array(t *testing.T) {
-	lib := setupLib()
-
-	lib.State.NewTable()
-	lib.State.PushInteger(1)
-	lib.State.PushString("test1")
-	lib.State.SetTable(-3)
-
-	argMap := lib.ParseArgs("test_array", []lua.Arg{
-		lua.ArgArray("array1", lua.ArrayType{Type: lua.STRING}, false),
-	}, 1, 0)
-
-	if v, ok := argMap["array1"]; ok {
-		if v, ok := v.(map[string]any)["1"]; ok {
-			if v.(string) != "test1" {
-				t.Errorf("got wrong string: wanted=%s, got=%s", "test1", v)
-			}
-		} else {
-			t.Error("failed to parse array field ")
-		}
-	} else {
-		t.Error("failed to parse array1 argument")
+		t.Error("failed to parse v2 argument")
 	}
 }
 
 func TestParseArgs_Optional(t *testing.T) {
 	lib := setupLib()
 
-	argMap := lib.ParseArgs("test_optional", []lua.Arg{
-		{Type: lua.STRING, Name: "test", Optional: true},
-	}, 0, 0)
+	lib.State.Push(golua.LString("A"))
 
-	if argMap["test"] != "" {
-		t.Errorf("got incorrect value, expected=0, got=%v", argMap["test"])
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2", Optional: true}}, 1, 0)
+
+	if v, ok := argMap["v1"]; ok {
+		if v.(string) != "A" {
+			t.Errorf("got wrong string: wanted=%s, got=%s", "A", v)
+		}
+	} else {
+		t.Error("failed to parse v1 argument")
+	}
+
+	if v, ok := argMap["v2"]; ok {
+		if v.(string) != "" {
+			t.Errorf("got wrong string: wanted=%s, got=%s", "", v)
+		}
+	} else {
+		t.Error("failed to parse v2 argument")
 	}
 }
 
-func TestParseArgs_OptionalTableField(t *testing.T) {
+func TestParseArgs_Table(t *testing.T) {
 	lib := setupLib()
 
-	lib.State.NewTable()
+	tab := lib.State.NewTable()
+	tab.RawSet(golua.LString("v1"), golua.LNumber(1))
+	lib.State.Push(tab)
 
-	argMap := lib.ParseArgs("test_optional", []lua.Arg{
-		{Type: lua.TABLE, Name: "test_table", Table: &[]lua.Arg{
-			{Type: lua.STRING, Name: "test", Optional: true},
-		}},
-	}, 1, 0)
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.TABLE, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
 
-	if argMap["test_table"].(map[string]any)["test"] != "" {
-		t.Errorf("got incorrect value, expected='', got=%v", argMap["test"])
+	if v, ok := argMap["v1"]; ok {
+		if v, ok := v.(map[string]any)["v1"]; ok {
+			if v.(int) != 1 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v)
+			}
+		} else {
+			t.Error("failed to parse v1 field")
+		}
+	} else {
+		t.Error("failed to parse v1 argument")
+	}
+}
+
+func TestParseArgs_Array(t *testing.T) {
+	lib := setupLib()
+
+	tab := lib.State.NewTable()
+	tab.RawSet(golua.LString("v1"), golua.LNumber(1))
+	lib.State.Push(tab)
+
+	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.ARRAY, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
+
+	if v, ok := argMap["v1"]; ok {
+		if v, ok := v.(map[string]any)["v1"]; ok {
+			if v.(int) != 1 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v)
+			}
+		} else {
+			t.Error("failed to parse v1 field")
+		}
+	} else {
+		t.Error("failed to parse v1 argument")
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua/lib"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
-	golua "github.com/Shopify/go-lua"
+	golua "github.com/yuin/gopher-lua"
 )
 
 func WorkflowRun(sm *statemachine.StateMachine) error {
@@ -25,7 +25,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	lg.Append("log started for workflow_run", log.LEVEL_INFO)
 	state := lua.WorkflowRunState(&lg)
-	runner := lua.NewRunner(state, &lg)
+	runner := lua.NewRunner(req, state, &lg)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -44,18 +44,8 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		}
 	}()
 
-	golua.Require(state, "basic", golua.BaseOpen, true)
-
-	for _, plugin := range req {
-		builtin, ok := lib.Builtins[plugin]
-		if !ok {
-			lg.Append(fmt.Sprintf("plugin %s does not exist", plugin), log.LEVEL_WARN)
-		} else {
-			builtin(&runner, &lg)
-			state.Pop(1)
-			lg.Append(fmt.Sprintf("registered plugin %s", plugin), log.LEVEL_INFO)
-		}
-	}
+	golua.OpenBase(state)
+	lua.LoadPlugins("main", &runner, &lg, lib.Builtins, req, state)
 
 	err := runner.Run(script)
 
@@ -84,6 +74,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
 	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
 	if ert || eri || erf || erc || erq {
+		sm.PushString("error occurred within collection")
+		sm.PushString(script)
+		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+
 		return nil
 	}
 

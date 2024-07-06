@@ -22,6 +22,10 @@ main(function ()
     subimgs = spritesheet.to_frames(img, "frame", 8, 8, 8, 8)
 
     for v,k in pairs(subimgs) do
+        image.map(k, function (x, y, c)
+            return {red=0, green=0, blue=0, alpha=0}
+        end)
+
         io.out(k, "./output")
     end
 

@@ -5,12 +5,13 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/koyachi/go-nude"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_NSFW = "nsfw"
 
 func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_NSFW, r.State, lg)
+	lib, tab := lua.NewLib(LIB_NSFW, r, r.State, lg)
 
 	/// @func skin()
 	/// @arg image_id - the image to check for nudity using skin content.
@@ -18,11 +19,11 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 	/// @blocking
 	/// @desc
 	/// Not very accurate, but does not require an AI model.
-	lib.CreateFunction("skin",
+	lib.CreateFunction(tab, "skin",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			result := false
 
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -31,15 +32,14 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					res, err := nude.IsImageNude(i.Self.Image)
 					if err != nil {
-						r.State.PushString(i.Lg.Append("nsfw skin check failed", log.LEVEL_ERROR))
-						r.State.Error()
+						state.Error(golua.LString(i.Lg.Append("nsfw skin check failed", log.LEVEL_ERROR)), 0)
 					}
 
 					result = res
 				},
 			})
 
-			r.State.PushBoolean(result)
+			state.Push(golua.LBool(result))
 			return 1
 		})
 }

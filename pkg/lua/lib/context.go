@@ -9,6 +9,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/fogleman/gg"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_CONTEXT = "context"
@@ -16,31 +17,31 @@ const LIB_CONTEXT = "context"
 type Point map[string]float64
 
 func RegisterContext(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_CONTEXT, r.State, lg)
+	lib, tab := lua.NewLib(LIB_CONTEXT, r, r.State, lg)
 
 	/// @func degrees()
 	/// @arg radians - float
 	/// @returns degrees - float
-	lib.CreateFunction("degrees",
+	lib.CreateFunction(tab, "degrees",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "rad"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			deg := gg.Degrees(args["rad"].(float64))
-			r.State.PushNumber(deg)
+			state.Push(golua.LNumber(deg))
 			return 1
 		})
 
 	/// @func radians()
 	/// @arg degrees - float
 	/// @returns radians - float
-	lib.CreateFunction("radians",
+	lib.CreateFunction(tab, "radians",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "deg"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			rad := gg.Radians(args["deg"].(float64))
-			r.State.PushNumber(rad)
+			state.Push(golua.LNumber(rad))
 			return 1
 		})
 
@@ -48,19 +49,18 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg x
 	/// @arg y
 	/// returns point{x, y}
-	lib.CreateFunction("point",
+	lib.CreateFunction(tab, "point",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
-			r.State.NewTable()
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := state.NewTable()
 
-			r.State.PushNumber(args["x"].(float64))
-			r.State.SetField(-2, "x")
-			r.State.PushNumber(args["y"].(float64))
-			r.State.SetField(-2, "y")
+			state.SetField(t, "x", golua.LNumber(args["x"].(float64)))
+			state.SetField(t, "y", golua.LNumber(args["y"].(float64)))
 
+			state.Push(t)
 			return 1
 		})
 
@@ -68,7 +68,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg p1 - point{x, y}
 	/// @arg p2 - point{x, y}
 	/// @returns float
-	lib.CreateFunction("distance",
+	lib.CreateFunction(tab, "distance",
 		[]lua.Arg{
 			{Type: lua.TABLE, Name: "p1", Table: &[]lua.Arg{
 				{Type: lua.FLOAT, Name: "x"},
@@ -79,7 +79,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.FLOAT, Name: "y"},
 			}},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			ap1 := args["p1"].(Point)
 			ap2 := args["b2"].(Point)
 
@@ -88,7 +88,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			dist := p1.Distance(p2)
 
-			r.State.PushNumber(dist)
+			state.Push(golua.LNumber(dist))
 			return 1
 		})
 
@@ -97,7 +97,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg p2 - point{x, y}
 	/// @arg t - float
 	/// @returns point{x, y}
-	lib.CreateFunction("interpolate",
+	lib.CreateFunction(tab, "interpolate",
 		[]lua.Arg{
 			{Type: lua.TABLE, Name: "p1", Table: &[]lua.Arg{
 				{Type: lua.FLOAT, Name: "x"},
@@ -109,7 +109,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			}},
 			{Type: lua.FLOAT, Name: "t"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			ap1 := args["p1"].(Point)
 			ap2 := args["b2"].(Point)
 
@@ -118,12 +118,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			pi := p1.Interpolate(p2, args["t"].(float64))
 
-			r.State.NewTable()
+			t := state.NewTable()
 
-			r.State.PushNumber(pi.X)
-			r.State.SetField(-2, "x")
-			r.State.PushNumber(pi.Y)
-			r.State.SetField(-2, "y")
+			state.SetField(t, "x", golua.LNumber(pi.X))
+			state.SetField(t, "y", golua.LNumber(pi.Y))
+
+			state.Push(t)
 			return 1
 		})
 
@@ -131,12 +131,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg width - int
 	/// @arg height - int
 	/// returns id
-	lib.CreateFunction("new",
+	lib.CreateFunction(tab, "new",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			name := fmt.Sprintf("context_%d", r.CC.Next())
 
 			chLog := log.NewLogger(name)
@@ -155,18 +155,18 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
 	/// @func new_image()
 	/// @arg id - image id to create a context for
 	/// @returns new context id
-	lib.CreateFunction("new_image",
+	lib.CreateFunction(tab, "new_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imageFinish := make(chan struct{}, 2)
 			imageReady := make(chan struct{}, 2)
 			var img image.Image
@@ -209,7 +209,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
@@ -219,14 +219,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg encoding
 	/// @arg? model
 	/// @returns id - new image id
-	lib.CreateFunction("to_image",
+	lib.CreateFunction(tab, "to_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "encoding"},
 			{Type: lua.INT, Name: "model", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			contextFinish := make(chan struct{}, 2)
 			contextReady := make(chan struct{}, 2)
 
@@ -273,7 +273,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
@@ -282,13 +282,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg name
 	/// @arg encoding
 	/// @returns id - new alpha image
-	lib.CreateFunction("to_mask",
+	lib.CreateFunction(tab, "to_mask",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "encoding"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			contextFinish := make(chan struct{}, 2)
 			contextReady := make(chan struct{}, 2)
 
@@ -335,19 +335,19 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
 	/// @func mask()
 	/// @arg id
 	/// @arg img_id
-	lib.CreateFunction("mask",
+	lib.CreateFunction(tab, "mask",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "img"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgFinish := make(chan struct{}, 2)
 			imgReady := make(chan struct{}, 2)
 
@@ -373,13 +373,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 					<-imgReady
 					aimg, ok := img.(*image.Alpha)
 					if !ok {
-						r.State.PushString(lg.Append("invalid image provided to context.mask", log.LEVEL_ERROR))
-						r.State.Error()
+						state.Error(golua.LString(lg.Append("invalid image provided to context.mask", log.LEVEL_ERROR)), 0)
 					}
 					err := i.Self.Context.SetMask(aimg)
 					if err != nil {
-						r.State.PushString(lg.Append("failed to set image mask, image may be the wrong size.", log.LEVEL_ERROR))
-						r.State.Error()
+						state.Error(golua.LString(lg.Append("failed to set image mask, image may be the wrong size.", log.LEVEL_ERROR)), 0)
 					}
 					imgFinish <- struct{}{}
 				},
@@ -395,11 +393,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @returns width
 	/// @returns height
 	/// @blocking
-	lib.CreateFunction("size",
+	lib.CreateFunction(tab, "size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			width := 0
 			height := 0
 
@@ -412,8 +410,8 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(width)
-			r.State.PushInteger(height)
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
 			return 2
 		})
 
@@ -421,11 +419,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @returns height
 	/// @blocking
-	lib.CreateFunction("font_height",
+	lib.CreateFunction(tab, "font_height",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			height := 0.0
 
 			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
@@ -436,7 +434,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushNumber(height)
+			state.Push(golua.LNumber(height))
 			return 1
 		})
 
@@ -446,12 +444,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @returns width
 	/// @returns height
 	/// @blocking
-	lib.CreateFunction("string_measure",
+	lib.CreateFunction(tab, "string_measure",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "str"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			width := 0.0
 			height := 0.0
 
@@ -463,8 +461,8 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushNumber(width)
-			r.State.PushNumber(height)
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
 			return 2
 		})
 
@@ -475,13 +473,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @returns width
 	/// @returns height
 	/// @blocking
-	lib.CreateFunction("string_measure_multiline",
+	lib.CreateFunction(tab, "string_measure_multiline",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "str"},
 			{Type: lua.FLOAT, Name: "spacing"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			width := 0.0
 			height := 0.0
 
@@ -493,8 +491,8 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushNumber(width)
-			r.State.PushNumber(height)
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
 			return 2
 		})
 
@@ -504,11 +502,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @returns y
 	/// @returns exists
 	/// @blocking
-	lib.CreateFunction("current_point",
+	lib.CreateFunction(tab, "current_point",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			x := 0.0
 			y := 0.0
 			exists := false
@@ -524,9 +522,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushNumber(x)
-			r.State.PushNumber(y)
-			r.State.PushBoolean(exists)
+			state.Push(golua.LNumber(x))
+			state.Push(golua.LNumber(y))
+			state.Push(golua.LBool(exists))
 			return 3
 		})
 
@@ -539,13 +537,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @blocking
 	/// @desc
 	/// multiplies a point by the current matrix.
-	lib.CreateFunction("transform_point",
+	lib.CreateFunction(tab, "transform_point",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			x := 0.0
 			y := 0.0
 
@@ -557,8 +555,8 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushNumber(x)
-			r.State.PushNumber(y)
+			state.Push(golua.LNumber(x))
+			state.Push(golua.LNumber(y))
 			return 2
 		})
 
@@ -566,11 +564,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// fills the context with the current color
-	lib.CreateFunction("clear",
+	lib.CreateFunction(tab, "clear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -587,12 +585,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg? preserve - keep the path or not
 	/// @desc
 	/// updates the clipping region by intersecting the current clipping region with the current path as it would be filled by fill().
-	lib.CreateFunction("clip",
+	lib.CreateFunction(tab, "clip",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -612,11 +610,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// clears the clipping region
-	lib.CreateFunction("clip_reset",
+	lib.CreateFunction(tab, "clip_reset",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -632,11 +630,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// removes all points from the current path
-	lib.CreateFunction("path_clear",
+	lib.CreateFunction(tab, "path_clear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -652,11 +650,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// adds a line segment from the current point to the first point
-	lib.CreateFunction("path_close",
+	lib.CreateFunction(tab, "path_close",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -674,13 +672,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// starts a new subpath starting at the given point.
-	lib.CreateFunction("path_to",
+	lib.CreateFunction(tab, "path_to",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -700,11 +698,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// starts a new subpath starting at the current point.
 	/// no current point will be set after.
-	lib.CreateFunction("subpath",
+	lib.CreateFunction(tab, "subpath",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -727,7 +725,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// draws a bezier curve to the path starting at the current point
 	/// if this isn't a current point, it moves to (x1, y1)
-	lib.CreateFunction("draw_cubic",
+	lib.CreateFunction(tab, "draw_cubic",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x1"},
@@ -737,7 +735,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "x3"},
 			{Type: lua.FLOAT, Name: "y3"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -765,7 +763,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// draws a quadratic bezier curve to the path starting at the current point
 	/// if this isn't a current point, it moves to (x1, y1)
-	lib.CreateFunction("draw_quadratic",
+	lib.CreateFunction(tab, "draw_quadratic",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x1"},
@@ -773,7 +771,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "x2"},
 			{Type: lua.FLOAT, Name: "y2"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -797,7 +795,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg r
 	/// @arg angle1
 	/// @arg angle2
-	lib.CreateFunction("draw_arc",
+	lib.CreateFunction(tab, "draw_arc",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
@@ -806,7 +804,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle1"},
 			{Type: lua.FLOAT, Name: "angle2"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -829,14 +827,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg x
 	/// @arg y
 	/// @arg r
-	lib.CreateFunction("draw_circle",
+	lib.CreateFunction(tab, "draw_circle",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 			{Type: lua.FLOAT, Name: "r"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -858,7 +856,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @arg rx
 	/// @arg ry
-	lib.CreateFunction("draw_ellipse",
+	lib.CreateFunction(tab, "draw_ellipse",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
@@ -866,7 +864,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "rx"},
 			{Type: lua.FLOAT, Name: "ry"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -891,7 +889,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg ry
 	/// @arg angle1
 	/// @arg angle2
-	lib.CreateFunction("draw_elliptical_arc",
+	lib.CreateFunction(tab, "draw_elliptical_arc",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
@@ -901,7 +899,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle1"},
 			{Type: lua.FLOAT, Name: "angle2"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -925,14 +923,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg img_id
 	/// @arg x
 	/// @arg y
-	lib.CreateFunction("draw_image",
+	lib.CreateFunction(tab, "draw_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "img"},
 			{Type: lua.INT, Name: "x"},
 			{Type: lua.INT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgFinish := make(chan struct{}, 2)
 			imgReady := make(chan struct{}, 2)
 
@@ -975,7 +973,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg ay - float
 	/// @desc
 	/// anchor is between 0 and 1, so 0.5 is centered.
-	lib.CreateFunction("draw_image_anchor",
+	lib.CreateFunction(tab, "draw_image_anchor",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "img"},
@@ -984,7 +982,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "ax"},
 			{Type: lua.FLOAT, Name: "ay"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgFinish := make(chan struct{}, 2)
 			imgReady := make(chan struct{}, 2)
 
@@ -1024,7 +1022,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y1
 	/// @arg x2
 	/// @arg y2
-	lib.CreateFunction("draw_line",
+	lib.CreateFunction(tab, "draw_line",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x1"},
@@ -1032,7 +1030,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "x2"},
 			{Type: lua.FLOAT, Name: "y2"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1055,13 +1053,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// draws a line relative to the current point.
-	lib.CreateFunction("draw_line_to",
+	lib.CreateFunction(tab, "draw_line_to",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1084,14 +1082,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// similar to draw_circle but ensures that a circle of the specified size is drawn regardless of the current transformation matrix.
 	/// the position is still transformed, but not the shape of the point.
-	lib.CreateFunction("draw_point",
+	lib.CreateFunction(tab, "draw_point",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 			{Type: lua.FLOAT, Name: "r"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1113,7 +1111,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @arg width
 	/// @arg height
-	lib.CreateFunction("draw_rect",
+	lib.CreateFunction(tab, "draw_rect",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
@@ -1121,7 +1119,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "width"},
 			{Type: lua.FLOAT, Name: "height"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1145,7 +1143,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg width
 	/// @arg height
 	/// @arg r
-	lib.CreateFunction("draw_rect_round",
+	lib.CreateFunction(tab, "draw_rect_round",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
@@ -1154,7 +1152,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "height"},
 			{Type: lua.FLOAT, Name: "r"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1179,7 +1177,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @arg r
 	/// @arg rotation
-	lib.CreateFunction("draw_polygon",
+	lib.CreateFunction(tab, "draw_polygon",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "n"},
@@ -1188,7 +1186,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 			{Type: lua.FLOAT, Name: "rotation"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1211,14 +1209,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg str
 	/// @arg x
 	/// @arg y
-	lib.CreateFunction("draw_string",
+	lib.CreateFunction(tab, "draw_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "str"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1241,7 +1239,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @arg ax
 	/// @arg ay
-	lib.CreateFunction("draw_string_anchor",
+	lib.CreateFunction(tab, "draw_string_anchor",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "str"},
@@ -1250,7 +1248,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "ax"},
 			{Type: lua.FLOAT, Name: "ay"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1278,7 +1276,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg width
 	/// @arg spacing
 	/// @arg align
-	lib.CreateFunction("draw_string",
+	lib.CreateFunction(tab, "draw_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "str"},
@@ -1290,7 +1288,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "spacing"},
 			{Type: lua.INT, Name: "align"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1317,12 +1315,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// fills the current path with the current color.
 	/// closes open paths.
-	lib.CreateFunction("fill",
+	lib.CreateFunction(tab, "fill",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1341,12 +1339,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @func fill_rule()
 	/// @arg id
 	/// @arg rule
-	lib.CreateFunction("fill_rule",
+	lib.CreateFunction(tab, "fill_rule",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "rule"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1363,12 +1361,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg? preserve
 	/// @desc
 	/// strokes the current path with the current color.
-	lib.CreateFunction("stroke",
+	lib.CreateFunction(tab, "stroke",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1388,11 +1386,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// resets the current transformation matrix to the identity matrix.
-	lib.CreateFunction("identity",
+	lib.CreateFunction(tab, "identity",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1408,11 +1406,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// inverts the alpha values of the clipping mask.
-	lib.CreateFunction("mask_invert",
+	lib.CreateFunction(tab, "mask_invert",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1428,11 +1426,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// flips the y axis so that Y=0 is at the bottom of the image.
-	lib.CreateFunction("invert_y",
+	lib.CreateFunction(tab, "invert_y",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1448,11 +1446,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// push the current context state to the stack.
-	lib.CreateFunction("push",
+	lib.CreateFunction(tab, "push",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1468,11 +1466,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// pop the current context state to the stack.
-	lib.CreateFunction("pop",
+	lib.CreateFunction(tab, "pop",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1489,12 +1487,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg angle
 	/// @desc
 	/// rotates the transformation matrix around the origin
-	lib.CreateFunction("rotate",
+	lib.CreateFunction(tab, "rotate",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "angle"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1513,14 +1511,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// rotates the transformation matrix around the point
-	lib.CreateFunction("rotate_about",
+	lib.CreateFunction(tab, "rotate_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "angle"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1542,13 +1540,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// scales the transformation matrix by a factor
-	lib.CreateFunction("scale",
+	lib.CreateFunction(tab, "scale",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1571,7 +1569,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// scales the transformation matrix by a factor starting at the point.
-	lib.CreateFunction("scale_about",
+	lib.CreateFunction(tab, "scale_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "sx"},
@@ -1579,7 +1577,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1602,12 +1600,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// supports hex colors in the follow formats: #RGB #RRGGBB #RRGGBBAA
 	/// the leading # is optional
-	lib.CreateFunction("color_hex",
+	lib.CreateFunction(tab, "color_hex",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "hex"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1626,14 +1624,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg b
 	/// @desc
 	/// values between 0 and 1.
-	lib.CreateFunction("color_rgb",
+	lib.CreateFunction(tab, "color_rgb",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "r"},
 			{Type: lua.FLOAT, Name: "g"},
 			{Type: lua.FLOAT, Name: "b"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1656,14 +1654,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg b
 	/// @desc
 	/// interger values between 0 and 255.
-	lib.CreateFunction("color_rgb255",
+	lib.CreateFunction(tab, "color_rgb255",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "r"},
 			{Type: lua.INT, Name: "g"},
 			{Type: lua.INT, Name: "b"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1687,7 +1685,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg a
 	/// @desc
 	/// values between 0 and 1.
-	lib.CreateFunction("color_rgba",
+	lib.CreateFunction(tab, "color_rgba",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "r"},
@@ -1695,7 +1693,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "b"},
 			{Type: lua.FLOAT, Name: "a"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1720,7 +1718,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg a
 	/// @desc
 	/// interger values between 0 and 255.
-	lib.CreateFunction("color_rgba255",
+	lib.CreateFunction(tab, "color_rgba255",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "r"},
@@ -1728,7 +1726,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "b"},
 			{Type: lua.INT, Name: "a"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1751,12 +1749,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @desc
 	/// sets the dash length pattern to use.
 	/// call with empty array to disable dashes.
-	lib.CreateFunction("dash_set",
+	lib.CreateFunction(tab, "dash_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			lua.ArgArray("pattern", lua.ArrayType{Type: lua.FLOAT}, false),
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1778,12 +1776,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg offset
 	/// @desc
 	/// the initial offset for the dash pattern
-	lib.CreateFunction("dash_set_offset",
+	lib.CreateFunction(tab, "dash_set_offset",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "offset"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1798,12 +1796,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @func line_cap()
 	/// @arg id
 	/// @arg cap
-	lib.CreateFunction("line_cap",
+	lib.CreateFunction(tab, "line_cap",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "cap"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1818,12 +1816,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @func line_join()
 	/// @arg id
 	/// @arg join
-	lib.CreateFunction("line_join",
+	lib.CreateFunction(tab, "line_join",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "join"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1838,12 +1836,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @func line_width()
 	/// @arg id
 	/// @arg width
-	lib.CreateFunction("line_width",
+	lib.CreateFunction(tab, "line_width",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "width"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1859,13 +1857,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @arg x
 	/// @arg y
-	lib.CreateFunction("pixel_set",
+	lib.CreateFunction(tab, "pixel_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "x"},
 			{Type: lua.INT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1883,13 +1881,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// updates the current matrix with a shearing angle, at the origin.
-	lib.CreateFunction("shear",
+	lib.CreateFunction(tab, "shear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1909,7 +1907,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// updates the current matrix with a shearing angle, at the given point.
-	lib.CreateFunction("shear_about",
+	lib.CreateFunction(tab, "shear_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "sx"},
@@ -1917,7 +1915,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1940,13 +1938,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @desc
 	/// updates the current matrix with a translation.
-	lib.CreateFunction("translate",
+	lib.CreateFunction(tab, "translate",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1961,54 +1959,40 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @constants Fill Rules
 	/// @const FILLRULE_WINDING
 	/// @const FILLRULE_EVENODD
-	lib.State.PushInteger(int(gg.FillRuleWinding))
-	lib.State.SetField(-2, "FILLRULE_WINDING")
-	lib.State.PushInteger(int(gg.FillRuleEvenOdd))
-	lib.State.SetField(-2, "FILLRULE_EVENODD")
+	r.State.SetField(tab, "FILLRULE_WINDING", golua.LNumber(gg.FillRuleWinding))
+	r.State.SetField(tab, "FILLRULE_EVENODD", golua.LNumber(gg.FillRuleEvenOdd))
 
 	/// @constants Line Caps
 	/// @const LINECAP_ROUND
 	/// @const LINECAP_BUTT
 	/// @const LINCAP_SQUARE
-	lib.State.PushInteger(int(gg.LineCapRound))
-	lib.State.SetField(-2, "LINECAP_ROUND")
-	lib.State.PushInteger(int(gg.LineCapButt))
-	lib.State.SetField(-2, "LINECAP_BUTT")
-	lib.State.PushInteger(int(gg.LineCapSquare))
-	lib.State.SetField(-2, "LINECAP_SQUARE")
+	r.State.SetField(tab, "LINECAP_ROUND", golua.LNumber(gg.LineCapRound))
+	r.State.SetField(tab, "LINECAP_BUTT", golua.LNumber(gg.LineCapButt))
+	r.State.SetField(tab, "LINECAP_SQUARE", golua.LNumber(gg.LineCapSquare))
 
 	/// @constants Line Joins
 	/// @const LINEJOIN_ROUND
 	/// @const LINEJOIN_BEVEL
-	lib.State.PushInteger(int(gg.LineJoinRound))
-	lib.State.SetField(-2, "LINEJOIN_ROUND")
-	lib.State.PushInteger(int(gg.LineJoinBevel))
-	lib.State.SetField(-2, "LINEJOIN_BEVEL")
+	r.State.SetField(tab, "LINEJOIN_ROUND", golua.LNumber(gg.LineJoinRound))
+	r.State.SetField(tab, "LINEJOIN_BEVEL", golua.LNumber(gg.LineJoinBevel))
 
 	/// @constants Repeat Ops
 	/// @const REPEAT_BOTH
 	/// @const REPEAT_X
 	/// @const REPEAT_Y
 	/// @const REPEAT_NONE
-	lib.State.PushInteger(int(gg.RepeatBoth))
-	lib.State.SetField(-2, "REPEAT_BOTH")
-	lib.State.PushInteger(int(gg.RepeatX))
-	lib.State.SetField(-2, "REPEAT_X")
-	lib.State.PushInteger(int(gg.RepeatY))
-	lib.State.SetField(-2, "REPEAT_Y")
-	lib.State.PushInteger(int(gg.RepeatNone))
-	lib.State.SetField(-2, "REPEAT_NONE")
+	r.State.SetField(tab, "REPEAT_BOTH", golua.LNumber(gg.RepeatBoth))
+	r.State.SetField(tab, "REPEAT_X", golua.LNumber(gg.RepeatX))
+	r.State.SetField(tab, "REPEAT_Y", golua.LNumber(gg.RepeatY))
+	r.State.SetField(tab, "REPEAT_NONE", golua.LNumber(gg.RepeatNone))
 
 	/// @constants Alignment
 	/// @const ALIGN_LEFT
 	/// @const ALIGN_CENTER
 	/// @const ALIGN_RIGHT
-	lib.State.PushInteger(int(gg.AlignLeft))
-	lib.State.SetField(-2, "ALIGN_LEFT")
-	lib.State.PushInteger(int(gg.AlignCenter))
-	lib.State.SetField(-2, "ALIGN_CENTER")
-	lib.State.PushInteger(int(gg.AlignRight))
-	lib.State.SetField(-2, "ALIGN_RIGHT")
+	r.State.SetField(tab, "ALIGN_LEFT", golua.LNumber(gg.AlignLeft))
+	r.State.SetField(tab, "ALIGN_CENTER", golua.LNumber(gg.AlignCenter))
+	r.State.SetField(tab, "ALIGN_RIGHT", golua.LNumber(gg.AlignRight))
 }
 
 var fillRules = []gg.FillRule{

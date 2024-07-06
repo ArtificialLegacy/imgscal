@@ -10,12 +10,13 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_SPRITESHEET = "spritesheet"
 
 func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_SPRITESHEET, r.State, lg)
+	lib, tab := lua.NewLib(LIB_SPRITESHEET, r, r.State, lg)
 
 	/// @func to_frames()
 	/// @arg id
@@ -28,7 +29,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg? hsep
 	/// @arg? vsep
 	/// @returns array of new images
-	lib.CreateFunction("to_frames",
+	lib.CreateFunction(tab, "to_frames",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
@@ -45,7 +46,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "hsep", Optional: true},
 			{Type: lua.INT, Name: "vsep", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			count := args["count"].(int)
 			frameSimg := []chan image.Image{}
 			var encoding imageutil.ImageEncoding
@@ -124,12 +125,12 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				})
 			}
 
-			r.State.NewTable()
+			t := state.NewTable()
 			for i, f := range frames {
-				r.State.PushInteger(i + 1)
-				r.State.PushInteger(f)
-				r.State.SetTable(-3)
+				state.SetTable(t, golua.LNumber(i+1), golua.LNumber(f))
 			}
+
+			state.Push(t)
 			return 1
 		})
 
@@ -145,7 +146,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg? hsep
 	/// @arg? vsep
 	/// @returns new image
-	lib.CreateFunction("from_frames",
+	lib.CreateFunction(tab, "from_frames",
 		[]lua.Arg{
 			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
 			{Type: lua.STRING, Name: "name"},
@@ -163,7 +164,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "hsep", Optional: true},
 			{Type: lua.INT, Name: "vsep", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgs := args["ids"].(map[string]any)
 			simg := make(chan *imgData, len(imgs)+1)
 
@@ -260,7 +261,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 }

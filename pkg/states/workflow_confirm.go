@@ -11,7 +11,6 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
-	golua "github.com/Shopify/go-lua"
 )
 
 func WorkflowConfirm(sm *statemachine.StateMachine) error {
@@ -26,10 +25,11 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	}
 
 	lg := log.NewLogger("config")
+	defer lg.Close()
 
 	lg.Append("log started for workflow_confirm", log.LEVEL_INFO)
 	state := lua.WorkflowConfigState(&wf, &lg)
-	err = golua.DoFile(state, path.Join(pwd, script))
+	err = state.DoFile(path.Join(pwd, script))
 
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)

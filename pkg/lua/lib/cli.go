@@ -6,22 +6,23 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_CLI = "cli"
 
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_CLI, r.State, lg)
+	lib, tab := lua.NewLib(LIB_CLI, r, r.State, lg)
 
 	/// @func print()
 	/// @arg msg - the message to print to the console.
 	/// @desc
 	/// This is also including in the log similar to std.log.
-	lib.CreateFunction("print",
+	lib.CreateFunction(tab, "print",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			println(args["msg"])
 			lg.Append(fmt.Sprintf("lua msg printed: %s", args["msg"]), log.LEVEL_INFO)
 			return 0
@@ -30,18 +31,17 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @func question()
 	/// @arg question - the message to be displayed.
 	/// @returns string - the answer given by the user
-	lib.CreateFunction("question",
+	lib.CreateFunction(tab, "question",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "question"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			result, err := cli.Question(args["question"].(string), cli.QuestionOptions{})
 			if err != nil {
-				r.State.PushString(lg.Append("invalid answer provided to cli.question", log.LEVEL_ERROR))
-				r.State.Error()
+				state.Error(golua.LString(lg.Append("invalid answer provided to cli.question", log.LEVEL_ERROR)), 0)
 			}
 
-			r.State.PushString(result)
+			state.Push(golua.LString(result))
 			return 1
 		})
 
@@ -49,7 +49,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @arg question - the message to be displayed.
 	/// @arg options - the options to use for processing the answer. [normalize, accepts, fallback]
 	/// @returns string - the answer given by the user
-	lib.CreateFunction("question_ext",
+	lib.CreateFunction(tab, "question_ext",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "question"},
 			{Type: lua.TABLE, Name: "options", Table: &[]lua.Arg{
@@ -58,7 +58,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.STRING, Name: "fallback", Optional: true},
 			}},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			acc := args["options"].(map[string]any)["accepts"]
 			accepts := []string{}
 			if str, ok := acc.([]string); ok {
@@ -73,11 +73,10 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			result, err := cli.Question(args["question"].(string), opts)
 			if err != nil {
-				r.State.PushString(lg.Append(fmt.Sprintf("invalid answer provided to cli.question_ext: %s", err), log.LEVEL_ERROR))
-				r.State.Error()
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid answer provided to cli.question_ext: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			r.State.PushString(result)
+			state.Push(golua.LString(result))
 			return 1
 		})
 
@@ -85,11 +84,11 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @arg msg
 	/// @desc
 	/// waits for enter to be pressed before continuing.
-	lib.CreateFunction("confirm",
+	lib.CreateFunction(tab, "confirm",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			cli.Question(fmt.Sprintf("%s [ENTER]", args["msg"].(string)), cli.QuestionOptions{})
 			return 0
 		})
@@ -98,12 +97,12 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @arg msg
 	/// @arg options - array of strings
 	/// @returns index of selected option, or 0.
-	lib.CreateFunction("select",
+	lib.CreateFunction(tab, "select",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
 			lua.ArgArray("options", lua.ArrayType{Type: lua.STRING}, false),
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			opts := []string{}
 			for _, v := range args["options"].(map[string]any) {
 				opts = append(opts, v.(string))
@@ -119,15 +118,13 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			lg.Append(fmt.Sprintf("selection option picked: %d", ind+1), log.LEVEL_INFO)
 
-			r.State.PushInteger(ind + 1)
-
+			state.Push(golua.LNumber(ind + 1))
 			return 1
 		})
 
 	/// @constants Control
 	/// @const RESET
-	r.State.PushString(string(cli.COLOR_RESET))
-	r.State.SetField(-2, "RESET")
+	r.State.SetField(tab, "RESET", golua.LString(cli.COLOR_RESET))
 
 	/// @constants Text Colors
 	/// @const BLACK
@@ -146,39 +143,23 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @const BRIGHT_MAGENTA
 	/// @const BRIGHT_CYAN
 	/// @const BRIGHT_WHITE
-	r.State.PushString(string(cli.COLOR_BLACK))
-	r.State.SetField(-2, "BLACK")
-	r.State.PushString(string(cli.COLOR_RED))
-	r.State.SetField(-2, "RED")
-	r.State.PushString(string(cli.COLOR_GREEN))
-	r.State.SetField(-2, "GREEN")
-	r.State.PushString(string(cli.COLOR_YELLOW))
-	r.State.SetField(-2, "YELLOW")
-	r.State.PushString(string(cli.COLOR_BLUE))
-	r.State.SetField(-2, "BLUE")
-	r.State.PushString(string(cli.COLOR_MAGENTA))
-	r.State.SetField(-2, "MAGENTA")
-	r.State.PushString(string(cli.COLOR_CYAN))
-	r.State.SetField(-2, "CYAN")
-	r.State.PushString(string(cli.COLOR_WHITE))
-	r.State.SetField(-2, "WHITE")
+	r.State.SetField(tab, "BLACK", golua.LString(cli.COLOR_BLACK))
+	r.State.SetField(tab, "RED", golua.LString(cli.COLOR_RED))
+	r.State.SetField(tab, "GREEN", golua.LString(cli.COLOR_GREEN))
+	r.State.SetField(tab, "YELLOW", golua.LString(cli.COLOR_YELLOW))
+	r.State.SetField(tab, "BLUE", golua.LString(cli.COLOR_BLUE))
+	r.State.SetField(tab, "MAGENTA", golua.LString(cli.COLOR_MAGENTA))
+	r.State.SetField(tab, "CYAN", golua.LString(cli.COLOR_CYAN))
+	r.State.SetField(tab, "WHITE", golua.LString(cli.COLOR_WHITE))
 
-	r.State.PushString(string(cli.COLOR_BRIGHT_BLACK))
-	r.State.SetField(-2, "BRIGHT_BLACK")
-	r.State.PushString(string(cli.COLOR_BRIGHT_RED))
-	r.State.SetField(-2, "BRIGHT_RED")
-	r.State.PushString(string(cli.COLOR_BRIGHT_GREEN))
-	r.State.SetField(-2, "BRIGHT_GREEN")
-	r.State.PushString(string(cli.COLOR_BRIGHT_YELLOW))
-	r.State.SetField(-2, "BRIGHT_YELLOW")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BLUE))
-	r.State.SetField(-2, "BRIGHT_BLUE")
-	r.State.PushString(string(cli.COLOR_BRIGHT_MAGENTA))
-	r.State.SetField(-2, "BRIGHT_MAGENTA")
-	r.State.PushString(string(cli.COLOR_BRIGHT_CYAN))
-	r.State.SetField(-2, "BRIGHT_CYAN")
-	r.State.PushString(string(cli.COLOR_BRIGHT_WHITE))
-	r.State.SetField(-2, "BRIGHT_WHITE")
+	r.State.SetField(tab, "BRIGHT_BLACK", golua.LString(cli.COLOR_BRIGHT_BLACK))
+	r.State.SetField(tab, "BRIGHT_RED", golua.LString(cli.COLOR_BRIGHT_RED))
+	r.State.SetField(tab, "BRIGHT_GREEN", golua.LString(cli.COLOR_BRIGHT_GREEN))
+	r.State.SetField(tab, "BRIGHT_YELLOW", golua.LString(cli.COLOR_BRIGHT_YELLOW))
+	r.State.SetField(tab, "BRIGHT_BLUE", golua.LString(cli.COLOR_BRIGHT_BLUE))
+	r.State.SetField(tab, "BRIGHT_MAGENTA", golua.LString(cli.COLOR_BRIGHT_MAGENTA))
+	r.State.SetField(tab, "BRIGHT_CYAN", golua.LString(cli.COLOR_BRIGHT_CYAN))
+	r.State.SetField(tab, "BRIGHT_WHITE", golua.LString(cli.COLOR_BRIGHT_WHITE))
 
 	/// @constants Background Colors
 	/// @const BACKGROUND_BLACK
@@ -197,48 +178,29 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @const BRIGHT_BACKGROUND_MAGENTA
 	/// @const BRIGHT_BACKGROUND_CYAN
 	/// @const BRIGHT_BACKGROUND_WHITE
-	r.State.PushString(string(cli.COLOR_BACKGROUND_BLACK))
-	r.State.SetField(-2, "BACKGROUND_BLACK")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_RED))
-	r.State.SetField(-2, "BACKGROUND_RED")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_GREEN))
-	r.State.SetField(-2, "BACKGROUND_GREEN")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_YELLOW))
-	r.State.SetField(-2, "BACKGROUND_YELLOW")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_BLUE))
-	r.State.SetField(-2, "BACKGROUND_BLUE")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_MAGENTA))
-	r.State.SetField(-2, "BACKGROUND_MAGENTA")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_CYAN))
-	r.State.SetField(-2, "BACKGROUND_CYAN")
-	r.State.PushString(string(cli.COLOR_BACKGROUND_WHITE))
-	r.State.SetField(-2, "BACKGROUND_WHITE")
+	r.State.SetField(tab, "BACKGROUND_BLACK", golua.LString(cli.COLOR_BACKGROUND_BLACK))
+	r.State.SetField(tab, "BACKGROUND_RED", golua.LString(cli.COLOR_BACKGROUND_RED))
+	r.State.SetField(tab, "BACKGROUND_GREEN", golua.LString(cli.COLOR_BACKGROUND_GREEN))
+	r.State.SetField(tab, "BACKGROUND_YELLOW", golua.LString(cli.COLOR_BACKGROUND_YELLOW))
+	r.State.SetField(tab, "BACKGROUND_BLUE", golua.LString(cli.COLOR_BACKGROUND_BLUE))
+	r.State.SetField(tab, "BACKGROUND_MAGENTA", golua.LString(cli.COLOR_BACKGROUND_MAGENTA))
+	r.State.SetField(tab, "BACKGROUND_CYAN", golua.LString(cli.COLOR_BACKGROUND_CYAN))
+	r.State.SetField(tab, "BACKGROUND_WHITE", golua.LString(cli.COLOR_BACKGROUND_WHITE))
 
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_BLACK))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_BLACK")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_RED))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_RED")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_GREEN))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_GREEN")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_YELLOW))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_YELLOW")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_BLUE))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_BLUE")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_MAGENTA))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_MAGENTA")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_CYAN))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_CYAN")
-	r.State.PushString(string(cli.COLOR_BRIGHT_BACKGROUND_WHITE))
-	r.State.SetField(-2, "BRIGHT_BACKGROUND_WHITE")
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_BLACK", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_BLACK))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_RED", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_RED))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_GREEN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_GREEN))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_YELLOW", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_YELLOW))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_BLUE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_BLUE))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_MAGENTA", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_MAGENTA))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_CYAN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_CYAN))
+	r.State.SetField(tab, "BRIGHT_BACKGROUND_WHITE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_WHITE))
 
 	/// @constants Styles
 	/// @const BOLD
 	/// @const UNDERLINE
 	/// @const REVERSED
-	r.State.PushString(string(cli.COLOR_BOLD))
-	r.State.SetField(-2, "BOLD")
-	r.State.PushString(string(cli.COLOR_UNDERLINE))
-	r.State.SetField(-2, "UNDERLINE")
-	r.State.PushString(string(cli.COLOR_REVERSED))
-	r.State.SetField(-2, "REVERSED")
+	r.State.SetField(tab, "BOLD", golua.LString(cli.COLOR_BOLD))
+	r.State.SetField(tab, "UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
+	r.State.SetField(tab, "REVERSED", golua.LString(cli.COLOR_REVERSED))
 }

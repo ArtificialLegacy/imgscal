@@ -6,21 +6,22 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/google/uuid"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_UUID = "uuid"
 
 func RegisterUUID(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_UUID, r.State, lg)
+	lib, tab := lua.NewLib(LIB_UUID, r, r.State, lg)
 
 	/// @func string()
 	/// @returns string - the generated uuid.
-	lib.CreateFunction("string", []lua.Arg{},
-		func(d lua.TaskData, args map[string]any) int {
+	lib.CreateFunction(tab, "string", []lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			uuid := uuid.NewString()
 			lg.Append(fmt.Sprintf("got uuid: %s", uuid), log.LEVEL_INFO)
 
-			r.State.PushString(uuid)
+			state.Push(golua.LString(uuid))
 			return 1
 		})
 }

@@ -10,12 +10,13 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_IMAGE = "image"
 
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_IMAGE, r.State, lg)
+	lib, tab := lua.NewLib(LIB_IMAGE, r, r.State, lg)
 
 	/// @func new()
 	/// @arg name
@@ -24,7 +25,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg height
 	/// @arg? model
 	/// @returns id
-	lib.CreateFunction("new",
+	lib.CreateFunction(tab, "new",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "encoding"},
@@ -32,7 +33,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "height"},
 			{Type: lua.INT, Name: "model", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
@@ -56,19 +57,19 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
 	/// @func name()
 	/// @arg image_id - the id of the image to rename.
 	/// @arg new_name - the new name to use for the image, not including the file extension.
-	lib.CreateFunction("name",
+	lib.CreateFunction(tab, "name",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -82,7 +83,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @func name_ext()
 	/// @arg image_id - the id of the image to rename.
 	/// @arg options - a table containing each rename step. [name, prefix, suffix]
-	lib.CreateFunction("name_ext",
+	lib.CreateFunction(tab, "name_ext",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.TABLE, Name: "options", Table: &[]lua.Arg{
@@ -92,7 +93,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.STRING, Name: "ext", Optional: true},
 			}},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -120,12 +121,12 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @func encoding()
 	/// @arg id
 	/// @arg encoding
-	lib.CreateFunction("encoding",
+	lib.CreateFunction(tab, "encoding",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "encoding"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -140,11 +141,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @returns model
 	/// @blocking
-	lib.CreateFunction("model",
+	lib.CreateFunction(tab, "model",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			model := 0
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
@@ -154,7 +155,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(model)
+			state.Push(golua.LNumber(model))
 			return 1
 		})
 
@@ -163,11 +164,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @returns width
 	/// @returns height
 	/// @blocking
-	lib.CreateFunction("size",
+	lib.CreateFunction(tab, "size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			width := 0
 			height := 0
 
@@ -181,8 +182,8 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(width)
-			r.State.PushInteger(height)
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
 			return 2
 		})
 
@@ -194,7 +195,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg y2
 	/// @desc
 	/// overwrites the img
-	lib.CreateFunction("crop",
+	lib.CreateFunction(tab, "crop",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "x1"},
@@ -202,7 +203,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "x2"},
 			{Type: lua.INT, Name: "y2"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -235,7 +236,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg y2
 	/// @arg? copy
 	/// @returns new_id
-	lib.CreateFunction("subimg",
+	lib.CreateFunction(tab, "subimg",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
@@ -245,7 +246,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y2"},
 			{Type: lua.BOOL, Name: "copy", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var simg image.Image
 			var encoding imageutil.ImageEncoding
 			simgReady := make(chan struct{}, 1)
@@ -294,8 +295,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
-
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
@@ -304,13 +304,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg name
 	/// @arg model - use -1 to maintain color model
 	/// @returns new_id
-	lib.CreateFunction("copy",
+	lib.CreateFunction(tab, "copy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "model"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var cimg image.Image
 			var encoding imageutil.ImageEncoding
 			cimgReady := make(chan struct{}, 1)
@@ -358,7 +358,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushInteger(id)
+			state.Push(golua.LNumber(id))
 			return 1
 		})
 
@@ -367,12 +367,12 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg model
 	/// @desc
 	/// replaces the image inplace with a new image with the new model
-	lib.CreateFunction("convert",
+	lib.CreateFunction(tab, "convert",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "model"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -390,11 +390,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg id
 	/// @desc
 	/// shortcut for redrawing the image to guarantee the bounds of the image start at (0,0)
-	lib.CreateFunction("refresh",
+	lib.CreateFunction(tab, "refresh",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -412,13 +412,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @returns {red, green, blue, alpha}
 	/// @blocking
-	lib.CreateFunction("pixel",
+	lib.CreateFunction(tab, "pixel",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "x"},
 			{Type: lua.INT, Name: "y"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var red, green, blue, alpha uint32
 
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -433,15 +433,12 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.NewTable()
-			r.State.PushInteger(int(red))
-			r.State.SetField(-2, "red")
-			r.State.PushInteger(int(green))
-			r.State.SetField(-2, "green")
-			r.State.PushInteger(int(blue))
-			r.State.SetField(-2, "blue")
-			r.State.PushInteger(int(alpha))
-			r.State.SetField(-2, "alpha")
+			t := state.NewTable()
+			state.SetField(t, "red", golua.LNumber(red))
+			state.SetField(t, "green", golua.LNumber(green))
+			state.SetField(t, "blue", golua.LNumber(blue))
+			state.SetField(t, "alpha", golua.LNumber(alpha))
+			state.Push(t)
 			return 4
 		})
 
@@ -450,7 +447,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg x
 	/// @arg y
 	/// @arg {red, green, blue, alpha}
-	lib.CreateFunction("pixel_set",
+	lib.CreateFunction(tab, "pixel_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "x"},
@@ -462,7 +459,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.INT, Name: "alpha"},
 			}},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -488,11 +485,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @func color_hex()
 	/// @arg hex
 	/// @returns {red, green, blue, alpha}
-	lib.CreateFunction("color_hex",
+	lib.CreateFunction(tab, "color_hex",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "hex"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			hex := args["hex"].(string)
 			hex = strings.TrimPrefix(hex, "#")
 
@@ -505,76 +502,64 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			case 4:
 				c, err := strconv.ParseInt(string(hex[3])+string(hex[3]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on alpha): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on alpha): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				alpha = int(c)
 				fallthrough
 			case 3:
 				c, err := strconv.ParseInt(string(hex[0])+string(hex[0]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on red): %s %s", hex, err), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on red): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				red = int(c)
 
 				c, err = strconv.ParseInt(string(hex[1])+string(hex[1]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on green): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on green): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				green = int(c)
 
 				c, err = strconv.ParseInt(string(hex[2])+string(hex[2]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on blue): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on blue): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				blue = int(c)
 
 			case 8:
 				c, err := strconv.ParseInt(string(hex[6])+string(hex[7]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on alpha): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on alpha): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				alpha = int(c)
 				fallthrough
 			case 6:
 				c, err := strconv.ParseInt(string(hex[0])+string(hex[1]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on red): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on red): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				red = int(c)
 
 				c, err = strconv.ParseInt(string(hex[2])+string(hex[3]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on green): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on green): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				green = int(c)
 
 				c, err = strconv.ParseInt(string(hex[4])+string(hex[5]), 16, 64)
 				if err != nil {
-					r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string (failed on blue): %s", hex), log.LEVEL_ERROR))
-					r.State.Error()
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on blue): %s", hex), log.LEVEL_ERROR)), 0)
 				}
 				blue = int(c)
 			default:
-				r.State.PushString(lg.Append(fmt.Sprintf("invalid hex string: %s", hex), log.LEVEL_ERROR))
-				r.State.Error()
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string: %s", hex), log.LEVEL_ERROR)), 0)
 			}
 
-			r.State.NewTable()
-			r.State.PushInteger(red)
-			r.State.SetField(-2, "red")
-			r.State.PushInteger(green)
-			r.State.SetField(-2, "green")
-			r.State.PushInteger(blue)
-			r.State.SetField(-2, "blue")
-			r.State.PushInteger(alpha)
-			r.State.SetField(-2, "alpha")
+			t := state.NewTable()
+			state.SetField(t, "red", golua.LNumber(red))
+			state.SetField(t, "green", golua.LNumber(green))
+			state.SetField(t, "blue", golua.LNumber(blue))
+			state.SetField(t, "alpha", golua.LNumber(alpha))
+			state.Push(t)
 			return 1
 		})
 
@@ -582,7 +567,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg model
 	/// @arg color {red, green, blue, alpha}
 	/// @returns new color {red, green, blue, alpha}
-	lib.CreateFunction("convert_color",
+	lib.CreateFunction(tab, "convert_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "model"},
 			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
@@ -592,7 +577,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.INT, Name: "alpha"},
 			}},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			color := args["color"].(map[string]any)
 			red, green, blue, alpha := imageutil.ConvertColor(
 				lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib),
@@ -602,15 +587,12 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				color["alpha"].(int),
 			)
 
-			r.State.NewTable()
-			r.State.PushInteger(red)
-			r.State.SetField(-2, "red")
-			r.State.PushInteger(green)
-			r.State.SetField(-2, "green")
-			r.State.PushInteger(blue)
-			r.State.SetField(-2, "blue")
-			r.State.PushInteger(alpha)
-			r.State.SetField(-2, "alpha")
+			t := state.NewTable()
+			state.SetField(t, "red", golua.LNumber(red))
+			state.SetField(t, "green", golua.LNumber(green))
+			state.SetField(t, "blue", golua.LNumber(blue))
+			state.SetField(t, "alpha", golua.LNumber(alpha))
+			state.Push(t)
 			return 1
 		})
 
@@ -621,7 +603,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @arg? width
 	/// @arg? height
-	lib.CreateFunction("draw",
+	lib.CreateFunction(tab, "draw",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "src"},
@@ -630,7 +612,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "width", Optional: true},
 			{Type: lua.INT, Name: "height", Optional: true},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgReady := make(chan struct{}, 2)
 			imgFinished := make(chan struct{}, 2)
 
@@ -677,6 +659,72 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func map()
+	/// @arg id
+	/// @arg fn - takes in x, y , {red, green, blue, alpha} and returns a new {red, green, blue, alpha}
+	/// @blocking
+	lib.CreateFunction(tab, "map",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					x := i.Self.Image.Bounds().Min.X
+					y := i.Self.Image.Bounds().Min.Y
+					width := i.Self.Image.Bounds().Dx()
+					height := i.Self.Image.Bounds().Dy()
+
+					for ix := x; ix < x+width; ix++ {
+						for iy := y; iy < y+height; iy++ {
+							px := i.Self.Image.At(ix, iy)
+							cr, cg, cb, ca := px.RGBA()
+
+							state.Push(args["func"].(*golua.LFunction))
+
+							state.Push(golua.LNumber(ix - x))
+							state.Push(golua.LNumber(iy - y))
+
+							t := state.NewTable()
+							state.SetField(t, "red", golua.LNumber(cr))
+							state.SetField(t, "green", golua.LNumber(cg))
+							state.SetField(t, "blue", golua.LNumber(cb))
+							state.SetField(t, "alpha", golua.LNumber(ca))
+							state.Push(t)
+
+							state.Call(3, 1)
+
+							c := state.ToTable(-1)
+
+							nr := state.GetField(c, "red")
+							if nr.Type() != golua.LTNumber {
+								state.Error(golua.LString(lg.Append("invalid red field returned into image.map", log.LEVEL_ERROR)), 0)
+							}
+							ng := state.GetField(c, "green")
+							if ng.Type() != golua.LTNumber {
+								state.Error(golua.LString(lg.Append("invalid green field returned into image.map", log.LEVEL_ERROR)), 0)
+							}
+							nb := state.GetField(c, "blue")
+							if nb.Type() != golua.LTNumber {
+								state.Error(golua.LString(lg.Append("invalid blue field returned into image.map", log.LEVEL_ERROR)), 0)
+							}
+							na := state.GetField(c, "alpha")
+							if na.Type() != golua.LTNumber {
+								state.Error(golua.LString(lg.Append("invalid alpha field returned into image.map", log.LEVEL_ERROR)), 0)
+							}
+
+							imageutil.Set(i.Self.Image, ix, iy, int(nr.(golua.LNumber)), int(ng.(golua.LNumber)), int(nb.(golua.LNumber)), int(na.(golua.LNumber)))
+						}
+					}
+				},
+			})
+
+			return 0
+		})
+
 	/// @constants Color Models
 	/// @const RGBA
 	/// @const RGBA64
@@ -687,30 +735,18 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @const GRAY
 	/// @const GRAY16
 	/// @const CMYK
-	r.State.PushInteger(int(imageutil.MODEL_RGBA))
-	r.State.SetField(-2, "MODEL_RGBA")
-	r.State.PushInteger(int(imageutil.MODEL_RGBA64))
-	r.State.SetField(-2, "MODEL_RGBA64")
-	r.State.PushInteger(int(imageutil.MODEL_NRGBA))
-	r.State.SetField(-2, "MODEL_NRGBA")
-	r.State.PushInteger(int(imageutil.MODEL_NRGBA64))
-	r.State.SetField(-2, "MODEL_NRGBA64")
-	r.State.PushInteger(int(imageutil.MODEL_ALPHA))
-	r.State.SetField(-2, "MODEL_ALPHA")
-	r.State.PushInteger(int(imageutil.MODEL_ALPHA16))
-	r.State.SetField(-2, "MODEL_ALPHA16")
-	r.State.PushInteger(int(imageutil.MODEL_GRAY))
-	r.State.SetField(-2, "MODEL_GRAY")
-	r.State.PushInteger(int(imageutil.MODEL_GRAY16))
-	r.State.SetField(-2, "MODEL_GRAY16")
-	r.State.PushInteger(int(imageutil.MODEL_CMYK))
-	r.State.SetField(-2, "MODEL_CMYK")
+	r.State.SetField(tab, "MODEL_RGBA", golua.LNumber(imageutil.MODEL_RGBA))
+	r.State.SetField(tab, "MODEL_RGBA64", golua.LNumber(imageutil.MODEL_RGBA64))
+	r.State.SetField(tab, "MODEL_NRGBA", golua.LNumber(imageutil.MODEL_NRGBA))
+	r.State.SetField(tab, "MODEL_NRGBA64", golua.LNumber(imageutil.MODEL_NRGBA64))
+	r.State.SetField(tab, "MODEL_ALPHA", golua.LNumber(imageutil.MODEL_ALPHA))
+	r.State.SetField(tab, "MODEL_ALPHA16", golua.LNumber(imageutil.MODEL_ALPHA16))
+	r.State.SetField(tab, "MODEL_GRAY", golua.LNumber(imageutil.MODEL_GRAY))
+	r.State.SetField(tab, "MODEL_GRAY16", golua.LNumber(imageutil.MODEL_GRAY16))
+	r.State.SetField(tab, "MODEL_CMYK", golua.LNumber(imageutil.MODEL_CMYK))
 
 	/// @constants Encodings
-	r.State.PushInteger(int(imageutil.ENCODING_PNG))
-	r.State.SetField(-2, "ENCODING_PNG")
-	r.State.PushInteger(int(imageutil.ENCODING_JPEG))
-	r.State.SetField(-2, "ENCODING_JPEG")
-	r.State.PushInteger(int(imageutil.ENCODING_GIF))
-	r.State.SetField(-2, "ENCODING_GIF")
+	r.State.SetField(tab, "ENCODING_PNG", golua.LNumber(imageutil.ENCODING_PNG))
+	r.State.SetField(tab, "ENCODING_JPEG", golua.LNumber(imageutil.ENCODING_JPEG))
+	r.State.SetField(tab, "ENCODING_GIF", golua.LNumber(imageutil.ENCODING_GIF))
 }

@@ -2,18 +2,19 @@ package lua
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path"
-	"strconv"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
-	"github.com/Shopify/go-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 type Runner struct {
-	State *lua.State
-	lg    *log.Logger
+	State   *lua.LState
+	lg      *log.Logger
+	Plugins []string
 
 	TC *collection.Collection[collection.ItemTask]
 	IC *collection.Collection[collection.ItemImage]
@@ -22,10 +23,11 @@ type Runner struct {
 	QR *collection.Collection[collection.ItemQR]
 }
 
-func NewRunner(state *lua.State, lg *log.Logger) Runner {
+func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
 	return Runner{
-		State: state,
-		lg:    lg,
+		State:   state,
+		lg:      lg,
+		Plugins: plugins,
 
 		// collections
 		IC: collection.NewCollection[collection.ItemImage](lg),
@@ -50,7 +52,7 @@ func (r *Runner) Run(file string) error {
 		}
 	}()
 
-	err := lua.DoFile(r.State, path.Join(pwd, file))
+	err := r.State.DoFile(path.Join(pwd, file))
 	if err != nil {
 		return err
 	}
@@ -59,21 +61,22 @@ func (r *Runner) Run(file string) error {
 }
 
 type Lib struct {
-	Lib   string
-	State *lua.State
-	Lg    *log.Logger
+	Lib    string
+	Runner *Runner
+	State  *lua.LState
+	Lg     *log.Logger
 }
 
-func NewLib(lib string, state *lua.State, lg *log.Logger) *Lib {
-	state.NewTable()
-	state.SetGlobal(lib)
-	state.Global(lib)
+func NewLib(lib string, runner *Runner, state *lua.LState, lg *log.Logger) (*Lib, *lua.LTable) {
+	t := state.NewTable()
+	state.SetGlobal(lib, t)
 
 	return &Lib{
-		Lib:   lib,
-		State: state,
-		Lg:    lg,
-	}
+		Lib:    lib,
+		State:  state,
+		Lg:     lg,
+		Runner: runner,
+	}, t
 }
 
 type ArgType int
@@ -114,169 +117,121 @@ func ArgArray(name string, arrType ArrayType, optional bool) Arg {
 	}
 }
 
-func (l *Lib) ParseArgs(name string, args []Arg, ln, level int) map[string]any {
-	argMap := map[string]any{}
-
-	for i, a := range args {
-		ind := -ln + i
-		switch a.Type {
-		case INT:
-			v, ok := l.State.ToInteger(ind)
-			if i >= ln {
-				ok = false
-			}
-			if (!ok || ind == 0) && !a.Optional {
-				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid int provided to %s in arg pos %d in level: %d", name, i, level), log.LEVEL_ERROR))
-				l.State.Error()
-			} else if (!ok || ind == 0) && a.Optional {
-				argMap[a.Name] = l.getDefault(a)
-				if level > 0 {
-					rm := l.State.AbsIndex(ind)
-					l.State.Remove(rm)
-				}
-			} else {
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-				argMap[a.Name] = v
-			}
-
-		case FLOAT:
-			v, ok := l.State.ToNumber(ind)
-			if i >= ln {
-				ok = false
-			}
-			if (!ok || ind == 0) && !a.Optional {
-				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid float provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
-				l.State.Error()
-			} else if (!ok || ind == 0) && a.Optional {
-				argMap[a.Name] = l.getDefault(a)
-				if level > 0 {
-					rm := l.State.AbsIndex(ind)
-					l.State.Remove(rm)
-				}
-			} else {
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-				argMap[a.Name] = v
-			}
-
-		case BOOL:
-			if i >= ln {
-				argMap[a.Name] = false
-			} else {
-				v := l.State.ToBoolean(ind)
-				argMap[a.Name] = v
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-			}
-
-		case STRING:
-			v, ok := l.State.ToString(ind)
-			if i >= ln {
-				ok = false
-			}
-			if (!ok || ind == 0) && !a.Optional {
-				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid string provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
-				l.State.Error()
-			} else if (!ok || ind == 0) && a.Optional {
-				argMap[a.Name] = l.getDefault(a)
-				if level > 0 {
-					rm := l.State.AbsIndex(ind)
-					l.State.Remove(rm)
-				}
-			} else {
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-				argMap[a.Name] = v
-			}
-
-		case TABLE:
-			exists := l.State.IsTable(ind)
-			if i >= ln {
-				exists = false
-			}
-			if (!exists || ind == 0) && !a.Optional {
-				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid table provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
-				l.State.Error()
-			} else if (!exists || ind == 0) && a.Optional {
-				argMap[a.Name] = l.getDefault(a)
-				if level > 0 {
-					rm := l.State.AbsIndex(ind)
-					l.State.Remove(rm)
-				}
-			} else {
-				l.flattenTable(ind, *a.Table)
-				argMap[a.Name] = l.ParseArgs(name, *a.Table, len(*a.Table), level+1)
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-			}
-
-		case ARRAY:
-			exists := l.State.IsTable(ind)
-			if i >= ln {
-				exists = false
-			}
-			if (!exists || ind == 0) && !a.Optional {
-				l.State.PushString(l.Lg.Append(fmt.Sprintf("invalid array provided to %s in arg pos %d", name, i), log.LEVEL_ERROR))
-				l.State.Error()
-			} else if (!exists || ind == 0) && a.Optional {
-				argMap[a.Name] = l.getDefault(a)
-				if level > 0 {
-					rm := l.State.AbsIndex(ind)
-					l.State.Remove(rm)
-				}
-			} else {
-				ln := l.State.RawLength(ind)
-				argTable := []Arg{}
-
-				for i := 1; i <= ln; i++ {
-					argTable = append(argTable, Arg{
-						Type:  (*a.Table)[0].Type,
-						Name:  fmt.Sprint(i),
-						Table: (*a.Table)[0].Table,
-					})
-				}
-
-				for _, arg := range argTable {
-					n, _ := strconv.ParseInt(arg.Name, 10, 64)
-					l.State.PushInteger(int(n))
-					l.State.Table(ind - int(n))
-				}
-
-				argMap[a.Name] = l.ParseArgs(name, argTable, ln, level+1)
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-			}
-
-		case ANY:
-			if i >= ln {
-				argMap[a.Name] = nil
-			} else {
-				v := l.State.ToValue(ind)
-				rm := l.State.AbsIndex(ind)
-				l.State.Remove(rm)
-				argMap[a.Name] = v
-			}
-
-		case FUNC:
-			if i >= ln || !l.State.IsFunction(ind) {
-				argMap[a.Name] = nil
-			} else {
-				aind := l.State.AbsIndex(ind)
-				argMap[a.Name] = aind
-			}
-		default:
-			panic(fmt.Sprintf("attempting to parse an arg with an unknown type: %d", a.Type))
+func (l *Lib) ParseValue(pos int, value lua.LValue, arg Arg, argMap map[string]any) map[string]any {
+	switch arg.Type {
+	case INT:
+		if value.Type() == lua.LTNumber {
+			argMap[arg.Name] = int(math.Round(float64(value.(lua.LNumber))))
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid number provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
+
+	case FLOAT:
+		if value.Type() == lua.LTNumber {
+			argMap[arg.Name] = float64(value.(lua.LNumber))
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid number provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case BOOL:
+		if value.Type() == lua.LTBool {
+			argMap[arg.Name] = bool(value.(lua.LBool))
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid bool provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case STRING:
+		if value.Type() == lua.LTString {
+			argMap[arg.Name] = string(value.(lua.LString))
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid string provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case ANY:
+		argMap[arg.Name] = value
+
+	case FUNC:
+		if value.Type() == lua.LTFunction {
+			argMap[arg.Name] = value
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid function provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case ARRAY:
+		if value.Type() == lua.LTTable {
+			v := value.(*lua.LTable)
+
+			m := map[string]any{}
+
+			v.ForEach(func(l1, l2 lua.LValue) {
+				m = l.ParseValue(pos, l2, Arg{
+					Type:  (*arg.Table)[0].Type,
+					Name:  l1.String(),
+					Table: (*arg.Table)[0].Table,
+				}, m)
+			})
+			argMap[arg.Name] = m
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid array provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case TABLE:
+		if value.Type() == lua.LTTable {
+			v := value.(*lua.LTable)
+
+			m := map[string]any{}
+
+			i := 0
+			v.ForEach(func(l1, l2 lua.LValue) {
+				m = l.ParseValue(pos, l2, (*arg.Table)[i], m)
+				i++
+			})
+			argMap[arg.Name] = m
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg)
+		} else {
+			l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid table provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	default:
+		l.State.ArgError(pos, l.Lg.Append(fmt.Sprintf("unsupport arg type provided: %T", value), log.LEVEL_ERROR))
 	}
 
 	return argMap
 }
 
-func (l *Lib) flattenTable(ind int, args []Arg) {
-	for i, arg := range args {
-		l.State.Field(ind-i, arg.Name)
+func (l *Lib) ParseArgs(name string, args []Arg, ln, level int) (map[string]any, int) {
+	argMap := map[string]any{}
+	count := 0
+
+	for i, a := range args {
+		ind := -ln + i
+		v := l.State.CheckAny(ind)
+		if i >= ln {
+			if !a.Optional {
+				l.State.ArgError(i, l.Lg.Append(fmt.Sprintf("required arg not provided: %d", i), log.LEVEL_ERROR))
+			} else {
+				argMap[a.Name] = l.getDefault(a)
+			}
+		} else {
+			argMap = l.ParseValue(i, v, a, argMap)
+			count++
+		}
 	}
+
+	return argMap, count
 }
 
 func (l *Lib) getDefault(a Arg) any {
@@ -315,15 +270,31 @@ type TaskData struct {
 	Name string
 }
 
-func (l *Lib) CreateFunction(name string, args []Arg, fn func(d TaskData, args map[string]any) int) {
-	l.State.PushGoFunction(func(state *lua.State) int {
+func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
+	l.State.SetField(lib, name, l.State.NewFunction(func(state *lua.LState) int {
 		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_INFO)
 
-		argMap := l.ParseArgs(name, args, l.State.Top(), 0)
+		argMap, c := l.ParseArgs(name, args, state.GetTop(), 0)
+		l.State.Pop(c)
 
-		ret := fn(TaskData{Lib: l.Lib, Name: name}, argMap)
+		newState, _ := state.NewThread()
+		ret := fn(newState, TaskData{Lib: l.Lib, Name: name}, argMap)
+
+		newState.XMoveTo(l.State, ret)
+
 		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_INFO)
 		return ret
-	})
-	l.State.SetField(-2, name)
+	}))
+}
+
+func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins map[string]func(r *Runner, lg *log.Logger), reqs []string, state *lua.LState) {
+	for _, req := range reqs {
+		builtin, ok := plugins[req]
+		if !ok {
+			lg.Append(fmt.Sprintf("%s: plugin %s does not exist", to, req), log.LEVEL_WARN)
+		} else {
+			builtin(r, lg)
+			lg.Append(fmt.Sprintf("%s: registered plugin %s", to, req), log.LEVEL_INFO)
+		}
+	}
 }

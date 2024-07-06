@@ -7,26 +7,28 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/qeesung/image2ascii/convert"
+
+	golua "github.com/yuin/gopher-lua"
 )
 
 const LIB_ASCII = "ascii"
 
 func RegisterASCII(r *lua.Runner, lg *log.Logger) {
-	lib := lua.NewLib(LIB_ASCII, r.State, lg)
+	lib, tab := lua.NewLib(LIB_ASCII, r, r.State, lg)
 
 	/// @func to_file()
 	/// @arg image_id
 	/// @arg filepath - directories to file must exist.
 	/// @arg color - boolean, for terminal dislay
 	/// @arg reverse - boolean
-	lib.CreateFunction("to_file",
+	lib.CreateFunction(tab, "to_file",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "path"},
 			{Type: lua.BOOL, Name: "color"},
 			{Type: lua.BOOL, Name: "reverse"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -39,8 +41,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 					f, err := os.OpenFile(args["path"].(string), os.O_CREATE|os.O_TRUNC, 0o666)
 					if err != nil {
-						r.State.PushString(i.Lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR))
-						r.State.Error()
+						state.Error(golua.LString(i.Lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR)), 0)
 					}
 					defer f.Close()
 
@@ -58,7 +59,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 	/// @arg height
 	/// @arg color - boolean, for terminal dislay
 	/// @arg reverse - boolean
-	lib.CreateFunction("to_file_size",
+	lib.CreateFunction(tab, "to_file_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "path"},
@@ -67,7 +68,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "color"},
 			{Type: lua.BOOL, Name: "reverse"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -82,8 +83,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 
 					f, err := os.OpenFile(args["path"].(string), os.O_CREATE|os.O_TRUNC, 0o666)
 					if err != nil {
-						r.State.PushString(i.Lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR))
-						r.State.Error()
+						state.Error(golua.LString(i.Lg.Append("failed to open file for saving ascii string", log.LEVEL_ERROR)), 0)
 					}
 					defer f.Close()
 
@@ -101,13 +101,13 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 	/// @arg reverse - boolean
 	/// @returns the ascii art as a string
 	/// @blocking
-	lib.CreateFunction("to_string",
+	lib.CreateFunction(tab, "to_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.BOOL, Name: "color"},
 			{Type: lua.BOOL, Name: "reverse"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			str := ""
 
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -122,7 +122,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushString(str)
+			state.Push(golua.LString(str))
 			return 1
 		},
 	)
@@ -135,7 +135,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 	/// @arg reverse - boolean
 	/// @returns the ascii art as a string
 	/// @blocking
-	lib.CreateFunction("to_string_size",
+	lib.CreateFunction(tab, "to_string_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "width"},
@@ -143,7 +143,7 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "color"},
 			{Type: lua.BOOL, Name: "reverse"},
 		},
-		func(d lua.TaskData, args map[string]any) int {
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			str := ""
 
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -160,10 +160,8 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.State.PushString(str)
+			state.Push(golua.LString(str))
 			return 1
 		},
 	)
-
-	r.State.SetGlobal(LIB_ASCII)
 }

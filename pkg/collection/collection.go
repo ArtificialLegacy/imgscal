@@ -79,6 +79,8 @@ type Item[T ItemSelf] struct {
 	collect bool
 	waiting bool
 
+	currTask *Task[T]
+
 	failed bool
 	Err    error
 
@@ -113,6 +115,11 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 			i.waiting = true
 			i.cleaned = true
 			i.Err = fmt.Errorf("%+v", p)
+			if i.currTask != nil {
+				if i.currTask.Fail != nil {
+					i.currTask.Fail(i)
+				}
+			}
 			for c := 0; len(i.TaskQueue) > 0; c++ {
 				task := <-i.TaskQueue
 				if task.Fail != nil {
@@ -126,6 +133,7 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 	for {
 		i.waiting = true
 		task := <-i.TaskQueue
+		i.currTask = task
 		i.waiting = false
 		i.Lg.Append(fmt.Sprintf("%s.%s task called", task.Lib, task.Name), log.LEVEL_INFO)
 		task.Fn(i)
@@ -178,7 +186,7 @@ func (c *Collection[T]) AddItem(lg *log.Logger) int {
 }
 
 func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
-	wait := make(chan struct{}, 1)
+	wait := make(chan struct{}, 2)
 
 	task := &Task[T]{
 		Lib:  tk.Lib,
@@ -199,6 +207,7 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 
 	if item.failed {
 		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id), log.LEVEL_WARN)
+		task.Fail(item)
 		wait <- struct{}{}
 		return wait
 	}
