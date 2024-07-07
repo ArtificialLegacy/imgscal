@@ -10,6 +10,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/crazy3lf/colorconv"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -433,11 +434,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			t := state.NewTable()
-			state.SetField(t, "red", golua.LNumber(red))
-			state.SetField(t, "green", golua.LNumber(green))
-			state.SetField(t, "blue", golua.LNumber(blue))
-			state.SetField(t, "alpha", golua.LNumber(alpha))
+			t := rgbaTable(state, int(red), int(green), int(blue), int(alpha))
 			state.Push(t)
 			return 4
 		})
@@ -464,33 +461,35 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					color := args["color"].(map[string]any)
 					x := args["x"].(int) + i.Self.Image.Bounds().Min.X
 					y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+
+					red, green, blue, alpha := rgbaMap(args["color"].(map[string]any))
 
 					imageutil.Set(
 						i.Self.Image,
 						x,
 						y,
-						color["red"].(int),
-						color["green"].(int),
-						color["blue"].(int),
-						color["alpha"].(int),
+						red,
+						green,
+						blue,
+						alpha,
 					)
 				},
 			})
 			return 0
 		})
 
-	/// @func color_hex()
+	/// @func color_hex_to_rgba()
 	/// @arg hex
 	/// @returns {red, green, blue, alpha}
-	lib.CreateFunction(tab, "color_hex",
+	lib.CreateFunction(tab, "color_hex_to_rgba",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "hex"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			hex := args["hex"].(string)
+			hex = strings.TrimPrefix(hex, "0x")
 			hex = strings.TrimPrefix(hex, "#")
 
 			red := 0
@@ -554,11 +553,364 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string: %s", hex), log.LEVEL_ERROR)), 0)
 			}
 
-			t := state.NewTable()
-			state.SetField(t, "red", golua.LNumber(red))
-			state.SetField(t, "green", golua.LNumber(green))
-			state.SetField(t, "blue", golua.LNumber(blue))
-			state.SetField(t, "alpha", golua.LNumber(alpha))
+			t := rgbaTable(state, red, green, blue, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgba_to_hex()
+	/// @arg {red,green,blue,alpha}
+	/// @arg? prefix - should be "", "#" or "0x"
+	/// @arg? lowercase - set to true to use lowercase letters in the hex string
+	/// @returns hex string
+	lib.CreateFunction(tab, "color_rgba_to_hex",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+			{Type: lua.STRING, Name: "prefix", Optional: true},
+			{Type: lua.BOOL, Name: "lowercase", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var hex string
+			red, green, blue, alpha := rgbaMap(args["color"].(map[string]any))
+
+			if args["lowercase"].(bool) {
+				hex = fmt.Sprintf("%s%02x%02x%02x%02x", args["prefix"], red, green, blue, alpha)
+			} else {
+				hex = fmt.Sprintf("%s%02X%02X%02X%02X", args["prefix"], red, green, blue, alpha)
+			}
+
+			state.Push(golua.LString(hex))
+			return 1
+		})
+
+	/// @func color_rgb()
+	/// @arg r
+	/// @arg g
+	/// @arg b
+	/// @returns {red,green,blue,alpha}
+	/// @desc
+	/// alpha channel is set to 255.
+	lib.CreateFunction(tab, "color_rgb",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "r"},
+			{Type: lua.INT, Name: "g"},
+			{Type: lua.INT, Name: "b"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rgbaTable(state, args["r"].(int), args["g"].(int), args["b"].(int), 255)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgba()
+	/// @arg r
+	/// @arg g
+	/// @arg b
+	/// @arg a
+	/// @returns {red,green,blue,alpha}
+	lib.CreateFunction(tab, "color_rgba",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "r"},
+			{Type: lua.INT, Name: "g"},
+			{Type: lua.INT, Name: "b"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rgbaTable(state, args["r"].(int), args["g"].(int), args["b"].(int), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsv()
+	/// @arg h
+	/// @arg s
+	/// @arg v
+	/// @returns {hue,sat,value,alpha}
+	/// @desc
+	/// alpha channel is set to 255.
+	lib.CreateFunction(tab, "color_hsv",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "h"},
+			{Type: lua.FLOAT, Name: "s"},
+			{Type: lua.FLOAT, Name: "v"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := hsvaTable(state, args["h"].(float64), args["s"].(float64), args["v"].(float64), 255)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsva()
+	/// @arg h
+	/// @arg s
+	/// @arg v
+	/// @arg a
+	/// @returns {hue,sat,value,alpha}
+	lib.CreateFunction(tab, "color_hsva",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "h"},
+			{Type: lua.FLOAT, Name: "s"},
+			{Type: lua.FLOAT, Name: "v"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := hsvaTable(state, args["h"].(float64), args["s"].(float64), args["v"].(float64), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsl()
+	/// @arg h
+	/// @arg s
+	/// @arg l
+	/// @returns {hue,sat,light,alpha}
+	/// @desc
+	/// alpha channel is set to 255.
+	lib.CreateFunction(tab, "color_hsl",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "h"},
+			{Type: lua.FLOAT, Name: "s"},
+			{Type: lua.FLOAT, Name: "l"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := hslaTable(state, args["h"].(float64), args["s"].(float64), args["l"].(float64), 255)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsla()
+	/// @arg h
+	/// @arg s
+	/// @arg l
+	/// @arg a
+	/// @returns {hue,sat,light,alpha}
+	lib.CreateFunction(tab, "color_hsla",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "h"},
+			{Type: lua.FLOAT, Name: "s"},
+			{Type: lua.FLOAT, Name: "l"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := hslaTable(state, args["h"].(float64), args["s"].(float64), args["l"].(float64), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgb_to_hsv()
+	/// @arg {red,green,blue,alpha}
+	/// @returns {hue,sat,value,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_rgb_to_hsv",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red, green, blue, alpha := rgbaMap(args["color"].(map[string]any))
+			hue, sat, value := colorconv.RGBToHSV(uint8(red), uint8(green), uint8(blue))
+
+			t := hsvaTable(state, hue, sat, value, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgb_to_hsl()
+	/// @arg {red,green,blue,alpha}
+	/// @returns {hue,sat,light,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_rgb_to_hsl",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red, green, blue, alpha := rgbaMap(args["color"].(map[string]any))
+			hue, sat, light := colorconv.RGBToHSL(uint8(red), uint8(green), uint8(blue))
+
+			t := hslaTable(state, hue, sat, light, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsv_to_rgb()
+	/// @arg {hue,sat,value,alpha}
+	/// @returns {red,green,blue,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_hsv_to_rgb",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "hue"},
+				{Type: lua.FLOAT, Name: "sat"},
+				{Type: lua.FLOAT, Name: "value"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			hue, sat, value, alpha := hsvaMap(args["color"].(map[string]any))
+			red, green, blue, err := colorconv.HSVToRGB(hue, sat, value)
+
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot conv hsv to rgb: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			t := rgbaTable(state, int(red), int(green), int(blue), alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsv_to_hsl()
+	/// @arg {hue,sat,value,alpha}
+	/// @returns {hue,sat,light,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_hsv_to_hsl",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "hue"},
+				{Type: lua.FLOAT, Name: "sat"},
+				{Type: lua.FLOAT, Name: "value"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			hue, sat, value, alpha := hsvaMap(args["color"].(map[string]any))
+			red, green, blue, err := colorconv.HSVToRGB(hue, sat, value)
+
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot conv hsv to rgb: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			hue2, sat2, light := colorconv.RGBToHSL(red, green, blue)
+
+			t := hslaTable(state, hue2, sat2, light, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsl_to_rgb()
+	/// @arg {hue,sat,light,alpha}
+	/// @returns {red,green,blue,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_hsl_to_rgb",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "hue"},
+				{Type: lua.FLOAT, Name: "sat"},
+				{Type: lua.FLOAT, Name: "light"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			hue, sat, light, alpha := hslaMap(args["color"].(map[string]any))
+			red, green, blue, err := colorconv.HSLToRGB(hue, sat, light)
+
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot conv hsl to rgb: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			t := rgbaTable(state, int(red), int(green), int(blue), alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_hsl_to_hsv()
+	/// @arg {hue,sat,light,alpha}
+	/// @returns {hue,sat,value,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_hsl_to_hsv",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.FLOAT, Name: "hue"},
+				{Type: lua.FLOAT, Name: "sat"},
+				{Type: lua.FLOAT, Name: "light"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			hue, sat, light, alpha := hslaMap(args["color"].(map[string]any))
+			red, green, blue, err := colorconv.HSLToRGB(hue, sat, light)
+
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot conv hsl to rgb: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			hue2, sat2, value := colorconv.RGBToHSV(red, green, blue)
+
+			t := hsvaTable(state, hue2, sat2, value, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgb_gray_average()
+	/// @arg {red,green,blue,alpha}
+	/// @returns {red,green,blue,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_rgb_gray_average",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red, green, blue, alpha := rgbaMap(args["color"].(map[string]any))
+			c := colorconv.RGBToGrayAverage(uint8(red), uint8(green), uint8(blue))
+
+			t := rgbaTable(state, int(c.Y), int(c.Y), int(c.Y), alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgb_gray_weight()
+	/// @arg {red,green,blue,alpha}
+	/// @arg rWeight
+	/// @arg gWeight
+	/// @arg bWeight
+	/// @returns {red,green,blue,alpha}
+	/// @desc
+	/// alpha is maintained
+	lib.CreateFunction(tab, "color_rgb_gray_weight",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "red"},
+				{Type: lua.INT, Name: "green"},
+				{Type: lua.INT, Name: "blue"},
+				{Type: lua.INT, Name: "alpha"},
+			}},
+			{Type: lua.INT, Name: "rWeight"},
+			{Type: lua.INT, Name: "gWeight"},
+			{Type: lua.INT, Name: "bWeight"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red, green, blue, alpha := rgbaMap(args["color"].(map[string]any))
+			rWeight := args["rWeight"].(int)
+			gWeight := args["gWeight"].(int)
+			bWeight := args["bWeight"].(int)
+			c := colorconv.RGBToGrayWithWeight(uint8(red), uint8(green), uint8(blue), uint(rWeight), uint(gWeight), uint(bWeight))
+
+			t := rgbaTable(state, int(c.Y), int(c.Y), int(c.Y), alpha)
 			state.Push(t)
 			return 1
 		})
@@ -578,20 +930,18 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			}},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			color := args["color"].(map[string]any)
+
+			cr, cg, cb, ca := rgbaMap(args["color"].(map[string]any))
+
 			red, green, blue, alpha := imageutil.ConvertColor(
 				lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib),
-				color["red"].(int),
-				color["green"].(int),
-				color["blue"].(int),
-				color["alpha"].(int),
+				cr,
+				cg,
+				cb,
+				ca,
 			)
 
-			t := state.NewTable()
-			state.SetField(t, "red", golua.LNumber(red))
-			state.SetField(t, "green", golua.LNumber(green))
-			state.SetField(t, "blue", golua.LNumber(blue))
-			state.SetField(t, "alpha", golua.LNumber(alpha))
+			t := rgbaTable(state, red, green, blue, alpha)
 			state.Push(t)
 			return 1
 		})
@@ -688,11 +1038,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 							state.Push(golua.LNumber(ix - x))
 							state.Push(golua.LNumber(iy - y))
 
-							t := state.NewTable()
-							state.SetField(t, "red", golua.LNumber(cr))
-							state.SetField(t, "green", golua.LNumber(cg))
-							state.SetField(t, "blue", golua.LNumber(cb))
-							state.SetField(t, "alpha", golua.LNumber(ca))
+							t := rgbaTable(state, int(cr), int(cg), int(cb), int(ca))
 							state.Push(t)
 
 							state.Call(3, 1)
@@ -749,4 +1095,49 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	r.State.SetField(tab, "ENCODING_PNG", golua.LNumber(imageutil.ENCODING_PNG))
 	r.State.SetField(tab, "ENCODING_JPEG", golua.LNumber(imageutil.ENCODING_JPEG))
 	r.State.SetField(tab, "ENCODING_GIF", golua.LNumber(imageutil.ENCODING_GIF))
+}
+
+func rgbaTable(state *golua.LState, r, g, b, a int) *golua.LTable {
+	t := state.NewTable()
+
+	state.SetField(t, "red", golua.LNumber(r))
+	state.SetField(t, "green", golua.LNumber(g))
+	state.SetField(t, "blue", golua.LNumber(b))
+	state.SetField(t, "alpha", golua.LNumber(a))
+
+	return t
+}
+
+func rgbaMap(m map[string]any) (int, int, int, int) {
+	return m["red"].(int), m["green"].(int), m["blue"].(int), m["alpha"].(int)
+}
+
+func hsvaTable(state *golua.LState, h, s, v float64, a int) *golua.LTable {
+	t := state.NewTable()
+
+	state.SetField(t, "hue", golua.LNumber(h))
+	state.SetField(t, "sat", golua.LNumber(s))
+	state.SetField(t, "value", golua.LNumber(v))
+	state.SetField(t, "alpha", golua.LNumber(a))
+
+	return t
+}
+
+func hsvaMap(m map[string]any) (float64, float64, float64, int) {
+	return m["hue"].(float64), m["sat"].(float64), m["value"].(float64), m["alpha"].(int)
+}
+
+func hslaTable(state *golua.LState, h, s, l float64, a int) *golua.LTable {
+	t := state.NewTable()
+
+	state.SetField(t, "hue", golua.LNumber(h))
+	state.SetField(t, "sat", golua.LNumber(s))
+	state.SetField(t, "light", golua.LNumber(l))
+	state.SetField(t, "alpha", golua.LNumber(a))
+
+	return t
+}
+
+func hslaMap(m map[string]any) (float64, float64, float64, int) {
+	return m["hue"].(float64), m["sat"].(float64), m["light"].(float64), m["alpha"].(int)
 }
