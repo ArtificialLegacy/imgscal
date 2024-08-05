@@ -23,7 +23,7 @@ func TestParseArgs_Int(t *testing.T) {
 	lib.State.Push(golua.LNumber(1))
 	lib.State.Push(golua.LNumber(2))
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.INT, Name: "v1"}, {Type: lua.INT, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.INT, Name: "v1"}, {Type: lua.INT, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(int) != 1 {
@@ -48,7 +48,7 @@ func TestParseArgs_Float(t *testing.T) {
 	lib.State.Push(golua.LNumber(1.5))
 	lib.State.Push(golua.LNumber(2.5))
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.FLOAT, Name: "v1"}, {Type: lua.FLOAT, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.FLOAT, Name: "v1"}, {Type: lua.FLOAT, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(float64) != 1.5 {
@@ -73,7 +73,7 @@ func TestParseArgs_Bool(t *testing.T) {
 	lib.State.Push(golua.LBool(true))
 	lib.State.Push(golua.LBool(false))
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.BOOL, Name: "v1"}, {Type: lua.BOOL, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.BOOL, Name: "v1"}, {Type: lua.BOOL, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(bool) != true {
@@ -98,7 +98,7 @@ func TestParseArgs_String(t *testing.T) {
 	lib.State.Push(golua.LString("A"))
 	lib.State.Push(golua.LString("B"))
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(string) != "A" {
@@ -122,7 +122,7 @@ func TestParseArgs_Optional(t *testing.T) {
 
 	lib.State.Push(golua.LString("A"))
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2", Optional: true}}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2", Optional: true}}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(string) != "A" {
@@ -148,7 +148,7 @@ func TestParseArgs_Table(t *testing.T) {
 	tab.RawSet(golua.LString("v1"), golua.LNumber(1))
 	lib.State.Push(tab)
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.TABLE, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.TABLE, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v, ok := v.(map[string]any)["v1"]; ok {
@@ -170,7 +170,7 @@ func TestParseArgs_Array(t *testing.T) {
 	tab.RawSet(golua.LString("v1"), golua.LNumber(1))
 	lib.State.Push(tab)
 
-	argMap, _ := lib.ParseArgs("test", []lua.Arg{{Type: lua.ARRAY, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.ARRAY, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v, ok := v.(map[string]any)["v1"]; ok {

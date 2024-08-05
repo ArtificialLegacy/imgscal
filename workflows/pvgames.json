@@ -1,0 +1,16 @@
+{
+  "bodies": [
+    {
+      "name": "female1",
+      "path": "D:\\pvgames_assets\\CharacterPieces\\RPGTool_CharPieces\\Female\\Base\\RTP_1"
+    },
+    {
+      "name": "female2",
+      "path": "D:\\pvgames_assets\\CharacterPieces\\RPGTool_CharPieces\\Female\\Base\\RTP_2"
+    },
+    {
+      "name": "female3",
+      "path": "D:\\pvgames_assets\\CharacterPieces\\RPGTool_CharPieces\\Female\\Base\\RTP_3"
+    }
+  ]
+}
