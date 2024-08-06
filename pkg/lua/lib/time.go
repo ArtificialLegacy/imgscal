@@ -23,9 +23,19 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func now_mc()
+	/// @returns current time in mc
+	lib.CreateFunction(tab, "now_mc", []lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := time.Now().UnixNano() / int64(time.Microsecond)
+
+			state.Push(golua.LNumber(t))
+			return 1
+		})
+
 	// @func now_date()
 	/// @returns current date in MM-DD-YEAR format
-	lib.CreateFunction(tab, "now_ms", []lua.Arg{},
+	lib.CreateFunction(tab, "now_date", []lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := time.Now().Local().Format("01-02-2006")
 
@@ -46,7 +56,7 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 	// @func now_format()
 	/// @arg format - go layout string
 	/// @returns current time in given format
-	lib.CreateFunction(tab, "now_ms",
+	lib.CreateFunction(tab, "now_format",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "format"},
 		},
@@ -56,4 +66,30 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LString(t))
 			return 1
 		})
+
+	/// @constants Weekdays
+	/// @const WEEKDAY_SUNDAY
+	/// @const WEEKDAY_MONDAY
+	/// @const WEEKDAY_TUESDAY
+	/// @const WEEKDAY_WEDNESDAY
+	/// @const WEEKDAY_THURSDAY
+	/// @const WEEKDAY_FRIDAY
+	/// @const WEEKDAY_SATURDAY
+	r.State.SetTable(tab, golua.LString("WEEKDAY_SUNDAY"), golua.LNumber(WEEKDAY_SUNDAY))
+	r.State.SetTable(tab, golua.LString("WEEKDAY_MONDAY"), golua.LNumber(WEEKDAY_MONDAY))
+	r.State.SetTable(tab, golua.LString("WEEKDAY_TUESDAY"), golua.LNumber(WEEKDAY_TUESDAY))
+	r.State.SetTable(tab, golua.LString("WEEKDAY_WEDNESDAY"), golua.LNumber(WEEKDAY_WEDNESDAY))
+	r.State.SetTable(tab, golua.LString("WEEKDAY_THURSDAY"), golua.LNumber(WEEKDAY_THURSDAY))
+	r.State.SetTable(tab, golua.LString("WEEKDAY_FRIDAY"), golua.LNumber(WEEKDAY_FRIDAY))
+	r.State.SetTable(tab, golua.LString("WEEKDAY_SATURDAY"), golua.LNumber(WEEKDAY_SATURDAY))
 }
+
+const (
+	WEEKDAY_SUNDAY int = iota
+	WEEKDAY_MONDAY
+	WEEKDAY_TUESDAY
+	WEEKDAY_WEDNESDAY
+	WEEKDAY_THURSDAY
+	WEEKDAY_FRIDAY
+	WEEKDAY_SATURDAY
+)

@@ -21,4 +21,5 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_TIME:        RegisterTime,
 	LIB_JSON:        RegisterJSON,
 	LIB_GUI:         RegisterGUI,
+	LIB_BIT:         RegisterBit,
 }
