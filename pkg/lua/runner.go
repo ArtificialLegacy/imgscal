@@ -26,6 +26,7 @@ type Runner struct {
 
 	// -- crates
 	CR_WIN *collection.Crate[giu.MasterWindow]
+	CR_REF *collection.Crate[collection.RefItem[any]]
 }
 
 func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
@@ -57,6 +58,7 @@ func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
 				giu.Update()
 			})
 		}),
+		CR_REF: collection.NewCrate[collection.RefItem[any]](),
 	}
 }
 

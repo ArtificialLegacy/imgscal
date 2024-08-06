@@ -70,6 +70,10 @@ func NewLoggerEmpty() Logger {
 }
 
 func (l *Logger) Append(str string, level LogLevel) string {
+	if level == LEVEL_INFO {
+		return str
+	}
+
 	if l.Parent != nil {
 		l.Parent.Append(str, level)
 	}

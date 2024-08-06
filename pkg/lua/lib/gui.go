@@ -286,32 +286,19 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			lua.ArgArray("widgets", lua.ArrayType{Type: lua.ANY}, true),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			wts := []*golua.LTable{}
-
-			wa := args["widgets"].(map[string]any)
-
-			for i := range len(wa) {
-				wt := wa[string(i+1)]
-
-				if t, ok := wt.(*golua.LTable); ok {
-					wts = append(wts, t)
-				} else {
-					state.Error(golua.LString(lg.Append("invalid table provided as widget to wg_single_window", log.LEVEL_ERROR)), 0)
-				}
-			}
-
-			w := layoutBuild(state, wts)
+			wts := parseWidgets(args["widgets"].(map[string]any), state, lg)
+			w := layoutBuild(r, state, wts, lg)
 			g.SingleWindow().Layout(w...)
 
 			return 0
 		})
 
 	/// @func wg_label()
-	/// @arg? text
+	/// @arg text
 	/// @returns widget
 	lib.CreateFunction(tab, "wg_label",
 		[]lua.Arg{
-			{Type: lua.STRING, Name: "text", Optional: true},
+			{Type: lua.STRING, Name: "text"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := labelTable(state, args["text"].(string))
@@ -325,7 +312,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns widget
 	lib.CreateFunction(tab, "wg_button",
 		[]lua.Arg{
-			{Type: lua.STRING, Name: "text", Optional: false},
+			{Type: lua.STRING, Name: "text"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := buttonTable(state, args["text"].(string))
@@ -333,25 +320,181 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			state.Push(t)
 			return 1
 		})
+
+	/// @func wg_dummy()
+	/// @arg width
+	/// @arg height
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_dummy",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := dummyTable(state, args["width"].(float64), args["height"].(float64))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_separator()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_separator",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := separatorTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_bullet_text()
+	/// @arg text
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_bullet_text",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := bulletTextTable(state, args["text"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_bullet()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_bullet",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := bulletTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_checkbox()
+	/// @arg text
+	/// @arg boolref
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_checkbox",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+			{Type: lua.INT, Name: "boolref"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := checkboxTable(state, args["text"].(string), args["boolref"].(int))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_child()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_child",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := childTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_color_edit()
+	/// @arg text
+	/// @arg colorref
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_color_edit",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+			{Type: lua.INT, Name: "colorref"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := colorEditTable(state, args["text"].(string), args["colorref"].(int))
+
+			state.Push(t)
+			return 1
+		})
+}
+
+func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
+	state.SetTable(t, golua.LString(name), state.NewFunction(func(state *golua.LState) int {
+		self := state.CheckTable(1)
+
+		fn(state, self)
+
+		state.Push(self)
+		return 1
+	}))
 }
 
 const (
-	WIDGET_LABEL  = "label"
-	WIDGET_BUTTON = "button"
+	WIDGET_LABEL       = "label"
+	WIDGET_BUTTON      = "button"
+	WIDGET_DUMMY       = "dummy"
+	WIDGET_SEPARATOR   = "separator"
+	WIDGET_BULLET_TEXT = "bullet_text"
+	WIDGET_BULLET      = "bullet"
+	WIDGET_CHECKBOX    = "checkbox"
+	WIDGET_CHILD       = "child"
+	WIDGET_COLOR_EDIT  = "color_edit"
 )
 
-func layoutBuild(state *golua.LState, widgets []*golua.LTable) []g.Widget {
+var buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{}
+
+func init() {
+	buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{
+		WIDGET_LABEL:       labelBuild,
+		WIDGET_BUTTON:      buttonBuild,
+		WIDGET_DUMMY:       dummyBuild,
+		WIDGET_SEPARATOR:   separatorBuild,
+		WIDGET_BULLET_TEXT: bulletTextBuild,
+		WIDGET_BULLET:      bulletBuild,
+		WIDGET_CHECKBOX:    checkboxBuild,
+		WIDGET_CHILD:       childBuild,
+		WIDGET_COLOR_EDIT:  colorEditBuild,
+	}
+}
+
+func parseWidgets(widgetTable map[string]any, state *golua.LState, lg *log.Logger) []*golua.LTable {
+	wts := []*golua.LTable{}
+
+	for i := range len(widgetTable) {
+		wt := widgetTable[string(i+1)]
+
+		if t, ok := wt.(*golua.LTable); ok {
+			wts = append(wts, t)
+		} else {
+			state.Error(golua.LString(lg.Append("invalid table provided as widget to wg_single_window", log.LEVEL_ERROR)), 0)
+		}
+	}
+
+	return wts
+}
+
+func parseTable(t *golua.LTable, state *golua.LState) map[string]any {
+	v := map[string]any{}
+
+	ln := t.Len()
+	for i := range ln {
+		v[string(i+1)] = state.GetTable(t, golua.LNumber(i+1))
+	}
+
+	return v
+}
+
+func layoutBuild(r *lua.Runner, state *golua.LState, widgets []*golua.LTable, lg *log.Logger) []g.Widget {
 	w := []g.Widget{}
 
 	for _, wt := range widgets {
 		t := state.GetTable(wt, golua.LString("type")).String()
 
-		switch t {
-		case WIDGET_LABEL:
-			w = append(w, labelBuild(state, wt))
-		case WIDGET_BUTTON:
-			w = append(w, buttonBuild(state, wt))
+		build, ok := buildList[t]
+		if !ok {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown widget: %s", t), log.LEVEL_ERROR)), 0)
 		}
+
+		w = append(w, build(r, lg, state, wt))
 	}
 
 	return w
@@ -361,12 +504,25 @@ func labelTable(state *golua.LState, text string) *golua.LTable {
 	t := state.NewTable()
 	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LABEL))
 	state.SetTable(t, golua.LString("label"), golua.LString(text))
+	state.SetTable(t, golua.LString("__wrapped"), golua.LNil)
+
+	tableBuilderFunc(state, t, "wrapped", func(state *golua.LState, t *golua.LTable) {
+		v := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__wrapped"), golua.LBool(v))
+	})
 
 	return t
 }
 
-func labelBuild(state *golua.LState, t *golua.LTable) *g.LabelWidget {
-	return g.Label(state.GetTable(t, golua.LString("label")).String())
+func labelBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	l := g.Label(state.GetTable(t, golua.LString("label")).String())
+
+	wrapped := state.GetTable(t, golua.LString("__wrapped"))
+	if wrapped.Type() == golua.LTBool {
+		l.Wrapped(bool(wrapped.(golua.LBool)))
+	}
+
+	return l
 }
 
 func buttonTable(state *golua.LState, text string) *golua.LTable {
@@ -398,7 +554,7 @@ func buttonTable(state *golua.LState, text string) *golua.LTable {
 	return t
 }
 
-func buttonBuild(state *golua.LState, t *golua.LTable) *g.ButtonWidget {
+func buttonBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	b := g.Button(state.GetTable(t, golua.LString("label")).String())
 
 	disabled := state.GetTable(t, golua.LString("__disabled"))
@@ -423,13 +579,198 @@ func buttonBuild(state *golua.LState, t *golua.LTable) *g.ButtonWidget {
 	return b
 }
 
-func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
-	state.SetTable(t, golua.LString(name), state.NewFunction(func(state *golua.LState) int {
-		self := state.CheckTable(1)
+func dummyTable(state *golua.LState, width, height float64) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_DUMMY))
+	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
+	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
 
-		fn(state, self)
+	return t
+}
 
-		state.Push(self)
-		return 1
-	}))
+func dummyBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	w := state.GetTable(t, golua.LString("width")).(golua.LNumber)
+	h := state.GetTable(t, golua.LString("height")).(golua.LNumber)
+	d := g.Dummy(float32(w), float32(h))
+
+	return d
+}
+
+func separatorTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SEPARATOR))
+
+	return t
+}
+
+func separatorBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	s := g.Separator()
+
+	return s
+}
+
+func bulletTextTable(state *golua.LState, text string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BULLET_TEXT))
+	state.SetTable(t, golua.LString("text"), golua.LString(text))
+
+	return t
+}
+
+func bulletTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	b := g.BulletText(state.GetTable(t, golua.LString("text")).String())
+
+	return b
+}
+
+func bulletTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BULLET))
+
+	return t
+}
+
+func bulletBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	b := g.Bullet()
+
+	return b
+}
+
+func checkboxTable(state *golua.LState, text string, boolref int) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CHECKBOX))
+	state.SetTable(t, golua.LString("text"), golua.LString(text))
+	state.SetTable(t, golua.LString("boolref"), golua.LNumber(boolref))
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	return t
+}
+
+func checkboxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	ref := int(state.GetTable(t, golua.LString("boolref")).(golua.LNumber))
+
+	sref, err := r.CR_REF.Item(ref)
+	if err != nil {
+		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+	}
+
+	selected := sref.Value.(*bool)
+	c := g.Checkbox(state.GetTable(t, golua.LString("text")).String(), selected)
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		c.OnChange(func() {
+			state.Push(change)
+			state.Push(golua.LBool(*selected))
+			state.Call(1, 0)
+		})
+	}
+
+	return c
+}
+
+func childTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CHILD))
+	state.SetTable(t, golua.LString("__border"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "border", func(state *golua.LState, t *golua.LTable) {
+		b := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__border"), golua.LBool(b))
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), golua.LNumber(width))
+		state.SetTable(t, golua.LString("__height"), golua.LNumber(height))
+	})
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func childBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	c := g.Child()
+
+	border := state.GetTable(t, golua.LString("__border"))
+	if border.Type() == golua.LTBool {
+		c.Border(bool(border.(golua.LBool)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		c.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return c
+}
+
+func colorEditTable(state *golua.LState, text string, colorref int) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_COLOR_EDIT))
+	state.SetTable(t, golua.LString("label"), golua.LString(text))
+	state.SetTable(t, golua.LString("colorref"), golua.LNumber(colorref))
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), golua.LNumber(width))
+	})
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	return t
+}
+
+func colorEditBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	ref := int(state.GetTable(t, golua.LString("colorref")).(golua.LNumber))
+
+	sref, err := r.CR_REF.Item(ref)
+	if err != nil {
+		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+	}
+
+	selected := sref.Value.(*color.RGBA)
+	c := g.ColorEdit(state.GetTable(t, golua.LString("label")).String(), selected)
+
+	width := state.GetTable(t, golua.LString("__width"))
+	if width.Type() == golua.LTNumber {
+		c.Size(float32(width.(golua.LNumber)))
+	}
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		c.OnChange(func() {
+			ct := imageutil.RGBAToTable(state, selected)
+
+			state.Push(change)
+			state.Push(ct)
+			state.Call(1, 0)
+		})
+	}
+
+	return c
 }

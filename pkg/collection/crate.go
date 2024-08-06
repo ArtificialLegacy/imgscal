@@ -6,6 +6,10 @@ type CrateItem[T any] struct {
 	Self *T
 }
 
+type RefItem[T any] struct {
+	Value T
+}
+
 type Crate[T any] struct {
 	Items []*CrateItem[T]
 	clean *func(i *CrateItem[T])

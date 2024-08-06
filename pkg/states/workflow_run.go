@@ -58,6 +58,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	runner.CR_WIN.CleanAll()
+	runner.CR_REF.CleanAll()
 
 	runner.TC.CollectAll()
 	runner.IC.CollectAll()
