@@ -626,6 +626,36 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_rgb_gray()
+	/// @arg v
+	/// @returns {red,green,blue,alpha}
+	/// @desc
+	/// alpha channel is set to 255.
+	lib.CreateFunction(tab, "color_rgb_gray",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "v"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rgbaTable(state, args["v"].(int), args["v"].(int), args["v"].(int), 255)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_rgba_gray()
+	/// @arg v
+	/// @arg a
+	/// @returns {red,green,blue,alpha}
+	lib.CreateFunction(tab, "color_rgba_gray",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "v"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rgbaTable(state, args["v"].(int), args["v"].(int), args["v"].(int), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
 	/// @func color_hsv()
 	/// @arg h
 	/// @arg s

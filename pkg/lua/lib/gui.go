@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"time"
 
@@ -20,12 +21,12 @@ const LIB_GUI = "gui"
 func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_GUI, r, r.State, lg)
 
-	/// @func window()
+	/// @func window_master()
 	/// @arg name
 	/// @arg width
 	/// @arg height
 	/// @returns id of the window.
-	lib.CreateFunction(tab, "window",
+	lib.CreateFunction(tab, "window_master",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "width"},
@@ -282,9 +283,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func wg_single_window()
+	/// @func window_single()
 	/// @arg? widgets - []Widgets
-	lib.CreateFunction(tab, "wg_single_window",
+	lib.CreateFunction(tab, "window_single",
 		[]lua.Arg{
 			lua.ArgArray("widgets", lua.ArrayType{Type: lua.ANY}, true),
 		},
@@ -292,6 +293,20 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			wts := parseWidgets(args["widgets"].(map[string]any), state, lg)
 			w := layoutBuild(r, state, wts, lg)
 			g.SingleWindow().Layout(w...)
+
+			return 0
+		})
+
+	/// @func window_single_with_menu_bar()
+	/// @arg? widgets - []Widgets
+	lib.CreateFunction(tab, "window_single_with_menu_bar",
+		[]lua.Arg{
+			lua.ArgArray("widgets", lua.ArrayType{Type: lua.ANY}, true),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			wts := parseWidgets(args["widgets"].(map[string]any), state, lg)
+			w := layoutBuild(r, state, wts, lg)
+			g.SingleWindowWithMenuBar().Layout(w...)
 
 			return 0
 		})
@@ -421,6 +436,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func wg_column()
 	/// @arg? widgets - []Widgets
+	/// @returns widget
 	lib.CreateFunction(tab, "wg_column",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "widgets", Optional: true},
@@ -438,6 +454,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func wg_row()
 	/// @arg? widgets - []Widgets
+	/// @returns widget
 	lib.CreateFunction(tab, "wg_row",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "widgets", Optional: true},
@@ -676,6 +693,376 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func wg_button_small()
+	/// @arg text
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_button_small",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := buttonSmallTable(state, args["text"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_button_radio()
+	/// @arg text
+	/// @arg active
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_button_radio",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+			{Type: lua.BOOL, Name: "active"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := buttonRadioTable(state, args["text"].(string), args["active"].(bool))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_image_url()
+	/// @arg url
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_image_url",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "url"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := imageUrlTable(state, args["url"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_image()
+	/// @arg id
+	/// @returns widget
+	/// @blocking
+	lib.CreateFunction(tab, "wg_image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := imageTable(state, args["id"].(int), false)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_image_sync()
+	/// @arg id
+	/// @returns widget
+	/// @desc
+	/// Note: this does not wait for the image to be ready or idle,
+	/// if the image is not loaded it will dislay an empy image
+	/// May look weird if the image is also being processed while displayed here.
+	lib.CreateFunction(tab, "wg_image_sync",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := imageTable(state, args["id"].(int), true)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_list_box()
+	/// @arg items
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_list_box",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "items"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := listBoxTable(state, args["items"].(golua.LValue))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_list_clipper()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_list_clipper",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := listClipperTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_menu_bar_main()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_menu_bar_main",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := mainMenuBarTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_menu_bar()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_menu_bar",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := menuBarTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_menu_item()
+	/// @arg label
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_menu_item",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := menuItemTable(state, args["label"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_menu()
+	/// @arg label
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_menu",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := menuTable(state, args["label"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_selectable()
+	/// @arg label
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_selectable",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := selectableTable(state, args["label"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_slider_float()
+	/// @arg f32ref
+	/// @arg min
+	/// @arg max
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_slider_float",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "f32ref"},
+			{Type: lua.FLOAT, Name: "min"},
+			{Type: lua.FLOAT, Name: "max"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			floatref := args["f32ref"].(int)
+			min := args["min"].(float64)
+			max := args["max"].(float64)
+			t := sliderFloatTable(state, floatref, min, max)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_slider_int()
+	/// @arg i32ref
+	/// @arg min
+	/// @arg max
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_slider_int",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "i32ref"},
+			{Type: lua.INT, Name: "min"},
+			{Type: lua.INT, Name: "max"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			intref := args["i32ref"].(int)
+			min := args["min"].(int)
+			max := args["max"].(int)
+			t := sliderIntTable(state, intref, min, max)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_vslider_int()
+	/// @arg i32ref
+	/// @arg min
+	/// @arg max
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_vslider_int",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "i32ref"},
+			{Type: lua.INT, Name: "min"},
+			{Type: lua.INT, Name: "max"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			intref := args["i32ref"].(int)
+			min := args["min"].(int)
+			max := args["max"].(int)
+			t := vsliderIntTable(state, intref, min, max)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_tab_bar()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_tab_bar",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tabbarTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_tab_item()
+	/// @arg label
+	/// @returns tab item
+	lib.CreateFunction(tab, "wg_tab_item",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tabitemTable(state, args["label"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_tooltip()
+	/// @arg tip
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_tooltip",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "tip"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tooltipTable(state, args["tip"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_table_column()
+	/// @arg label
+	/// @returns table column
+	lib.CreateFunction(tab, "wg_table_column",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tableColumnTable(state, args["label"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_table_row()
+	/// @arg? widgets - []Widgets
+	/// @returns table row
+	lib.CreateFunction(tab, "wg_table_row",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "widgets", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			v := args["widgets"]
+			if v == nil {
+				v = golua.LNil
+			}
+			t := tableRowTable(state, v.(golua.LValue))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_table()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_table",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tableTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_button_arrow()
+	/// @arg dir
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_button_arrow",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "dir"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := buttonArrowTable(state, args["dir"].(int))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_tree_table_node()
+	/// @arg label
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_tree_table_node",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := treeTableNodeTable(state, args["label"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	// @func wg_tree_table_row()
+	/// @arg label
+	/// @arg? widgets - []Widgets
+	/// @returns tree table row
+	lib.CreateFunction(tab, "wg_tree_table_row",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "label"},
+			{Type: lua.ANY, Name: "widgets", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			v := args["widgets"]
+			if v == nil {
+				v = golua.LNil
+			}
+			t := treeTableRowTable(state, args["label"].(string), v.(golua.LValue))
+
+			state.Push(t)
+			return 1
+		})
+
+	// @func wg_tree_table()
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_tree_table",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := treeTableTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @constants Color Picker Flags
 	/// @const FLAGCOLOREDIT_NONE
 	/// @const FLAGCOLOREDIT_NOALPHA
@@ -817,6 +1204,264 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKRESIZE"), golua.LNumber(FLAGINPUTTEXT_CALLBACKRESIZE))
 	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKEDIT"), golua.LNumber(FLAGINPUTTEXT_CALLBACKEDIT))
 	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_ESCAPECLEARSALL"), golua.LNumber(FLAGINPUTTEXT_ESCAPECLEARSALL))
+
+	/// @constants Selectable Flags
+	/// @const FLAGSELECTABLE_NONE
+	/// @const FLAGSELECTABLE_DONTCLOSEPOPUPS
+	/// @const FLAGSELECTABLE_SPANALLCOLUMNS
+	/// @const FLAGSELECTABLE_ALLOWDOUBLECLICK
+	/// @const FLAGSELECTABLE_DISABLED
+	/// @const FLAGSELECTABLE_ALLOWOVERLAP
+	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_NONE"), golua.LNumber(FLAGSELECTABLE_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_DONTCLOSEPOPUPS"), golua.LNumber(FLAGSELECTABLE_DONTCLOSEPOPUPS))
+	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_SPANALLCOLUMNS"), golua.LNumber(FLAGSELECTABLE_SPANALLCOLUMNS))
+	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_ALLOWDOUBLECLICK"), golua.LNumber(FLAGSELECTABLE_ALLOWDOUBLECLICK))
+	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_DISABLED"), golua.LNumber(FLAGSELECTABLE_DISABLED))
+	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_ALLOWOVERLAP"), golua.LNumber(FLAGSELECTABLE_ALLOWOVERLAP))
+
+	/// @constants Slider Flags
+	/// @const FLAGSLIDER_NONE
+	/// @const FLAGSLIDER_ALWAYSCLAMP
+	/// @const FLAGSLIDER_LOGARITHMIC
+	/// @const FLAGSLIDER_NOROUNDTOFORMAT
+	/// @const FLAGSLIDER_NOINPUT
+	/// @const FLAGSLIDER_INVALIDMASK
+	r.State.SetTable(tab, golua.LString("FLAGSLIDER_NONE"), golua.LNumber(FLAGSLIDER_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGSLIDER_ALWAYSCLAMP"), golua.LNumber(FLAGSLIDER_ALWAYSCLAMP))
+	r.State.SetTable(tab, golua.LString("FLAGSLIDER_LOGARITHMIC"), golua.LNumber(FLAGSLIDER_LOGARITHMIC))
+	r.State.SetTable(tab, golua.LString("FLAGSLIDER_NOROUNDTOFORMAT"), golua.LNumber(FLAGSLIDER_NOROUNDTOFORMAT))
+	r.State.SetTable(tab, golua.LString("FLAGSLIDER_NOINPUT"), golua.LNumber(FLAGSLIDER_NOINPUT))
+	r.State.SetTable(tab, golua.LString("FLAGSLIDER_INVALIDMASK"), golua.LNumber(FLAGSLIDER_INVALIDMASK))
+
+	/// @constants Tab Bar Flags
+	/// @const FLAGTABBAR_NONE
+	/// @const FLAGTABBAR_REORDERABLE
+	/// @const FLAGTABBAR_AUTOSELECTNEWTABS
+	/// @const FLAGTABBAR_TABLLISTPOPUPBUTTON
+	/// @const FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON
+	/// @const FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS
+	/// @const FLAGTABBAR_NOTOOLTIP
+	/// @const FLAGTABBAR_FITTINGPOLICYRESIZEDOWN
+	/// @const FLAGTABBAR_FITTINGPOLICYSCROLL
+	/// @const FLAGTABBAR_FITTINGPOLICYMASK
+	/// @const FLAGTABBAR_FITTINGPOLICYDEFAULT
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NONE"), golua.LNumber(FLAGTABBAR_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_REORDERABLE"), golua.LNumber(FLAGTABBAR_REORDERABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_AUTOSELECTNEWTABS"), golua.LNumber(FLAGTABBAR_AUTOSELECTNEWTABS))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_TABLLISTPOPUPBUTTON"), golua.LNumber(FLAGTABBAR_TABLLISTPOPUPBUTTON))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON"), golua.LNumber(FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS"), golua.LNumber(FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NOTOOLTIP"), golua.LNumber(FLAGTABBAR_NOTOOLTIP))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYRESIZEDOWN"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYRESIZEDOWN))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYSCROLL"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYSCROLL))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYMASK"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYMASK))
+	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYDEFAULT"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYDEFAULT))
+
+	/// @constants Tab Item Flags
+	/// @const FLAGTABITEM_NONE
+	/// @const FLAGTABITEM_UNSAVEDOCUMENT
+	/// @const FLAGTABITEM_SETSELECTED
+	/// @const FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON
+	/// @const FLAGTABITEM_NOPUSHID
+	/// @const FLAGTABITEM_NOTOOLTIP
+	/// @const FLAGTABITEM_NOREORDER
+	/// @const FLAGTABITEM_LEADING
+	/// @const FLAGTABITEM_TRAILING
+	/// @const FLAGTABITEM_NOASSUMEDCLOSURE
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NONE"), golua.LNumber(FLAGTABITEM_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_UNSAVEDOCUMENT"), golua.LNumber(FLAGTABITEM_UNSAVEDOCUMENT))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_SETSELECTED"), golua.LNumber(FLAGTABITEM_SETSELECTED))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON"), golua.LNumber(FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOPUSHID"), golua.LNumber(FLAGTABITEM_NOPUSHID))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOTOOLTIP"), golua.LNumber(FLAGTABITEM_NOTOOLTIP))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOREORDER"), golua.LNumber(FLAGTABITEM_NOREORDER))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_LEADING"), golua.LNumber(FLAGTABITEM_LEADING))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_TRAILING"), golua.LNumber(FLAGTABITEM_TRAILING))
+	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOASSUMEDCLOSURE"), golua.LNumber(FLAGTABITEM_NOASSUMEDCLOSURE))
+
+	/// @constants Table Column Flags
+	/// @const FLAGTABLECOLUMN_NONE
+	/// @const FLAGTABLECOLUMN_DEFAULTHIDE
+	/// @const FLAGTABLECOLUMN_DEFAULTSORT
+	/// @const FLAGTABLECOLUMN_WIDTHSTRETCH
+	/// @const FLAGTABLECOLUMN_WIDTHFIXED
+	/// @const FLAGTABLECOLUMN_NORESIZE
+	/// @const FLAGTABLECOLUMN_NOREORDER
+	/// @const FLAGTABLECOLUMN_NOHIDE
+	/// @const FLAGTABLECOLUMN_NOCLIP
+	/// @const FLAGTABLECOLUMN_NOSORT
+	/// @const FLAGTABLECOLUMN_NOSORTASCENDING
+	/// @const FLAGTABLECOLUMN_NOSORTDESCENDING
+	/// @const FLAGTABLECOLUMN_NOHEADERWIDTH
+	/// @const FLAGTABLECOLUMN_PREFERSORTASCENDING
+	/// @const FLAGTABLECOLUMN_PREFERSORTDESCENDING
+	/// @const FLAGTABLECOLUMN_INDENTENABLE
+	/// @const FLAGTABLECOLUMN_INDENTDISABLE
+	/// @const FLAGTABLECOLUMN_ISENABLED
+	/// @const FLAGTABLECOLUMN_ISVISIBLE
+	/// @const FLAGTABLECOLUMN_ISSORTED
+	/// @const FLAGTABLECOLUMN_ISHOVERED
+	/// @const FLAGTABLECOLUMN_WIDTHMASK
+	/// @const FLAGTABLECOLUMN_INDENTMASK
+	/// @const FLAGTABLECOLUMN_STATUSMASK
+	/// @const FLAGTABLECOLUMN_NODIRECTRESIZE
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NONE"), golua.LNumber(FLAGTABLECOLUMN_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_DEFAULTHIDE"), golua.LNumber(FLAGTABLECOLUMN_DEFAULTHIDE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_DEFAULTSORT"), golua.LNumber(FLAGTABLECOLUMN_DEFAULTSORT))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_WIDTHSTRETCH"), golua.LNumber(FLAGTABLECOLUMN_WIDTHSTRETCH))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_WIDTHFIXED"), golua.LNumber(FLAGTABLECOLUMN_WIDTHFIXED))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NORESIZE"), golua.LNumber(FLAGTABLECOLUMN_NORESIZE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOREORDER"), golua.LNumber(FLAGTABLECOLUMN_NOREORDER))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOHIDE"), golua.LNumber(FLAGTABLECOLUMN_NOHIDE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOCLIP"), golua.LNumber(FLAGTABLECOLUMN_NOCLIP))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOSORT"), golua.LNumber(FLAGTABLECOLUMN_NOSORT))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOSORTASCENDING"), golua.LNumber(FLAGTABLECOLUMN_NOSORTASCENDING))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOSORTDESCENDING"), golua.LNumber(FLAGTABLECOLUMN_NOSORTDESCENDING))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOHEADERWIDTH"), golua.LNumber(FLAGTABLECOLUMN_NOHEADERWIDTH))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_PREFERSORTASCENDING"), golua.LNumber(FLAGTABLECOLUMN_PREFERSORTASCENDING))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_PREFERSORTDESCENDING"), golua.LNumber(FLAGTABLECOLUMN_PREFERSORTDESCENDING))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_INDENTENABLE"), golua.LNumber(FLAGTABLECOLUMN_INDENTENABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_INDENTDISABLE"), golua.LNumber(FLAGTABLECOLUMN_INDENTDISABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISENABLED"), golua.LNumber(FLAGTABLECOLUMN_ISENABLED))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISVISIBLE"), golua.LNumber(FLAGTABLECOLUMN_ISVISIBLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISSORTED"), golua.LNumber(FLAGTABLECOLUMN_ISSORTED))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISHOVERED"), golua.LNumber(FLAGTABLECOLUMN_ISHOVERED))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_WIDTHMASK"), golua.LNumber(FLAGTABLECOLUMN_WIDTHMASK))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_INDENTMASK"), golua.LNumber(FLAGTABLECOLUMN_INDENTMASK))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_STATUSMASK"), golua.LNumber(FLAGTABLECOLUMN_STATUSMASK))
+	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NODIRECTRESIZE"), golua.LNumber(FLAGTABLECOLUMN_NODIRECTRESIZE))
+
+	/// @constants Table Row Flags
+	/// @const FLAGTABLEROW_NONE
+	/// @const FLAGTABLEROW_HEADERS
+	r.State.SetTable(tab, golua.LString("FLAGTABLEROW_NONE"), golua.LNumber(FLAGTABLEROW_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLEROW_HEADERS"), golua.LNumber(FLAGTABLEROW_HEADERS))
+
+	/// @constants Table Flags
+	/// @const FLAGTABLE_NONE
+	/// @const FLAGTABLE_RESIZEABLE
+	/// @const FLAGTABLE_REORDERABLE
+	/// @const FLAGTABLE_HIDEABLE
+	/// @const FLAGTABLE_SORTABLE
+	/// @const FLAGTABLE_NOSAVEDSETTINGS
+	/// @const FLAGTABLE_CONTEXTMENUINBODY
+	/// @const FLAGTABLE_ROWBG
+	/// @const FLAGTABLE_BORDERSINNERH
+	/// @const FLAGTABLE_BORDERSOUTERH
+	/// @const FLAGTABLE_BORDERSINNERV
+	/// @const FLAGTABLE_BORDERSOUTERV
+	/// @const FLAGTABLE_BORDERSH
+	/// @const FLAGTABLE_BORDERSV
+	/// @const FLAGTABLE_BORDERSINNER
+	/// @const FLAGTABLE_BORDERSOUTER
+	/// @const FLAGTABLE_BORDERS
+	/// @const FLAGTABLE_NOBORDERSINBODY
+	/// @const FLAGTABLE_NOBORDERSINBODYUNTILRESIZE
+	/// @const FLAGTABLE_SIZINGFIXEDFIT
+	/// @const FLAGTABLE_SIZINGFIXEDSAME
+	/// @const FLAGTABLE_SIZINGSTRETCHPROP
+	/// @const FLAGTABLE_SIZINGSTRETCHSAME
+	/// @const FLAGTABLE_NOHOSTEXTENDX
+	/// @const FLAGTABLE_NOHOSTEXTENDY
+	/// @const FLAGTABLE_NOKEEPCOLUMNSVISIBLE
+	/// @const FLAGTABLE_PRECISEWIDTHS
+	/// @const FLAGTABLE_NOCLIP
+	/// @const FLAGTABLE_PADOUTERX
+	/// @const FLAGTABLE_NOPADOUTERX
+	/// @const FLAGTABLE_NOPADINNERX
+	/// @const FLAGTABLE_SCROLLX
+	/// @const FLAGTABLE_SCROLLY
+	/// @const FLAGTABLE_SORTMULTI
+	/// @const FLAGTABLE_SORTTRISTATE
+	/// @const FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN
+	/// @const FLAGTABLE_SIZINGMASK
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NONE"), golua.LNumber(FLAGTABLE_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_RESIZEABLE"), golua.LNumber(FLAGTABLE_RESIZEABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_REORDERABLE"), golua.LNumber(FLAGTABLE_REORDERABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_HIDEABLE"), golua.LNumber(FLAGTABLE_HIDEABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SORTABLE"), golua.LNumber(FLAGTABLE_SORTABLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOSAVEDSETTINGS"), golua.LNumber(FLAGTABLE_NOSAVEDSETTINGS))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_CONTEXTMENUINBODY"), golua.LNumber(FLAGTABLE_CONTEXTMENUINBODY))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_ROWBG"), golua.LNumber(FLAGTABLE_ROWBG))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSINNERH"), golua.LNumber(FLAGTABLE_BORDERSINNERH))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSOUTERH"), golua.LNumber(FLAGTABLE_BORDERSOUTERH))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSINNERV"), golua.LNumber(FLAGTABLE_BORDERSINNERV))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSOUTERV"), golua.LNumber(FLAGTABLE_BORDERSOUTERV))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSH"), golua.LNumber(FLAGTABLE_BORDERSH))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSV"), golua.LNumber(FLAGTABLE_BORDERSV))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSINNER"), golua.LNumber(FLAGTABLE_BORDERSINNER))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSOUTER"), golua.LNumber(FLAGTABLE_BORDERSOUTER))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERS"), golua.LNumber(FLAGTABLE_BORDERS))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOBORDERSINBODY"), golua.LNumber(FLAGTABLE_NOBORDERSINBODY))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOBORDERSINBODYUNTILRESIZE"), golua.LNumber(FLAGTABLE_NOBORDERSINBODYUNTILRESIZE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGFIXEDFIT"), golua.LNumber(FLAGTABLE_SIZINGFIXEDFIT))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGFIXEDSAME"), golua.LNumber(FLAGTABLE_SIZINGFIXEDSAME))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGSTRETCHPROP"), golua.LNumber(FLAGTABLE_SIZINGSTRETCHPROP))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGSTRETCHSAME"), golua.LNumber(FLAGTABLE_SIZINGSTRETCHSAME))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOHOSTEXTENDX"), golua.LNumber(FLAGTABLE_NOHOSTEXTENDX))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOHOSTEXTENDY"), golua.LNumber(FLAGTABLE_NOHOSTEXTENDY))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOKEEPCOLUMNSVISIBLE"), golua.LNumber(FLAGTABLE_NOKEEPCOLUMNSVISIBLE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_PRECISEWIDTHS"), golua.LNumber(FLAGTABLE_PRECISEWIDTHS))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOCLIP"), golua.LNumber(FLAGTABLE_NOCLIP))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_PADOUTERX"), golua.LNumber(FLAGTABLE_PADOUTERX))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOPADOUTERX"), golua.LNumber(FLAGTABLE_NOPADOUTERX))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOPADINNERX"), golua.LNumber(FLAGTABLE_NOPADINNERX))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SCROLLX"), golua.LNumber(FLAGTABLE_SCROLLX))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SCROLLY"), golua.LNumber(FLAGTABLE_SCROLLY))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SORTMULTI"), golua.LNumber(FLAGTABLE_SORTMULTI))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SORTTRISTATE"), golua.LNumber(FLAGTABLE_SORTTRISTATE))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN"), golua.LNumber(FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN))
+	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGMASK"), golua.LNumber(FLAGTABLE_SIZINGMASK))
+
+	/// @constants Directions
+	/// @const DIR_NONE
+	/// @const DIR_LEFT
+	/// @const DIR_RIGHT
+	/// @const DIR_UP
+	/// @const DIR_DOWN
+	/// @const DIR_COUNT
+	r.State.SetTable(tab, golua.LString("DIR_NONE"), golua.LNumber(DIR_NONE))
+	r.State.SetTable(tab, golua.LString("DIR_LEFT"), golua.LNumber(DIR_LEFT))
+	r.State.SetTable(tab, golua.LString("DIR_RIGHT"), golua.LNumber(DIR_RIGHT))
+	r.State.SetTable(tab, golua.LString("DIR_UP"), golua.LNumber(DIR_UP))
+	r.State.SetTable(tab, golua.LString("DIR_DOWN"), golua.LNumber(DIR_DOWN))
+	r.State.SetTable(tab, golua.LString("DIR_COUNT"), golua.LNumber(DIR_COUNT))
+
+	/// @constants Tree Node Flags
+	/// @const FLAGTREENODE_NONE
+	/// @const FLAGTREENODE_SELECTED
+	/// @const FLAGTREENODE_FRAMED
+	/// @const FLAGTREENODE_ALLOWOVERLAP
+	/// @const FLAGTREENODE_NOTREEPUSHONOPEN
+	/// @const FLAGTREENODE_NOAUTOOPENONLOG
+	/// @const FLAGTREENODE_DEFAULTOPEN
+	/// @const FLAGTREENODE_OPENONDOUBLECLICK
+	/// @const FLAGTREENODE_OPENONARROW
+	/// @const FLAGTREENODE_LEAF
+	/// @const FLAGTREENODE_BULLET
+	/// @const FLAGTREENODE_FRAMEPADDING
+	/// @const FLAGTREENODE_SPANAVAILWIDTH
+	/// @const FLAGTREENODE_SPANFULLWIDTH
+	/// @const FLAGTREENODE_SPANALLCOLUMNS
+	/// @const FLAGTREENODE_NAVLEFTJUMPSBACKHERE
+	/// @const FLAGTREENODE_COLLAPSINGHEADER
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NONE"), golua.LNumber(FLAGTREENODE_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SELECTED"), golua.LNumber(FLAGTREENODE_SELECTED))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_FRAMED"), golua.LNumber(FLAGTREENODE_FRAMED))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_ALLOWOVERLAP"), golua.LNumber(FLAGTREENODE_ALLOWOVERLAP))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NOTREEPUSHONOPEN"), golua.LNumber(FLAGTREENODE_NOTREEPUSHONOPEN))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NOAUTOOPENONLOG"), golua.LNumber(FLAGTREENODE_NOAUTOOPENONLOG))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_DEFAULTOPEN"), golua.LNumber(FLAGTREENODE_DEFAULTOPEN))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_OPENONDOUBLECLICK"), golua.LNumber(FLAGTREENODE_OPENONDOUBLECLICK))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_OPENONARROW"), golua.LNumber(FLAGTREENODE_OPENONARROW))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_LEAF"), golua.LNumber(FLAGTREENODE_LEAF))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_BULLET"), golua.LNumber(FLAGTREENODE_BULLET))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_FRAMEPADDING"), golua.LNumber(FLAGTREENODE_FRAMEPADDING))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SPANAVAILWIDTH"), golua.LNumber(FLAGTREENODE_SPANAVAILWIDTH))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SPANFULLWIDTH"), golua.LNumber(FLAGTREENODE_SPANFULLWIDTH))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SPANALLCOLUMNS"), golua.LNumber(FLAGTREENODE_SPANALLCOLUMNS))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NAVLEFTJUMPSBACKHERE"), golua.LNumber(FLAGTREENODE_NAVLEFTJUMPSBACKHERE))
+	r.State.SetTable(tab, golua.LString("FLAGTREENODE_COLLAPSINGHEADER"), golua.LNumber(FLAGTREENODE_COLLAPSINGHEADER))
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
@@ -915,6 +1560,153 @@ const (
 )
 
 const (
+	FLAGSELECTABLE_NONE             int = 0b0000_0000
+	FLAGSELECTABLE_DONTCLOSEPOPUPS  int = 0b0000_0001
+	FLAGSELECTABLE_SPANALLCOLUMNS   int = 0b0000_0010
+	FLAGSELECTABLE_ALLOWDOUBLECLICK int = 0b0000_0100
+	FLAGSELECTABLE_DISABLED         int = 0b0000_1000
+	FLAGSELECTABLE_ALLOWOVERLAP     int = 0b0001_0000
+)
+
+const (
+	FLAGSLIDER_NONE            int = 0b0000_0000_0000_0000_0000_0000_0000_0000
+	FLAGSLIDER_ALWAYSCLAMP     int = 0b0000_0000_0000_0000_0000_0000_0001_0000
+	FLAGSLIDER_LOGARITHMIC     int = 0b0000_0000_0000_0000_0000_0000_0010_0000
+	FLAGSLIDER_NOROUNDTOFORMAT int = 0b0000_0000_0000_0000_0000_0000_0100_0000
+	FLAGSLIDER_NOINPUT         int = 0b0000_0000_0000_0000_0000_0000_1000_0000
+	FLAGSLIDER_INVALIDMASK     int = 0b0111_0000_0000_0000_0000_0000_0000_1111
+)
+
+const (
+	FLAGTABBAR_NONE                         int = 0b0000_0000
+	FLAGTABBAR_REORDERABLE                  int = 0b0000_0001
+	FLAGTABBAR_AUTOSELECTNEWTABS            int = 0b0000_0010
+	FLAGTABBAR_TABLLISTPOPUPBUTTON          int = 0b0000_0100
+	FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON int = 0b0000_1000
+	FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS    int = 0b0001_0000
+	FLAGTABBAR_NOTOOLTIP                    int = 0b0010_0000
+	FLAGTABBAR_FITTINGPOLICYRESIZEDOWN      int = 0b0100_0000
+	FLAGTABBAR_FITTINGPOLICYSCROLL          int = 0b1000_0000
+	FLAGTABBAR_FITTINGPOLICYMASK            int = 0b1100_0000
+	FLAGTABBAR_FITTINGPOLICYDEFAULT         int = 0b0100_0000
+)
+
+const (
+	FLAGTABITEM_NONE                         int = 0b0000_0000_0000
+	FLAGTABITEM_UNSAVEDOCUMENT               int = 0b0000_0000_0001
+	FLAGTABITEM_SETSELECTED                  int = 0b0000_0000_0010
+	FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON int = 0b0000_0000_0100
+	FLAGTABITEM_NOPUSHID                     int = 0b0000_0000_1000
+	FLAGTABITEM_NOTOOLTIP                    int = 0b0000_0001_0000
+	FLAGTABITEM_NOREORDER                    int = 0b0000_0010_0000
+	FLAGTABITEM_LEADING                      int = 0b0000_0100_0000
+	FLAGTABITEM_TRAILING                     int = 0b0000_1000_0000
+	FLAGTABITEM_NOASSUMEDCLOSURE             int = 0b0001_0000_0000
+)
+
+const (
+	FLAGTABLECOLUMN_NONE                 int = 0b0000_0000_0000_0000_0000_0000_0000_0000
+	FLAGTABLECOLUMN_DEFAULTHIDE          int = 0b0000_0000_0000_0000_0000_0000_0000_0010
+	FLAGTABLECOLUMN_DEFAULTSORT          int = 0b0000_0000_0000_0000_0000_0000_0000_0100
+	FLAGTABLECOLUMN_WIDTHSTRETCH         int = 0b0000_0000_0000_0000_0000_0000_0000_1000
+	FLAGTABLECOLUMN_WIDTHFIXED           int = 0b0000_0000_0000_0000_0000_0000_0001_0000
+	FLAGTABLECOLUMN_NORESIZE             int = 0b0000_0000_0000_0000_0000_0000_0010_0000
+	FLAGTABLECOLUMN_NOREORDER            int = 0b0000_0000_0000_0000_0000_0000_0100_0000
+	FLAGTABLECOLUMN_NOHIDE               int = 0b0000_0000_0000_0000_0000_0000_1000_0000
+	FLAGTABLECOLUMN_NOCLIP               int = 0b0000_0000_0000_0000_0000_0001_0000_0000
+	FLAGTABLECOLUMN_NOSORT               int = 0b0000_0000_0000_0000_0000_0010_0000_0000
+	FLAGTABLECOLUMN_NOSORTASCENDING      int = 0b0000_0000_0000_0000_0000_0100_0000_0000
+	FLAGTABLECOLUMN_NOSORTDESCENDING     int = 0b0000_0000_0000_0000_0000_1000_0000_0000
+	FLAGTABLECOLUMN_NOHEADERWIDTH        int = 0b0000_0000_0000_0000_0010_0000_0000_0000
+	FLAGTABLECOLUMN_PREFERSORTASCENDING  int = 0b0000_0000_0000_0000_0100_0000_0000_0000
+	FLAGTABLECOLUMN_PREFERSORTDESCENDING int = 0b0000_0000_0000_0000_1000_0000_0000_0000
+	FLAGTABLECOLUMN_INDENTENABLE         int = 0b0000_0000_0000_0001_0000_0000_0000_0000
+	FLAGTABLECOLUMN_INDENTDISABLE        int = 0b0000_0000_0000_0010_0000_0000_0000_0000
+	FLAGTABLECOLUMN_ISENABLED            int = 0b0000_0001_0000_0000_0000_0000_0000_0000
+	FLAGTABLECOLUMN_ISVISIBLE            int = 0b0000_0010_0000_0000_0000_0000_0000_0000
+	FLAGTABLECOLUMN_ISSORTED             int = 0b0000_0100_0000_0000_0000_0000_0000_0000
+	FLAGTABLECOLUMN_ISHOVERED            int = 0b0000_1000_0000_0000_0000_0000_0000_0000
+	FLAGTABLECOLUMN_WIDTHMASK            int = 0b0000_0000_0000_0000_0000_0000_0001_1000
+	FLAGTABLECOLUMN_INDENTMASK           int = 0b0000_0000_0000_0011_0000_0000_0000_0000
+	FLAGTABLECOLUMN_STATUSMASK           int = 0b0000_1111_0000_0000_0000_0000_0000_0000
+	FLAGTABLECOLUMN_NODIRECTRESIZE       int = 0b0100_0000_0000_0000_0000_0000_0000_0000
+)
+
+const (
+	FLAGTABLE_NONE                       int = 0b0000_0000_0000_0000_0000_0000_0000_0000
+	FLAGTABLE_RESIZEABLE                 int = 0b0000_0000_0000_0000_0000_0000_0000_0001
+	FLAGTABLE_REORDERABLE                int = 0b0000_0000_0000_0000_0000_0000_0000_0010
+	FLAGTABLE_HIDEABLE                   int = 0b0000_0000_0000_0000_0000_0000_0000_0100
+	FLAGTABLE_SORTABLE                   int = 0b0000_0000_0000_0000_0000_0000_0000_1000
+	FLAGTABLE_NOSAVEDSETTINGS            int = 0b0000_0000_0000_0000_0000_0000_0001_0000
+	FLAGTABLE_CONTEXTMENUINBODY          int = 0b0000_0000_0000_0000_0000_0000_0010_0000
+	FLAGTABLE_ROWBG                      int = 0b0000_0000_0000_0000_0000_0000_0100_0000
+	FLAGTABLE_BORDERSINNERH              int = 0b0000_0000_0000_0000_0000_0000_1000_0000
+	FLAGTABLE_BORDERSOUTERH              int = 0b0000_0000_0000_0000_0000_0001_0000_0000
+	FLAGTABLE_BORDERSINNERV              int = 0b0000_0000_0000_0000_0000_0010_0000_0000
+	FLAGTABLE_BORDERSOUTERV              int = 0b0000_0000_0000_0000_0000_0100_0000_0000
+	FLAGTABLE_BORDERSH                   int = 0b0000_0000_0000_0000_0000_0001_1000_0000
+	FLAGTABLE_BORDERSV                   int = 0b0000_0000_0000_0000_0000_0110_0000_0000
+	FLAGTABLE_BORDERSINNER               int = 0b0000_0000_0000_0000_0000_0010_1000_0000
+	FLAGTABLE_BORDERSOUTER               int = 0b0000_0000_0000_0000_0000_0101_0000_0000
+	FLAGTABLE_BORDERS                    int = 0b0000_0000_0000_0000_0000_0111_1000_0000
+	FLAGTABLE_NOBORDERSINBODY            int = 0b0000_0000_0000_0000_0000_1000_0000_0000
+	FLAGTABLE_NOBORDERSINBODYUNTILRESIZE int = 0b0000_0000_0000_0000_0001_0000_0000_0000
+	FLAGTABLE_SIZINGFIXEDFIT             int = 0b0000_0000_0000_0000_0010_0000_0000_0000
+	FLAGTABLE_SIZINGFIXEDSAME            int = 0b0000_0000_0000_0000_0100_0000_0000_0000
+	FLAGTABLE_SIZINGSTRETCHPROP          int = 0b0000_0000_0000_0000_0110_0000_0000_0000
+	FLAGTABLE_SIZINGSTRETCHSAME          int = 0b0000_0000_0000_0000_1000_0000_0000_0000
+	FLAGTABLE_NOHOSTEXTENDX              int = 0b0000_0000_0000_0001_0000_0000_0000_0000
+	FLAGTABLE_NOHOSTEXTENDY              int = 0b0000_0000_0000_0010_0000_0000_0000_0000
+	FLAGTABLE_NOKEEPCOLUMNSVISIBLE       int = 0b0000_0000_0000_0100_0000_0000_0000_0000
+	FLAGTABLE_PRECISEWIDTHS              int = 0b0000_0000_0000_1000_0000_0000_0000_0000
+	FLAGTABLE_NOCLIP                     int = 0b0000_0000_0001_0000_0000_0000_0000_0000
+	FLAGTABLE_PADOUTERX                  int = 0b0000_0000_0010_0000_0000_0000_0000_0000
+	FLAGTABLE_NOPADOUTERX                int = 0b0000_0000_0100_0000_0000_0000_0000_0000
+	FLAGTABLE_NOPADINNERX                int = 0b0000_0000_1000_0000_0000_0000_0000_0000
+	FLAGTABLE_SCROLLX                    int = 0b0000_0001_0000_0000_0000_0000_0000_0000
+	FLAGTABLE_SCROLLY                    int = 0b0000_0010_0000_0000_0000_0000_0000_0000
+	FLAGTABLE_SORTMULTI                  int = 0b0000_0100_0000_0000_0000_0000_0000_0000
+	FLAGTABLE_SORTTRISTATE               int = 0b0000_1000_0000_0000_0000_0000_0000_0000
+	FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN     int = 0b0001_0000_0000_0000_0000_0000_0000_0000
+	FLAGTABLE_SIZINGMASK                 int = 0b0000_0000_0000_0000_1110_0000_0000_0000
+)
+
+const (
+	FLAGTABLEROW_NONE    int = 0b0
+	FLAGTABLEROW_HEADERS int = 0b1
+)
+
+const (
+	DIR_NONE int = iota - 1
+	DIR_LEFT
+	DIR_RIGHT
+	DIR_UP
+	DIR_DOWN
+	DIR_COUNT
+)
+
+const (
+	FLAGTREENODE_NONE                 int = 0b0000_0000_0000_0000
+	FLAGTREENODE_SELECTED             int = 0b0000_0000_0000_0001
+	FLAGTREENODE_FRAMED               int = 0b0000_0000_0000_0010
+	FLAGTREENODE_ALLOWOVERLAP         int = 0b0000_0000_0000_0100
+	FLAGTREENODE_NOTREEPUSHONOPEN     int = 0b0000_0000_0000_1000
+	FLAGTREENODE_NOAUTOOPENONLOG      int = 0b0000_0000_0001_0000
+	FLAGTREENODE_DEFAULTOPEN          int = 0b0000_0000_0010_0000
+	FLAGTREENODE_OPENONDOUBLECLICK    int = 0b0000_0000_0100_0000
+	FLAGTREENODE_OPENONARROW          int = 0b0000_0000_1000_0000
+	FLAGTREENODE_LEAF                 int = 0b0000_0001_0000_0000
+	FLAGTREENODE_BULLET               int = 0b0000_0010_0000_0000
+	FLAGTREENODE_FRAMEPADDING         int = 0b0000_0100_0000_0000
+	FLAGTREENODE_SPANAVAILWIDTH       int = 0b0000_1000_0000_0000
+	FLAGTREENODE_SPANFULLWIDTH        int = 0b0001_0000_0000_0000
+	FLAGTREENODE_SPANALLCOLUMNS       int = 0b0010_0000_0000_0000
+	FLAGTREENODE_NAVLEFTJUMPSBACKHERE int = 0b0100_0000_0000_0000
+	FLAGTREENODE_COLLAPSINGHEADER     int = 0b0000_0000_0001_1010
+)
+
+const (
 	WIDGET_LABEL                = "label"
 	WIDGET_BUTTON               = "button"
 	WIDGET_DUMMY                = "dummy"
@@ -939,6 +1731,30 @@ const (
 	WIDGET_PROGRESS_BAR         = "progress_bar"
 	WIDGET_PROGRESS_INDICATOR   = "progress_indicator"
 	WIDGET_SPACING              = "spacing"
+	WIDGET_BUTTON_SMALL         = "button_small"
+	WIDGET_BUTTON_RADIO         = "button_radio"
+	WIDGET_IMAGE_URL            = "image_url"
+	WIDGET_IMAGE                = "image"
+	WIDGET_LIST_BOX             = "list_box"
+	WIDGET_LIST_CLIPPER         = "list_clipper"
+	WIDGET_MENU_BAR_MAIN        = "menu_bar_main"
+	WIDGET_MENU_BAR             = "menu_bar"
+	WIDGET_MENU_ITEM            = "menu_item"
+	WIDGET_MENU                 = "menu"
+	WIDGET_SELECTABLE           = "selectable"
+	WIDGET_SLIDER_FLOAT         = "slider_float"
+	WIDGET_SLIDER_INT           = "slider_int"
+	WIDGET_VSLIDER_INT          = "vslider_int"
+	WIDGET_TAB_BAR              = "tab_bar"
+	WIDGET_TAB_ITEM             = "tab_item"
+	WIDGET_TOOLTIP              = "tooltip"
+	WIDGET_TABLE_COLUMN         = "table_column"
+	WIDGET_TABLE_ROW            = "table_row"
+	WIDGET_TABLE                = "table"
+	WIDGET_BUTTON_ARROW         = "button_arrow"
+	WIDGET_TREE_TABLE_NODE      = "tree_table_node"
+	WIDGET_TREE_TABLE_ROW       = "tree_table_row"
+	WIDGET_TREE_TABLE           = "tree_table"
 )
 
 var buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{}
@@ -969,6 +1785,26 @@ func init() {
 		WIDGET_PROGRESS_BAR:         progressBarBuild,
 		WIDGET_PROGRESS_INDICATOR:   progressIndicatorBuild,
 		WIDGET_SPACING:              spacingBuild,
+		WIDGET_BUTTON_SMALL:         buttonSmallBuild,
+		WIDGET_BUTTON_RADIO:         buttonRadioBuild,
+		WIDGET_IMAGE_URL:            imageUrlBuild,
+		WIDGET_IMAGE:                imageBuild,
+		WIDGET_LIST_BOX:             listBoxBuild,
+		WIDGET_LIST_CLIPPER:         listClipperBuild,
+		WIDGET_MENU_BAR_MAIN:        mainMenuBarBuild,
+		WIDGET_MENU_BAR:             menuBarBuild,
+		WIDGET_MENU_ITEM:            menuItemBuild,
+		WIDGET_MENU:                 menuBuild,
+		WIDGET_SELECTABLE:           selectableBuild,
+		WIDGET_SLIDER_FLOAT:         sliderFloatBuild,
+		WIDGET_SLIDER_INT:           sliderIntBuild,
+		WIDGET_VSLIDER_INT:          vsliderIntBuild,
+		WIDGET_TAB_BAR:              tabbarBuild,
+		WIDGET_TOOLTIP:              tooltipBuild,
+		WIDGET_TABLE:                tableBuild,
+		WIDGET_BUTTON_ARROW:         buttonArrowBuild,
+		WIDGET_TREE_TABLE_NODE:      treeTableNodeBuild,
+		WIDGET_TREE_TABLE:           treeTableBuild,
 	}
 }
 
@@ -2156,4 +2992,1370 @@ func spacingBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 	b := g.Spacing()
 
 	return b
+}
+
+func buttonSmallTable(state *golua.LState, text string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_SMALL))
+	state.SetTable(t, golua.LString("label"), golua.LString(text))
+	state.SetTable(t, golua.LString("__click"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__click"), fn)
+	})
+
+	return t
+}
+
+func buttonSmallBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	text := state.GetTable(t, golua.LString("label")).(golua.LString)
+	b := g.SmallButton(string(text))
+
+	click := state.GetTable(t, golua.LString("__click"))
+	if click.Type() == golua.LTFunction {
+		b.OnClick(func() {
+			state.Push(click)
+			state.Call(0, 0)
+		})
+	}
+
+	return b
+}
+
+func buttonRadioTable(state *golua.LState, text string, active bool) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_RADIO))
+	state.SetTable(t, golua.LString("label"), golua.LString(text))
+	state.SetTable(t, golua.LString("active"), golua.LBool(active))
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	return t
+}
+
+func buttonRadioBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	text := state.GetTable(t, golua.LString("label")).(golua.LString)
+	active := state.GetTable(t, golua.LString("active")).(golua.LBool)
+	b := g.RadioButton(string(text), bool(active))
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		b.OnChange(func() {
+			state.Push(change)
+			state.Call(0, 0)
+		})
+	}
+
+	return b
+}
+
+func imageUrlTable(state *golua.LState, url string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_IMAGE_URL))
+	state.SetTable(t, golua.LString("url"), golua.LString(url))
+	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	state.SetTable(t, golua.LString("__timeout"), golua.LNil)
+	state.SetTable(t, golua.LString("__failwidgets"), golua.LNil)
+	state.SetTable(t, golua.LString("__loadwidgets"), golua.LNil)
+	state.SetTable(t, golua.LString("__failure"), golua.LNil)
+	state.SetTable(t, golua.LString("__ready"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__click"), fn)
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	tableBuilderFunc(state, t, "timeout", func(state *golua.LState, t *golua.LTable) {
+		timeout := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__timeout"), timeout)
+	})
+
+	tableBuilderFunc(state, t, "layout_for_failure", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__failwidgets"), lt)
+	})
+
+	tableBuilderFunc(state, t, "layout_for_loading", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__loadwidgets"), lt)
+	})
+
+	tableBuilderFunc(state, t, "on_failure", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__failure"), fn)
+	})
+
+	tableBuilderFunc(state, t, "on_ready", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__ready"), fn)
+	})
+
+	return t
+}
+
+func imageUrlBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	url := state.GetTable(t, golua.LString("url")).(golua.LString)
+	i := g.ImageWithURL(string(url))
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		i.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	timeout := state.GetTable(t, golua.LString("__timeout"))
+	if timeout.Type() == golua.LTNumber {
+		i.Timeout(time.Duration(timeout.(golua.LNumber)))
+	}
+
+	click := state.GetTable(t, golua.LString("__click"))
+	if click.Type() == golua.LTFunction {
+		i.OnClick(func() {
+			state.Push(click)
+			state.Call(0, 0)
+		})
+	}
+
+	lfail := state.GetTable(t, golua.LString("__failwidgets"))
+	if lfail.Type() == golua.LTTable {
+		i.LayoutForFailure(layoutBuild(r, state, parseWidgets(parseTable(lfail.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	lload := state.GetTable(t, golua.LString("__loadwidgets"))
+	if lload.Type() == golua.LTTable {
+		i.LayoutForFailure(layoutBuild(r, state, parseWidgets(parseTable(lload.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	failure := state.GetTable(t, golua.LString("__failure"))
+	if failure.Type() == golua.LTFunction {
+		i.OnFailure(func(err error) {
+			lg.Append(fmt.Sprintf("error occured while loading image url: %s", err), log.LEVEL_WARN)
+			state.Push(failure)
+			state.Call(0, 0)
+		})
+	}
+
+	ready := state.GetTable(t, golua.LString("__ready"))
+	if ready.Type() == golua.LTFunction {
+		i.OnReady(func() {
+			state.Push(ready)
+			state.Call(0, 0)
+		})
+	}
+
+	return i
+}
+
+func imageTable(state *golua.LState, image int, sync bool) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_IMAGE))
+	state.SetTable(t, golua.LString("image"), golua.LNumber(image))
+	state.SetTable(t, golua.LString("sync"), golua.LBool(sync))
+	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__click"), fn)
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	return t
+}
+
+func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	ig := state.GetTable(t, golua.LString("image")).(golua.LNumber)
+	var img image.Image
+
+	sync := state.GetTable(t, golua.LString("sync")).(golua.LBool)
+
+	if !sync {
+		<-r.IC.Schedule(int(ig), &collection.Task[collection.ItemImage]{
+			Lib:  LIB_GUI,
+			Name: "wg_image",
+			Fn: func(i *collection.Item[collection.ItemImage]) {
+				img = i.Self.Image
+			},
+		})
+	} else {
+		item := r.IC.Item(int(ig))
+		if item.Self.Image == nil {
+			img = image.NewRGBA(image.Rectangle{
+				Min: image.Pt(0, 0),
+				Max: image.Pt(1, 1), // image must have at least 1 pixel for imgui.
+			})
+		} else {
+			img = item.Self.Image
+		}
+	}
+
+	i := g.ImageWithRgba(img)
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		i.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	click := state.GetTable(t, golua.LString("__click"))
+	if click.Type() == golua.LTFunction {
+		i.OnClick(func() {
+			state.Push(click)
+			state.Call(0, 0)
+		})
+	}
+
+	return i
+}
+
+func listBoxTable(state *golua.LState, items golua.LValue) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LIST_BOX))
+	state.SetTable(t, golua.LString("items"), items)
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+	state.SetTable(t, golua.LString("__border"), golua.LNil)
+	state.SetTable(t, golua.LString("__context"), golua.LNil)
+	state.SetTable(t, golua.LString("__dclick"), golua.LNil)
+	state.SetTable(t, golua.LString("__menu"), golua.LNil)
+	state.SetTable(t, golua.LString("__sel"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	tableBuilderFunc(state, t, "border", func(state *golua.LState, t *golua.LTable) {
+		b := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__border"), golua.LBool(b))
+	})
+
+	tableBuilderFunc(state, t, "context_menu", func(state *golua.LState, t *golua.LTable) {
+		cmt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__context"), cmt)
+	})
+
+	tableBuilderFunc(state, t, "on_double_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__dclick"), fn)
+	})
+
+	tableBuilderFunc(state, t, "on_menu", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__menu"), fn)
+	})
+
+	tableBuilderFunc(state, t, "selected_index", func(state *golua.LState, t *golua.LTable) {
+		sel := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__sel"), sel)
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	return t
+}
+
+func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	it := state.GetTable(t, golua.LString("items")).(*golua.LTable)
+	items := []string{}
+	for i := range it.Len() {
+		is := state.GetTable(it, golua.LNumber(i+1)).(golua.LString)
+		items = append(items, string(is))
+	}
+
+	b := g.ListBox(items)
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		b.OnChange(func(index int) {
+			state.Push(change)
+			state.Push(golua.LNumber(index))
+			state.Call(1, 0)
+		})
+	}
+
+	dclick := state.GetTable(t, golua.LString("__dclick"))
+	if dclick.Type() == golua.LTFunction {
+		b.OnDClick(func(index int) {
+			state.Push(dclick)
+			state.Push(golua.LNumber(index))
+			state.Call(1, 0)
+		})
+	}
+
+	selmenu := state.GetTable(t, golua.LString("__menu"))
+	if selmenu.Type() == golua.LTFunction {
+		b.OnMenu(func(index int, menu string) {
+			state.Push(selmenu)
+			state.Push(golua.LNumber(index))
+			state.Push(golua.LString(menu))
+			state.Call(2, 0)
+		})
+	}
+
+	sel := state.GetTable(t, golua.LString("__sel"))
+	if sel.Type() == golua.LTNumber {
+		ref, err := r.CR_REF.Item(int(sel.(golua.LNumber)))
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+		b.SelectedIndex(ref.Value.(*int32))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	return b
+}
+
+func listClipperTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LIST_CLIPPER))
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func listClipperBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	c := g.ListClipper()
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return c
+}
+
+func mainMenuBarTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU_BAR_MAIN))
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func mainMenuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	c := g.MainMenuBar()
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return c
+}
+
+func menuBarTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU_BAR))
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func menuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	c := g.MenuBar()
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return c
+}
+
+func menuItemTable(state *golua.LState, label string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU_ITEM))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("__enabled"), golua.LNil)
+	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	state.SetTable(t, golua.LString("__sel"), golua.LNil)
+	state.SetTable(t, golua.LString("__shortcut"), golua.LNil)
+
+	tableBuilderFunc(state, t, "enabled", func(state *golua.LState, t *golua.LTable) {
+		en := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__enabled"), golua.LBool(en))
+	})
+
+	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__click"), fn)
+	})
+
+	tableBuilderFunc(state, t, "selected", func(state *golua.LState, t *golua.LTable) {
+		sel := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__sel"), golua.LBool(sel))
+	})
+
+	tableBuilderFunc(state, t, "shortcut", func(state *golua.LState, t *golua.LTable) {
+		sc := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__shortcut"), golua.LString(sc))
+	})
+
+	return t
+}
+
+func menuItemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	m := g.MenuItem(string(label))
+
+	click := state.GetTable(t, golua.LString("__click"))
+	if click.Type() == golua.LTFunction {
+		m.OnClick(func() {
+			state.Push(click)
+			state.Call(0, 0)
+		})
+	}
+
+	enabled := state.GetTable(t, golua.LString("__enabled"))
+	if enabled.Type() == golua.LTBool {
+		m.Enabled(bool(enabled.(golua.LBool)))
+	}
+
+	sel := state.GetTable(t, golua.LString("__sel"))
+	if sel.Type() == golua.LTBool {
+		m.Selected(bool(sel.(golua.LBool)))
+	}
+
+	shortcut := state.GetTable(t, golua.LString("__shortcut"))
+	if shortcut.Type() == golua.LTString {
+		m.Shortcut(string(shortcut.(golua.LString)))
+	}
+
+	return m
+}
+
+func menuTable(state *golua.LState, label string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("__enabled"), golua.LNil)
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "enabled", func(state *golua.LState, t *golua.LTable) {
+		en := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__enabled"), golua.LBool(en))
+	})
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func menuBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	m := g.Menu(string(label))
+
+	enabled := state.GetTable(t, golua.LString("__enabled"))
+	if enabled.Type() == golua.LTBool {
+		m.Enabled(bool(enabled.(golua.LBool)))
+	}
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return m
+}
+
+func selectableTable(state *golua.LState, label string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SELECTABLE))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	state.SetTable(t, golua.LString("__dclick"), golua.LNil)
+	state.SetTable(t, golua.LString("__sel"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__click"), fn)
+	})
+
+	tableBuilderFunc(state, t, "on_double_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__dclick"), fn)
+	})
+
+	tableBuilderFunc(state, t, "selected", func(state *golua.LState, t *golua.LTable) {
+		sel := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__sel"), golua.LBool(sel))
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	return t
+}
+
+func selectableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	b := g.Selectable(string(label))
+
+	click := state.GetTable(t, golua.LString("__click"))
+	if click.Type() == golua.LTFunction {
+		b.OnClick(func() {
+			state.Push(click)
+			state.Call(0, 0)
+		})
+	}
+
+	dclick := state.GetTable(t, golua.LString("__dclick"))
+	if dclick.Type() == golua.LTFunction {
+		b.OnDClick(func() {
+			state.Push(dclick)
+			state.Call(0, 0)
+		})
+	}
+
+	sel := state.GetTable(t, golua.LString("__sel"))
+	if sel.Type() == golua.LTBool {
+		b.Selected(bool(sel.(golua.LBool)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		b.Flags(g.SelectableFlags(flags.(golua.LNumber)))
+	}
+
+	return b
+}
+
+func sliderFloatTable(state *golua.LState, f32ref int, min, max float64) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SLIDER_FLOAT))
+	state.SetTable(t, golua.LString("f32ref"), golua.LNumber(f32ref))
+	state.SetTable(t, golua.LString("min"), golua.LNumber(min))
+	state.SetTable(t, golua.LString("max"), golua.LNumber(max))
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+	state.SetTable(t, golua.LString("__label"), golua.LNil)
+	state.SetTable(t, golua.LString("__format"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
+		label := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+	})
+
+	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
+		format := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+	})
+
+	return t
+}
+
+func sliderFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	floatref := state.GetTable(t, golua.LString("f32ref")).(golua.LNumber)
+	ref, err := r.CR_REF.Item(int(floatref))
+	value := ref.Value.(*float32)
+	if err != nil {
+		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+	}
+	min := state.GetTable(t, golua.LString("min")).(golua.LNumber)
+	max := state.GetTable(t, golua.LString("max")).(golua.LNumber)
+	b := g.SliderFloat(value, float32(min), float32(max))
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		b.OnChange(func() {
+			state.Push(change)
+			state.Push(golua.LNumber(*value))
+			state.Push(floatref)
+			state.Call(2, 0)
+		})
+	}
+
+	label := state.GetTable(t, golua.LString("__label"))
+	if label.Type() == golua.LTString {
+		b.Label(string(label.(golua.LString)))
+	}
+
+	format := state.GetTable(t, golua.LString("__format"))
+	if format.Type() == golua.LTString {
+		b.Format(string(format.(golua.LString)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	if width.Type() == golua.LTNumber {
+		b.Size(float32(width.(golua.LNumber)))
+	}
+
+	return b
+}
+
+func sliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SLIDER_INT))
+	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(i32ref))
+	state.SetTable(t, golua.LString("min"), golua.LNumber(min))
+	state.SetTable(t, golua.LString("max"), golua.LNumber(max))
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+	state.SetTable(t, golua.LString("__label"), golua.LNil)
+	state.SetTable(t, golua.LString("__format"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
+		label := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+	})
+
+	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
+		format := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+	})
+
+	return t
+}
+
+func sliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	intref := state.GetTable(t, golua.LString("i32ref")).(golua.LNumber)
+	ref, err := r.CR_REF.Item(int(intref))
+	value := ref.Value.(*int32)
+	if err != nil {
+		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+	}
+	min := state.GetTable(t, golua.LString("min")).(golua.LNumber)
+	max := state.GetTable(t, golua.LString("max")).(golua.LNumber)
+	b := g.SliderInt(value, int32(min), int32(max))
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		b.OnChange(func() {
+			state.Push(change)
+			state.Push(golua.LNumber(*value))
+			state.Push(intref)
+			state.Call(2, 0)
+		})
+	}
+
+	label := state.GetTable(t, golua.LString("__label"))
+	if label.Type() == golua.LTString {
+		b.Label(string(label.(golua.LString)))
+	}
+
+	format := state.GetTable(t, golua.LString("__format"))
+	if format.Type() == golua.LTString {
+		b.Format(string(format.(golua.LString)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	if width.Type() == golua.LTNumber {
+		b.Size(float32(width.(golua.LNumber)))
+	}
+
+	return b
+}
+
+func vsliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_VSLIDER_INT))
+	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(i32ref))
+	state.SetTable(t, golua.LString("min"), golua.LNumber(min))
+	state.SetTable(t, golua.LString("max"), golua.LNumber(max))
+	state.SetTable(t, golua.LString("__change"), golua.LNil)
+	state.SetTable(t, golua.LString("__label"), golua.LNil)
+	state.SetTable(t, golua.LString("__format"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__change"), fn)
+	})
+
+	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
+		label := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+	})
+
+	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
+		format := state.CheckString(-1)
+		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	return t
+}
+
+func vsliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	intref := state.GetTable(t, golua.LString("i32ref")).(golua.LNumber)
+	ref, err := r.CR_REF.Item(int(intref))
+	value := ref.Value.(*int32)
+	if err != nil {
+		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+	}
+	min := state.GetTable(t, golua.LString("min")).(golua.LNumber)
+	max := state.GetTable(t, golua.LString("max")).(golua.LNumber)
+	b := g.VSliderInt(value, int32(min), int32(max))
+
+	change := state.GetTable(t, golua.LString("__change"))
+	if change.Type() == golua.LTFunction {
+		b.OnChange(func() {
+			state.Push(change)
+			state.Push(golua.LNumber(*value))
+			state.Push(intref)
+			state.Call(2, 0)
+		})
+	}
+
+	label := state.GetTable(t, golua.LString("__label"))
+	if label.Type() == golua.LTString {
+		b.Label(string(label.(golua.LString)))
+	}
+
+	format := state.GetTable(t, golua.LString("__format"))
+	if format.Type() == golua.LTString {
+		b.Format(string(format.(golua.LString)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		b.Flags(g.SliderFlags(flags.(golua.LNumber)))
+	}
+
+	return b
+}
+
+func tabbarTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TAB_BAR))
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "tab_items", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func tabbarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	tb := g.TabBar()
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		tb.Flags(g.TabBarFlags(flags.(golua.LNumber)))
+	}
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		wd := parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg)
+		wdi := []*g.TabItemWidget{}
+		for _, w := range wd {
+			i := tabitemBuild(r, lg, state, w)
+			wdi = append(wdi, i)
+		}
+		tb.TabItems(wdi...)
+	}
+
+	return tb
+}
+
+func tabitemTable(state *golua.LState, label string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TAB_ITEM))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	state.SetTable(t, golua.LString("__open"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "is_open", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__open"), flags)
+	})
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func tabitemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TabItemWidget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	i := g.TabItem(string(label))
+
+	open := state.GetTable(t, golua.LString("__open"))
+	if open.Type() == golua.LTNumber {
+		ref, err := r.CR_REF.Item(int(open.(golua.LNumber)))
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+		i.IsOpen(ref.Value.(*bool))
+	}
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		i.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		i.Flags(g.TabItemFlags(flags.(golua.LNumber)))
+	}
+
+	return i
+}
+
+func tooltipTable(state *golua.LState, tip string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TOOLTIP))
+	state.SetTable(t, golua.LString("tip"), golua.LString(tip))
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func tooltipBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	tip := state.GetTable(t, golua.LString("tip")).(golua.LString)
+	i := g.Tooltip(string(tip))
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		i.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return i
+}
+
+func tableColumnTable(state *golua.LState, label string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TABLE_COLUMN))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "inner_width_or_weight", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), flags)
+	})
+
+	return t
+}
+
+func tableColumnBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TableColumnWidget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	c := g.TableColumn(string(label))
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		c.Flags(g.TableColumnFlags(flags.(golua.LNumber)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	if width.Type() == golua.LTNumber {
+		c.InnerWidthOrWeight(float32(width.(golua.LNumber)))
+	}
+
+	return c
+}
+
+func tableRowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TABLE_ROW))
+	state.SetTable(t, golua.LString("widgets"), widgets)
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__color"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "bg_color", func(state *golua.LState, t *golua.LTable) {
+		clr := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__color"), clr)
+	})
+
+	tableBuilderFunc(state, t, "min_height", func(state *golua.LState, t *golua.LTable) {
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	return t
+}
+
+func tableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TableRowWidget {
+	var widgets []g.Widget
+
+	wid := state.GetTable(t, golua.LString("widgets"))
+	if wid.Type() == golua.LTTable {
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable), state), state, lg), lg)
+	}
+
+	s := g.TableRow(widgets...)
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		s.Flags(g.TableRowFlags(flags.(golua.LNumber)))
+	}
+
+	height := state.GetTable(t, golua.LString("__height"))
+	if height.Type() == golua.LTNumber {
+		s.MinHeight(float64(height.(golua.LNumber)))
+	}
+
+	clr := state.GetTable(t, golua.LString("__color"))
+	if clr.Type() == golua.LTTable {
+		rgba := imageutil.TableToRGBA(state, clr.(*golua.LTable))
+		s.BgColor(rgba)
+	}
+
+	return s
+}
+
+func tableTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TABLE))
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__columns"), golua.LNil)
+	state.SetTable(t, golua.LString("__rows"), golua.LNil)
+	state.SetTable(t, golua.LString("__fast"), golua.LNil)
+	state.SetTable(t, golua.LString("__freeze"), state.NewTable())
+	state.SetTable(t, golua.LString("__innerwidth"), golua.LNil)
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "fast_mode", func(state *golua.LState, t *golua.LTable) {
+		fast := state.CheckBool(-1)
+		state.SetTable(t, golua.LString("__fast"), golua.LBool(fast))
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	tableBuilderFunc(state, t, "columns", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__columns"), lt)
+	})
+
+	tableBuilderFunc(state, t, "rows", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__rows"), lt)
+	})
+
+	tableBuilderFunc(state, t, "inner_width", func(state *golua.LState, t *golua.LTable) {
+		innerwidth := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__innerwidth"), innerwidth)
+	})
+
+	tableBuilderFunc(state, t, "freeze", func(state *golua.LState, t *golua.LTable) {
+		col := state.CheckNumber(-2)
+		row := state.CheckNumber(-1)
+		pt := state.NewTable()
+		state.SetTable(pt, golua.LString("col"), col)
+		state.SetTable(pt, golua.LString("row"), row)
+
+		ft := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+		ft.Append(pt)
+	})
+
+	return t
+}
+
+func tableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	tb := g.Table()
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		tb.Flags(g.TableFlags(flags.(golua.LNumber)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		tb.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	innerwidth := state.GetTable(t, golua.LString("__innerwidth"))
+	if innerwidth.Type() == golua.LTNumber {
+		tb.InnerWidth(float64(innerwidth.(golua.LNumber)))
+	}
+
+	fast := state.GetTable(t, golua.LString("__fast"))
+	if fast.Type() == golua.LTBool {
+		tb.FastMode(bool(fast.(golua.LBool)))
+	}
+
+	freeze := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+	for i := range freeze.Len() {
+		pt := state.GetTable(freeze, golua.LNumber(i+1)).(*golua.LTable)
+		col := state.GetTable(pt, golua.LString("col")).(golua.LNumber)
+		row := state.GetTable(pt, golua.LString("row")).(golua.LNumber)
+
+		tb.Freeze(int(col), int(row))
+	}
+
+	columns := state.GetTable(t, golua.LString("__columns"))
+	if columns.Type() == golua.LTTable {
+		wd := parseWidgets(parseTable(columns.(*golua.LTable), state), state, lg)
+		wdi := []*g.TableColumnWidget{}
+		for _, w := range wd {
+			i := tableColumnBuild(r, lg, state, w)
+			wdi = append(wdi, i)
+		}
+		tb.Columns(wdi...)
+	}
+
+	rows := state.GetTable(t, golua.LString("__rows"))
+	if rows.Type() == golua.LTTable {
+		wd := parseWidgets(parseTable(rows.(*golua.LTable), state), state, lg)
+		wdi := []*g.TableRowWidget{}
+		for _, w := range wd {
+			i := tableRowBuild(r, lg, state, w)
+			wdi = append(wdi, i)
+		}
+		tb.Rows(wdi...)
+	}
+
+	return tb
+}
+
+func buttonArrowTable(state *golua.LState, dir int) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_ARROW))
+	state.SetTable(t, golua.LString("dir"), golua.LNumber(dir))
+	state.SetTable(t, golua.LString("__click"), golua.LNil)
+
+	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
+		fn := state.CheckFunction(-1)
+		state.SetTable(t, golua.LString("__click"), fn)
+	})
+
+	return t
+}
+
+func buttonArrowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	dir := state.GetTable(t, golua.LString("dir")).(golua.LNumber)
+	b := g.ArrowButton(g.Direction(dir))
+
+	click := state.GetTable(t, golua.LString("__click"))
+	if click.Type() == golua.LTFunction {
+		b.OnClick(func() {
+			state.Push(click)
+			state.Call(0, 0)
+		})
+	}
+
+	return b
+}
+
+func treeTableNodeTable(state *golua.LState, label string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_TABLE_NODE))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func treeTableNodeBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	n := g.TreeNode(string(label))
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		n.Flags(g.TreeNodeFlags(flags.(golua.LNumber)))
+	}
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		n.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
+
+	return n
+}
+
+func treeTableRowTable(state *golua.LState, label string, widgets golua.LValue) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_TABLE_ROW))
+	state.SetTable(t, golua.LString("label"), golua.LString(label))
+	state.SetTable(t, golua.LString("widgets"), widgets)
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__children"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "children", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__children"), lt)
+	})
+
+	return t
+}
+
+func treeTableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TreeTableRowWidget {
+	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	var widgets []g.Widget
+
+	wid := state.GetTable(t, golua.LString("widgets"))
+	if wid.Type() == golua.LTTable {
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable), state), state, lg), lg)
+	}
+
+	n := g.TreeTableRow(string(label), widgets...)
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		n.Flags(g.TreeNodeFlags(flags.(golua.LNumber)))
+	}
+
+	children := state.GetTable(t, golua.LString("__children"))
+	if children.Type() == golua.LTTable {
+		rwid := parseWidgets(parseTable(children.(*golua.LTable), state), state, lg)
+		childs := []*g.TreeTableRowWidget{}
+		for _, c := range rwid {
+			childs = append(childs, treeTableRowBuild(r, lg, state, c))
+		}
+		n.Children(childs...)
+	}
+
+	return n
+}
+
+func treeTableTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_TABLE))
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	state.SetTable(t, golua.LString("__columns"), golua.LNil)
+	state.SetTable(t, golua.LString("__rows"), golua.LNil)
+	state.SetTable(t, golua.LString("__freeze"), state.NewTable())
+	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	state.SetTable(t, golua.LString("__height"), golua.LNil)
+
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
+	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
+		width := state.CheckNumber(-2)
+		height := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__width"), width)
+		state.SetTable(t, golua.LString("__height"), height)
+	})
+
+	tableBuilderFunc(state, t, "columns", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__columns"), lt)
+	})
+
+	tableBuilderFunc(state, t, "rows", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__rows"), lt)
+	})
+
+	tableBuilderFunc(state, t, "freeze", func(state *golua.LState, t *golua.LTable) {
+		col := state.CheckNumber(-2)
+		row := state.CheckNumber(-1)
+		pt := state.NewTable()
+		state.SetTable(pt, golua.LString("col"), col)
+		state.SetTable(pt, golua.LString("row"), row)
+
+		ft := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+		ft.Append(pt)
+	})
+
+	return t
+}
+
+func treeTableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	tb := g.TreeTable()
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		tb.Flags(g.TableFlags(flags.(golua.LNumber)))
+	}
+
+	width := state.GetTable(t, golua.LString("__width"))
+	height := state.GetTable(t, golua.LString("__height"))
+	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
+		tb.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	freeze := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+	for i := range freeze.Len() {
+		pt := state.GetTable(freeze, golua.LNumber(i+1)).(*golua.LTable)
+		col := state.GetTable(pt, golua.LString("col")).(golua.LNumber)
+		row := state.GetTable(pt, golua.LString("row")).(golua.LNumber)
+
+		tb.Freeze(int(col), int(row))
+	}
+
+	columns := state.GetTable(t, golua.LString("__columns"))
+	if columns.Type() == golua.LTTable {
+		wd := parseWidgets(parseTable(columns.(*golua.LTable), state), state, lg)
+		wdi := []*g.TableColumnWidget{}
+		for _, w := range wd {
+			i := tableColumnBuild(r, lg, state, w)
+			wdi = append(wdi, i)
+		}
+		tb.Columns(wdi...)
+	}
+
+	rows := state.GetTable(t, golua.LString("__rows"))
+	if rows.Type() == golua.LTTable {
+		wd := parseWidgets(parseTable(rows.(*golua.LTable), state), state, lg)
+		wdi := []*g.TreeTableRowWidget{}
+		for _, w := range wd {
+			i := treeTableRowBuild(r, lg, state, w)
+			wdi = append(wdi, i)
+		}
+		tb.Rows(wdi...)
+	}
+
+	return tb
 }
