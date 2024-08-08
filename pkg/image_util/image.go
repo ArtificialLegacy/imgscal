@@ -1,6 +1,11 @@
 package imageutil
 
-import "strings"
+import (
+	"image"
+	"strings"
+
+	golua "github.com/yuin/gopher-lua"
+)
 
 type ImageEncoding int
 
@@ -37,6 +42,16 @@ func ExtensionEncoding(ext string) ImageEncoding {
 	}
 
 	return ENCODING_UNKNOWN
+}
+
+func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {
+	x := state.GetTable(t, golua.LString("x")).(golua.LNumber)
+	y := state.GetTable(t, golua.LString("y")).(golua.LNumber)
+
+	return image.Point{
+		X: int(x),
+		Y: int(y),
+	}
 }
 
 var EncodingList = []ImageEncoding{

@@ -480,6 +480,24 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func point()
+	/// @arg? x
+	/// @arg? y
+	/// @returns {x, y}
+	lib.CreateFunction(tab, "point",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "x", Optional: true},
+			{Type: lua.INT, Name: "y", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := state.NewTable()
+			state.SetTable(t, golua.LString("x"), golua.LNumber(args["x"].(int)))
+			state.SetTable(t, golua.LString("y"), golua.LNumber(args["y"].(int)))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func color_hex_to_rgba()
 	/// @arg hex
 	/// @returns {red, green, blue, alpha}
