@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"os"
 	"time"
 
 	imgui "github.com/AllenDang/cimgui-go"
@@ -499,6 +500,27 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			state.Push(t)
 			return 1
+		})
+
+	/// @func css_parse
+	/// @arg path
+	lib.CreateFunction(tab, "css_parse",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["path"].(string)
+			b, err := os.ReadFile(pth)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to read css file: %s with error: %s", pth, err), log.LEVEL_ERROR)), 0)
+			}
+
+			err = g.ParseCSSStyleSheet(b)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to parse css file: %s with error: %s", pth, err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
 		})
 
 	/// @func wg_label()
@@ -1617,6 +1639,486 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func wg_css_tag()
+	/// @arg tag
+	/// @returns widget
+	lib.CreateFunction(tab, "wg_css_tag",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "tag"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := cssTagTable(state, args["tag"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func cursor_screen_pos()
+	/// @returns image point
+	lib.CreateFunction(tab, "cursor_screen_pos",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			p := g.GetCursorScreenPos()
+
+			state.Push(imageutil.PointToTable(state, p))
+			return 1
+		})
+
+	/// @func cursor_pos()
+	/// @returns image point
+	lib.CreateFunction(tab, "cursor_pos",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			p := g.GetCursorPos()
+
+			state.Push(imageutil.PointToTable(state, p))
+			return 1
+		})
+
+	/// @func canvas_bezier_cubic()
+	/// @arg pos0
+	/// @arg cp0
+	/// @arg cp1
+	/// @arg pos1
+	/// @arg color
+	/// @arg thickness
+	/// @arg segments
+	lib.CreateFunction(tab, "canvas_bezier_cubic",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "pos0"},
+			{Type: lua.ANY, Name: "cp0"},
+			{Type: lua.ANY, Name: "cp1"},
+			{Type: lua.ANY, Name: "pos1"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.FLOAT, Name: "thickness"},
+			{Type: lua.INT, Name: "segments"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			pos0 := imageutil.TableToPoint(state, args["pos0"].(*golua.LTable))
+			cp0 := imageutil.TableToPoint(state, args["cp0"].(*golua.LTable))
+			cp1 := imageutil.TableToPoint(state, args["cp1"].(*golua.LTable))
+			pos1 := imageutil.TableToPoint(state, args["pos1"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			thickness := args["thickness"].(float64)
+			segments := args["segments"].(int)
+
+			c.AddBezierCubic(pos0, cp0, cp1, pos1, col, float32(thickness), int32(segments))
+			return 0
+		})
+
+	/// @func canvas_circle()
+	/// @arg center
+	/// @arg radius
+	/// @arg color
+	/// @arg segments
+	/// @arg thickness
+	lib.CreateFunction(tab, "canvas_circle",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "center"},
+			{Type: lua.FLOAT, Name: "radius"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.INT, Name: "segments"},
+			{Type: lua.FLOAT, Name: "thickness"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			radius := args["radius"].(float64)
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			segments := args["segments"].(int)
+			thickness := args["thickness"].(float64)
+
+			c.AddCircle(center, float32(radius), col, int32(segments), float32(thickness))
+			return 0
+		})
+
+	/// @func canvas_circle_filled()
+	/// @arg center
+	/// @arg radius
+	/// @arg color
+	lib.CreateFunction(tab, "canvas_circle_filled",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "center"},
+			{Type: lua.FLOAT, Name: "radius"},
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			radius := args["radius"].(float64)
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+
+			c.AddCircleFilled(center, float32(radius), col)
+			return 0
+		})
+
+	/// @func canvas_line()
+	/// @arg p1
+	/// @arg p2
+	/// @arg color
+	/// @arg thickness
+	lib.CreateFunction(tab, "canvas_line",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.ANY, Name: "p2"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.FLOAT, Name: "thickness"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			thickness := args["thickness"].(float64)
+
+			c.AddLine(p1, p2, col, float32(thickness))
+			return 0
+		})
+
+	/// @func canvas_quad()
+	/// @arg p1
+	/// @arg p2
+	/// @arg p3
+	/// @arg p4
+	/// @arg color
+	/// @arg thickness
+	lib.CreateFunction(tab, "canvas_quad",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.ANY, Name: "p2"},
+			{Type: lua.ANY, Name: "p3"},
+			{Type: lua.ANY, Name: "p4"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.FLOAT, Name: "thickness"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			p4 := imageutil.TableToPoint(state, args["p4"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			thickness := args["thickness"].(float64)
+
+			c.AddQuad(p1, p2, p3, p4, col, float32(thickness))
+			return 0
+		})
+
+	/// @func canvas_quad_filled()
+	/// @arg p1
+	/// @arg p2
+	/// @arg p3
+	/// @arg p4
+	/// @arg color
+	lib.CreateFunction(tab, "canvas_quad_filled",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.ANY, Name: "p2"},
+			{Type: lua.ANY, Name: "p3"},
+			{Type: lua.ANY, Name: "p4"},
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			p4 := imageutil.TableToPoint(state, args["p4"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+
+			c.AddQuadFilled(p1, p2, p3, p4, col)
+			return 0
+		})
+
+	/// @func canvas_rect()
+	/// @arg min
+	/// @arg max
+	/// @arg color
+	/// @arg rounding
+	/// @arg flags
+	/// @arg thickness
+	lib.CreateFunction(tab, "canvas_rect",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "min"},
+			{Type: lua.ANY, Name: "max"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.FLOAT, Name: "rounding"},
+			{Type: lua.INT, Name: "flags"},
+			{Type: lua.FLOAT, Name: "thickness"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			rounding := args["rounding"].(float64)
+			flags := args["flags"].(int)
+			thickness := args["thickness"].(float64)
+
+			c.AddRect(min, max, col, float32(rounding), g.DrawFlags(flags), float32(thickness))
+			return 0
+		})
+
+	/// @func canvas_rect_filled()
+	/// @arg min
+	/// @arg max
+	/// @arg color
+	/// @arg rounding
+	/// @arg flags
+	lib.CreateFunction(tab, "canvas_rect_filled",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "min"},
+			{Type: lua.ANY, Name: "max"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.FLOAT, Name: "rounding"},
+			{Type: lua.INT, Name: "flags"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			rounding := args["rounding"].(float64)
+			flags := args["flags"].(int)
+
+			c.AddRectFilled(min, max, col, float32(rounding), g.DrawFlags(flags))
+			return 0
+		})
+
+	/// @func canvas_text()
+	/// @arg pos
+	/// @arg color
+	/// @arg text
+	lib.CreateFunction(tab, "canvas_text",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "pos"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			pos := imageutil.TableToPoint(state, args["pos"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			text := args["text"].(string)
+
+			c.AddText(pos, col, text)
+			return 0
+		})
+
+	/// @func canvas_triangle()
+	/// @arg p1
+	/// @arg p2
+	/// @arg p3
+	/// @arg color
+	/// @arg thickness
+	lib.CreateFunction(tab, "canvas_triangle",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.ANY, Name: "p2"},
+			{Type: lua.ANY, Name: "p3"},
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.FLOAT, Name: "thickness"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			thickness := args["thickness"].(float64)
+
+			c.AddTriangle(p1, p2, p3, col, float32(thickness))
+			return 0
+		})
+
+	/// @func canvas_triangle_filled()
+	/// @arg p1
+	/// @arg p2
+	/// @arg p3
+	/// @arg color
+	lib.CreateFunction(tab, "canvas_triangle_filled",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.ANY, Name: "p2"},
+			{Type: lua.ANY, Name: "p3"},
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+
+			c.AddTriangleFilled(p1, p2, p3, col)
+			return 0
+		})
+
+	/// @func canvas_path_arc_to()
+	/// @arg center
+	/// @arg radius
+	/// @arg min
+	/// @arg max
+	/// @arg segments
+	lib.CreateFunction(tab, "canvas_path_arc_to",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "center"},
+			{Type: lua.FLOAT, Name: "radius"},
+			{Type: lua.FLOAT, Name: "min"},
+			{Type: lua.FLOAT, Name: "max"},
+			{Type: lua.INT, Name: "segments"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			radius := args["radius"].(float64)
+			min := args["min"].(float64)
+			max := args["max"].(float64)
+			segments := args["segments"].(int)
+
+			c.PathArcTo(center, float32(radius), float32(min), float32(max), int32(segments))
+			return 0
+		})
+
+	/// @func canvas_path_arc_to_fast()
+	/// @arg center
+	/// @arg radius
+	/// @arg min
+	/// @arg max
+	/// @arg segments
+	lib.CreateFunction(tab, "canvas_path_arc_to_fast",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "center"},
+			{Type: lua.FLOAT, Name: "radius"},
+			{Type: lua.INT, Name: "min"},
+			{Type: lua.INT, Name: "max"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			radius := args["radius"].(float64)
+			min := args["min"].(int)
+			max := args["max"].(int)
+
+			c.PathArcToFast(center, float32(radius), int32(min), int32(max))
+			return 0
+		})
+
+	/// @func canvas_path_bezier_cubic_to()
+	/// @arg p1
+	/// @arg p2
+	/// @arg p3
+	/// @arg segments
+	lib.CreateFunction(tab, "canvas_path_bezier_cubic_to",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.ANY, Name: "p2"},
+			{Type: lua.ANY, Name: "p3"},
+			{Type: lua.INT, Name: "segments"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			segments := args["segments"].(int)
+
+			c.PathBezierCubicCurveTo(p1, p2, p3, int32(segments))
+			return 0
+		})
+
+	/// @func canvas_path_clear()
+	lib.CreateFunction(tab, "canvas_path_clear",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+			c.PathClear()
+			return 0
+		})
+
+	/// @func canvas_fill_convex()
+	/// @arg color
+	lib.CreateFunction(tab, "canvas_path_fill_convex",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+
+			c.PathFillConvex(col)
+			return 0
+		})
+
+	/// @func canvas_path_line_to()
+	/// @arg p1
+	/// @arg segments
+	lib.CreateFunction(tab, "canvas_path_line_to",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+
+			c.PathLineTo(p1)
+			return 0
+		})
+
+	/// @func canvas_path_line_to_merge_duplicate()
+	/// @arg p1
+	/// @arg segments
+	lib.CreateFunction(tab, "canvas_path_line_to_merge_duplicate",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "p1"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+
+			c.PathLineToMergeDuplicate(p1)
+			return 0
+		})
+
+	/// @func canvas_path_stroke()
+	/// @arg color
+	/// @arg flags
+	/// @arg thickness
+	lib.CreateFunction(tab, "canvas_path_stroke",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+			{Type: lua.INT, Name: "flags"},
+			{Type: lua.FLOAT, Name: "thickness"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.GetCanvas()
+
+			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			flags := args["flags"].(int)
+			thickness := args["thickness"].(float64)
+
+			c.PathStroke(col, g.DrawFlags(flags), float32(thickness))
+			return 0
+		})
+
 	/// @constants Color Picker Flags
 	/// @const FLAGCOLOREDIT_NONE
 	/// @const FLAGCOLOREDIT_NOALPHA
@@ -2716,6 +3218,36 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	r.State.SetTable(tab, golua.LString("PLOTYAXIS_LEFT"), golua.LNumber(PLOTYAXIS_LEFT))
 	r.State.SetTable(tab, golua.LString("PLOTYAXIS_FIRSTONRIGHT"), golua.LNumber(PLOTYAXIS_FIRSTONRIGHT))
 	r.State.SetTable(tab, golua.LString("PLOTYAXIS_SECONDONRIGHT"), golua.LNumber(PLOTYAXIS_SECONDONRIGHT))
+
+	/// @constants Draw Flags
+	/// @const FLAGDRAW_NONE
+	/// @const FLAGDRAW_CLOSED
+	/// @const FLAGDRAW_ROUNDCORNERSTOPLEFT
+	/// @const FLAGDRAW_ROUNDCORNERSTOPRIGHT
+	/// @const FLAGDRAW_ROUNDCORNERSBOTTOMLEFT
+	/// @const FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT
+	/// @const FLAGDRAW_ROUNDCORNERSNONE
+	/// @const FLAGDRAW_ROUNDCORNERSTOP
+	/// @const FLAGDRAW_ROUNDCORNERSBOTTOM
+	/// @const FLAGDRAW_ROUNDCORNERSLEFT
+	/// @const FLAGDRAW_ROUNDCORNERSRIGHT
+	/// @const FLAGDRAW_ROUNDCORNERSALL
+	/// @const FLAGDRAW_ROUNDCORNERSDEFAULT
+	/// @const FLAGDRAW_ROUNDCORNERSMASK
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_NONE"), golua.LNumber(FLAGDRAW_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_CLOSED"), golua.LNumber(FLAGDRAW_CLOSED))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSTOPLEFT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSTOPLEFT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSTOPRIGHT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSTOPRIGHT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSBOTTOMLEFT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOMLEFT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSNONE"), golua.LNumber(FLAGDRAW_ROUNDCORNERSNONE))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSTOP"), golua.LNumber(FLAGDRAW_ROUNDCORNERSTOP))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSBOTTOM"), golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOM))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSLEFT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSLEFT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSRIGHT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSRIGHT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSALL"), golua.LNumber(FLAGDRAW_ROUNDCORNERSALL))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSDEFAULT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSDEFAULT))
+	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSMASK"), golua.LNumber(FLAGDRAW_ROUNDCORNERSMASK))
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
@@ -3339,6 +3871,23 @@ const (
 )
 
 const (
+	FLAGDRAW_NONE                    int = 0b0000_0000_0000
+	FLAGDRAW_CLOSED                  int = 0b0000_0000_0001
+	FLAGDRAW_ROUNDCORNERSTOPLEFT     int = 0b0000_0001_0000
+	FLAGDRAW_ROUNDCORNERSTOPRIGHT    int = 0b0000_0010_0000
+	FLAGDRAW_ROUNDCORNERSBOTTOMLEFT  int = 0b0000_0100_0000
+	FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT int = 0b0000_1000_0000
+	FLAGDRAW_ROUNDCORNERSNONE        int = 0b0001_0000_0000
+	FLAGDRAW_ROUNDCORNERSTOP         int = 0b0000_0011_0000
+	FLAGDRAW_ROUNDCORNERSBOTTOM      int = 0b0000_1100_0000
+	FLAGDRAW_ROUNDCORNERSLEFT        int = 0b0000_0101_0000
+	FLAGDRAW_ROUNDCORNERSRIGHT       int = 0b0000_1010_0000
+	FLAGDRAW_ROUNDCORNERSALL         int = 0b0000_1111_0000
+	FLAGDRAW_ROUNDCORNERSDEFAULT     int = 0b0000_1111_0000
+	FLAGDRAW_ROUNDCORNERSMASK        int = 0b0001_1111_0000
+)
+
+const (
 	WIDGET_LABEL                = "label"
 	WIDGET_BUTTON               = "button"
 	WIDGET_DUMMY                = "dummy"
@@ -3402,6 +3951,7 @@ const (
 	WIDGET_CUSTOM               = "custom"
 	WIDGET_EVENT_HANDLER        = "event_handler"
 	WIDGET_PLOT                 = "plot"
+	WIDGET_CSS_TAG              = "css_tag"
 )
 
 const (
@@ -3477,6 +4027,7 @@ func init() {
 		WIDGET_CUSTOM:               customBuild,
 		WIDGET_EVENT_HANDLER:        eventHandlerBuild,
 		WIDGET_PLOT:                 plotBuild,
+		WIDGET_CSS_TAG:              cssTagBuild,
 	}
 
 	plotList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget{
@@ -7688,6 +8239,32 @@ func plotCustomBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		state.Push(builder)
 		state.Call(0, 0)
 	})
+
+	return c
+}
+
+func cssTagTable(state *golua.LState, tag string) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CSS_TAG))
+	state.SetTable(t, golua.LString("tag"), golua.LString(tag))
+	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+
+	tableBuilderFunc(state, t, "to", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		state.SetTable(t, golua.LString("__widgets"), lt)
+	})
+
+	return t
+}
+
+func cssTagBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	tag := state.GetTable(t, golua.LString("tag")).(golua.LString)
+	c := g.CSSTag(string(tag))
+
+	layout := state.GetTable(t, golua.LString("__widgets"))
+	if layout.Type() == golua.LTTable {
+		c.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+	}
 
 	return c
 }

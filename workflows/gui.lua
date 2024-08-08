@@ -5,110 +5,11 @@ config({
     requires={
         "gui",
         "bit",
-        "std",
+        "image",
     },
 
     desc="test imgui"
 })
-
-function barPlots()
-    return gui.wg_plot("test bar plots"):plots({
-        gui.pt_bar("bar", {
-            1,
-            2,
-            3,
-            4,
-            5,
-        }),
-        gui.pt_bar_h("bar h", {
-            1,
-            2,
-            3,
-            4,
-            5,
-        })
-    })
-end
-
-function linePlots()
-    return gui.wg_plot("test line plots"):plots({
-        gui.pt_line("line", {
-            6,
-            5,
-            10,
-            7,
-            1.5,
-        }),
-        gui.pt_line("line 2", {
-            6,
-            5,
-            10,
-            7,
-            1.5,
-        }):x0(1),
-        gui.pt_line_xy("line xy", {
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-        }, {
-            3,
-            5,
-            2,
-            7,
-            8,
-            1,
-        }),
-    })
-end
-
-function piePlots()
-    return gui.wg_plot("test pie charts")
-        :flags(gui.FLAGPLOT_EQUAL)
-        :x_axeflags(gui.FLAGPLOTAXIS_NODECORATIONS)
-        :y_axeflags(gui.FLAGPLOTAXIS_NODECORATIONS, 0, 0)
-        :axis_limits(0, 1, 0, 1, gui.COND_ALWAYS)
-        :plots({
-            gui.pt_pie_chart({
-                "test 1",
-                "test 2",
-                "test 3",
-            }, {
-                0.2,
-                0.2,
-                0.6,
-            }, 0.5, 0.5, 0.4)
-        })
-end
-
-function scatterPlots()
-    return gui.wg_plot("test scatter plots"):plots({
-        gui.pt_scatter("scatter", {
-            6,
-            5,
-            10,
-            7,
-            1.5,
-        }),
-        gui.pt_scatter_xy("scatter xy", {
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-        }, {
-            3,
-            5,
-            2,
-            7,
-            8,
-            1,
-        }),
-    })
-end
 
 main(function ()
     local masterFlags = bit.bitor_many({
@@ -117,24 +18,93 @@ main(function ()
 
     local win = gui.window_master("test", 1024, 1024, masterFlags)
 
-    local splitref1 = std.ref(512, std.REFTYPE_FLOAT32)
-    local splitref2 = std.ref(512, std.REFTYPE_FLOAT32)
-
     gui.window_run(win, function()
         gui.window_single():layout({
-            gui.wg_layout_split(gui.SPLITDIRECTION_VERTICAL, splitref1, {
-                gui.wg_layout_split(gui.SPLITDIRECTION_HORIZONTAL, splitref2, {
-                    barPlots(),
-                }, {
-                    linePlots(),
-                })
-            }, {
-                gui.wg_layout_split(gui.SPLITDIRECTION_HORIZONTAL, splitref2, {
-                    piePlots(),
-                }, {
-                    scatterPlots(),
-                })
-            }),
+            gui.wg_label("canvas test"),
+            gui.wg_custom(function()
+                local pos = gui.cursor_screen_pos()
+
+                local pos0 = image.point(pos.x, pos.y+50)
+                local cp0 = image.point(pos.x+50, pos.y+50)
+                local cp1 = image.point(pos.x+20, pos.y+150)
+                local pos1 = image.point(pos.x+100, pos.y+150)
+                local col = image.color_rgb(255, 0, 0)
+                gui.canvas_bezier_cubic(pos0, cp0, cp1, pos1, col, 1, 5)
+
+                gui.canvas_circle(pos1, 20, col, 10, 1)
+                local pos2 = image.point(pos1.x+50, pos1.y)
+                gui.canvas_circle_filled(pos2, 20, col)
+
+                gui.canvas_line(pos0, pos1, col, 1)
+
+                gui.canvas_quad(pos, pos0, pos1, pos2, col, 1)
+                local pos3 = image.point(pos2.x+20, pos2.y+20)
+                local pos4 = image.point(pos1.x-20, pos1.y-20)
+                gui.canvas_quad_filled(pos, pos0, pos3, pos4, col)
+
+                gui.canvas_rect(
+                    image.point(pos.x+256, pos.y+256),
+                    image.point(pos.x+512, pos.y+512),
+                    col,
+                    20, gui.FLAGDRAW_ROUNDCORNERSALL, 1
+                )
+
+                gui.canvas_rect_filled(
+                    image.point(pos.x+300, pos.y+300),
+                    image.point(pos.x+490, pos.y+490),
+                    col,
+                    20, bit.bitor(
+                        gui.FLAGDRAW_ROUNDCORNERSTOPLEFT,
+                        gui.FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT
+                    )
+                )
+
+                local col2 = image.color_rgb_gray(255)
+                gui.canvas_text(
+                    image.point(pos.x+100, pos.y+100),
+                    col2, "canvas text"
+                )
+
+                gui.canvas_triangle(
+                    image.point(pos.x+500, pos.y+30),
+                    image.point(pos.x+100, pos.y+500),
+                    image.point(pos.x+600, pos.y+500),
+                    col2, 1
+                )
+                gui.canvas_triangle_filled(
+                    image.point(pos.x+500, pos.y+50),
+                    image.point(pos.x+450, pos.y+100),
+                    image.point(pos.x+550, pos.y+100),
+                    col2
+                )
+
+                gui.canvas_path_arc_to(
+                    image.point(pos.x+700, pos.y+700),
+                    30, 1, 3, 4 
+                )
+
+                gui.canvas_path_arc_to_fast(
+                    image.point(pos.x+500, pos.y+500),
+                    30, 1, 3
+                )
+
+                gui.canvas_path_bezier_cubic_to(
+                    image.point(pos.x+600, pos.y+600),
+                    image.point(pos.x+650, pos.y+650),
+                    image.point(pos.x+600, pos.y+750),
+                    5
+                )
+
+                gui.canvas_path_stroke(col2, 0, 1)
+
+                gui.canvas_path_line_to(image.point(pos.x+400, pos.y+400))
+                gui.canvas_path_line_to(image.point(pos.x+410, pos.y+400))
+                gui.canvas_path_line_to(image.point(pos.x+400, pos.y+410))
+                gui.canvas_path_line_to(image.point(pos.x+410, pos.y+410))
+                
+                local col3 = image.color_rgb_gray(100)
+                gui.canvas_path_fill_convex(col3)
+            end),
         })
     end)
 end)

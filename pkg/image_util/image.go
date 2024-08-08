@@ -54,6 +54,14 @@ func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {
 	}
 }
 
+func PointToTable(state *golua.LState, p image.Point) *golua.LTable {
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("x"), golua.LNumber(p.X))
+	state.SetTable(t, golua.LString("y"), golua.LNumber(p.Y))
+
+	return t
+}
+
 var EncodingList = []ImageEncoding{
 	ENCODING_PNG,
 	ENCODING_JPEG,
