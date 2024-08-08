@@ -239,10 +239,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @func window_set_title()
 	/// @arg id
 	/// @arg title
-	lib.CreateFunction(tab, "window_set_size_limits",
+	lib.CreateFunction(tab, "window_set_title",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.INT, Name: "minw"},
+			{Type: lua.STRING, Name: "title"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			w, err := r.CR_WIN.Item(args["id"].(int))
@@ -250,7 +250,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			w.SetSizeLimits(args["minw"].(int), args["minh"].(int), args["maxw"].(int), args["maxh"].(int))
+			w.SetTitle(args["title"].(string))
 			return 0
 		})
 
@@ -291,6 +291,54 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			w.RegisterKeyboardShortcuts(stList...)
 
+			return 0
+		})
+
+	/// @func window_set_close_callback()
+	/// @arg id
+	/// @arg callback - returns bool
+	lib.CreateFunction(tab, "window_set_close_callback",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FUNC, Name: "callback"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			w.SetCloseCallback(func() bool {
+				state.Push(args["callback"].(*golua.LFunction))
+				state.Call(0, 1)
+				return bool(state.ToBool(-1))
+			})
+			return 0
+		})
+
+	/// @func window_set_drop_callback()
+	/// @arg id
+	/// @arg callback
+	lib.CreateFunction(tab, "window_set_drop_callback",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FUNC, Name: "callback"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			w.SetDropCallback(func(items []string) {
+				state.Push(args["callback"].(*golua.LFunction))
+				t := state.NewTable()
+				for _, s := range items {
+					t.Append(golua.LString(s))
+				}
+				state.Push(t)
+				state.Call(1, 0)
+			})
 			return 0
 		})
 
