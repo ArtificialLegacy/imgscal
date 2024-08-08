@@ -571,6 +571,287 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func align_text_to_frame_padding()
+	lib.CreateFunction(tab, "align_text_to_frame_padding",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.AlignTextToFramePadding()
+			return 0
+		})
+
+	/// @func calc_text_size()
+	/// @arg text
+	/// @returns width, height
+	lib.CreateFunction(tab, "calc_text_size",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			width, height := g.CalcTextSize(args["text"].(string))
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			return 2
+		})
+
+	/// @func calc_text_size_v()
+	/// @arg text
+	/// @arg hideAfterDoubleHash
+	/// @arg wrapWidth
+	/// @returns width, height
+	lib.CreateFunction(tab, "calc_text_size_v",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+			{Type: lua.BOOL, Name: "hideAfterDoubleHash"},
+			{Type: lua.FLOAT, Name: "wrapWidth"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			width, height := g.CalcTextSizeV(args["text"].(string), args["hideAfterDoubleHash"].(bool), float32(args["wrapWidth"].(float64)))
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			return 2
+		})
+
+	/// @func available_region()
+	/// @returns width, height
+	lib.CreateFunction(tab, "available_region",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			width, height := g.GetAvailableRegion()
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			return 2
+		})
+
+	/// @func frame_padding()
+	/// @returns x, y
+	lib.CreateFunction(tab, "frame_padding",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			x, y := g.GetFramePadding()
+
+			state.Push(golua.LNumber(x))
+			state.Push(golua.LNumber(y))
+			return 2
+		})
+
+	/// @func item_inner_spacing()
+	/// @returns width, height
+	lib.CreateFunction(tab, "item_inner_spacing",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			width, height := g.GetItemInnerSpacing()
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			return 2
+		})
+
+	/// @func item_spacing()
+	/// @returns width, height
+	lib.CreateFunction(tab, "item_spacing",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			width, height := g.GetItemSpacing()
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			return 2
+		})
+
+	/// @func mouse_pos_xy()
+	/// @returns x, y
+	lib.CreateFunction(tab, "mouse_pos_xy",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			p := g.GetMousePos()
+
+			state.Push(golua.LNumber(p.X))
+			state.Push(golua.LNumber(p.Y))
+			return 2
+		})
+
+	/// @func mouse_pos()
+	/// @returns image.point
+	lib.CreateFunction(tab, "mouse_pos",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			p := g.GetMousePos()
+
+			state.Push(imageutil.PointToTable(state, p))
+			return 1
+		})
+
+	/// @func window_padding()
+	/// @returns x, y
+	lib.CreateFunction(tab, "window_padding",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			x, y := g.GetWindowPadding()
+
+			state.Push(golua.LNumber(x))
+			state.Push(golua.LNumber(y))
+			return 2
+		})
+
+	/// @func is_item_active()
+	/// @returns bool
+	lib.CreateFunction(tab, "is_item_active",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsItemActive()
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_item_clicked()
+	/// @arg button
+	/// @returns bool
+	lib.CreateFunction(tab, "is_item_clicked",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "button"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsItemClicked(g.MouseButton(args["button"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_item_hovered()
+	/// @returns bool
+	lib.CreateFunction(tab, "is_item_hovered",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsItemHovered()
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_key_down()
+	/// @arg key
+	/// @returns bool
+	lib.CreateFunction(tab, "is_key_down",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "key"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsKeyDown(g.Key(args["key"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_key_pressed()
+	/// @arg key
+	/// @returns bool
+	lib.CreateFunction(tab, "is_key_pressed",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "key"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsKeyPressed(g.Key(args["key"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_key_released()
+	/// @arg key
+	/// @returns bool
+	lib.CreateFunction(tab, "is_key_released",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "key"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsKeyReleased(g.Key(args["key"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_mouse_clicked()
+	/// @arg button
+	/// @returns bool
+	lib.CreateFunction(tab, "is_mouse_clicked",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "button"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsMouseClicked(g.MouseButton(args["button"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_mouse_double_clicked()
+	/// @arg button
+	/// @returns bool
+	lib.CreateFunction(tab, "is_mouse_double_clicked",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "button"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsMouseDoubleClicked(g.MouseButton(args["button"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_mouse_down()
+	/// @arg button
+	/// @returns bool
+	lib.CreateFunction(tab, "is_mouse_down",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "button"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsMouseDown(g.MouseButton(args["button"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_mouse_released()
+	/// @arg button
+	/// @returns bool
+	lib.CreateFunction(tab, "is_mouse_released",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "button"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsMouseReleased(g.MouseButton(args["button"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_window_appearing()
+	/// @returns bool
+	lib.CreateFunction(tab, "is_window_appearing",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsWindowAppearing()
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_window_collapsed()
+	/// @returns bool
+	lib.CreateFunction(tab, "is_window_collapsed",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsWindowCollapsed()
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
 	/// @func wg_label()
 	/// @arg text
 	/// @returns widget
@@ -1701,6 +1982,18 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func cursor_screen_pos_xy()
+	/// @returns x, y
+	lib.CreateFunction(tab, "cursor_screen_pos_xy",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			p := g.GetCursorScreenPos()
+
+			state.Push(golua.LNumber(p.X))
+			state.Push(golua.LNumber(p.Y))
+			return 2
+		})
+
 	/// @func cursor_screen_pos()
 	/// @returns image point
 	lib.CreateFunction(tab, "cursor_screen_pos",
@@ -1710,6 +2003,18 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			state.Push(imageutil.PointToTable(state, p))
 			return 1
+		})
+
+	/// @func cursor_pos_xy()
+	/// @returns x, y
+	lib.CreateFunction(tab, "cursor_pos_xy",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			p := g.GetCursorPos()
+
+			state.Push(golua.LNumber(p.X))
+			state.Push(golua.LNumber(p.Y))
+			return 2
 		})
 
 	/// @func cursor_pos()
