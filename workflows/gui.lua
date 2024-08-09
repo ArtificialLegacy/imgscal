@@ -5,7 +5,6 @@ config({
     requires={
         "gui",
         "bit",
-        "image",
     },
 
     desc="test imgui"
@@ -18,14 +17,9 @@ main(function ()
 
     local win = gui.window_master("test", 1024, 1024, masterFlags)
 
-    local font = gui.fontatlas_add_font(
-        "c:\\Windows\\Fonts\\BRUSHSCI.TTF", 48
-    )
-
     gui.window_run(win, function()
         gui.window_single():layout({
-            gui.wg_label("test font")
-                :font(font),
+            gui.wg_label("test"),
         })
     end)
 end)
