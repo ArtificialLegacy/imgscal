@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"os"
+	"sync"
 	"time"
 
 	imgui "github.com/AllenDang/cimgui-go"
@@ -218,6 +219,66 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func window_set_icon_many()
+	/// @arg id
+	/// @arg icon_ids
+	/// @blocking
+	/// @desc
+	/// setting multiple icons allows it select the closest to the system's desired size.
+	lib.CreateFunction(tab, "window_set_icon_many",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			lua.ArgArray("icon_ids", lua.ArrayType{Type: lua.INT}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			imgids := args["icon_ids"].(map[string]any)
+			imgList := []image.Image{}
+			wg := sync.WaitGroup{}
+
+			for _, id := range imgids {
+				wg.Add(1)
+				r.IC.Schedule(id.(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						imgList = append(imgList, imageutil.CopyImage(i.Self.Image, imageutil.MODEL_NRGBA))
+						wg.Done()
+					},
+					Fail: func(i *collection.Item[collection.ItemImage]) {
+						wg.Done()
+					},
+				})
+			}
+
+			wg.Wait()
+			w.SetIcon(imgList...)
+
+			return 0
+		})
+
+	/// @func window_clear_icon()
+	/// @arg id
+	/// @desc
+	/// resets window icon to default, same as window_set_icon_many(id, {})
+	lib.CreateFunction(tab, "window_clear_icon",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			w.SetIcon()
+			return 0
+		})
+
 	/// @func window_set_fps()
 	/// @arg id
 	/// @arg fps
@@ -318,7 +379,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func window_set_drop_callback()
 	/// @arg id
-	/// @arg callback
+	/// @arg callback([]string)
 	lib.CreateFunction(tab, "window_set_drop_callback",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -339,6 +400,49 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Push(t)
 				state.Call(1, 0)
 			})
+			return 0
+		})
+
+	/// @func window_additional_input_handler_callback()
+	/// @arg id
+	/// @arg callback(key, mod, action)
+	lib.CreateFunction(tab, "window_additional_input_handler_callback",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FUNC, Name: "callback"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			w.SetAdditionalInputHandlerCallback(func(k g.Key, m g.Modifier, a g.Action) {
+				state.Push(args["callback"].(*golua.LFunction))
+				state.Push(golua.LNumber(k))
+				state.Push(golua.LNumber(m))
+				state.Push(golua.LNumber(a))
+				state.Call(3, 0)
+			})
+
+			return 0
+		})
+
+	/// @func window_close()
+	/// @arg id
+	/// @desc
+	/// same as window_should_close(id, true)
+	lib.CreateFunction(tab, "window_close",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			w.Close()
 			return 0
 		})
 
@@ -849,6 +953,516 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			active := g.IsWindowCollapsed()
 
 			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_window_collapsed()
+	/// @returns bool
+	lib.CreateFunction(tab, "is_window_collapsed",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsWindowCollapsed()
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_window_focused()
+	/// @arg flags
+	/// @returns bool
+	lib.CreateFunction(tab, "is_window_focused",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "flags"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsWindowFocused(g.FocusedFlags(args["flags"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func is_window_hovered()
+	/// @arg flags
+	/// @returns bool
+	lib.CreateFunction(tab, "is_window_hovered",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "flags"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			active := g.IsWindowHovered(g.HoveredFlags(args["flags"].(int)))
+
+			state.Push(golua.LBool(active))
+			return 1
+		})
+
+	/// @func open_url()
+	/// @arg url
+	lib.CreateFunction(tab, "open_url",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "url"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.OpenURL(args["url"].(string))
+			return 0
+		})
+
+	/// @func pop_clip_rect()
+	lib.CreateFunction(tab, "pop_clip_rect",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopClipRect()
+			return 0
+		})
+
+	/// @func pop_font()
+	lib.CreateFunction(tab, "pop_font",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopFont()
+			return 0
+		})
+
+	/// @func pop_item_width()
+	lib.CreateFunction(tab, "pop_item_width",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopItemWidth()
+			return 0
+		})
+
+	/// @func pop_style()
+	lib.CreateFunction(tab, "pop_style",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopStyle()
+			return 0
+		})
+
+	/// @func pop_style_color()
+	lib.CreateFunction(tab, "pop_style_color",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopStyleColor()
+			return 0
+		})
+
+	/// @func pop_style_color_v()
+	/// @arg count
+	lib.CreateFunction(tab, "pop_style_color_v",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "count"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopStyleColorV(args["count"].(int))
+			return 0
+		})
+
+	/// @func pop_style_v()
+	/// @arg count
+	lib.CreateFunction(tab, "pop_style_v",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "count"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopStyleV(args["count"].(int))
+			return 0
+		})
+
+	/// @func pop_text_wrap_pos()
+	lib.CreateFunction(tab, "pop_text_wrap_pos",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PopTextWrapPos()
+			return 0
+		})
+
+	/// @func push_button_text_align()
+	/// @arg width
+	/// @arg height
+	lib.CreateFunction(tab, "push_button_text_align",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushButtonTextAlign(float32(args["width"].(float64)), float32(args["height"].(float64)))
+			return 0
+		})
+
+	/// @func push_clip_rect()
+	/// @arg min
+	/// @arg max
+	/// @rag intersect
+	lib.CreateFunction(tab, "push_clip_rect",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "min"},
+			{Type: lua.ANY, Name: "max"},
+			{Type: lua.BOOL, Name: "intersect"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			g.PushClipRect(min, max, args["intersect"].(bool))
+			return 0
+		})
+
+	/// @func push_color_button()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_button",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorButton(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_color_button_active()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_button_active",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorButtonActive(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_color_button_hovered()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_button_hovered",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorButtonHovered(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_color_frame_bg()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_frame_bg",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorFrameBg(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_color_text()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_text",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorText(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_color_text_disabled()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_text_disabled",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorTextDisabled(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_color_window_bg()
+	/// @arg color
+	lib.CreateFunction(tab, "push_color_window_bg",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushColorWindowBg(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_font()
+	/// @arg fontref
+	/// @returns bool
+	lib.CreateFunction(tab, "push_font",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "fontref"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ref := args["fontref"].(int)
+			sref, err := r.CR_REF.Item(ref)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			font := sref.Value.(*g.FontInfo)
+
+			ok := g.PushFont(font)
+
+			state.Push(golua.LBool(ok))
+			return 1
+		})
+
+	/// @func push_frame_padding()
+	/// @arg width
+	/// @arg height
+	lib.CreateFunction(tab, "push_frame_padding",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushFramePadding(float32(args["width"].(float64)), float32(args["height"].(float64)))
+			return 0
+		})
+
+	/// @func push_item_spacing()
+	/// @arg width
+	/// @arg height
+	lib.CreateFunction(tab, "push_item_spacing",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushItemSpacing(float32(args["width"].(float64)), float32(args["height"].(float64)))
+			return 0
+		})
+
+	/// @func push_item_width()
+	/// @arg width
+	lib.CreateFunction(tab, "push_item_width",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushItemWidth(float32(args["width"].(float64)))
+			return 0
+		})
+
+	/// @func push_selectable_text_align()
+	/// @arg width
+	/// @arg height
+	lib.CreateFunction(tab, "push_selectable_text_align",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushSelectableTextAlign(float32(args["width"].(float64)), float32(args["height"].(float64)))
+			return 0
+		})
+
+	/// @func push_style_color()
+	/// @arg id
+	/// @arg color
+	lib.CreateFunction(tab, "push_style_color",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushStyleColor(g.StyleColorID(args["id"].(int)), imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func push_text_wrap_pos()
+	lib.CreateFunction(tab, "push_text_wrap_pos",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushTextWrapPos()
+			return 0
+		})
+
+	/// @func push_window_padding()
+	/// @arg width
+	/// @arg height
+	lib.CreateFunction(tab, "push_window_padding",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.PushWindowPadding(float32(args["width"].(float64)), float32(args["height"].(float64)))
+			return 0
+		})
+
+	/// @func same_line()
+	lib.CreateFunction(tab, "same_line",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SameLine()
+			return 0
+		})
+
+	/// @func cursor_pos_set_xy()
+	/// @arg x
+	/// @arg y
+	lib.CreateFunction(tab, "cursor_pos_set_xy",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetCursorPos(image.Point{
+				X: args["x"].(int),
+				Y: args["y"].(int),
+			})
+			return 0
+		})
+
+	/// @func cursor_pos_set()
+	/// @arg point
+	lib.CreateFunction(tab, "cursor_pos_set",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "point"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetCursorPos(imageutil.TableToPoint(state, args["point"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func cursor_screeen_pos_set_xy()
+	/// @arg x
+	/// @arg y
+	lib.CreateFunction(tab, "cursor_screen_pos_set_xy",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetCursorScreenPos(image.Point{
+				X: args["x"].(int),
+				Y: args["y"].(int),
+			})
+			return 0
+		})
+
+	/// @func cursor_screen_pos_set()
+	/// @arg point
+	lib.CreateFunction(tab, "cursor_screen_pos_set",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "point"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetCursorScreenPos(imageutil.TableToPoint(state, args["point"].(*golua.LTable)))
+			return 0
+		})
+
+	/// @func item_default_focus_set()
+	lib.CreateFunction(tab, "item_default_focus_set",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetItemDefaultFocus()
+			return 0
+		})
+
+	/// @func keyboard_focus_here()
+	lib.CreateFunction(tab, "keyboard_focus_here",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetKeyboardFocusHere()
+			return 0
+		})
+
+	/// @func keyboard_focus_here_v()
+	/// @arg i
+	lib.CreateFunction(tab, "keyboard_focus_here_v",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "i"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetKeyboardFocusHereV(args["i"].(int))
+			return 0
+		})
+
+	/// @func mouse_cursor_set()
+	/// @arg cursor
+	lib.CreateFunction(tab, "mouse_cursor_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "cursor"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetMouseCursor(g.MouseCursorType(args["cursor"].(int)))
+			return 0
+		})
+
+	/// @func next_window_pos_set()
+	/// @arg x
+	/// @arg y
+	lib.CreateFunction(tab, "next_window_pos_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetNextWindowPos(float32(args["x"].(float64)), float32(args["y"].(float64)))
+			return 0
+		})
+
+	/// @func next_window_size_set()
+	/// @arg width
+	/// @arg height
+	lib.CreateFunction(tab, "next_window_size_set",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetNextWindowSize(float32(args["width"].(float64)), float32(args["height"].(float64)))
+			return 0
+		})
+
+	/// @func next_window_size_v_set()
+	/// @arg width
+	/// @arg height
+	/// @arg cond
+	lib.CreateFunction(tab, "next_window_size_v_set",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "width"},
+			{Type: lua.FLOAT, Name: "height"},
+			{Type: lua.INT, Name: "cond"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.SetNextWindowSizeV(float32(args["width"].(float64)), float32(args["height"].(float64)), g.ExecCondition(args["cond"].(int)))
+			return 0
+		})
+
+	/// @func update()
+	lib.CreateFunction(tab, "update",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			g.Update()
+			return 0
+		})
+
+	/// @func color_to_uint32()
+	/// @arg color
+	/// @returns number representation of color
+	/// @desc
+	/// returns the uint32 to lua as a float64
+	lib.CreateFunction(tab, "color_to_uint32",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cuint := g.ColorToUint(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+
+			state.Push(golua.LNumber(cuint))
+			return 1
+		})
+
+	/// @func uint32_to_color()
+	/// @arg ucolor
+	/// @returns color
+	lib.CreateFunction(tab, "uint32_to_color",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "ucolor"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := g.UintToColor(uint32(args["ucolor"].(int)))
+			state.Push(imageutil.RGBAToTable(state, c))
 			return 1
 		})
 
@@ -2472,6 +3086,205 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func fontatlas_add_font()
+	/// @arg name
+	/// @arg size
+	/// @returns fontref, ok
+	/// @desc
+	/// fontref will be nil if ok is false
+	lib.CreateFunction(tab, "fontatlas_add_font",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.FLOAT, Name: "size"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			fi := atlas.AddFont(args["name"].(string), float32(args["size"].(float64)))
+			if fi == nil {
+				lg.Append(fmt.Sprintf("failed to add font: %s", args["name"]), log.LEVEL_WARN)
+				state.Push(golua.LNil)
+				state.Push(golua.LFalse)
+				return 2
+			}
+
+			ref := r.CR_REF.Add(&collection.RefItem[any]{
+				Value: fi,
+			})
+
+			state.Push(golua.LNumber(ref))
+			state.Push(golua.LTrue)
+			return 2
+		})
+
+	/// @func fontatlas_default_font_strings()
+	/// @returns []string
+	lib.CreateFunction(tab, "fontatlas_default_font_strings",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			fonts := atlas.GetDefaultFonts()
+			t := state.NewTable()
+
+			for _, f := range fonts {
+				t.Append(golua.LString(f.String()))
+			}
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func fontatlas_default_fonts()
+	/// @returns []fontref
+	/// @desc
+	/// Take note that this creates an array of refs,
+	/// refs are only cleared at the end of a workflow,
+	/// or with ref.del / ref.del_many
+	lib.CreateFunction(tab, "fontatlas_default_fonts",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			fonts := atlas.GetDefaultFonts()
+			t := state.NewTable()
+
+			for _, f := range fonts {
+				ref := r.CR_REF.Add(&collection.RefItem[any]{
+					Value: &f,
+				})
+				t.Append(golua.LNumber(ref))
+			}
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func fontatlas_register_string()
+	/// @arg str
+	/// @returns str
+	lib.CreateFunction(tab, "fontatlas_register_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "str"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			str := atlas.RegisterString(args["str"].(string))
+
+			state.Push(golua.LString(str))
+			return 1
+		})
+
+	/// @func fontatlas_register_string_ref()
+	/// @arg stringref
+	/// @returns stringref
+	lib.CreateFunction(tab, "fontatlas_register_string_ref",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "stringref"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+
+			ref := args["stringref"].(int)
+			sref, err := r.CR_REF.Item(ref)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			stringref := sref.Value.(*string)
+			atlas.RegisterStringPointer(stringref)
+
+			state.Push(golua.LNumber(ref))
+			return 1
+		})
+
+	/// @func fontatlas_register_string_many()
+	/// @arg []str
+	/// @returns []str
+	lib.CreateFunction(tab, "fontatlas_register_string_many",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "str"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			strList := args["str"].(*golua.LTable)
+			strSlice := []string{}
+
+			for i := range strList.Len() {
+				v := state.GetTable(strList, golua.LNumber(i+1)).(golua.LString)
+				strSlice = append(strSlice, string(v))
+			}
+
+			atlas.RegisterStringSlice(strSlice)
+
+			state.Push(strList)
+			return 1
+		})
+
+	/// @func fontatlas_set_default_font()
+	/// @arg name
+	/// @arg size
+	lib.CreateFunction(tab, "fontatlas_set_default_font",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.FLOAT, Name: "size"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			atlas.SetDefaultFont(args["name"].(string), float32(args["size"].(float64)))
+			return 0
+		})
+
+	/// @func fontatlas_set_default_font_size()
+	/// @arg size
+	lib.CreateFunction(tab, "fontatlas_set_default_font_size",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "size"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			atlas := g.Context.FontAtlas
+			atlas.SetDefaultFontSize(float32(args["size"].(float64)))
+			return 0
+		})
+
+	/// @func font_set_size()
+	/// @arg fontref
+	/// @arg size
+	/// @returns fontref
+	lib.CreateFunction(tab, "font_set_size",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "fontref"},
+			{Type: lua.FLOAT, Name: "size"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ref := args["fontref"].(int)
+			sref, err := r.CR_REF.Item(ref)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			font := sref.Value.(*g.FontInfo)
+
+			font.SetSize(float32(args["size"].(float64)))
+
+			state.Push(golua.LNumber(ref))
+			return 1
+		})
+
+	/// @func font_string()
+	/// @arg fontref
+	/// @returns string
+	lib.CreateFunction(tab, "font_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "fontref"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ref := args["fontref"].(int)
+			sref, err := r.CR_REF.Item(ref)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			font := sref.Value.(*g.FontInfo)
+
+			state.Push(golua.LString(font.String()))
+			return 1
+		})
+
 	/// @constants Color Picker Flags
 	/// @const FLAGCOLOREDIT_NONE
 	/// @const FLAGCOLOREDIT_NOALPHA
@@ -3601,6 +4414,98 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSALL"), golua.LNumber(FLAGDRAW_ROUNDCORNERSALL))
 	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSDEFAULT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSDEFAULT))
 	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSMASK"), golua.LNumber(FLAGDRAW_ROUNDCORNERSMASK))
+
+	/// @constants Focus Flags
+	/// @const FLAGFOCUS_NONE
+	/// @const FLAGFOCUS_CHILDWINDOWS
+	/// @const FLAGFOCUS_ROOTWINDOW
+	/// @const FLAGFOCUS_ANYWINDOW
+	/// @const FLAGFOCUS_NOPOPUPHIERARCHY
+	/// @const FLAGFOCUS_DOCKHIERARCHY
+	/// @const FLAGFOCUS_ROOTANDCHILDWINDOWS
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_NONE"), golua.LNumber(FLAGFOCUS_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_CHILDWINDOWS"), golua.LNumber(FLAGFOCUS_CHILDWINDOWS))
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_ROOTWINDOW"), golua.LNumber(FLAGFOCUS_ROOTWINDOW))
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_ANYWINDOW"), golua.LNumber(FLAGFOCUS_ANYWINDOW))
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_NOPOPUPHIERARCHY"), golua.LNumber(FLAGFOCUS_NOPOPUPHIERARCHY))
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_DOCKHIERARCHY"), golua.LNumber(FLAGFOCUS_DOCKHIERARCHY))
+	r.State.SetTable(tab, golua.LString("FLAGFOCUS_ROOTANDCHILDWINDOWS"), golua.LNumber(FLAGFOCUS_ROOTANDCHILDWINDOWS))
+
+	/// @constants Hover Flags
+	/// @const FLAGHOVERED_NONE
+	/// @const FLAGHOVERED_CHILDWINDOWS
+	/// @const FLAGHOVERED_ROOTWINDOW
+	/// @const FLAGHOVERED_ANYWINDOW
+	/// @const FLAGHOVERED_NOPOPUPHIERARCHY
+	/// @const FLAGHOVERED_DOCKHIERARCHY
+	/// @const FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP
+	/// @const FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM
+	/// @const FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM
+	/// @const FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW
+	/// @const FLAGHOVERED_ALLOWWHENDISABLED
+	/// @const FLAGHOVERED_NONAVOVERRIDE
+	/// @const FLAGHOVERED_ALLOWWHENOVERLAPPED
+	/// @const FLAGHOVERED_RECTONLY
+	/// @const FLAGHOVERED_ROOTANDCHILDWINDOWS
+	/// @const FLAGHOVERED_FORTOOLTIP
+	/// @const FLAGHOVERED_STATIONARY
+	/// @const FLAGHOVERED_DELAYNONE
+	/// @const FLAGHOVERED_DELAYSHORT
+	/// @const FLAGHOVERED_DELAYNORMAL
+	/// @const FLAGHOVERED_NOSHAREDDELAY
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NONE"), golua.LNumber(FLAGHOVERED_NONE))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_CHILDWINDOWS"), golua.LNumber(FLAGHOVERED_CHILDWINDOWS))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ROOTWINDOW"), golua.LNumber(FLAGHOVERED_ROOTWINDOW))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ANYWINDOW"), golua.LNumber(FLAGHOVERED_ANYWINDOW))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NOPOPUPHIERARCHY"), golua.LNumber(FLAGHOVERED_NOPOPUPHIERARCHY))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DOCKHIERARCHY"), golua.LNumber(FLAGHOVERED_DOCKHIERARCHY))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP"), golua.LNumber(FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM"), golua.LNumber(FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM"), golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW"), golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENDISABLED"), golua.LNumber(FLAGHOVERED_ALLOWWHENDISABLED))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NONAVOVERRIDE"), golua.LNumber(FLAGHOVERED_NONAVOVERRIDE))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENOVERLAPPED"), golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPED))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_RECTONLY"), golua.LNumber(FLAGHOVERED_RECTONLY))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ROOTANDCHILDWINDOWS"), golua.LNumber(FLAGHOVERED_ROOTANDCHILDWINDOWS))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_FORTOOLTIP"), golua.LNumber(FLAGHOVERED_FORTOOLTIP))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_STATIONARY"), golua.LNumber(FLAGHOVERED_STATIONARY))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DELAYNONE"), golua.LNumber(FLAGHOVERED_DELAYNONE))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DELAYSHORT"), golua.LNumber(FLAGHOVERED_DELAYSHORT))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DELAYNORMAL"), golua.LNumber(FLAGHOVERED_DELAYNORMAL))
+	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NOSHAREDDELAY"), golua.LNumber(FLAGHOVERED_NOSHAREDDELAY))
+
+	/// @constants Mouse Cursors
+	/// @const MOUSECURSOR_NONE
+	/// @const MOUSECURSOR_ARROW
+	/// @const MOUSECURSOR_TEXTINPUT
+	/// @const MOUSECURSOR_RESIZEALL
+	/// @const MOUSECURSOR_RESIZENS
+	/// @const MOUSECURSOR_RESIZEEW
+	/// @const MOUSECURSOR_RESIZENESW
+	/// @const MOUSECURSOR_RESIZENWSE
+	/// @const MOUSECURSOR_HAND
+	/// @const MOUSECURSOR_NOTALLOWED
+	/// @const MOUSECURSOR_COUNT
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_NONE"), golua.LNumber(MOUSECURSOR_NONE))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_ARROW"), golua.LNumber(MOUSECURSOR_ARROW))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_TEXTINPUT"), golua.LNumber(MOUSECURSOR_TEXTINPUT))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZEALL"), golua.LNumber(MOUSECURSOR_RESIZEALL))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZENS"), golua.LNumber(MOUSECURSOR_RESIZENS))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZEEW"), golua.LNumber(MOUSECURSOR_RESIZEEW))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZENESW"), golua.LNumber(MOUSECURSOR_RESIZENESW))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZENWSE"), golua.LNumber(MOUSECURSOR_RESIZENWSE))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_HAND"), golua.LNumber(MOUSECURSOR_HAND))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_NOTALLOWED"), golua.LNumber(MOUSECURSOR_NOTALLOWED))
+	r.State.SetTable(tab, golua.LString("MOUSECURSOR_COUNT"), golua.LNumber(MOUSECURSOR_COUNT))
+
+	/// @constants Actions
+	/// @const ACTION_RELEASE
+	/// @const ACTION_PRESS
+	/// @const ACTION_REPEAT
+	r.State.SetTable(tab, golua.LString("ACTION_RELEASE"), golua.LNumber(ACTION_RELEASE))
+	r.State.SetTable(tab, golua.LString("ACTION_PRESS"), golua.LNumber(ACTION_PRESS))
+	r.State.SetTable(tab, golua.LString("ACTION_REPEAT"), golua.LNumber(ACTION_REPEAT))
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
@@ -4241,6 +5146,60 @@ const (
 )
 
 const (
+	FLAGFOCUS_NONE                int = 0b0000_0000
+	FLAGFOCUS_CHILDWINDOWS        int = 0b0000_0001
+	FLAGFOCUS_ROOTWINDOW          int = 0b0000_0010
+	FLAGFOCUS_ANYWINDOW           int = 0b0000_0100
+	FLAGFOCUS_NOPOPUPHIERARCHY    int = 0b0000_1000
+	FLAGFOCUS_DOCKHIERARCHY       int = 0b0001_0000
+	FLAGFOCUS_ROOTANDCHILDWINDOWS int = 0b0000_0011
+)
+
+const (
+	FLAGHOVERED_NONE                         int = 0b0000_0000_0000_0000_0000
+	FLAGHOVERED_CHILDWINDOWS                 int = 0b0000_0000_0000_0000_0001
+	FLAGHOVERED_ROOTWINDOW                   int = 0b0000_0000_0000_0000_0010
+	FLAGHOVERED_ANYWINDOW                    int = 0b0000_0000_0000_0000_0100
+	FLAGHOVERED_NOPOPUPHIERARCHY             int = 0b0000_0000_0000_0000_1000
+	FLAGHOVERED_DOCKHIERARCHY                int = 0b0000_0000_0000_0001_0000
+	FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP      int = 0b0000_0000_0000_0010_0000
+	FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM int = 0b0000_0000_0000_1000_0000
+	FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM    int = 0b0000_0000_0001_0000_0000
+	FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW  int = 0b0000_0000_0010_0000_0000
+	FLAGHOVERED_ALLOWWHENDISABLED            int = 0b0000_0000_0100_0000_0000
+	FLAGHOVERED_NONAVOVERRIDE                int = 0b0000_0000_1000_0000_0000
+	FLAGHOVERED_ALLOWWHENOVERLAPPED          int = 0b0000_0000_0011_0000_0000
+	FLAGHOVERED_RECTONLY                     int = 0b0000_0000_0011_1010_0000
+	FLAGHOVERED_ROOTANDCHILDWINDOWS          int = 0b0000_0000_0000_0000_0011
+	FLAGHOVERED_FORTOOLTIP                   int = 0b0000_0001_0000_0000_0000
+	FLAGHOVERED_STATIONARY                   int = 0b0000_0010_0000_0000_0000
+	FLAGHOVERED_DELAYNONE                    int = 0b0000_0100_0000_0000_0000
+	FLAGHOVERED_DELAYSHORT                   int = 0b0000_1000_0000_0000_0000
+	FLAGHOVERED_DELAYNORMAL                  int = 0b0001_0000_0000_0000_0000
+	FLAGHOVERED_NOSHAREDDELAY                int = 0b0010_0000_0000_0000_0000
+)
+
+const (
+	MOUSECURSOR_NONE int = iota - 1
+	MOUSECURSOR_ARROW
+	MOUSECURSOR_TEXTINPUT
+	MOUSECURSOR_RESIZEALL
+	MOUSECURSOR_RESIZENS
+	MOUSECURSOR_RESIZEEW
+	MOUSECURSOR_RESIZENESW
+	MOUSECURSOR_RESIZENWSE
+	MOUSECURSOR_HAND
+	MOUSECURSOR_NOTALLOWED
+	MOUSECURSOR_COUNT
+)
+
+const (
+	ACTION_RELEASE int = iota
+	ACTION_PRESS
+	ACTION_REPEAT
+)
+
+const (
 	WIDGET_LABEL                = "label"
 	WIDGET_BUTTON               = "button"
 	WIDGET_DUMMY                = "dummy"
@@ -4440,14 +5399,26 @@ func layoutBuild(r *lua.Runner, state *golua.LState, widgets []*golua.LTable, lg
 }
 
 func labelTable(state *golua.LState, text string) *golua.LTable {
+	/// @struct wg_label
+	/// @prop type
+	/// @prop label
+	/// @method wrapped(bool)
+	/// @method font(fontref)
+
 	t := state.NewTable()
 	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LABEL))
 	state.SetTable(t, golua.LString("label"), golua.LString(text))
 	state.SetTable(t, golua.LString("__wrapped"), golua.LNil)
+	state.SetTable(t, golua.LString("__font"), golua.LNil)
 
 	tableBuilderFunc(state, t, "wrapped", func(state *golua.LState, t *golua.LTable) {
 		v := state.CheckBool(-1)
 		state.SetTable(t, golua.LString("__wrapped"), golua.LBool(v))
+	})
+
+	tableBuilderFunc(state, t, "font", func(state *golua.LState, t *golua.LTable) {
+		v := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__font"), v)
 	})
 
 	return t
@@ -4459,6 +5430,18 @@ func labelBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 	wrapped := state.GetTable(t, golua.LString("__wrapped"))
 	if wrapped.Type() == golua.LTBool {
 		l.Wrapped(bool(wrapped.(golua.LBool)))
+	}
+
+	fontref := state.GetTable(t, golua.LString("__font"))
+	if fontref.Type() == golua.LTNumber {
+		ref := int(fontref.(golua.LNumber))
+		sref, err := r.CR_REF.Item(ref)
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+		font := sref.Value.(*g.FontInfo)
+
+		l.Font(font)
 	}
 
 	return l
@@ -7583,6 +8566,7 @@ func styleTable(state *golua.LState) *golua.LTable {
 	state.SetTable(t, golua.LString("__colors"), state.NewTable())
 	state.SetTable(t, golua.LString("__styles"), state.NewTable())
 	state.SetTable(t, golua.LString("__stylesfloat"), state.NewTable())
+	state.SetTable(t, golua.LString("__font"), golua.LNil)
 
 	tableBuilderFunc(state, t, "set_disabled", func(state *golua.LState, t *golua.LTable) {
 		d := state.CheckBool(-1)
@@ -7634,6 +8618,11 @@ func styleTable(state *golua.LState) *golua.LTable {
 		ft.Append(st)
 	})
 
+	tableBuilderFunc(state, t, "font", func(state *golua.LState, t *golua.LTable) {
+		v := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__font"), v)
+	})
+
 	return t
 }
 
@@ -7677,6 +8666,18 @@ func styleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 		float := state.GetTable(st, golua.LString("float")).(golua.LNumber)
 
 		s.SetStyleFloat(g.StyleVarID(sid), float32(float))
+	}
+
+	fontref := state.GetTable(t, golua.LString("__font"))
+	if fontref.Type() == golua.LTNumber {
+		ref := int(fontref.(golua.LNumber))
+		sref, err := r.CR_REF.Item(ref)
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+		font := sref.Value.(*g.FontInfo)
+
+		s.SetFont(font)
 	}
 
 	layout := state.GetTable(t, golua.LString("__widgets"))

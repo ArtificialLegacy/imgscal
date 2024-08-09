@@ -63,6 +63,32 @@ func Parse(name string, file []byte) Lib {
 			}
 
 			docs.Cns = append(docs.Cns, doc)
+		} else if strings.HasPrefix(line, TAG_STRUCT) {
+			doc := Struct{}
+			doc.Struct = strings.TrimPrefix(line, TAG_STRUCT)
+
+			i++
+			for ; strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_PROP); i++ {
+				line := strings.TrimSpace(lines[i])
+				doc.Props = append(doc.Props, strings.TrimPrefix(line, TAG_PROP))
+			}
+
+			for ; strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_METHOD); i++ {
+				line := strings.TrimSpace(lines[i])
+				doc.Methods = append(doc.Methods, strings.TrimPrefix(line, TAG_METHOD))
+			}
+
+			if strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_DESC) {
+				i++
+				ln := strings.TrimSpace(lines[i])
+				for strings.HasPrefix(ln, TAG_EMPTY) && !strings.HasPrefix(ln, TAG_EXISTS) {
+					doc.Desc = append(doc.Desc, strings.TrimPrefix(ln, TAG_EMPTY))
+					i++
+					ln = strings.TrimSpace(lines[i])
+				}
+			}
+
+			docs.Sts = append(docs.Sts, doc)
 		}
 
 	}

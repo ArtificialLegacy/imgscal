@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"time"
 
+	g "github.com/AllenDang/giu"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -64,6 +65,9 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 				v := v.(golua.LNumber)
 				t := time.UnixMilli(int64(v))
 				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &t})
+
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for new: %d", args["type"]), log.LEVEL_ERROR)), 0)
 			}
 
 			state.Push(golua.LNumber(id))
@@ -104,9 +108,11 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 				state.Push(imageutil.RGBAToTable(state, item))
 			case *time.Time:
 				state.Push(golua.LNumber(item.UnixMilli()))
+			case *g.FontInfo:
+				state.Push(golua.LString(item.String()))
 
 			default:
-				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown ref type: %T", item), log.LEVEL_ERROR)), 0)
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for get: %T", item), log.LEVEL_ERROR)), 0)
 			}
 
 			return 1
@@ -156,7 +162,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 				i.Value = &v
 
 			default:
-				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown ref type: %T", i.Value), log.LEVEL_ERROR)), 0)
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for set: %T", i.Value), log.LEVEL_ERROR)), 0)
 			}
 
 			return 0
@@ -172,6 +178,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 	/// @const STRING
 	/// @const RGBA
 	/// @const TIME - timestamp in ms
+	/// @const FONT - giu.FontInfo - cannot be created or set, getting will return .String()
 	r.State.SetField(tab, "LUA", golua.LNumber(REFTYPE_LUA))
 	r.State.SetField(tab, "BOOL", golua.LNumber(REFTYPE_BOOL))
 	r.State.SetField(tab, "INT", golua.LNumber(REFTYPE_INT))
@@ -181,7 +188,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 	r.State.SetField(tab, "STRING", golua.LNumber(REFTYPE_STRING))
 	r.State.SetField(tab, "RGBA", golua.LNumber(REFTYPE_RGBA))
 	r.State.SetField(tab, "TIME", golua.LNumber(REFTYPE_TIME))
-
+	r.State.SetField(tab, "FONT", golua.LNumber(REFTYPE_FONT))
 }
 
 const (
@@ -194,4 +201,5 @@ const (
 	REFTYPE_STRING
 	REFTYPE_RGBA
 	REFTYPE_TIME
+	REFTYPE_FONT
 )
