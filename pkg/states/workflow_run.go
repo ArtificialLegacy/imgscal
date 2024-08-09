@@ -23,7 +23,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	lg := log.NewLogger("execute")
 
-	lg.Append("log started for workflow_run", log.LEVEL_INFO)
+	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := lua.WorkflowRunState(&lg)
 	runner := lua.NewRunner(req, state, &lg)
 
@@ -39,18 +39,26 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.CC, ccCount, ccBusy), log.LEVEL_WARN)
 			qrCount, qrBusy := runner.QR.TaskCount()
 			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.QR, qrCount, qrBusy), log.LEVEL_WARN)
-		} else {
-			lg.Close()
+
+			lg.Append(fmt.Sprintf("panic recovered: %+v", r), log.LEVEL_ERROR)
 		}
+
+		lg.Close()
 	}()
 
 	golua.OpenBase(state)
+	golua.OpenMath(state)
+	golua.OpenString(state)
+	golua.OpenTable(state)
 	lua.LoadPlugins("main", &runner, &lg, lib.Builtins, req, state)
 
 	err := runner.Run(script)
 
 	for checkState(runner.IC) || checkState(runner.FC) || checkState(runner.CC) || checkState(runner.QR) {
 	}
+
+	runner.CR_WIN.CleanAll()
+	runner.CR_REF.CleanAll()
 
 	runner.TC.CollectAll()
 	runner.IC.CollectAll()

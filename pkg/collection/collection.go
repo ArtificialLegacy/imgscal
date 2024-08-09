@@ -135,9 +135,9 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 		task := <-i.TaskQueue
 		i.currTask = task
 		i.waiting = false
-		i.Lg.Append(fmt.Sprintf("%s.%s task called", task.Lib, task.Name), log.LEVEL_INFO)
+		i.Lg.Append(fmt.Sprintf("%s.%s task called", task.Lib, task.Name), log.LEVEL_VERBOSE)
 		task.Fn(i)
-		i.Lg.Append(fmt.Sprintf("%s.%s task finished", task.Lib, task.Name), log.LEVEL_INFO)
+		i.Lg.Append(fmt.Sprintf("%s.%s task finished", task.Lib, task.Name), log.LEVEL_VERBOSE)
 
 		if i.cleaned {
 			i.Lg.Append(fmt.Sprintf("item [%T] cleaned", i.Self), log.LEVEL_INFO)
@@ -185,8 +185,27 @@ func (c *Collection[T]) AddItem(lg *log.Logger) int {
 	return id
 }
 
+func (c *Collection[T]) Item(id int) *Item[T] {
+	if id < 0 && id >= len(c.items) {
+		c.lg.Append(fmt.Sprintf("invald item index: %d range of 0-%d", id, len(c.items)), log.LEVEL_WARN)
+		return nil
+	}
+
+	item := c.items[id]
+	return item
+}
+
 func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	wait := make(chan struct{}, 2)
+
+	if id < 0 && id >= len(c.items) {
+		c.lg.Append(fmt.Sprintf("invald item index: %d range of 0-%d", id, len(c.items)), log.LEVEL_WARN)
+		if tk.Fail != nil {
+			tk.Fail(nil)
+		}
+		wait <- struct{}{}
+		return wait
+	}
 
 	task := &Task[T]{
 		Lib:  tk.Lib,
@@ -212,14 +231,14 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 		return wait
 	}
 
-	item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_INFO)
+	item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_VERBOSE)
 	item.TaskQueue <- task
 
 	return wait
 }
 
 func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
-	c.lg.Append(fmt.Sprintf("tasks scheduled for all items: [%T]", c), log.LEVEL_INFO)
+	c.lg.Append(fmt.Sprintf("tasks scheduled for all items: [%T]", c), log.LEVEL_VERBOSE)
 
 	wait := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}

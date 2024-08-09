@@ -59,4 +59,35 @@ func Format(out io.StringWriter, lib Lib) {
 			out.WriteString(fmt.Sprintf("* %s\n", con))
 		}
 	}
+
+	if len(lib.Sts) != 0 {
+		out.WriteString("\n## Structs\n")
+	}
+
+	for _, st := range lib.Sts {
+		out.WriteString(fmt.Sprintf("\n### %s\n", st.Struct))
+
+		if len(st.Desc) > 0 {
+			out.WriteString("\n")
+			for _, d := range st.Desc {
+				out.WriteString(fmt.Sprintf("%s\n", d))
+			}
+		}
+
+		if len(st.Props) > 0 {
+			out.WriteString("\n")
+			out.WriteString(fmt.Sprintf("#### Props [%s]\n\n", st.Struct))
+			for _, prop := range st.Props {
+				out.WriteString(fmt.Sprintf("* %s\n", prop))
+			}
+		}
+
+		if len(st.Methods) > 0 {
+			out.WriteString("\n")
+			out.WriteString(fmt.Sprintf("#### Methods [%s]\n\n", st.Struct))
+			for _, m := range st.Methods {
+				out.WriteString(fmt.Sprintf("* %s\n", m))
+			}
+		}
+	}
 }

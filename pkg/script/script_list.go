@@ -1,7 +1,6 @@
 package script
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -29,7 +28,7 @@ func scriptScan(dir, prefix string, scripts *[]Script) error {
 		return err
 	}
 
-	files, err := os.ReadDir(fmt.Sprintf("%s\\%s", wd, dir))
+	files, err := os.ReadDir(path.Join(wd, dir))
 	if err != nil {
 		return err
 	}

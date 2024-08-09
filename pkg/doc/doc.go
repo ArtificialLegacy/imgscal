@@ -12,12 +12,16 @@ const (
 	TAG_CONST     = "/// @const "
 	TAG_BLOCK     = "/// @blocking"
 	TAG_DESC      = "/// @desc"
+	TAG_STRUCT    = "/// @struct "
+	TAG_PROP      = "/// @prop "
+	TAG_METHOD    = "/// @method "
 )
 
 type Lib struct {
 	Name string
 	Fns  []Fn
 	Cns  []Const
+	Sts  []Struct
 }
 
 type Arg struct {
@@ -36,4 +40,11 @@ type Fn struct {
 type Const struct {
 	Group  string
 	Consts []string
+}
+
+type Struct struct {
+	Struct  string
+	Props   []string
+	Methods []string
+	Desc    []string
 }
