@@ -12,7 +12,7 @@ func WorkflowConfigState(wf *workflow.Workflow, lg *log.Logger) *lua.LState {
 	state := lua.NewState()
 
 	state.Register("config", func(state *lua.LState) int {
-		lg.Append("config function called", log.LEVEL_INFO)
+		lg.Append("config function called", log.LEVEL_SYSTEM)
 
 		t := state.Get(-1)
 
@@ -40,7 +40,7 @@ func WorkflowConfigState(wf *workflow.Workflow, lg *log.Logger) *lua.LState {
 	})
 
 	state.Register("main", func(state *lua.LState) int {
-		lg.Append("main function called", log.LEVEL_INFO)
+		lg.Append("main function called", log.LEVEL_SYSTEM)
 		return 0
 	})
 

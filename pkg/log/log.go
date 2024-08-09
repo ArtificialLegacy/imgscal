@@ -15,6 +15,8 @@ const (
 	LEVEL_WARN
 	LEVEL_ERROR
 	LEVEL_IMPORTANT
+	LEVEL_VERBOSE
+	LEVEL_SYSTEM
 )
 
 const LOG_DIR = "./log"
@@ -30,6 +32,7 @@ type Logger struct {
 	file         *os.File
 	Parent       *Logger
 	childrenGrab []string
+	verbose      bool
 }
 
 func NewLogger(name string) Logger {
@@ -69,8 +72,13 @@ func NewLoggerEmpty() Logger {
 	return lg
 }
 
+func (l Logger) EnableVerbose() Logger {
+	l.verbose = true
+	return l
+}
+
 func (l *Logger) Append(str string, level LogLevel) string {
-	if level == LEVEL_INFO {
+	if !l.verbose && level == LEVEL_VERBOSE {
 		return str
 	}
 
@@ -83,6 +91,8 @@ func (l *Logger) Append(str string, level LogLevel) string {
 	prefix := ""
 
 	switch level {
+	case LEVEL_VERBOSE:
+		fallthrough
 	case LEVEL_INFO:
 		prefix = "# INFO"
 	case LEVEL_WARN:
@@ -91,6 +101,8 @@ func (l *Logger) Append(str string, level LogLevel) string {
 		prefix = "! ERROR"
 	case LEVEL_IMPORTANT:
 		prefix = "!! IMPORTANT"
+	case LEVEL_SYSTEM:
+		prefix = "# SYSTEM"
 	}
 
 	l.logger.Printf("%s: [%s] > '%s'\n", prefix, logTime, str)

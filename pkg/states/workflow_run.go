@@ -23,7 +23,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	lg := log.NewLogger("execute")
 
-	lg.Append("log started for workflow_run", log.LEVEL_INFO)
+	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := lua.WorkflowRunState(&lg)
 	runner := lua.NewRunner(req, state, &lg)
 

@@ -462,14 +462,6 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			}
 
 			w.Run(func() {
-				defer func() {
-					if p := recover(); p != nil {
-						w.Close()
-						g.Update()
-						panic(p)
-					}
-				}()
-
 				state.Push(args["fn"].(*golua.LFunction))
 				state.Call(0, 0)
 			})

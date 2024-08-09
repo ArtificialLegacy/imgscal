@@ -5,6 +5,7 @@ config({
     requires={
         "gui",
         "bit",
+        "std",
     },
 
     desc="test imgui"
@@ -19,7 +20,8 @@ main(function ()
 
     gui.window_run(win, function()
         gui.window_single():layout({
-            gui.wg_label("test"),
+            gui.wg_label(std.wd()),
+            gui.wg_label(std.fmt("test fmt: %.1f", {5})),
         })
     end)
 end)

@@ -16,6 +16,7 @@ type Runner struct {
 	State   *lua.LState
 	lg      *log.Logger
 	Plugins []string
+	Dir     string
 
 	// -- collections
 	TC *collection.Collection[collection.ItemTask]
@@ -48,16 +49,7 @@ func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
 		TC: collection.NewCollection[collection.ItemTask](lg),
 
 		// -- crates
-		CR_WIN: collection.NewCrate[giu.MasterWindow]().OnClean(func(i *collection.CrateItem[giu.MasterWindow]) {
-			defer func() {
-				recover()
-			}()
-
-			i.Self.Run(func() {
-				i.Self.Close()
-				giu.Update()
-			})
-		}),
+		CR_WIN: collection.NewCrate[giu.MasterWindow](),
 		CR_REF: collection.NewCrate[collection.RefItem[any]](),
 	}
 }
@@ -71,7 +63,10 @@ func (r *Runner) Run(file string) error {
 		}
 	}()
 
-	err := r.State.DoFile(path.Join(pwd, file))
+	pth := path.Join(pwd, file)
+	r.Dir = path.Dir(pth)
+
+	err := r.State.DoFile(pth)
 	if err != nil {
 		return err
 	}
@@ -291,7 +286,7 @@ type TaskData struct {
 
 func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
 	l.State.SetField(lib, name, l.State.NewFunction(func(state *lua.LState) int {
-		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_INFO)
+		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_VERBOSE)
 
 		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
 		state.Pop(c)
@@ -301,7 +296,7 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 
 		newState.XMoveTo(state, ret)
 
-		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_INFO)
+		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_VERBOSE)
 		return ret
 	}))
 }
@@ -313,7 +308,7 @@ func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins map[string]func(r
 			lg.Append(fmt.Sprintf("%s: plugin %s does not exist", to, req), log.LEVEL_WARN)
 		} else {
 			builtin(r, lg)
-			lg.Append(fmt.Sprintf("%s: registered plugin %s", to, req), log.LEVEL_INFO)
+			lg.Append(fmt.Sprintf("%s: registered plugin %s", to, req), log.LEVEL_SYSTEM)
 		}
 	}
 }
