@@ -490,6 +490,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct point
+			/// @prop x
+			/// @prop y
+
 			t := state.NewTable()
 			state.SetTable(t, golua.LString("x"), golua.LNumber(args["x"].(int)))
 			state.SetTable(t, golua.LString("y"), golua.LNumber(args["y"].(int)))
@@ -1146,6 +1150,12 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 }
 
 func rgbaTable(state *golua.LState, r, g, b, a int) *golua.LTable {
+	/// @struct color_rgba
+	/// @prop red
+	/// @prop green
+	/// @prop blue
+	/// @prop alpha
+
 	t := state.NewTable()
 
 	state.SetField(t, "red", golua.LNumber(r))
@@ -1161,6 +1171,12 @@ func rgbaMap(m map[string]any) (int, int, int, int) {
 }
 
 func hsvaTable(state *golua.LState, h, s, v float64, a int) *golua.LTable {
+	/// @struct color_hsva
+	/// @prop hue
+	/// @prop sat
+	/// @prop value
+	/// @prop alpha
+
 	t := state.NewTable()
 
 	state.SetField(t, "hue", golua.LNumber(h))
@@ -1176,6 +1192,12 @@ func hsvaMap(m map[string]any) (float64, float64, float64, int) {
 }
 
 func hslaTable(state *golua.LState, h, s, l float64, a int) *golua.LTable {
+	/// @struct color_hsla
+	/// @prop hue
+	/// @prop sat
+	/// @prop light
+	/// @prop alpha
+
 	t := state.NewTable()
 
 	state.SetField(t, "hue", golua.LNumber(h))
