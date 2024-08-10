@@ -1064,7 +1064,6 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @func map()
 	/// @arg id
 	/// @arg fn - takes in x, y , {red, green, blue, alpha} and returns a new {red, green, blue, alpha}
-	/// @blocking
 	lib.CreateFunction(tab, "map",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1085,42 +1084,44 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 							px := i.Self.Image.At(ix, iy)
 							cr, cg, cb, ca := px.RGBA()
 
-							state.Push(args["func"].(*golua.LFunction))
+							mapThread, _ := state.NewThread()
+							mapThread.Push(args["func"].(*golua.LFunction))
 
-							state.Push(golua.LNumber(ix - x))
-							state.Push(golua.LNumber(iy - y))
+							mapThread.Push(golua.LNumber(ix - x))
+							mapThread.Push(golua.LNumber(iy - y))
 
-							t := rgbaTable(state, int(cr), int(cg), int(cb), int(ca))
-							state.Push(t)
+							t := rgbaTable(mapThread, int(cr), int(cg), int(cb), int(ca))
+							mapThread.Push(t)
+							mapThread.Call(3, 1)
+							c := mapThread.ToTable(-1)
 
-							state.Call(3, 1)
-
-							c := state.ToTable(-1)
-
-							nr := state.GetField(c, "red")
+							nr := mapThread.GetField(c, "red")
 							if nr.Type() != golua.LTNumber {
-								state.Error(golua.LString(lg.Append("invalid red field returned into image.map", log.LEVEL_ERROR)), 0)
+								mapThread.Error(golua.LString(lg.Append("invalid red field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							ng := state.GetField(c, "green")
+							ng := mapThread.GetField(c, "green")
 							if ng.Type() != golua.LTNumber {
-								state.Error(golua.LString(lg.Append("invalid green field returned into image.map", log.LEVEL_ERROR)), 0)
+								mapThread.Error(golua.LString(lg.Append("invalid green field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							nb := state.GetField(c, "blue")
+							nb := mapThread.GetField(c, "blue")
 							if nb.Type() != golua.LTNumber {
-								state.Error(golua.LString(lg.Append("invalid blue field returned into image.map", log.LEVEL_ERROR)), 0)
+								mapThread.Error(golua.LString(lg.Append("invalid blue field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							na := state.GetField(c, "alpha")
+							na := mapThread.GetField(c, "alpha")
 							if na.Type() != golua.LTNumber {
-								state.Error(golua.LString(lg.Append("invalid alpha field returned into image.map", log.LEVEL_ERROR)), 0)
+								mapThread.Error(golua.LString(lg.Append("invalid alpha field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
 
+							mapThread.Close()
 							imageutil.Set(i.Self.Image, ix, iy, int(nr.(golua.LNumber)), int(ng.(golua.LNumber)), int(nb.(golua.LNumber)), int(na.(golua.LNumber)))
 						}
 					}
+
+					state.Close()
 				},
 			})
 
-			return 0
+			return -1
 		})
 
 	/// @constants Color Models

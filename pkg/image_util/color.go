@@ -41,6 +41,11 @@ func Set(img image.Image, x, y, red, green, blue, alpha int) {
 	}
 }
 
+func Get(img image.Image, x, y int) (int, int, int, int) {
+	cr, cg, cb, ca := img.At(x, y).RGBA()
+	return int(cr), int(cg), int(cb), int(ca)
+}
+
 func ConvertColor(model ColorModel, red, green, blue, alpha int) (int, int, int, int) {
 	col := color.RGBA{R: uint8(red), G: uint8(green), B: uint8(blue), A: uint8(alpha)}
 

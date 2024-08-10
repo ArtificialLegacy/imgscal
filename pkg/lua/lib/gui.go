@@ -695,6 +695,34 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
+	/// @func calc_text_size_width()
+	/// @arg text
+	/// @returns width
+	lib.CreateFunction(tab, "calc_text_size_width",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			width, _ := g.CalcTextSize(args["text"].(string))
+
+			state.Push(golua.LNumber(width))
+			return 1
+		})
+
+	/// @func calc_text_size_height()
+	/// @arg text
+	/// @returns height
+	lib.CreateFunction(tab, "calc_text_size_height",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			_, height := g.CalcTextSize(args["text"].(string))
+
+			state.Push(golua.LNumber(height))
+			return 1
+		})
+
 	/// @func calc_text_size_v()
 	/// @arg text
 	/// @arg hideAfterDoubleHash
@@ -5628,6 +5656,7 @@ func childTable(state *golua.LState) *golua.LTable {
 	/// @method border(bool)
 	/// @method size(width, height)
 	/// @method layout([]widgets)
+	/// @method flags(flags)
 
 	t := state.NewTable()
 	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CHILD))
@@ -5635,6 +5664,7 @@ func childTable(state *golua.LState) *golua.LTable {
 	state.SetTable(t, golua.LString("__width"), golua.LNil)
 	state.SetTable(t, golua.LString("__height"), golua.LNil)
 	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	state.SetTable(t, golua.LString("__flags"), golua.LNil)
 
 	tableBuilderFunc(state, t, "border", func(state *golua.LState, t *golua.LTable) {
 		b := state.CheckBool(-1)
@@ -5653,6 +5683,11 @@ func childTable(state *golua.LState) *golua.LTable {
 		state.SetTable(t, golua.LString("__widgets"), lt)
 	})
 
+	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
+		flags := state.CheckNumber(-1)
+		state.SetTable(t, golua.LString("__flags"), flags)
+	})
+
 	return t
 }
 
@@ -5668,6 +5703,11 @@ func childBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 	height := state.GetTable(t, golua.LString("__height"))
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
+	}
+
+	flags := state.GetTable(t, golua.LString("__flags"))
+	if flags.Type() == golua.LTNumber {
+		c.Flags(g.WindowFlags(flags.(golua.LNumber)))
 	}
 
 	layout := state.GetTable(t, golua.LString("__widgets"))
@@ -7815,7 +7855,7 @@ func tableColumnTable(state *golua.LState, label string) *golua.LTable {
 	return t
 }
 
-func tableColumnBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TableColumnWidget {
+func tableColumnBuild(state *golua.LState, t *golua.LTable) *g.TableColumnWidget {
 	label := state.GetTable(t, golua.LString("label")).(golua.LString)
 	c := g.TableColumn(string(label))
 
@@ -8002,7 +8042,7 @@ func tableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 		wd := parseWidgets(parseTable(columns.(*golua.LTable), state), state, lg)
 		wdi := []*g.TableColumnWidget{}
 		for _, w := range wd {
-			i := tableColumnBuild(r, lg, state, w)
+			i := tableColumnBuild(state, w)
 			wdi = append(wdi, i)
 		}
 		tb.Columns(wdi...)
@@ -8240,7 +8280,7 @@ func treeTableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 		wd := parseWidgets(parseTable(columns.(*golua.LTable), state), state, lg)
 		wdi := []*g.TableColumnWidget{}
 		for _, w := range wd {
-			i := tableColumnBuild(r, lg, state, w)
+			i := tableColumnBuild(state, w)
 			wdi = append(wdi, i)
 		}
 		tb.Columns(wdi...)

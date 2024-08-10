@@ -61,7 +61,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -69,7 +69,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -77,7 +77,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_FILE:
-				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+				r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemFile]) {
@@ -85,7 +85,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -93,7 +93,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -102,7 +102,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 				})
 			}
 
-			return 0
+			return -1
 		})
 
 	/// @func wait()
@@ -287,7 +287,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			msg := args["msg"].(string)
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -295,7 +295,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -303,7 +303,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_FILE:
-				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+				r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemFile]) {
@@ -311,7 +311,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -319,7 +319,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -344,7 +344,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			msg := args["msg"].(string)
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -352,7 +352,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -360,7 +360,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_FILE:
-				<-r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
+				r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemFile]) {
@@ -368,7 +368,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -376,7 +376,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -391,6 +391,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// @arg type - collection type
 	/// @arg id - id of the item to panic
 	/// @arg msg
+	/// @blocking
 	lib.CreateFunction(tab, "panic",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "type"},
@@ -460,4 +461,5 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 func callScheduledFunction(state *golua.LState, f *golua.LFunction) {
 	state.Push(f)
 	state.Call(0, 0)
+	state.Close()
 }
