@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -191,6 +192,58 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			}
 
 			w.SetShouldClose(args["v"].(bool))
+			return 0
+		})
+
+	/// @func window_set_icon_imgscal()
+	/// @arg id
+	/// @arg? circled
+	/// @desc
+	/// Uses the 16x16 and 32x32 imscal application icons for the window icon.
+	/// Note the imgscal icon is light green with a transparent background,
+	/// against a white background it will be hard to see.
+	/// The circled versions have a dark background and are more readable.
+	lib.CreateFunction(tab, "window_set_icon_imgscal",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "circled", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			iconPaths := []string{
+				"favicon-16x16.png",
+				"favicon-32x32.png",
+			}
+			if args["circled"].(bool) {
+				iconPaths = []string{
+					"favicon-16x16-circle.png",
+					"favicon-32x32-circle.png",
+				}
+			}
+
+			icons := []image.Image{}
+
+			wd, _ := os.Getwd()
+			for _, p := range iconPaths {
+				f, err := os.Open(path.Join(wd, "assets", p))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot open %s", p), log.LEVEL_ERROR)), 0)
+				}
+				defer f.Close()
+
+				ic, err := imageutil.Decode(f, imageutil.ENCODING_PNG)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("%s is an invalid image: %s", p, err), log.LEVEL_ERROR)), 0)
+				}
+
+				icons = append(icons, ic)
+			}
+
+			w.SetIcon(icons...)
 			return 0
 		})
 

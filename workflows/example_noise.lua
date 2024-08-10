@@ -214,6 +214,7 @@ end
 
 main(function ()
     local win = gui.window_master("Noise Example", 512, 512, 0)
+    gui.window_set_icon_imgscal(win, true)
 
     local img = image.new("noise_img", image.ENCODING_PNG, 100, 100)
 

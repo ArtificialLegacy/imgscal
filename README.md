@@ -15,7 +15,7 @@ Demo workflow that creates an interface with controls to generate noise maps.
 
 > [Source File](/workflows/example_noise.lua)
 
-![noise example](assets/demos/noise_example.png)
+![noise example](assets/demos/example_noise.png)
 
 ## Build
 
