@@ -2,6 +2,7 @@ package imageutil
 
 import (
 	"image"
+	"image/draw"
 	"strings"
 
 	golua "github.com/yuin/gopher-lua"
@@ -42,6 +43,31 @@ func ExtensionEncoding(ext string) ImageEncoding {
 	}
 
 	return ENCODING_UNKNOWN
+}
+
+func ImageGetDraw(img image.Image) draw.Image {
+	switch i := img.(type) {
+	case *image.RGBA:
+		return i
+	case *image.RGBA64:
+		return i
+	case *image.NRGBA:
+		return i
+	case *image.NRGBA64:
+		return i
+	case *image.Alpha:
+		return i
+	case *image.Alpha16:
+		return i
+	case *image.Gray:
+		return i
+	case *image.Gray16:
+		return i
+	case *image.CMYK:
+		return i
+	default:
+		return nil
+	}
 }
 
 func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {

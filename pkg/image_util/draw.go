@@ -7,7 +7,10 @@ import (
 
 func Draw(base image.Image, sub image.Image, x, y, width, height int) {
 	r := image.Rect(x, y, x+width, y+height)
+	DrawRect(base, sub, r)
+}
 
+func DrawRect(base image.Image, sub image.Image, r image.Rectangle) {
 	switch img := base.(type) {
 	case *image.RGBA:
 		draw.Draw(img, r, sub, sub.Bounds().Min, draw.Src)

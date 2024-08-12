@@ -1759,6 +1759,37 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func wg_combo_preview()
+	/// @arg text
+	/// @arg items - []string
+	/// @arg i32ref
+	/// @returns widget
+	/// @desc
+	/// Same as wg_combo but sets preview to the selected value in items.
+	lib.CreateFunction(tab, "wg_combo_preview",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+			{Type: lua.ANY, Name: "items"},
+			{Type: lua.INT, Name: "i32ref"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			text := args["text"].(string)
+			items := args["items"].(golua.LValue)
+			i32ref := args["i32ref"].(int)
+
+			sref, err := r.CR_REF.Item(i32ref)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			selected := sref.Value.(*int32)
+			preview := state.GetTable(items.(*golua.LTable), golua.LNumber(*selected+1)).(golua.LString)
+
+			t := comboTable(state, text, string(preview), items, i32ref)
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func wg_condition()
 	/// @arg condition - boolean
 	/// @arg widgetIf
@@ -2267,15 +2298,15 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_tree_table_node()
+	/// @func wg_tree_node()
 	/// @arg label
 	/// @returns widget
-	lib.CreateFunction(tab, "wg_tree_table_node",
+	lib.CreateFunction(tab, "wg_tree_node",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := treeTableNodeTable(state, args["label"].(string))
+			t := treeNodeTable(state, args["label"].(string))
 
 			state.Push(t)
 			return 1
@@ -5323,7 +5354,7 @@ const (
 	WIDGET_TABLE_ROW            = "table_row"
 	WIDGET_TABLE                = "table"
 	WIDGET_BUTTON_ARROW         = "button_arrow"
-	WIDGET_TREE_TABLE_NODE      = "tree_table_node"
+	WIDGET_TREE_NODE            = "tree_node"
 	WIDGET_TREE_TABLE_ROW       = "tree_table_row"
 	WIDGET_TREE_TABLE           = "tree_table"
 	WIDGET_WINDOW_SINGLE        = "window_single"
@@ -5402,7 +5433,7 @@ func init() {
 		WIDGET_TOOLTIP:              tooltipBuild,
 		WIDGET_TABLE:                tableBuild,
 		WIDGET_BUTTON_ARROW:         buttonArrowBuild,
-		WIDGET_TREE_TABLE_NODE:      treeTableNodeBuild,
+		WIDGET_TREE_NODE:            treeNodeBuild,
 		WIDGET_TREE_TABLE:           treeTableBuild,
 		WIDGET_POPUP_MODAL:          popupModalBuild,
 		WIDGET_POPUP:                popupBuild,
@@ -8149,15 +8180,15 @@ func buttonArrowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 	return b
 }
 
-func treeTableNodeTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_tree_table_node
+func treeNodeTable(state *golua.LState, label string) *golua.LTable {
+	/// @struct wg_tree_node
 	/// @prop type
 	/// @prop label
 	/// @method flags(flags)
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_TABLE_NODE))
+	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_NODE))
 	state.SetTable(t, golua.LString("label"), golua.LString(label))
 	state.SetTable(t, golua.LString("__flags"), golua.LNil)
 	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
@@ -8175,7 +8206,7 @@ func treeTableNodeTable(state *golua.LState, label string) *golua.LTable {
 	return t
 }
 
-func treeTableNodeBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+func treeNodeBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	label := state.GetTable(t, golua.LString("label")).(golua.LString)
 	n := g.TreeNode(string(label))
 

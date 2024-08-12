@@ -17,6 +17,7 @@ require (
 	github.com/AllenDang/go-findfont v0.0.0-20200702051237-9f180485aeb8 // indirect
 	github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 // indirect
 	github.com/crazy3lf/colorconv v1.2.0 // indirect
+	github.com/disintegration/gift v1.2.1 // indirect
 	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

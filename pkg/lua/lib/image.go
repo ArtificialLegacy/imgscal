@@ -407,6 +407,28 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func clear()
+	/// @arg id
+	/// @desc
+	/// Resets all pixels to 0,0,0,0
+	lib.CreateFunction(tab, "clear",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					b := i.Self.Image.Bounds()
+					iNew := image.NewRGBA(b)
+					imageutil.DrawRect(i.Self.Image, iNew, b)
+				},
+			})
+
+			return 0
+		})
+
 	/// @func pixel()
 	/// @arg id
 	/// @arg x
