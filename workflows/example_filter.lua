@@ -86,6 +86,59 @@ function wg_ksize(rf)
     })
 end
 
+function wg_cf_channel(name, opref, vref, fref)
+    return gui.wg_row({
+        gui.wg_label(name),
+        gui.wg_dummy(
+            50-gui.calc_text_size_width(name),
+            1
+        ),
+        gui.wg_combo_preview("Op", operations, opref)
+            :size(125),
+        gui.wg_slider_float(vref, -1, 1)
+            :size(125)
+            :format("%.2f"),
+        gui.wg_combo_preview("From", channelValue, fref)
+            :size(75),
+        gui.wg_button_arrow(gui.DIR_LEFT)
+            :on_click(function()
+                ref.set(vref, 0)
+            end),
+    })
+end
+
+function channelOp(op, v1, v2)
+    if op == 0 then
+        return v1
+    elseif op == 1 then
+        return v2
+    elseif op == 2 then
+        return v1 + v2
+    elseif op == 3 then
+        return v1 - v2
+    elseif op == 4 then
+        return v2 - v1
+    elseif op == 5 then
+        return v1 * v2
+    end
+end
+
+function channelGet(from, v, r, g, b, a)
+    if from == 0 then
+        return v
+    elseif from == 1 then
+        return r
+    elseif from == 2 then
+        return g
+    elseif from == 3 then
+        return b
+    elseif from == 4 then
+        return a
+    elseif from == 5 then
+        return math.random()
+    end
+end
+
 convolutionFilters = {
     "None",
     "Identity",
@@ -129,8 +182,36 @@ interpolation = {
     "Cubic",
 }
 
+resampling = {
+    "Box",
+    "Cubic",
+    "Lanczos",
+    "Linear",
+    "Nearest Neighbor",
+}
+
+operations = {
+    "Preserve",
+    "Set",
+    "Add",
+    "Subtract",
+    "Inverse Subtract",
+    "Multiply",
+}
+
+channelValue = {
+    "Custom",
+    "Red",
+    "Green",
+    "Blue",
+    "Alpha",
+    "Random",
+}
+
 main(function ()
-    local win = gui.window_master("Filter Example", 512, 512, 0)
+    local win = gui.window_master("Filter Example", 512, 512, bit.bitor_many({
+        FLAGWINDOW_NORESIZE,
+    }))
     gui.window_set_icon_imgscal(win, true)
 
     local imgSrc = io.load_image(std.wd().."/example_image.png")
@@ -180,6 +261,18 @@ main(function ()
     local convolutionAlpha = ref.new(false, ref.BOOL)
     local convolutionABS = ref.new(false, ref.BOOL)
     local convolutionDelta = ref.new(0, ref.FLOAT32)
+    local convolutionCustom = ref.new(false, ref.BOOL)
+    local convolution0x0 = ref.new(0, ref.FLOAT32)
+    local convolution0x1 = ref.new(0, ref.FLOAT32)
+    local convolution0x2 = ref.new(0, ref.FLOAT32)
+    local convolution1x0 = ref.new(0, ref.FLOAT32)
+    local convolution1x1 = ref.new(0, ref.FLOAT32)
+    local convolution1x2 = ref.new(0, ref.FLOAT32)
+    local convolution2x0 = ref.new(0, ref.FLOAT32)
+    local convolution2x1 = ref.new(0, ref.FLOAT32)
+    local convolution2x2 = ref.new(0, ref.FLOAT32)
+
+    -- order filter refs
     local maximumEnabled = ref.new(false, ref.BOOL)
     local maximumDisk = ref.new(false, ref.BOOL)
     local maximumKSize = ref.new(3, ref.INT32)
@@ -204,6 +297,13 @@ main(function ()
     local cropheight = ref.new(200, ref.INT32)
     local cropanchor = ref.new(0, ref.INT32)
 
+    -- resize refs
+    local resizeType = ref.new(0, ref.INT)
+    local resizeWidth = ref.new(200, ref.INT32)
+    local resizeHeight = ref.new(200, ref.INT32)
+    local resizeSampling = ref.new(0, ref.INT32)
+    local resizeAnchor = ref.new(0, ref.INT32)
+
     -- transformation refs
     local flipH = ref.new(false, ref.BOOL)
     local flipV = ref.new(false, ref.BOOL)
@@ -225,6 +325,25 @@ main(function ()
     local sigmoidEnabled = ref.new(false, ref.BOOL)
     local sigmoidMid = ref.new(0.5, ref.FLOAT32)
     local sigmoidFactor = ref.new(0, ref.FLOAT32)
+    local unsharpEnabled = ref.new(false, ref.BOOL)
+    local unsharpSigma = ref.new(1, ref.FLOAT32)
+    local unsharpAmount = ref.new(1, ref.FLOAT32)
+    local unsharpThreshold = ref.new(0, ref.FLOAT32)
+
+    -- color func refs
+    local colorFuncEnabled = ref.new(false, ref.BOOL)
+    local colorFuncRedOp = ref.new(0, ref.INT32)
+    local colorFuncRedValue = ref.new(0, ref.FLOAT32)
+    local colorFuncRedCValue = ref.new(0, ref.INT32)
+    local colorFuncGreenOp = ref.new(0, ref.INT32)
+    local colorFuncGreenValue = ref.new(0, ref.FLOAT32)
+    local colorFuncGreenCValue = ref.new(0, ref.INT32)
+    local colorFuncBlueOp = ref.new(0, ref.INT32)
+    local colorFuncBlueValue = ref.new(0, ref.FLOAT32)
+    local colorFuncBlueCValue = ref.new(0, ref.INT32)
+    local colorFuncAlphaOp = ref.new(0, ref.INT32)
+    local colorFuncAlphaValue = ref.new(0, ref.FLOAT32)
+    local colorFuncAlphaCValue = ref.new(0, ref.INT32)
 
     gui.window_run(win, function()
         gui.window_single():layout({
@@ -233,17 +352,24 @@ main(function ()
                     :set_style_float(gui.STYLEVAR_CHILDROUNDING, 10)
                     :to({
                         gui.wg_child()
-                            :size((200 + wpx * 2) * 2 + 50, 200 + wpy * 2)
+                            :size((200 + wpx * 2) * 2 + 50, 200 + wpy * 2 + 4)
                             :layout({
                                 -- using wg_image_sync here allows it to display while the image is being processed.
                                 -- otherwise the main goroutine would be blocked here
-                                gui.wg_row({
-                                    gui.wg_image_sync(imgSrc)
-                                        :size(200, 200),
-                                    gui.wg_dummy(50, 1), -- the 50 pixel space between images
-                                    gui.wg_image_sync(imgDst)
-                                        :size(200, 200),
-                                })
+                                gui.wg_table()
+                                    :flags(bit.bitor_many({
+                                        gui.FLAGTABLE_SIZINGSTRETCHSAME,
+                                        gui.FLAGTABLE_BORDERSINNERV,
+                                        gui.FLAGTABLE_NOPADOUTERX,
+                                    }))
+                                    :rows({
+                                        gui.wg_table_row({
+                                            gui.wg_image_sync(imgSrc)
+                                                :size(200, 200),
+                                            gui.wg_image_sync(imgDst)
+                                                :size(200, 200),
+                                        }),
+                                    }),
                             }),
                     })
             }),
@@ -310,9 +436,23 @@ main(function ()
                             ))
                         end
 
-                        if ref.get(convolutionSelected) > 0 then
+                        if not ref.get(convolutionCustom) and ref.get(convolutionSelected) > 0 then
                             table.insert(filters, filter.convolution(
                                 convolutionKernels[ref.get(convolutionSelected)],
+                                ref.get(convolutionNormalized),
+                                ref.get(convolutionAlpha),
+                                ref.get(convolutionABS),
+                                ref.get(convolutionDelta)
+                            ))
+                        end
+
+                        if ref.get(convolutionCustom) then
+                            table.insert(filters, filter.convolution(
+                                {
+                                    ref.get(convolution0x0), ref.get(convolution0x1), ref.get(convolution0x2),
+                                    ref.get(convolution1x0), ref.get(convolution1x1), ref.get(convolution1x2),
+                                    ref.get(convolution2x0), ref.get(convolution2x1), ref.get(convolution2x2),
+                                },
                                 ref.get(convolutionNormalized),
                                 ref.get(convolutionAlpha),
                                 ref.get(convolutionABS),
@@ -365,8 +505,47 @@ main(function ()
                             ))
                         end
 
+                        if ref.get(colorFuncEnabled) then
+                            local oRed = ref.get(colorFuncRedOp)
+                            local oGreen = ref.get(colorFuncGreenOp)
+                            local oBlue = ref.get(colorFuncBlueOp)
+                            local oAlpha = ref.get(colorFuncAlphaOp)
+
+                            local vRed = ref.get(colorFuncRedValue)
+                            local vGreen = ref.get(colorFuncGreenValue)
+                            local vBlue = ref.get(colorFuncBlueValue)
+                            local vAlpha = ref.get(colorFuncAlphaValue)
+
+                            local fRed = ref.get(colorFuncRedCValue)
+                            local fGreen = ref.get(colorFuncGreenCValue)
+                            local fBlue = ref.get(colorFuncBlueCValue)
+                            local fAlpha = ref.get(colorFuncAlphaCValue)
+                                
+                            table.insert(filters, filter.color_func(function(r,g,b,a)
+                                local vtRed = channelGet(fRed, vRed, r, g, b, a)
+                                local vtGreen = channelGet(fGreen, vGreen, r, g, b, a)
+                                local vtBlue = channelGet(fBlue, vBlue, r, g, b, a)
+                                local vtAlpha = channelGet(fAlpha, vAlpha, r, g, b, a)
+
+                                local vaRed = channelOp(oRed, r, vtRed)
+                                local vaGreen = channelOp(oGreen, g, vtGreen)
+                                local vaBlue = channelOp(oBlue, b, vtBlue)
+                                local vaAlpha = channelOp(oAlpha, a, vtAlpha)
+
+                                return vaRed, vaGreen, vaBlue, vaAlpha
+                            end))
+                        end
+
                         if ref.get(gaussEnabled) then
                             table.insert(filters, filter.gaussian_blur(ref.get(gaussSigma)))
+                        end
+
+                        if ref.get(unsharpEnabled) then
+                            table.insert(filters, filter.unsharp_mask(
+                                ref.get(unsharpSigma),
+                                ref.get(unsharpAmount),
+                                ref.get(unsharpThreshold)
+                            ))
                         end
 
                         if ref.get(pixelateEnabled) then
@@ -429,6 +608,31 @@ main(function ()
                             table.insert(filters, filter.sobel())
                         end
 
+                        if ref.get(resizeType) == 1 then
+                            table.insert(filters, filter.resize(
+                                ref.get(resizeWidth),
+                                ref.get(resizeHeight),
+                                ref.get(resizeSampling)
+                            ))
+                        end
+
+                        if ref.get(resizeType) == 2 then
+                            table.insert(filters, filter.resize_to_fill(
+                                ref.get(resizeWidth),
+                                ref.get(resizeHeight),
+                                ref.get(resizeSampling),
+                                ref.get(resizeAnchor)
+                            ))
+                        end
+
+                        if ref.get(resizeType) == 3 then
+                            table.insert(filters, filter.resize_to_fit(
+                                ref.get(resizeWidth),
+                                ref.get(resizeHeight),
+                                ref.get(resizeSampling)
+                            ))
+                        end
+
                         image.clear(imgDst)
                         filter.draw(imgSrc, imgDst, filters)
 
@@ -466,9 +670,9 @@ main(function ()
             }),
             wg_filter("Color Balance", {
                 gui.wg_checkbox("Enabled", colorBalanceEnabled),
-                wg_slider_float("Red %:", colorBalancePercentR, -100, 500, 0),
-                wg_slider_float("Green %:", colorBalancePercentG, -100, 500, 0),
-                wg_slider_float("Blue %:", colorBalancePercentB, -100, 500, 0),
+                wg_slider_float("Red Percent:", colorBalancePercentR, -100, 500, 0),
+                wg_slider_float("Green Percent:", colorBalancePercentG, -100, 500, 0),
+                wg_slider_float("Blue Percent:", colorBalancePercentB, -100, 500, 0),
             }),
             wg_filter("Colorize", {
                 gui.wg_checkbox("Enabled", colorizeEnabled),
@@ -477,20 +681,68 @@ main(function ()
                 wg_slider_float("Percent:", colorizePercent, 0, 100, 0),
             }),
             wg_filter("Convolution Filter", {
-                gui.wg_combo_preview(
-                    "Kernel",
-                    convolutionFilters,
-                    convolutionSelected
-                ),
-                gui.wg_row({
-                    gui.wg_checkbox("Normalized", convolutionNormalized),
-                    gui.wg_checkbox("Alpha", convolutionAlpha),
-                    gui.wg_checkbox("ABS", convolutionABS),
-                }),
-                wg_slider_float("Delta:", convolutionDelta, -2, 2, 0),
-
-                gui.wg_separator(),
-                
+                gui.wg_tab_bar():tab_items({
+                    gui.wg_tab_item("Presets"):layout({
+                        gui.wg_combo_preview(
+                            "Kernel",
+                            convolutionFilters,
+                            convolutionSelected
+                        ),
+                        gui.wg_row({
+                            gui.wg_checkbox("Normalized", convolutionNormalized),
+                            gui.wg_checkbox("Alpha", convolutionAlpha),
+                            gui.wg_checkbox("ABS", convolutionABS),
+                        }),
+                        wg_slider_float("Delta:", convolutionDelta, -2, 2, 0),
+                    }),
+                    gui.wg_tab_item("Custom"):layout({
+                        gui.wg_checkbox("Enable Custom Kernel", convolutionCustom),
+                        gui.wg_row({
+                            gui.wg_checkbox("Normalized", convolutionNormalized),
+                            gui.wg_checkbox("Alpha", convolutionAlpha),
+                            gui.wg_checkbox("ABS", convolutionABS),
+                        }),
+                        wg_slider_float("Delta:", convolutionDelta, -2, 2, 0),
+                        gui.wg_button("Reset Kernel")
+                            :on_click(function()
+                                ref.set(convolution0x0, 0)
+                                ref.set(convolution0x1, 0)
+                                ref.set(convolution0x2, 0)
+                                ref.set(convolution1x0, 0)
+                                ref.set(convolution1x1, 0)
+                                ref.set(convolution1x2, 0)
+                                ref.set(convolution2x0, 0)
+                                ref.set(convolution2x1, 0)
+                                ref.set(convolution2x2, 0)
+                            end),
+                        gui.wg_table()
+                            :flags(bit.bitor_many({
+                                gui.FLAGTABLE_BORDERSINNER,
+                                gui.FLAGTABLE_SIZINGFIXEDFIT,
+                                gui.FLAGTABLE_PRECISEWIDTHS,
+                                gui.FLAGTABLE_NOHOSTEXTENDX,
+                            }))
+                            :rows({
+                                gui.wg_table_row({
+                                    gui.wg_input_float(convolution0x0):format("%.2f"):size(50),
+                                    gui.wg_input_float(convolution0x1):format("%.2f"):size(50),
+                                    gui.wg_input_float(convolution0x2):format("%.2f"):size(50),
+                                }),
+                                gui.wg_table_row({
+                                    gui.wg_input_float(convolution1x0):format("%.2f"):size(50),
+                                    gui.wg_input_float(convolution1x1):format("%.2f"):size(50),
+                                    gui.wg_input_float(convolution1x2):format("%.2f"):size(50),
+                                }),
+                                gui.wg_table_row({
+                                    gui.wg_input_float(convolution2x0):format("%.2f"):size(50),
+                                    gui.wg_input_float(convolution2x1):format("%.2f"):size(50),
+                                    gui.wg_input_float(convolution2x2):format("%.2f"):size(50),
+                                }),
+                            }),
+                    }),
+                })
+            }),
+            wg_filter("Order Filters", {
                 gui.wg_row({
                     gui.wg_checkbox("Maximum Enabled", maximumEnabled),
                     gui.wg_checkbox("Disk", maximumDisk),
@@ -544,13 +796,34 @@ main(function ()
                             end),
                         wg_slider_int("Width:", cropwidth, 1, 200, 200),
                         wg_slider_int("Height:", cropheight, 1, 200, 200),
-                        gui.wg_combo_preview(
-                            "Anchor",
-                            cropAnchors,
-                            cropanchor
-                        ),
+                        gui.wg_combo_preview("Anchor", cropAnchors, cropanchor),
                     }),
                 }),
+            }),
+            wg_filter("Resize", {
+                gui.wg_row({
+                    gui.wg_label("Resize:"),
+                    gui.wg_button_radio("None", ref.get(resizeType) == 0)
+                        :on_change(function()
+                            ref.set(resizeType, 0)
+                        end),
+                    gui.wg_button_radio("Normal", ref.get(resizeType) == 1)
+                        :on_change(function()
+                            ref.set(resizeType, 1)
+                        end),
+                    gui.wg_button_radio("To Fill", ref.get(resizeType) == 2)
+                        :on_change(function()
+                            ref.set(resizeType, 2)
+                        end),
+                    gui.wg_button_radio("To Fit", ref.get(resizeType) == 3)
+                        :on_change(function()
+                            ref.set(resizeType, 3)
+                        end),
+                }),
+                wg_slider_int("Width:", resizeWidth, 1, 200, 200),
+                wg_slider_int("Height:", resizeHeight, 1, 200, 200),
+                gui.wg_combo_preview("Resampling", resampling, resizeSampling),
+                gui.wg_combo_preview("Anchor (For Fill)", cropAnchors, resizeAnchor),
             }),
             wg_filter("Transformations", {
                 gui.wg_row({
@@ -626,7 +899,21 @@ main(function ()
                 gui.wg_checkbox("Sigmoid Enabled", sigmoidEnabled),
                 wg_slider_float("Midpoint:", sigmoidMid, 0, 1, 0.5),
                 wg_slider_float("Factor:", sigmoidFactor, -10, 10, 0),
-            })
+
+                gui.wg_separator(),
+
+                gui.wg_checkbox("Unsharp Mask Enabled", unsharpEnabled),
+                wg_slider_float("Sigma:", unsharpSigma, 1, 5, 1),
+                wg_slider_float("Amount:", unsharpAmount, 0.5, 1.5, 1),
+                wg_slider_float("Threshold:", unsharpThreshold, 0, 0.05, 0),
+            }),
+            wg_filter("Color Function", {
+                gui.wg_checkbox("Color Function Enabled", colorFuncEnabled),
+                wg_cf_channel("Red:", colorFuncRedOp, colorFuncRedValue, colorFuncRedCValue),
+                wg_cf_channel("Green:", colorFuncGreenOp, colorFuncGreenValue, colorFuncGreenCValue),
+                wg_cf_channel("Blue:", colorFuncBlueOp, colorFuncBlueValue, colorFuncBlueCValue),
+                wg_cf_channel("Alpha:", colorFuncAlphaOp, colorFuncAlphaValue, colorFuncAlphaCValue),
+            }),
         })
     end)
 end)

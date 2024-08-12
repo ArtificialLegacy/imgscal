@@ -87,7 +87,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			_, err := os.Stat(args["path"].(string))
 			if err != nil {
-				os.MkdirAll(args["path"].(string), 0o666)
+				os.MkdirAll(args["path"].(string), 0o777)
 			}
 
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -95,7 +95,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					ext := imageutil.EncodingExtension(i.Self.Encoding)
-					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+ext), os.O_CREATE, 0o666)
+					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+ext), os.O_CREATE|os.O_RDWR, 0o666)
 					if err != nil {
 						state.Error(golua.LString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
 					}
@@ -224,9 +224,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			if args["all"].(bool) {
-				os.MkdirAll(args["path"].(string), 0o666)
+				os.MkdirAll(args["path"].(string), 0o777)
 			} else {
-				os.Mkdir(args["path"].(string), 0o666)
+				os.Mkdir(args["path"].(string), 0o777)
 			}
 			return 0
 		})

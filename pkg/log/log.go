@@ -39,7 +39,12 @@ func NewLogger(name string) Logger {
 	logTime := time.Now().UTC().UnixMilli()
 	fileName := fmt.Sprintf("%s_%d.txt", name, logTime)
 
-	file, _ := os.OpenFile(path.Join(LOG_DIR, fileName), os.O_CREATE, 0o666)
+	_, err := os.Stat(LOG_DIR)
+	if err != nil {
+		os.MkdirAll(LOG_DIR, 0o777)
+	}
+
+	file, _ := os.OpenFile(path.Join(LOG_DIR, fileName), os.O_CREATE|os.O_RDWR, 0o666)
 
 	lg := Logger{
 		logFile:      fileName,
@@ -48,11 +53,6 @@ func NewLogger(name string) Logger {
 		file:         file,
 		Parent:       nil,
 		childrenGrab: []string{},
-	}
-
-	_, err := os.Stat(LOG_DIR)
-	if err != nil {
-		os.MkdirAll(LOG_DIR, 0o666)
 	}
 
 	return lg
@@ -129,7 +129,7 @@ func (l *Logger) Close() {
 	l.file.Close()
 
 	if l.Parent == nil {
-		f, err := os.OpenFile(path.Join(LOG_DIR, "@latest.txt"), os.O_CREATE|os.O_TRUNC, 0o666)
+		f, err := os.OpenFile(path.Join(LOG_DIR, "@latest.txt"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 		if err != nil {
 			return
 		}

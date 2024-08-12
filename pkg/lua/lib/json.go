@@ -61,7 +61,7 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "compact", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			file, err := os.OpenFile(args["path"].(string), os.O_CREATE|os.O_TRUNC, 0o666)
+			file, err := os.OpenFile(args["path"].(string), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot open file: %s", args["path"].(string)), log.LEVEL_ERROR)), 0)
 			}

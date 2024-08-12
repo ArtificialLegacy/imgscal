@@ -36,6 +36,14 @@ Demo workflow that creates an interface with controls to generate noise maps.
 
 ![noise example](assets/demos/example_noise.png)
 
+### GUI/Filter
+
+Demo workflow that creates an interface to apply filters to an image.
+
+> [Source File](/workflows//example_filter.lua)
+
+![filter example](assets/demos/example_filters.png)
+
 ## Build
 
 ### Windows
