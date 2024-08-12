@@ -7,6 +7,24 @@ writing in lua.
 * Run image processing tasks written using lua.
 * CLI interface with portable exe.
 
+## Examples
+
+### GUI/Noise
+
+Demo workflow that creates an interface with controls to generate noise maps.
+
+> [Source File](/workflows/example_noise.lua)
+
+![noise example](assets/demos/example_noise.png)
+
+### GUI/Filter
+
+Demo workflow that creates an interface to apply filters to an image.
+
+> [Source File](/workflows//example_filter.lua)
+
+![filter example](assets/demos/example_filters.png)
+
 ## Known Issues
 
 * There is an upstream issue related to `mainthread` when running on Windows.
@@ -25,24 +43,6 @@ writing in lua.
   * Passing the same collection item twice into a function that schedules on it. e.g. `image.draw()`
   * Calling a function that schedules on a collection item within a function already running for that
     collection item. e.g. Calling `image.size()` within the callback of `image.map()` for the same images.
-
-## Examples
-
-### GUI/Noise
-
-Demo workflow that creates an interface with controls to generate noise maps.
-
-> [Source File](/workflows/example_noise.lua)
-
-![noise example](assets/demos/example_noise.png)
-
-### GUI/Filter
-
-Demo workflow that creates an interface to apply filters to an image.
-
-> [Source File](/workflows//example_filter.lua)
-
-![filter example](assets/demos/example_filters.png)
 
 ## Build
 
