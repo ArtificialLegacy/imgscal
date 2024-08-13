@@ -46,17 +46,6 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func wd()
-	/// @returns string
-	/// @desc
-	/// returns the dir of the currently running workflow
-	lib.CreateFunction(tab, "wd",
-		[]lua.Arg{},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			state.Push(golua.LString(r.Dir))
-			return 1
-		})
-
 	/// @func fmt()
 	/// @arg str
 	/// @arg []values

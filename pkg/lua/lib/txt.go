@@ -42,7 +42,7 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			}
 
 			chLog := log.NewLogger(fmt.Sprintf("file_%s", fi.Name()))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: file_%s", fi.Name()), log.LEVEL_INFO)
 
 			id := r.FC.AddItem(&chLog)

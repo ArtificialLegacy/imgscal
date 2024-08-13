@@ -20,6 +20,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @arg id1
 	/// @arg id2
 	/// @arg []filter
+	/// @arg? disableParallelization
 	/// desc
 	/// applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw",
@@ -27,6 +28,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id1"},
 			{Type: lua.INT, Name: "id2"},
 			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgReady := make(chan struct{}, 2)
@@ -47,25 +49,30 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
+			scheduledState, _ := state.NewThread()
+
 			r.IC.Schedule(args["id2"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					<-imgReady
 
-					g := buildFilterList(state, filters, args["filters"].(*golua.LTable))
+					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
+					if args["disableParallelization"].(bool) {
+						g.SetParallelization(false)
+					}
 					g.Draw(imageutil.ImageGetDraw(i.Self.Image), img)
 
-					state.Close()
+					scheduledState.Close()
 					imgFinished <- struct{}{}
 				},
 				Fail: func(i *collection.Item[collection.ItemImage]) {
-					state.Close()
+					scheduledState.Close()
 					imgFinished <- struct{}{}
 				},
 			})
 
-			return -1
+			return 0
 		})
 
 	/// @func draw_at()
@@ -74,6 +81,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @arg point
 	/// @arg op
 	/// @arg []filter
+	/// @arg? disableParallelization
 	/// desc
 	/// applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw_at",
@@ -83,6 +91,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "point"},
 			{Type: lua.INT, Name: "op"},
 			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgReady := make(chan struct{}, 2)
@@ -103,26 +112,31 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
+			scheduledState, _ := state.NewThread()
+
 			r.IC.Schedule(args["id2"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					<-imgReady
 
-					g := buildFilterList(state, filters, args["filters"].(*golua.LTable))
-					pt := imageutil.TableToPoint(state, args["point"].(*golua.LTable))
+					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
+					pt := imageutil.TableToPoint(scheduledState, args["point"].(*golua.LTable))
+					if args["disableParallelization"].(bool) {
+						g.SetParallelization(false)
+					}
 					g.DrawAt(imageutil.ImageGetDraw(i.Self.Image), img, pt, gift.Operator(args["op"].(int)))
 
-					state.Close()
+					scheduledState.Close()
 					imgFinished <- struct{}{}
 				},
 				Fail: func(i *collection.Item[collection.ItemImage]) {
-					state.Close()
+					scheduledState.Close()
 					imgFinished <- struct{}{}
 				},
 			})
 
-			return -1
+			return 0
 		})
 
 	/// @func draw_at_xy()
@@ -132,6 +146,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @arg y
 	/// @arg op
 	/// @arg []filter
+	/// @arg? disableParallelization
 	/// desc
 	/// applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw_at_xy",
@@ -142,6 +157,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y"},
 			{Type: lua.INT, Name: "op"},
 			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgReady := make(chan struct{}, 2)
@@ -162,34 +178,40 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
+			scheduledState, _ := state.NewThread()
+
 			r.IC.Schedule(args["id2"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					<-imgReady
 
-					g := buildFilterList(state, filters, args["filters"].(*golua.LTable))
+					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
+					if args["disableParallelization"].(bool) {
+						g.SetParallelization(false)
+					}
 					g.DrawAt(
 						imageutil.ImageGetDraw(i.Self.Image), img,
 						image.Point{X: args["x"].(int), Y: args["y"].(int)},
 						gift.Operator(args["op"].(int)),
 					)
 
-					state.Close()
+					scheduledState.Close()
 					imgFinished <- struct{}{}
 				},
 				Fail: func(i *collection.Item[collection.ItemImage]) {
-					state.Close()
+					scheduledState.Close()
 					imgFinished <- struct{}{}
 				},
 			})
 
-			return -1
+			return 0
 		})
 
 	/// @func bounds()
 	/// @arg id
 	/// @arg []filter
+	/// @arg? disableParallelization
 	/// @returns x1
 	/// @returns y1
 	/// @returns x2
@@ -201,14 +223,19 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var dstBounds image.Rectangle
+
 			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					g := buildFilterList(state, filters, args["filters"].(*golua.LTable))
+					if args["disableParallelization"].(bool) {
+						g.SetParallelization(false)
+					}
 					dstBounds = g.Bounds(i.Self.Image.Bounds())
 				},
 			})
@@ -223,6 +250,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @func bounds_size()
 	/// @arg id
 	/// @arg []filter
+	/// @arg? disableParallelization
 	/// @returns width
 	/// @returns height
 	/// @blocking
@@ -232,6 +260,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var dstBounds image.Rectangle
@@ -240,6 +269,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					g := buildFilterList(state, filters, args["filters"].(*golua.LTable))
+					if args["disableParallelization"].(bool) {
+						g.SetParallelization(false)
+					}
 					dstBounds = g.Bounds(i.Self.Image.Bounds())
 				},
 			})
@@ -829,6 +861,23 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_func_unsafe()
+	/// @arg fn - function(r,g,b,a) r,g,b,a
+	/// @returns filter
+	/// @desc
+	/// Color values are floats between 0 and 1.
+	/// Note parallelization must be disabled for this to work.
+	lib.CreateFunction(tab, "color_func_unsafe",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := colorFuncUnsafeTable(state, args["fn"].(*golua.LFunction))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @constants Anchor
 	/// @const ANCHOR_CENTER
 	/// @const ANCHOR_TOPLEFT
@@ -930,6 +979,7 @@ const (
 	FILTER_RESIZE_TO_FILL            = "resize_to_fill"
 	FILTER_RESIZE_TO_FIT             = "resize_to_fit"
 	FILTER_COLOR_FUNC                = "color_func"
+	FILTER_COLOR_FUNC_UNSAFE         = "color_func_unsafe"
 )
 
 type filterList map[string]func(state *golua.LState, t *golua.LTable) gift.Filter
@@ -972,6 +1022,7 @@ var filters = filterList{
 	FILTER_RESIZE_TO_FILL:            resizeToFillBuild,
 	FILTER_RESIZE_TO_FIT:             resizeToFitBuild,
 	FILTER_COLOR_FUNC:                colorFuncBuild,
+	FILTER_COLOR_FUNC_UNSAFE:         colorFuncUnsafeBuild,
 }
 
 func buildFilterList(state *golua.LState, filterList filterList, t *golua.LTable) *gift.GIFT {
@@ -1750,6 +1801,40 @@ func colorFuncBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 		g1 := cfInner.CheckNumber(-3)
 		b1 := cfInner.CheckNumber(-2)
 		a1 := cfInner.CheckNumber(-1)
+		cfInner.Close()
+		return float32(r1), float32(g1), float32(b1), float32(a1)
+	})
+	return f
+}
+
+func colorFuncUnsafeTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
+	/// @struct flt_color_func_unsafe
+	/// @prop type
+	/// @prop fn
+
+	t := state.NewTable()
+	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLOR_FUNC_UNSAFE))
+	state.SetTable(t, golua.LString("fn"), fn)
+
+	return t
+}
+
+func colorFuncUnsafeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
+	fn := state.GetTable(t, golua.LString("fn")).(*golua.LFunction)
+
+	f := gift.ColorFunc(func(r0, g0, b0, a0 float32) (r float32, g float32, b float32, a float32) {
+		state.Push(fn)
+		state.Push(golua.LNumber(r0))
+		state.Push(golua.LNumber(g0))
+		state.Push(golua.LNumber(b0))
+		state.Push(golua.LNumber(a0))
+		state.Call(4, 4)
+
+		r1 := state.CheckNumber(-4)
+		g1 := state.CheckNumber(-3)
+		b1 := state.CheckNumber(-2)
+		a1 := state.CheckNumber(-1)
+		state.Pop(4)
 		return float32(r1), float32(g1), float32(b1), float32(a1)
 	})
 	return f

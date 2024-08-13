@@ -72,6 +72,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 			sm.PushString(s)
 		}
 		sm.PushString(script)
+		sm.PushBool(false)
 		sm.SetState(STATE_WORKFLOW_RUN)
 		lg.Append("confirmation answer y", log.LEVEL_INFO)
 	case "n":

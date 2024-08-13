@@ -2,6 +2,7 @@ package states
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -15,6 +16,7 @@ import (
 func WorkflowRun(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
+	exitFinish := sm.PopBool()
 	script := sm.PopString()
 	req := []string{}
 	for sm.Peek() {
@@ -54,8 +56,11 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	err := runner.Run(script)
 
-	for checkState(runner.IC) || checkState(runner.FC) || checkState(runner.CC) || checkState(runner.QR) {
+	for checkState(runner.IC) || checkState(runner.TC) || checkState(runner.FC) || checkState(runner.CC) || checkState(runner.QR) {
+		time.Sleep(time.Millisecond * 10)
 	}
+
+	lg.Append("All collections empty, exiting", log.LEVEL_SYSTEM)
 
 	runner.CR_WIN.CleanAll()
 	runner.CR_REF.CleanAll()
@@ -82,14 +87,24 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
 	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
 	if ert || eri || erf || erc || erq {
+		if exitFinish {
+			sm.SetState(STATE_EXIT)
+			return fmt.Errorf("error running script")
+		}
+
 		sm.PushString("error occurred within collection")
 		sm.PushString(script)
 		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
 
-		return nil
+		return fmt.Errorf("error running script")
 	}
 
 	lg.Append("workflow finished", log.LEVEL_INFO)
+
+	if exitFinish {
+		sm.SetState(STATE_EXIT)
+		return nil
+	}
 
 	sm.PushString(script)
 	sm.SetState(STATE_WORKFLOW_FINISH)

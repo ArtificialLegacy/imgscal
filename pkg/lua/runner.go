@@ -291,18 +291,7 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
 		state.Pop(c)
 
-		newState, _ := state.NewThread()
-		ret := fn(newState, TaskData{Lib: l.Lib, Name: name}, argMap)
-		cl := true
-		if ret < 0 {
-			cl = false
-			ret = (ret * -1) - 1
-		}
-
-		newState.XMoveTo(state, ret)
-		if cl {
-			newState.Close()
-		}
+		ret := fn(state, TaskData{Lib: l.Lib, Name: name}, argMap)
 
 		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_VERBOSE)
 		return ret

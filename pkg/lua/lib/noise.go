@@ -51,7 +51,7 @@ func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)

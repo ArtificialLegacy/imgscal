@@ -39,7 +39,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			}
 
 			chLog := log.NewLogger(fmt.Sprintf("image_%s", file.Name()))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", file.Name()), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)
@@ -229,6 +229,38 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				os.Mkdir(args["path"].(string), 0o777)
 			}
 			return 0
+		})
+
+	/// @func path_join()
+	/// @arg []string
+	/// @returns path
+	lib.CreateFunction(tab, "path_join",
+		[]lua.Arg{
+			lua.ArgArray("paths", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			strs := []string{}
+			pths := args["paths"].(map[string]any)
+
+			for i := range len(pths) {
+				strs = append(strs, pths[string(i+1)].(string))
+			}
+
+			pth := path.Join(strs...)
+
+			state.Push(golua.LString(pth))
+			return 1
+		})
+
+	/// @func wd()
+	/// @returns string
+	/// @desc
+	/// returns the dir of the currently running workflow
+	lib.CreateFunction(tab, "wd",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LString(r.Dir))
+			return 1
 		})
 }
 

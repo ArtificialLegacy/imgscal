@@ -425,7 +425,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			w.SetCloseCallback(func() bool {
 				state.Push(args["callback"].(*golua.LFunction))
 				state.Call(0, 1)
-				return bool(state.ToBool(-1))
+				res := bool(state.ToBool(-1))
+				state.Pop(1)
+				return res
 			})
 			return 0
 		})

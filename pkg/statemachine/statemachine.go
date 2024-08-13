@@ -63,6 +63,10 @@ func (sm *StateMachine) PushString(value string) {
 	sm.push(value)
 }
 
+func (sm *StateMachine) PushBool(value bool) {
+	sm.push(value)
+}
+
 func (sm *StateMachine) PopInt() int {
 	val := sm.pop()
 
@@ -82,6 +86,17 @@ func (sm *StateMachine) PopString() string {
 		return v
 	default:
 		panic(fmt.Sprintf("Attemping to pop a non-string off the stack as an string. got=%T", val))
+	}
+}
+
+func (sm *StateMachine) PopBool() bool {
+	val := sm.pop()
+
+	switch v := val.(type) {
+	case bool:
+		return v
+	default:
+		panic(fmt.Sprintf("Attemping to pop a non-bool off the stack as a bool. got=%T", val))
 	}
 }
 

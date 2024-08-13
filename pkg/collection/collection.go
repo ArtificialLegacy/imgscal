@@ -77,7 +77,8 @@ type Item[T ItemSelf] struct {
 
 	cleaned bool
 	collect bool
-	waiting bool
+
+	mu sync.Mutex
 
 	currTask *Task[T]
 
@@ -89,13 +90,11 @@ type Item[T ItemSelf] struct {
 
 func NewItem[T ItemSelf](lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 	i := &Item[T]{
-		Self: nil,
-		Lg:   lg,
-
+		Self:      nil,
+		Lg:        lg,
 		cleaned:   false,
 		collect:   false,
 		failed:    false,
-		waiting:   true,
 		TaskQueue: make(chan *Task[T], TASK_QUEUE_SIZE),
 	}
 
@@ -112,7 +111,6 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 				fn(i)
 			}
 			i.failed = true
-			i.waiting = true
 			i.cleaned = true
 			i.Err = fmt.Errorf("%+v", p)
 			if i.currTask != nil {
@@ -131,13 +129,17 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 	}()
 
 	for {
-		i.waiting = true
-		task := <-i.TaskQueue
-		i.currTask = task
-		i.waiting = false
-		i.Lg.Append(fmt.Sprintf("%s.%s task called", task.Lib, task.Name), log.LEVEL_VERBOSE)
-		task.Fn(i)
-		i.Lg.Append(fmt.Sprintf("%s.%s task finished", task.Lib, task.Name), log.LEVEL_VERBOSE)
+		if len(i.TaskQueue) == 0 {
+			continue
+		}
+
+		i.mu.Lock()
+		i.currTask = <-i.TaskQueue
+		i.Lg.Append(fmt.Sprintf("%s.%s task called", i.currTask.Lib, i.currTask.Name), log.LEVEL_VERBOSE)
+		i.currTask.Fn(i)
+		i.Lg.Append(fmt.Sprintf("%s.%s task finished", i.currTask.Lib, i.currTask.Name), log.LEVEL_VERBOSE)
+		i.currTask = nil
+		i.mu.Unlock()
 
 		if i.cleaned {
 			i.Lg.Append(fmt.Sprintf("item [%T] cleaned", i.Self), log.LEVEL_INFO)
@@ -279,10 +281,12 @@ func (c *Collection[T]) TaskCount() (int, bool) {
 		if i.Err != nil {
 			errList = append(errList, i.Err)
 		}
-		if !i.waiting && !i.failed {
+		i.mu.Lock()
+		if i.currTask != nil && !i.failed {
 			busy = true
 		}
 		count += len(i.TaskQueue)
+		i.mu.Unlock()
 	}
 
 	c.Errs = errList

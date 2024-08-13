@@ -30,7 +30,7 @@ type Logger struct {
 	name         string
 	logger       logoutput
 	file         *os.File
-	Parent       *Logger
+	parent       *Logger
 	childrenGrab []string
 	verbose      bool
 }
@@ -51,7 +51,7 @@ func NewLogger(name string) Logger {
 		name:         name,
 		logger:       log.New(file, "", 0),
 		file:         file,
-		Parent:       nil,
+		parent:       nil,
 		childrenGrab: []string{},
 	}
 
@@ -66,10 +66,15 @@ func NewLoggerEmpty() Logger {
 	lg := Logger{
 		logFile: "",
 		logger:  emptyLog{},
-		Parent:  nil,
+		parent:  nil,
 	}
 
 	return lg
+}
+
+func (l *Logger) Parent(lg *Logger) {
+	l.verbose = lg.verbose
+	l.parent = lg
 }
 
 func (l Logger) EnableVerbose() Logger {
@@ -82,8 +87,8 @@ func (l *Logger) Append(str string, level LogLevel) string {
 		return str
 	}
 
-	if l.Parent != nil {
-		l.Parent.Append(str, level)
+	if l.parent != nil {
+		l.parent.Append(str, level)
 	}
 
 	logTime := time.Now().Format(time.ANSIC)
@@ -110,8 +115,8 @@ func (l *Logger) Append(str string, level LogLevel) string {
 }
 
 func (l *Logger) Close() {
-	if l.Parent != nil {
-		l.Parent.childrenGrab = append(l.Parent.childrenGrab, l.file.Name())
+	if l.parent != nil {
+		l.parent.childrenGrab = append(l.parent.childrenGrab, l.file.Name())
 	}
 
 	for _, c := range l.childrenGrab {
@@ -128,7 +133,7 @@ func (l *Logger) Close() {
 
 	l.file.Close()
 
-	if l.Parent == nil {
+	if l.parent == nil {
 		f, err := os.OpenFile(path.Join(LOG_DIR, "@latest.txt"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 		if err != nil {
 			return

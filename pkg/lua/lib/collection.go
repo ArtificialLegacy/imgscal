@@ -27,7 +27,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("task_%s", name))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: task_%s", name), log.LEVEL_INFO)
 
 			id := r.TC.AddItem(&chLog)
@@ -59,13 +59,15 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FUNC, Name: "func"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			scheduledState, _ := state.NewThread()
+
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
 				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
-						callScheduledFunction(state, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
 					},
 				})
 			case collection.TYPE_IMAGE:
@@ -73,7 +75,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
-						callScheduledFunction(state, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
 					},
 				})
 			case collection.TYPE_FILE:
@@ -81,7 +83,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemFile]) {
-						callScheduledFunction(state, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
 					},
 				})
 			case collection.TYPE_CONTEXT:
@@ -89,7 +91,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
-						callScheduledFunction(state, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
 					},
 				})
 			case collection.TYPE_QR:
@@ -97,12 +99,12 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
-						callScheduledFunction(state, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
 					},
 				})
 			}
 
-			return -1
+			return 0
 		})
 
 	/// @func wait()

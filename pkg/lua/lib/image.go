@@ -38,7 +38,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)
@@ -278,7 +278,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)
@@ -340,7 +340,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-			chLog.Parent = lg
+			chLog.Parent(lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)
@@ -1086,12 +1086,16 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @func map()
 	/// @arg id
 	/// @arg fn - takes in x, y , {red, green, blue, alpha} and returns a new {red, green, blue, alpha}
+	/// @arg? invert - reverses the looping order from columns to rows
 	lib.CreateFunction(tab, "map",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.FUNC, Name: "func"},
+			{Type: lua.BOOL, Name: "invert", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			scheduledState, _ := state.NewThread()
+
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -1101,49 +1105,70 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 					width := i.Self.Image.Bounds().Dx()
 					height := i.Self.Image.Bounds().Dy()
 
-					for ix := x; ix < x+width; ix++ {
-						for iy := y; iy < y+height; iy++ {
+					d1Start := x
+					d1End := x + width
+					d2Start := y
+					d2End := y + height
+					invert := args["invert"].(bool)
+					if invert {
+						d1Start = y
+						d1End = y + height
+						d2Start = x
+						d2End = x + width
+					}
+
+					for d1 := d1Start; d1 < d1End; d1++ {
+						for d2 := d2Start; d2 < d2End; d2++ {
+							ix := d1
+							iy := d2
+							if invert {
+								ix = d2
+								iy = d1
+							}
+
 							px := i.Self.Image.At(ix, iy)
 							cr, cg, cb, ca := px.RGBA()
 
-							mapThread, _ := state.NewThread()
-							mapThread.Push(args["func"].(*golua.LFunction))
+							scheduledState.Push(args["func"].(*golua.LFunction))
 
-							mapThread.Push(golua.LNumber(ix - x))
-							mapThread.Push(golua.LNumber(iy - y))
+							scheduledState.Push(golua.LNumber(ix - x))
+							scheduledState.Push(golua.LNumber(iy - y))
 
-							t := rgbaTable(mapThread, int(cr), int(cg), int(cb), int(ca))
-							mapThread.Push(t)
-							mapThread.Call(3, 1)
-							c := mapThread.ToTable(-1)
+							t := rgbaTable(scheduledState, int(cr), int(cg), int(cb), int(ca))
+							scheduledState.Push(t)
+							scheduledState.Call(3, 1)
+							c := scheduledState.ToTable(-1)
+							scheduledState.Pop(1)
 
-							nr := mapThread.GetField(c, "red")
+							nr := scheduledState.GetField(c, "red")
 							if nr.Type() != golua.LTNumber {
-								mapThread.Error(golua.LString(lg.Append("invalid red field returned into image.map", log.LEVEL_ERROR)), 0)
+								scheduledState.Error(golua.LString(lg.Append("invalid red field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							ng := mapThread.GetField(c, "green")
+							ng := scheduledState.GetField(c, "green")
 							if ng.Type() != golua.LTNumber {
-								mapThread.Error(golua.LString(lg.Append("invalid green field returned into image.map", log.LEVEL_ERROR)), 0)
+								scheduledState.Error(golua.LString(lg.Append("invalid green field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							nb := mapThread.GetField(c, "blue")
+							nb := scheduledState.GetField(c, "blue")
 							if nb.Type() != golua.LTNumber {
-								mapThread.Error(golua.LString(lg.Append("invalid blue field returned into image.map", log.LEVEL_ERROR)), 0)
+								scheduledState.Error(golua.LString(lg.Append("invalid blue field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							na := mapThread.GetField(c, "alpha")
+							na := scheduledState.GetField(c, "alpha")
 							if na.Type() != golua.LTNumber {
-								mapThread.Error(golua.LString(lg.Append("invalid alpha field returned into image.map", log.LEVEL_ERROR)), 0)
+								scheduledState.Error(golua.LString(lg.Append("invalid alpha field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
 
-							mapThread.Close()
 							imageutil.Set(i.Self.Image, ix, iy, int(nr.(golua.LNumber)), int(ng.(golua.LNumber)), int(nb.(golua.LNumber)), int(na.(golua.LNumber)))
 						}
 					}
 
-					state.Close()
+					scheduledState.Close()
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					scheduledState.Close()
 				},
 			})
 
-			return -1
+			return 0
 		})
 
 	/// @constants Color Models
