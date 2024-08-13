@@ -145,7 +145,7 @@ func TestParseArgs_Table(t *testing.T) {
 	lib := setupLib()
 
 	tab := lib.State.NewTable()
-	tab.RawSet(golua.LString("v1"), golua.LNumber(1))
+	tab.RawSetString("v1", golua.LNumber(1))
 	lib.State.Push(tab)
 
 	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.TABLE, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
@@ -167,13 +167,13 @@ func TestParseArgs_Array(t *testing.T) {
 	lib := setupLib()
 
 	tab := lib.State.NewTable()
-	tab.RawSet(golua.LString("v1"), golua.LNumber(1))
+	tab.RawSetInt(1, golua.LNumber(1))
 	lib.State.Push(tab)
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.ARRAY, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{lua.ArgArray("v1", lua.ArrayType{Type: lua.INT}, false)}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
-		if v, ok := v.(map[string]any)["v1"]; ok {
+		if v, ok := v.(map[string]any)["1"]; ok {
 			if v.(int) != 1 {
 				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v)
 			}
