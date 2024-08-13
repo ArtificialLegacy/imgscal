@@ -8,6 +8,7 @@ config({
         "noise",
         "ref",
         "collection",
+        "cli",
     },
 
     desc="GUI example for generating noise maps with opensimplex noise."
@@ -43,7 +44,7 @@ function genNoise2(img, seed, scale, direct, ecolor, ealpha, normal, ready)
         end)
     end
 
-    collection.schedule(collection.TYPE_IMAGE, img, function()
+    collection.schedule(collection.IMAGE, img, function()
         ref.set(ready, true)
         gui.update()
     end)
@@ -59,7 +60,7 @@ function genNoise3(img, seed, scale, aoff, normal, ready)
         return image.color_rgba_gray(i1, i2)
     end)
 
-    collection.schedule(collection.TYPE_IMAGE, img, function()
+    collection.schedule(collection.IMAGE, img, function()
         ref.set(ready, true)
         gui.update()
     end)
@@ -77,7 +78,7 @@ function genNoise4(img, seed, scale, goff, boff, normal, ready)
         return image.color_rgb(i1, i2, i3)
     end)
 
-    collection.schedule(collection.TYPE_IMAGE, img, function()
+    collection.schedule(collection.IMAGE, img, function()
         ref.set(ready, true)
         gui.update()
     end)

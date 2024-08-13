@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"strconv"
+
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/yuin/gopher-lua"
@@ -40,7 +42,7 @@ func RegisterBit(r *lua.Runner, lg *log.Logger) {
 			acc := 0
 
 			for i := range len(list) {
-				v := list[string(i+1)].(int)
+				v := list[strconv.Itoa(i+1)].(int)
 				acc |= v
 			}
 

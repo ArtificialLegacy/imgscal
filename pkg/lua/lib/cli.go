@@ -23,7 +23,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "msg"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			println(args["msg"])
+			println(args["msg"].(string))
 			lg.Append(fmt.Sprintf("lua msg printed: %s", args["msg"]), log.LEVEL_INFO)
 			return 0
 		})
@@ -119,6 +119,32 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			lg.Append(fmt.Sprintf("selection option picked: %d", ind+1), log.LEVEL_INFO)
 
 			state.Push(golua.LNumber(ind + 1))
+			return 1
+		})
+
+	/// @func color_256()
+	/// @arg code
+	/// @returns color control code
+	lib.CreateFunction(tab, "color_256",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "code"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			code := args["code"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[38;5;%dm", code)))
+			return 1
+		})
+
+	/// @func color_bg_256()
+	/// @arg code
+	/// @returns color control code
+	lib.CreateFunction(tab, "color_bg_256",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "code"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			code := args["code"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[48;5;%dm", code)))
 			return 1
 		})
 

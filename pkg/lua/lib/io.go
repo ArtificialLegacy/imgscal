@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -243,7 +244,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			pths := args["paths"].(map[string]any)
 
 			for i := range len(pths) {
-				strs = append(strs, pths[string(i+1)].(string))
+				strs = append(strs, pths[strconv.Itoa(i+1)].(string))
 			}
 
 			pth := path.Join(strs...)

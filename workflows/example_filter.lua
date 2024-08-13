@@ -636,7 +636,7 @@ main(function ()
                         image.clear(imgDst)
                         filter.draw(imgSrc, imgDst, filters)
 
-                        collection.schedule(collection.TYPE_IMAGE, imgDst, function()
+                        collection.schedule(collection.IMAGE, imgDst, function()
                             ref.set(ready, true)
                             gui.update()
                         end)
