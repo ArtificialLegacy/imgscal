@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/AllenDang/giu"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -188,9 +189,9 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 			m := map[string]any{}
 
 			for i := range v.Len() {
-				m = l.ParseValue(state, pos, state.GetTable(v, lua.LNumber(i+1)), Arg{
+				m = l.ParseValue(state, pos, v.RawGetInt(i+1), Arg{
 					Type:  (*arg.Table)[0].Type,
-					Name:  string(i + 1),
+					Name:  strconv.Itoa(i + 1),
 					Table: (*arg.Table)[0].Table,
 				}, m)
 			}

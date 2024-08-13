@@ -139,7 +139,7 @@ func createValue(value any, state *golua.LState) golua.LValue {
 	case map[string]any:
 		t := state.NewTable()
 		for k, va := range v {
-			t.RawSet(golua.LString(k), createValue(va, state))
+			t.RawSetString(k, createValue(va, state))
 		}
 		return t
 

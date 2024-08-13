@@ -101,11 +101,11 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	/// @const O_RDWR
 	/// @const O_RDONLY
 	/// @const O_WRONLY
-	r.State.SetField(tab, "O_CREATE", golua.LNumber(os.O_CREATE))
-	r.State.SetField(tab, "O_TRUNC", golua.LNumber(os.O_TRUNC))
-	r.State.SetField(tab, "O_EXCL", golua.LNumber(os.O_EXCL))
-	r.State.SetField(tab, "O_APPEND", golua.LNumber(os.O_APPEND))
-	r.State.SetField(tab, "O_RDWR", golua.LNumber(os.O_RDWR))
-	r.State.SetField(tab, "O_RDONLY", golua.LNumber(os.O_RDONLY))
-	r.State.SetField(tab, "O_WRONLY", golua.LNumber(os.O_WRONLY))
+	tab.RawSetString("O_CREATE", golua.LNumber(os.O_CREATE))
+	tab.RawSetString("O_TRUNC", golua.LNumber(os.O_TRUNC))
+	tab.RawSetString("O_EXCL", golua.LNumber(os.O_EXCL))
+	tab.RawSetString("O_APPEND", golua.LNumber(os.O_APPEND))
+	tab.RawSetString("O_RDWR", golua.LNumber(os.O_RDWR))
+	tab.RawSetString("O_RDONLY", golua.LNumber(os.O_RDONLY))
+	tab.RawSetString("O_WRONLY", golua.LNumber(os.O_WRONLY))
 }

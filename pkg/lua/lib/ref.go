@@ -205,16 +205,16 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 	/// @const RGBA
 	/// @const TIME - timestamp in ms
 	/// @const FONT - giu.FontInfo - cannot be created or set, getting will return .String()
-	r.State.SetField(tab, "LUA", golua.LNumber(REFTYPE_LUA))
-	r.State.SetField(tab, "BOOL", golua.LNumber(REFTYPE_BOOL))
-	r.State.SetField(tab, "INT", golua.LNumber(REFTYPE_INT))
-	r.State.SetField(tab, "INT32", golua.LNumber(REFTYPE_INT32))
-	r.State.SetField(tab, "FLOAT", golua.LNumber(REFTYPE_FLOAT))
-	r.State.SetField(tab, "FLOAT32", golua.LNumber(REFTYPE_FLOAT32))
-	r.State.SetField(tab, "STRING", golua.LNumber(REFTYPE_STRING))
-	r.State.SetField(tab, "RGBA", golua.LNumber(REFTYPE_RGBA))
-	r.State.SetField(tab, "TIME", golua.LNumber(REFTYPE_TIME))
-	r.State.SetField(tab, "FONT", golua.LNumber(REFTYPE_FONT))
+	tab.RawSetString("LUA", golua.LNumber(REFTYPE_LUA))
+	tab.RawSetString("BOOL", golua.LNumber(REFTYPE_BOOL))
+	tab.RawSetString("INT", golua.LNumber(REFTYPE_INT))
+	tab.RawSetString("INT32", golua.LNumber(REFTYPE_INT32))
+	tab.RawSetString("FLOAT", golua.LNumber(REFTYPE_FLOAT))
+	tab.RawSetString("FLOAT32", golua.LNumber(REFTYPE_FLOAT32))
+	tab.RawSetString("STRING", golua.LNumber(REFTYPE_STRING))
+	tab.RawSetString("RGBA", golua.LNumber(REFTYPE_RGBA))
+	tab.RawSetString("TIME", golua.LNumber(REFTYPE_TIME))
+	tab.RawSetString("FONT", golua.LNumber(REFTYPE_FONT))
 }
 
 const (

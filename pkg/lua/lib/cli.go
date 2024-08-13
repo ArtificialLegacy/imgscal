@@ -124,7 +124,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 	/// @constants Control
 	/// @const RESET
-	r.State.SetField(tab, "RESET", golua.LString(cli.COLOR_RESET))
+	tab.RawSetString("RESET", golua.LString(cli.COLOR_RESET))
 
 	/// @constants Text Colors
 	/// @const BLACK
@@ -143,23 +143,23 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @const BRIGHT_MAGENTA
 	/// @const BRIGHT_CYAN
 	/// @const BRIGHT_WHITE
-	r.State.SetField(tab, "BLACK", golua.LString(cli.COLOR_BLACK))
-	r.State.SetField(tab, "RED", golua.LString(cli.COLOR_RED))
-	r.State.SetField(tab, "GREEN", golua.LString(cli.COLOR_GREEN))
-	r.State.SetField(tab, "YELLOW", golua.LString(cli.COLOR_YELLOW))
-	r.State.SetField(tab, "BLUE", golua.LString(cli.COLOR_BLUE))
-	r.State.SetField(tab, "MAGENTA", golua.LString(cli.COLOR_MAGENTA))
-	r.State.SetField(tab, "CYAN", golua.LString(cli.COLOR_CYAN))
-	r.State.SetField(tab, "WHITE", golua.LString(cli.COLOR_WHITE))
+	tab.RawSetString("BLACK", golua.LString(cli.COLOR_BLACK))
+	tab.RawSetString("RED", golua.LString(cli.COLOR_RED))
+	tab.RawSetString("GREEN", golua.LString(cli.COLOR_GREEN))
+	tab.RawSetString("YELLOW", golua.LString(cli.COLOR_YELLOW))
+	tab.RawSetString("BLUE", golua.LString(cli.COLOR_BLUE))
+	tab.RawSetString("MAGENTA", golua.LString(cli.COLOR_MAGENTA))
+	tab.RawSetString("CYAN", golua.LString(cli.COLOR_CYAN))
+	tab.RawSetString("WHITE", golua.LString(cli.COLOR_WHITE))
 
-	r.State.SetField(tab, "BRIGHT_BLACK", golua.LString(cli.COLOR_BRIGHT_BLACK))
-	r.State.SetField(tab, "BRIGHT_RED", golua.LString(cli.COLOR_BRIGHT_RED))
-	r.State.SetField(tab, "BRIGHT_GREEN", golua.LString(cli.COLOR_BRIGHT_GREEN))
-	r.State.SetField(tab, "BRIGHT_YELLOW", golua.LString(cli.COLOR_BRIGHT_YELLOW))
-	r.State.SetField(tab, "BRIGHT_BLUE", golua.LString(cli.COLOR_BRIGHT_BLUE))
-	r.State.SetField(tab, "BRIGHT_MAGENTA", golua.LString(cli.COLOR_BRIGHT_MAGENTA))
-	r.State.SetField(tab, "BRIGHT_CYAN", golua.LString(cli.COLOR_BRIGHT_CYAN))
-	r.State.SetField(tab, "BRIGHT_WHITE", golua.LString(cli.COLOR_BRIGHT_WHITE))
+	tab.RawSetString("BRIGHT_BLACK", golua.LString(cli.COLOR_BRIGHT_BLACK))
+	tab.RawSetString("BRIGHT_RED", golua.LString(cli.COLOR_BRIGHT_RED))
+	tab.RawSetString("BRIGHT_GREEN", golua.LString(cli.COLOR_BRIGHT_GREEN))
+	tab.RawSetString("BRIGHT_YELLOW", golua.LString(cli.COLOR_BRIGHT_YELLOW))
+	tab.RawSetString("BRIGHT_BLUE", golua.LString(cli.COLOR_BRIGHT_BLUE))
+	tab.RawSetString("BRIGHT_MAGENTA", golua.LString(cli.COLOR_BRIGHT_MAGENTA))
+	tab.RawSetString("BRIGHT_CYAN", golua.LString(cli.COLOR_BRIGHT_CYAN))
+	tab.RawSetString("BRIGHT_WHITE", golua.LString(cli.COLOR_BRIGHT_WHITE))
 
 	/// @constants Background Colors
 	/// @const BACKGROUND_BLACK
@@ -178,29 +178,29 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @const BRIGHT_BACKGROUND_MAGENTA
 	/// @const BRIGHT_BACKGROUND_CYAN
 	/// @const BRIGHT_BACKGROUND_WHITE
-	r.State.SetField(tab, "BACKGROUND_BLACK", golua.LString(cli.COLOR_BACKGROUND_BLACK))
-	r.State.SetField(tab, "BACKGROUND_RED", golua.LString(cli.COLOR_BACKGROUND_RED))
-	r.State.SetField(tab, "BACKGROUND_GREEN", golua.LString(cli.COLOR_BACKGROUND_GREEN))
-	r.State.SetField(tab, "BACKGROUND_YELLOW", golua.LString(cli.COLOR_BACKGROUND_YELLOW))
-	r.State.SetField(tab, "BACKGROUND_BLUE", golua.LString(cli.COLOR_BACKGROUND_BLUE))
-	r.State.SetField(tab, "BACKGROUND_MAGENTA", golua.LString(cli.COLOR_BACKGROUND_MAGENTA))
-	r.State.SetField(tab, "BACKGROUND_CYAN", golua.LString(cli.COLOR_BACKGROUND_CYAN))
-	r.State.SetField(tab, "BACKGROUND_WHITE", golua.LString(cli.COLOR_BACKGROUND_WHITE))
+	tab.RawSetString("BACKGROUND_BLACK", golua.LString(cli.COLOR_BACKGROUND_BLACK))
+	tab.RawSetString("BACKGROUND_RED", golua.LString(cli.COLOR_BACKGROUND_RED))
+	tab.RawSetString("BACKGROUND_GREEN", golua.LString(cli.COLOR_BACKGROUND_GREEN))
+	tab.RawSetString("BACKGROUND_YELLOW", golua.LString(cli.COLOR_BACKGROUND_YELLOW))
+	tab.RawSetString("BACKGROUND_BLUE", golua.LString(cli.COLOR_BACKGROUND_BLUE))
+	tab.RawSetString("BACKGROUND_MAGENTA", golua.LString(cli.COLOR_BACKGROUND_MAGENTA))
+	tab.RawSetString("BACKGROUND_CYAN", golua.LString(cli.COLOR_BACKGROUND_CYAN))
+	tab.RawSetString("BACKGROUND_WHITE", golua.LString(cli.COLOR_BACKGROUND_WHITE))
 
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_BLACK", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_BLACK))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_RED", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_RED))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_GREEN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_GREEN))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_YELLOW", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_YELLOW))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_BLUE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_BLUE))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_MAGENTA", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_MAGENTA))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_CYAN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_CYAN))
-	r.State.SetField(tab, "BRIGHT_BACKGROUND_WHITE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_WHITE))
+	tab.RawSetString("BRIGHT_BACKGROUND_BLACK", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_BLACK))
+	tab.RawSetString("BRIGHT_BACKGROUND_RED", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_RED))
+	tab.RawSetString("BRIGHT_BACKGROUND_GREEN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_GREEN))
+	tab.RawSetString("BRIGHT_BACKGROUND_YELLOW", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_YELLOW))
+	tab.RawSetString("BRIGHT_BACKGROUND_BLUE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_BLUE))
+	tab.RawSetString("BRIGHT_BACKGROUND_MAGENTA", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_MAGENTA))
+	tab.RawSetString("BRIGHT_BACKGROUND_CYAN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_CYAN))
+	tab.RawSetString("BRIGHT_BACKGROUND_WHITE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_WHITE))
 
 	/// @constants Styles
 	/// @const BOLD
 	/// @const UNDERLINE
 	/// @const REVERSED
-	r.State.SetField(tab, "BOLD", golua.LString(cli.COLOR_BOLD))
-	r.State.SetField(tab, "UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
-	r.State.SetField(tab, "REVERSED", golua.LString(cli.COLOR_REVERSED))
+	tab.RawSetString("BOLD", golua.LString(cli.COLOR_BOLD))
+	tab.RawSetString("UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
+	tab.RawSetString("REVERSED", golua.LString(cli.COLOR_REVERSED))
 }

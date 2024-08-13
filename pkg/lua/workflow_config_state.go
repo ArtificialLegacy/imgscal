@@ -14,21 +14,21 @@ func WorkflowConfigState(wf *workflow.Workflow, lg *log.Logger) *lua.LState {
 	state.Register("config", func(state *lua.LState) int {
 		lg.Append("config function called", log.LEVEL_SYSTEM)
 
-		t := state.Get(-1)
+		t := state.Get(-1).(*lua.LTable)
 
 		if t.Type() != lua.LTTable {
 			state.Error(lua.LString(lg.Append("value passed to config is not a table", log.LEVEL_ERROR)), 0)
 		} else {
-			name := state.GetField(t, "name")
+			name := t.RawGetString("name")
 			wf.Name = strings.Clone(string(name.(lua.LString)))
 
-			version := state.GetField(t, "version")
+			version := t.RawGetString("version")
 			wf.Version = strings.Clone(string(version.(lua.LString)))
 
-			desc := state.GetField(t, "desc")
+			desc := t.RawGetString("desc")
 			wf.Desc = strings.Clone(string(desc.(lua.LString)))
 
-			requires := state.GetField(t, "requires").(*lua.LTable)
+			requires := t.RawGetString("requires").(*lua.LTable)
 			wf.Requires = []string{}
 
 			requires.ForEach(func(l1, l2 lua.LValue) {

@@ -71,8 +71,8 @@ func ImageGetDraw(img image.Image) draw.Image {
 }
 
 func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {
-	x := state.GetTable(t, golua.LString("x")).(golua.LNumber)
-	y := state.GetTable(t, golua.LString("y")).(golua.LNumber)
+	x := t.RawGetString("x").(golua.LNumber)
+	y := t.RawGetString("y").(golua.LNumber)
 
 	return image.Point{
 		X: int(x),
@@ -82,8 +82,8 @@ func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {
 
 func PointToTable(state *golua.LState, p image.Point) *golua.LTable {
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("x"), golua.LNumber(p.X))
-	state.SetTable(t, golua.LString("y"), golua.LNumber(p.Y))
+	t.RawSetString("x", golua.LNumber(p.X))
+	t.RawSetString("y", golua.LNumber(p.Y))
 
 	return t
 }

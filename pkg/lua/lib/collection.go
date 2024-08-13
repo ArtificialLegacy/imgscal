@@ -453,11 +453,11 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// @const TYPE_FILE
 	/// @const TYPE_CONTEXT
 	/// @const TYPE_QR
-	r.State.SetField(tab, "TYPE_TASK", golua.LNumber(collection.TYPE_TASK))
-	r.State.SetField(tab, "TYPE_IMAGE", golua.LNumber(collection.TYPE_IMAGE))
-	r.State.SetField(tab, "TYPE_FILE", golua.LNumber(collection.TYPE_FILE))
-	r.State.SetField(tab, "TYPE_CONTEXT", golua.LNumber(collection.TYPE_CONTEXT))
-	r.State.SetField(tab, "TYPE_QR", golua.LNumber(collection.TYPE_QR))
+	tab.RawSetString("TYPE_TASK", golua.LNumber(collection.TYPE_TASK))
+	tab.RawSetString("TYPE_IMAGE", golua.LNumber(collection.TYPE_IMAGE))
+	tab.RawSetString("TYPE_FILE", golua.LNumber(collection.TYPE_FILE))
+	tab.RawSetString("TYPE_CONTEXT", golua.LNumber(collection.TYPE_CONTEXT))
+	tab.RawSetString("TYPE_QR", golua.LNumber(collection.TYPE_QR))
 }
 
 func callScheduledFunction(state *golua.LState, f *golua.LFunction) {

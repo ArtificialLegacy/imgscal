@@ -1140,19 +1140,19 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 							c := scheduledState.ToTable(-1)
 							scheduledState.Pop(1)
 
-							nr := scheduledState.GetField(c, "red")
+							nr := c.RawGetString("red")
 							if nr.Type() != golua.LTNumber {
 								scheduledState.Error(golua.LString(lg.Append("invalid red field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							ng := scheduledState.GetField(c, "green")
+							ng := c.RawGetString("green")
 							if ng.Type() != golua.LTNumber {
 								scheduledState.Error(golua.LString(lg.Append("invalid green field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							nb := scheduledState.GetField(c, "blue")
+							nb := c.RawGetString("blue")
 							if nb.Type() != golua.LTNumber {
 								scheduledState.Error(golua.LString(lg.Append("invalid blue field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
-							na := scheduledState.GetField(c, "alpha")
+							na := c.RawGetString("alpha")
 							if na.Type() != golua.LTNumber {
 								scheduledState.Error(golua.LString(lg.Append("invalid alpha field returned into image.map", log.LEVEL_ERROR)), 0)
 							}
@@ -1181,20 +1181,20 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @const GRAY
 	/// @const GRAY16
 	/// @const CMYK
-	r.State.SetField(tab, "MODEL_RGBA", golua.LNumber(imageutil.MODEL_RGBA))
-	r.State.SetField(tab, "MODEL_RGBA64", golua.LNumber(imageutil.MODEL_RGBA64))
-	r.State.SetField(tab, "MODEL_NRGBA", golua.LNumber(imageutil.MODEL_NRGBA))
-	r.State.SetField(tab, "MODEL_NRGBA64", golua.LNumber(imageutil.MODEL_NRGBA64))
-	r.State.SetField(tab, "MODEL_ALPHA", golua.LNumber(imageutil.MODEL_ALPHA))
-	r.State.SetField(tab, "MODEL_ALPHA16", golua.LNumber(imageutil.MODEL_ALPHA16))
-	r.State.SetField(tab, "MODEL_GRAY", golua.LNumber(imageutil.MODEL_GRAY))
-	r.State.SetField(tab, "MODEL_GRAY16", golua.LNumber(imageutil.MODEL_GRAY16))
-	r.State.SetField(tab, "MODEL_CMYK", golua.LNumber(imageutil.MODEL_CMYK))
+	tab.RawSetString("MODEL_RGBA", golua.LNumber(imageutil.MODEL_RGBA))
+	tab.RawSetString("MODEL_RGBA64", golua.LNumber(imageutil.MODEL_RGBA64))
+	tab.RawSetString("MODEL_NRGBA", golua.LNumber(imageutil.MODEL_NRGBA))
+	tab.RawSetString("MODEL_NRGBA64", golua.LNumber(imageutil.MODEL_NRGBA64))
+	tab.RawSetString("MODEL_ALPHA", golua.LNumber(imageutil.MODEL_ALPHA))
+	tab.RawSetString("MODEL_ALPHA16", golua.LNumber(imageutil.MODEL_ALPHA16))
+	tab.RawSetString("MODEL_GRAY", golua.LNumber(imageutil.MODEL_GRAY))
+	tab.RawSetString("MODEL_GRAY16", golua.LNumber(imageutil.MODEL_GRAY16))
+	tab.RawSetString("MODEL_CMYK", golua.LNumber(imageutil.MODEL_CMYK))
 
 	/// @constants Encodings
-	r.State.SetField(tab, "ENCODING_PNG", golua.LNumber(imageutil.ENCODING_PNG))
-	r.State.SetField(tab, "ENCODING_JPEG", golua.LNumber(imageutil.ENCODING_JPEG))
-	r.State.SetField(tab, "ENCODING_GIF", golua.LNumber(imageutil.ENCODING_GIF))
+	tab.RawSetString("ENCODING_PNG", golua.LNumber(imageutil.ENCODING_PNG))
+	tab.RawSetString("ENCODING_JPEG", golua.LNumber(imageutil.ENCODING_JPEG))
+	tab.RawSetString("ENCODING_GIF", golua.LNumber(imageutil.ENCODING_GIF))
 }
 
 func rgbaTable(state *golua.LState, r, g, b, a int) *golua.LTable {
@@ -1206,10 +1206,10 @@ func rgbaTable(state *golua.LState, r, g, b, a int) *golua.LTable {
 
 	t := state.NewTable()
 
-	state.SetField(t, "red", golua.LNumber(r))
-	state.SetField(t, "green", golua.LNumber(g))
-	state.SetField(t, "blue", golua.LNumber(b))
-	state.SetField(t, "alpha", golua.LNumber(a))
+	t.RawSetString("red", golua.LNumber(r))
+	t.RawSetString("green", golua.LNumber(g))
+	t.RawSetString("blue", golua.LNumber(b))
+	t.RawSetString("alpha", golua.LNumber(a))
 
 	return t
 }
@@ -1227,10 +1227,10 @@ func hsvaTable(state *golua.LState, h, s, v float64, a int) *golua.LTable {
 
 	t := state.NewTable()
 
-	state.SetField(t, "hue", golua.LNumber(h))
-	state.SetField(t, "sat", golua.LNumber(s))
-	state.SetField(t, "value", golua.LNumber(v))
-	state.SetField(t, "alpha", golua.LNumber(a))
+	t.RawSetString("hue", golua.LNumber(h))
+	t.RawSetString("sat", golua.LNumber(s))
+	t.RawSetString("value", golua.LNumber(v))
+	t.RawSetString("alpha", golua.LNumber(a))
 
 	return t
 }
@@ -1248,10 +1248,10 @@ func hslaTable(state *golua.LState, h, s, l float64, a int) *golua.LTable {
 
 	t := state.NewTable()
 
-	state.SetField(t, "hue", golua.LNumber(h))
-	state.SetField(t, "sat", golua.LNumber(s))
-	state.SetField(t, "light", golua.LNumber(l))
-	state.SetField(t, "alpha", golua.LNumber(a))
+	t.RawSetString("hue", golua.LNumber(h))
+	t.RawSetString("sat", golua.LNumber(s))
+	t.RawSetString("light", golua.LNumber(l))
+	t.RawSetString("alpha", golua.LNumber(a))
 
 	return t
 }

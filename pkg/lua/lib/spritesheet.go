@@ -18,6 +18,147 @@ const LIB_SPRITESHEET = "spritesheet"
 func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_SPRITESHEET, r, r.State, lg)
 
+	/// @func sheet()
+	/// @arg count
+	/// @arg width
+	/// @arg height
+	/// @arg perRow
+	/// @arg? offsets - {hpixel, vpixel, hcell, vcell}
+	/// @arg? hsep
+	/// @arg? vsep
+	/// @returns spritesheet struct
+	lib.CreateFunction(tab, "sheet",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "count"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.INT, Name: "perRow"},
+			{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "hpixel", Optional: true},
+				{Type: lua.INT, Name: "vpixel", Optional: true},
+				{Type: lua.INT, Name: "hcell", Optional: true},
+				{Type: lua.INT, Name: "vcell", Optional: true},
+			}},
+			{Type: lua.INT, Name: "hsep", Optional: true},
+			{Type: lua.INT, Name: "vsep", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct spritesheet
+			/// @prop count
+			/// @prop width
+			/// @prop height
+			/// @prop perRow
+			/// @prop offsets - {hpixel, vpixel, hcell, vcell}
+			/// @prop hsep
+			/// @prop vsep
+
+			t := state.NewTable()
+
+			t.RawSetString("count", golua.LNumber(args["count"].(int)))
+			t.RawSetString("width", golua.LNumber(args["width"].(int)))
+			t.RawSetString("height", golua.LNumber(args["height"].(int)))
+			t.RawSetString("perRow", golua.LNumber(args["perRow"].(int)))
+
+			offsets := args["offsets"].(map[string]any)
+			ot := state.NewTable()
+			ot.RawSetString("hpixel", golua.LNumber(offsets["hpixel"].(int)))
+			ot.RawSetString("vpixel", golua.LNumber(offsets["vpixel"].(int)))
+			ot.RawSetString("hcell", golua.LNumber(offsets["hcell"].(int)))
+			ot.RawSetString("vcell", golua.LNumber(offsets["vcell"].(int)))
+			t.RawSetString("offsets", ot)
+
+			t.RawSetString("hsep", golua.LNumber(args["hsep"].(int)))
+			t.RawSetString("vsep", golua.LNumber(args["vsep"].(int)))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func offset()
+	/// @arg hpixel
+	/// @arg vpixel
+	/// @arg hcell
+	/// @arg vcell
+	/// @returns offset struct
+	lib.CreateFunction(tab, "offset",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "hpixel"},
+			{Type: lua.INT, Name: "vpixel"},
+			{Type: lua.INT, Name: "hcell"},
+			{Type: lua.INT, Name: "vcell"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct offset
+			/// @prop hpixel
+			/// @prop vpixel
+			/// @prop hcell
+			/// @prop vcell
+
+			t := state.NewTable()
+
+			t.RawSetString("hpixel", golua.LNumber(args["hpixel"].(int)))
+			t.RawSetString("vpixel", golua.LNumber(args["vpixel"].(int)))
+			t.RawSetString("hcell", golua.LNumber(args["hcell"].(int)))
+			t.RawSetString("vcell", golua.LNumber(args["vcell"].(int)))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func offset_pixel()
+	/// @arg hpixel
+	/// @arg vpixel
+	/// @returns offset struct
+	lib.CreateFunction(tab, "offset_pixel",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "hpixel"},
+			{Type: lua.INT, Name: "vpixel"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct offset
+			/// @prop hpixel
+			/// @prop vpixel
+			/// @prop hcell
+			/// @prop vcell
+
+			t := state.NewTable()
+
+			t.RawSetString("hpixel", golua.LNumber(args["hpixel"].(int)))
+			t.RawSetString("vpixel", golua.LNumber(args["vpixel"].(int)))
+			t.RawSetString("hcell", golua.LNumber(0))
+			t.RawSetString("vcell", golua.LNumber(0))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func offset_cell()
+	/// @arg hcell
+	/// @arg vcell
+	/// @returns offset struct
+	lib.CreateFunction(tab, "offset_cell",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "hcell"},
+			{Type: lua.INT, Name: "vcell"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct offset
+			/// @prop hpixel
+			/// @prop vpixel
+			/// @prop hcell
+			/// @prop vcell
+
+			t := state.NewTable()
+
+			t.RawSetString("hpixel", golua.LNumber(0))
+			t.RawSetString("vpixel", golua.LNumber(0))
+			t.RawSetString("hcell", golua.LNumber(args["hcell"].(int)))
+			t.RawSetString("vcell", golua.LNumber(args["vcell"].(int)))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func to_frames()
 	/// @arg id
 	/// @arg name - will be prefixed with the img index as `I_name`

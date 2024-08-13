@@ -888,29 +888,29 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @const ANCHOR_BOTTOMLEFT
 	/// @const ANCHOR_BOTTOM
 	/// @const ANCHOR_BOTTOMRIGHT
-	r.State.SetTable(tab, golua.LString("ANCHOR_CENTER"), golua.LNumber(gift.CenterAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_TOPLEFT"), golua.LNumber(gift.TopLeftAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_TOP"), golua.LNumber(gift.TopAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_TOPRIGHT"), golua.LNumber(gift.TopRightAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_LEFT"), golua.LNumber(gift.LeftAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_RIGHT"), golua.LNumber(gift.RightAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_BOTTOMLEFT"), golua.LNumber(gift.BottomLeftAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_BOTTOM"), golua.LNumber(gift.BottomAnchor))
-	r.State.SetTable(tab, golua.LString("ANCHOR_BOTTOMRIGHT"), golua.LNumber(gift.BottomRightAnchor))
+	tab.RawSetString("ANCHOR_CENTER", golua.LNumber(gift.CenterAnchor))
+	tab.RawSetString("ANCHOR_TOPLEFT", golua.LNumber(gift.TopLeftAnchor))
+	tab.RawSetString("ANCHOR_TOP", golua.LNumber(gift.TopAnchor))
+	tab.RawSetString("ANCHOR_TOPRIGHT", golua.LNumber(gift.TopRightAnchor))
+	tab.RawSetString("ANCHOR_LEFT", golua.LNumber(gift.LeftAnchor))
+	tab.RawSetString("ANCHOR_RIGHT", golua.LNumber(gift.RightAnchor))
+	tab.RawSetString("ANCHOR_BOTTOMLEFT", golua.LNumber(gift.BottomLeftAnchor))
+	tab.RawSetString("ANCHOR_BOTTOM", golua.LNumber(gift.BottomAnchor))
+	tab.RawSetString("ANCHOR_BOTTOMRIGHT", golua.LNumber(gift.BottomRightAnchor))
 
 	/// @constants Interpolation
 	/// @const INTERPOLATION_NEARESTNEIGHBOR
 	/// @const INTERPOLATION_LINEAR
 	/// @const INTERPOLATION_CUBIC
-	r.State.SetTable(tab, golua.LString("INTERPOLATION_NEARESTNEIGHBOR"), golua.LNumber(gift.NearestNeighborInterpolation))
-	r.State.SetTable(tab, golua.LString("INTERPOLATION_LINEAR"), golua.LNumber(gift.LinearInterpolation))
-	r.State.SetTable(tab, golua.LString("INTERPOLATION_CUBIC"), golua.LNumber(gift.CubicInterpolation))
+	tab.RawSetString("INTERPOLATION_NEARESTNEIGHBOR", golua.LNumber(gift.NearestNeighborInterpolation))
+	tab.RawSetString("INTERPOLATION_LINEAR", golua.LNumber(gift.LinearInterpolation))
+	tab.RawSetString("INTERPOLATION_CUBIC", golua.LNumber(gift.CubicInterpolation))
 
 	/// @constants Operators
 	/// @const OPERATOR_COPY
 	/// @const OPERATOR_OVER
-	r.State.SetTable(tab, golua.LString("OPERATOR_COPY"), golua.LNumber(gift.CopyOperator))
-	r.State.SetTable(tab, golua.LString("OPERATOR_OVER"), golua.LNumber(gift.OverOperator))
+	tab.RawSetString("OPERATOR_COPY", golua.LNumber(gift.CopyOperator))
+	tab.RawSetString("OPERATOR_OVER", golua.LNumber(gift.OverOperator))
 
 	/// @constants Resampling
 	/// @const RESAMPLING_BOX
@@ -918,11 +918,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @const RESAMPLING_LANCZOS
 	/// @const RESAMPLING_LINEAR
 	/// @const RESAMPLING_NEARESTNEIGHBOR
-	r.State.SetTable(tab, golua.LString("RESAMPLING_BOX"), golua.LNumber(RESAMPLING_BOX))
-	r.State.SetTable(tab, golua.LString("RESAMPLING_CUBIC"), golua.LNumber(RESAMPLING_CUBIC))
-	r.State.SetTable(tab, golua.LString("RESAMPLING_LANCZOS"), golua.LNumber(RESAMPLING_LANCZOS))
-	r.State.SetTable(tab, golua.LString("RESAMPLING_LINEAR"), golua.LNumber(RESAMPLING_LINEAR))
-	r.State.SetTable(tab, golua.LString("RESAMPLING_NEARESTNEIGHBOR"), golua.LNumber(RESAMPLING_NEARESTNEIGHBOR))
+	tab.RawSetString("RESAMPLING_BOX", golua.LNumber(RESAMPLING_BOX))
+	tab.RawSetString("RESAMPLING_CUBIC", golua.LNumber(RESAMPLING_CUBIC))
+	tab.RawSetString("RESAMPLING_LANCZOS", golua.LNumber(RESAMPLING_LANCZOS))
+	tab.RawSetString("RESAMPLING_LINEAR", golua.LNumber(RESAMPLING_LINEAR))
+	tab.RawSetString("RESAMPLING_NEARESTNEIGHBOR", golua.LNumber(RESAMPLING_NEARESTNEIGHBOR))
 }
 
 var samplers = []gift.Resampling{
@@ -1045,14 +1045,14 @@ func brightnessTable(state *golua.LState, percent float64) *golua.LTable {
 	/// @prop percent
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_BRIGHTNESS))
-	state.SetTable(t, golua.LString("percent"), golua.LNumber(percent))
+	t.RawSetString("type", golua.LString(FILTER_BRIGHTNESS))
+	t.RawSetString("percent", golua.LNumber(percent))
 
 	return t
 }
 
 func brightnessBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	percent := state.GetTable(t, golua.LString("percent")).(golua.LNumber)
+	percent := t.RawGetString("percent").(golua.LNumber)
 
 	f := gift.Brightness(float32(percent))
 	return f
@@ -1066,18 +1066,18 @@ func colorBalanceTable(state *golua.LState, percentRed, percentGreen, percentBlu
 	/// @prop percentBlue
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLOR_BALANCE))
-	state.SetTable(t, golua.LString("percentRed"), golua.LNumber(percentRed))
-	state.SetTable(t, golua.LString("percentGreen"), golua.LNumber(percentGreen))
-	state.SetTable(t, golua.LString("percentBlue"), golua.LNumber(percentBlue))
+	t.RawSetString("type", golua.LString(FILTER_COLOR_BALANCE))
+	t.RawSetString("percentRed", golua.LNumber(percentRed))
+	t.RawSetString("percentGreen", golua.LNumber(percentGreen))
+	t.RawSetString("percentBlue", golua.LNumber(percentBlue))
 
 	return t
 }
 
 func colorBalanceBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	percentRed := state.GetTable(t, golua.LString("percentRed")).(golua.LNumber)
-	percentGreen := state.GetTable(t, golua.LString("percentGreen")).(golua.LNumber)
-	percentBlue := state.GetTable(t, golua.LString("percentBlue")).(golua.LNumber)
+	percentRed := t.RawGetString("percentRed").(golua.LNumber)
+	percentGreen := t.RawGetString("percentGreen").(golua.LNumber)
+	percentBlue := t.RawGetString("percentBlue").(golua.LNumber)
 
 	f := gift.ColorBalance(float32(percentRed), float32(percentGreen), float32(percentBlue))
 	return f
@@ -1091,18 +1091,18 @@ func colorizeTable(state *golua.LState, hue, saturation, percent float64) *golua
 	/// @prop percent
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLORIZE))
-	state.SetTable(t, golua.LString("hue"), golua.LNumber(hue))
-	state.SetTable(t, golua.LString("saturation"), golua.LNumber(saturation))
-	state.SetTable(t, golua.LString("percent"), golua.LNumber(percent))
+	t.RawSetString("type", golua.LString(FILTER_COLORIZE))
+	t.RawSetString("hue", golua.LNumber(hue))
+	t.RawSetString("saturation", golua.LNumber(saturation))
+	t.RawSetString("percent", golua.LNumber(percent))
 
 	return t
 }
 
 func colorizeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	hue := state.GetTable(t, golua.LString("hue")).(golua.LNumber)
-	saturation := state.GetTable(t, golua.LString("saturation")).(golua.LNumber)
-	percent := state.GetTable(t, golua.LString("percent")).(golua.LNumber)
+	hue := t.RawGetString("hue").(golua.LNumber)
+	saturation := t.RawGetString("saturation").(golua.LNumber)
+	percent := t.RawGetString("percent").(golua.LNumber)
 
 	f := gift.Colorize(float32(hue), float32(saturation), float32(percent))
 	return f
@@ -1113,7 +1113,7 @@ func colorspaceLinearSRGBTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLORSPACE_LINEAR_TO_SRGB))
+	t.RawSetString("type", golua.LString(FILTER_COLORSPACE_LINEAR_TO_SRGB))
 
 	return t
 }
@@ -1128,7 +1128,7 @@ func colorspaceSRGBLinearTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLORSPACE_SRGB_TO_LINEAR))
+	t.RawSetString("type", golua.LString(FILTER_COLORSPACE_SRGB_TO_LINEAR))
 
 	return t
 }
@@ -1144,14 +1144,14 @@ func contrastTable(state *golua.LState, percent float64) *golua.LTable {
 	/// @prop percent
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_CONTRAST))
-	state.SetTable(t, golua.LString("percent"), golua.LNumber(percent))
+	t.RawSetString("type", golua.LString(FILTER_CONTRAST))
+	t.RawSetString("percent", golua.LNumber(percent))
 
 	return t
 }
 
 func contrastBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	percent := state.GetTable(t, golua.LString("percent")).(golua.LNumber)
+	percent := t.RawGetString("percent").(golua.LNumber)
 
 	f := gift.Contrast(float32(percent))
 	return f
@@ -1167,22 +1167,22 @@ func convolutionTable(state *golua.LState, kernel golua.LValue, normalize, alpha
 	/// @prop delta
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_CONVOLUTION))
-	state.SetTable(t, golua.LString("kernel"), kernel)
-	state.SetTable(t, golua.LString("normalize"), golua.LBool(normalize))
-	state.SetTable(t, golua.LString("alpha"), golua.LBool(alpha))
-	state.SetTable(t, golua.LString("abs"), golua.LBool(abs))
-	state.SetTable(t, golua.LString("delta"), golua.LNumber(delta))
+	t.RawSetString("type", golua.LString(FILTER_CONVOLUTION))
+	t.RawSetString("kernel", kernel)
+	t.RawSetString("normalize", golua.LBool(normalize))
+	t.RawSetString("alpha", golua.LBool(alpha))
+	t.RawSetString("abs", golua.LBool(abs))
+	t.RawSetString("delta", golua.LNumber(delta))
 
 	return t
 }
 
 func convolutionBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	kernel := state.GetTable(t, golua.LString("kernel")).(*golua.LTable)
-	normalize := state.GetTable(t, golua.LString("normalize")).(golua.LBool)
-	alpha := state.GetTable(t, golua.LString("alpha")).(golua.LBool)
-	abs := state.GetTable(t, golua.LString("abs")).(golua.LBool)
-	delta := state.GetTable(t, golua.LString("delta")).(golua.LNumber)
+	kernel := t.RawGetString("kernel").(*golua.LTable)
+	normalize := t.RawGetString("normalize").(golua.LBool)
+	alpha := t.RawGetString("alpha").(golua.LBool)
+	abs := t.RawGetString("abs").(golua.LBool)
+	delta := t.RawGetString("delta").(golua.LNumber)
 
 	kernalMatrix := []float32{}
 	for i := range kernel.Len() {
@@ -1203,20 +1203,20 @@ func cropTable(state *golua.LState, xmin, ymin, xmax, ymax int) *golua.LTable {
 	/// @prop ymax
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_CROP))
-	state.SetTable(t, golua.LString("xmin"), golua.LNumber(xmin))
-	state.SetTable(t, golua.LString("ymin"), golua.LNumber(ymin))
-	state.SetTable(t, golua.LString("xmax"), golua.LNumber(xmax))
-	state.SetTable(t, golua.LString("ymax"), golua.LNumber(ymax))
+	t.RawSetString("type", golua.LString(FILTER_CROP))
+	t.RawSetString("xmin", golua.LNumber(xmin))
+	t.RawSetString("ymin", golua.LNumber(ymin))
+	t.RawSetString("xmax", golua.LNumber(xmax))
+	t.RawSetString("ymax", golua.LNumber(ymax))
 
 	return t
 }
 
 func cropBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	xmin := state.GetTable(t, golua.LString("xmin")).(golua.LNumber)
-	ymin := state.GetTable(t, golua.LString("ymin")).(golua.LNumber)
-	xmax := state.GetTable(t, golua.LString("xmax")).(golua.LNumber)
-	ymax := state.GetTable(t, golua.LString("ymax")).(golua.LNumber)
+	xmin := t.RawGetString("xmin").(golua.LNumber)
+	ymin := t.RawGetString("ymin").(golua.LNumber)
+	xmax := t.RawGetString("xmax").(golua.LNumber)
+	ymax := t.RawGetString("ymax").(golua.LNumber)
 
 	f := gift.Crop(image.Rect(int(xmin), int(ymin), int(xmax), int(ymax)))
 	return f
@@ -1230,18 +1230,18 @@ func cropToSizeTable(state *golua.LState, width, height, anchor int) *golua.LTab
 	/// @prop anchor
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_CROP_TO_SIZE))
-	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
-	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
-	state.SetTable(t, golua.LString("anchor"), golua.LNumber(anchor))
+	t.RawSetString("type", golua.LString(FILTER_CROP_TO_SIZE))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
+	t.RawSetString("anchor", golua.LNumber(anchor))
 
 	return t
 }
 
 func cropToSizeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	width := state.GetTable(t, golua.LString("width")).(golua.LNumber)
-	height := state.GetTable(t, golua.LString("height")).(golua.LNumber)
-	anchor := state.GetTable(t, golua.LString("anchor")).(golua.LNumber)
+	width := t.RawGetString("width").(golua.LNumber)
+	height := t.RawGetString("height").(golua.LNumber)
+	anchor := t.RawGetString("anchor").(golua.LNumber)
 
 	f := gift.CropToSize(int(width), int(height), gift.Anchor(anchor))
 	return f
@@ -1252,7 +1252,7 @@ func flipHorizontalTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_FLIP_HORIZONTAL))
+	t.RawSetString("type", golua.LString(FILTER_FLIP_HORIZONTAL))
 
 	return t
 }
@@ -1267,7 +1267,7 @@ func flipVerticalTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_FLIP_VERTICAL))
+	t.RawSetString("type", golua.LString(FILTER_FLIP_VERTICAL))
 
 	return t
 }
@@ -1283,14 +1283,14 @@ func gammaTable(state *golua.LState, gamma float64) *golua.LTable {
 	/// @prop gamma
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_GAMMA))
-	state.SetTable(t, golua.LString("gamma"), golua.LNumber(gamma))
+	t.RawSetString("type", golua.LString(FILTER_GAMMA))
+	t.RawSetString("gamma", golua.LNumber(gamma))
 
 	return t
 }
 
 func gammaBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	gamma := state.GetTable(t, golua.LString("gamma")).(golua.LNumber)
+	gamma := t.RawGetString("gamma").(golua.LNumber)
 
 	f := gift.Gamma(float32(gamma))
 	return f
@@ -1302,14 +1302,14 @@ func gaussianBlurTable(state *golua.LState, sigma float64) *golua.LTable {
 	/// @prop sigma
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_GAUSSIAN_BLUR))
-	state.SetTable(t, golua.LString("sigma"), golua.LNumber(sigma))
+	t.RawSetString("type", golua.LString(FILTER_GAUSSIAN_BLUR))
+	t.RawSetString("sigma", golua.LNumber(sigma))
 
 	return t
 }
 
 func gaussianBlurBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	sigma := state.GetTable(t, golua.LString("sigma")).(golua.LNumber)
+	sigma := t.RawGetString("sigma").(golua.LNumber)
 
 	f := gift.GaussianBlur(float32(sigma))
 	return f
@@ -1320,7 +1320,7 @@ func grayscaleTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_GRAYSCALE))
+	t.RawSetString("type", golua.LString(FILTER_GRAYSCALE))
 
 	return t
 }
@@ -1335,7 +1335,7 @@ func invertTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_INVERT))
+	t.RawSetString("type", golua.LString(FILTER_INVERT))
 
 	return t
 }
@@ -1353,18 +1353,18 @@ func rotateTable(state *golua.LState, angle float64, bgcolor golua.LValue, inter
 	/// @prop interpolation
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_ROTATE))
-	state.SetTable(t, golua.LString("angle"), golua.LNumber(angle))
-	state.SetTable(t, golua.LString("bgcolor"), bgcolor)
-	state.SetTable(t, golua.LString("interpolation"), golua.LNumber(interpolation))
+	t.RawSetString("type", golua.LString(FILTER_ROTATE))
+	t.RawSetString("angle", golua.LNumber(angle))
+	t.RawSetString("bgcolor", bgcolor)
+	t.RawSetString("interpolation", golua.LNumber(interpolation))
 
 	return t
 }
 
 func rotateBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	angle := state.GetTable(t, golua.LString("angle")).(golua.LNumber)
-	bgcolor := state.GetTable(t, golua.LString("bgcolor")).(*golua.LTable)
-	interpolation := state.GetTable(t, golua.LString("interpolation")).(golua.LNumber)
+	angle := t.RawGetString("angle").(golua.LNumber)
+	bgcolor := t.RawGetString("bgcolor").(*golua.LTable)
+	interpolation := t.RawGetString("interpolation").(golua.LNumber)
 
 	c := imageutil.TableToRGBA(state, bgcolor)
 
@@ -1377,7 +1377,7 @@ func rotate180Table(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_ROTATE180))
+	t.RawSetString("type", golua.LString(FILTER_ROTATE180))
 
 	return t
 }
@@ -1392,7 +1392,7 @@ func rotate270Table(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_ROTATE270))
+	t.RawSetString("type", golua.LString(FILTER_ROTATE270))
 
 	return t
 }
@@ -1407,7 +1407,7 @@ func rotate90Table(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_ROTATE90))
+	t.RawSetString("type", golua.LString(FILTER_ROTATE90))
 
 	return t
 }
@@ -1423,14 +1423,14 @@ func hueTable(state *golua.LState, shift float64) *golua.LTable {
 	/// @prop shift
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_HUE))
-	state.SetTable(t, golua.LString("shift"), golua.LNumber(shift))
+	t.RawSetString("type", golua.LString(FILTER_HUE))
+	t.RawSetString("shift", golua.LNumber(shift))
 
 	return t
 }
 
 func hueBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	shift := state.GetTable(t, golua.LString("shift")).(golua.LNumber)
+	shift := t.RawGetString("shift").(golua.LNumber)
 
 	f := gift.Hue(float32(shift))
 	return f
@@ -1442,14 +1442,14 @@ func saturationTable(state *golua.LState, percent float64) *golua.LTable {
 	/// @prop percent
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_SATURATION))
-	state.SetTable(t, golua.LString("percent"), golua.LNumber(percent))
+	t.RawSetString("type", golua.LString(FILTER_SATURATION))
+	t.RawSetString("percent", golua.LNumber(percent))
 
 	return t
 }
 
 func saturationBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	percent := state.GetTable(t, golua.LString("percent")).(golua.LNumber)
+	percent := t.RawGetString("percent").(golua.LNumber)
 
 	f := gift.Saturation(float32(percent))
 	return f
@@ -1461,14 +1461,14 @@ func sepiaTable(state *golua.LState, percent float64) *golua.LTable {
 	/// @prop percent
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_SEPIA))
-	state.SetTable(t, golua.LString("percent"), golua.LNumber(percent))
+	t.RawSetString("type", golua.LString(FILTER_SEPIA))
+	t.RawSetString("percent", golua.LNumber(percent))
 
 	return t
 }
 
 func sepiaBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	percent := state.GetTable(t, golua.LString("percent")).(golua.LNumber)
+	percent := t.RawGetString("percent").(golua.LNumber)
 
 	f := gift.Sepia(float32(percent))
 	return f
@@ -1480,14 +1480,14 @@ func thresholdTable(state *golua.LState, percent float64) *golua.LTable {
 	/// @prop percent
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_THRESHOLD))
-	state.SetTable(t, golua.LString("percent"), golua.LNumber(percent))
+	t.RawSetString("type", golua.LString(FILTER_THRESHOLD))
+	t.RawSetString("percent", golua.LNumber(percent))
 
 	return t
 }
 
 func thresholdBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	percent := state.GetTable(t, golua.LString("percent")).(golua.LNumber)
+	percent := t.RawGetString("percent").(golua.LNumber)
 
 	f := gift.Threshold(float32(percent))
 	return f
@@ -1499,14 +1499,14 @@ func pixelateTable(state *golua.LState, size int) *golua.LTable {
 	/// @prop size
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_PIXELATE))
-	state.SetTable(t, golua.LString("size"), golua.LNumber(size))
+	t.RawSetString("type", golua.LString(FILTER_PIXELATE))
+	t.RawSetString("size", golua.LNumber(size))
 
 	return t
 }
 
 func pixelateBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	size := state.GetTable(t, golua.LString("size")).(golua.LNumber)
+	size := t.RawGetString("size").(golua.LNumber)
 
 	f := gift.Pixelate(int(size))
 	return f
@@ -1517,7 +1517,7 @@ func transposeTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_TRANSPOSE))
+	t.RawSetString("type", golua.LString(FILTER_TRANSPOSE))
 
 	return t
 }
@@ -1532,7 +1532,7 @@ func transverseTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_TRANSVERSE))
+	t.RawSetString("type", golua.LString(FILTER_TRANSVERSE))
 
 	return t
 }
@@ -1547,7 +1547,7 @@ func sobelTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_SOBEL))
+	t.RawSetString("type", golua.LString(FILTER_SOBEL))
 
 	return t
 }
@@ -1564,16 +1564,16 @@ func maximumTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
 	/// @prop disk
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_MAXIMUM))
-	state.SetTable(t, golua.LString("ksize"), golua.LNumber(ksize))
-	state.SetTable(t, golua.LString("disk"), golua.LBool(disk))
+	t.RawSetString("type", golua.LString(FILTER_MAXIMUM))
+	t.RawSetString("ksize", golua.LNumber(ksize))
+	t.RawSetString("disk", golua.LBool(disk))
 
 	return t
 }
 
 func maximumBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	ksize := state.GetTable(t, golua.LString("ksize")).(golua.LNumber)
-	disk := state.GetTable(t, golua.LString("disk")).(golua.LBool)
+	ksize := t.RawGetString("ksize").(golua.LNumber)
+	disk := t.RawGetString("disk").(golua.LBool)
 
 	f := gift.Maximum(int(ksize), bool(disk))
 	return f
@@ -1586,16 +1586,16 @@ func meanTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
 	/// @prop disk
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_MEAN))
-	state.SetTable(t, golua.LString("ksize"), golua.LNumber(ksize))
-	state.SetTable(t, golua.LString("disk"), golua.LBool(disk))
+	t.RawSetString("type", golua.LString(FILTER_MEAN))
+	t.RawSetString("ksize", golua.LNumber(ksize))
+	t.RawSetString("disk", golua.LBool(disk))
 
 	return t
 }
 
 func meanBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	ksize := state.GetTable(t, golua.LString("ksize")).(golua.LNumber)
-	disk := state.GetTable(t, golua.LString("disk")).(golua.LBool)
+	ksize := t.RawGetString("ksize").(golua.LNumber)
+	disk := t.RawGetString("disk").(golua.LBool)
 
 	f := gift.Mean(int(ksize), bool(disk))
 	return f
@@ -1608,16 +1608,16 @@ func medianTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
 	/// @prop disk
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_MEDIAN))
-	state.SetTable(t, golua.LString("ksize"), golua.LNumber(ksize))
-	state.SetTable(t, golua.LString("disk"), golua.LBool(disk))
+	t.RawSetString("type", golua.LString(FILTER_MEDIAN))
+	t.RawSetString("ksize", golua.LNumber(ksize))
+	t.RawSetString("disk", golua.LBool(disk))
 
 	return t
 }
 
 func medianBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	ksize := state.GetTable(t, golua.LString("ksize")).(golua.LNumber)
-	disk := state.GetTable(t, golua.LString("disk")).(golua.LBool)
+	ksize := t.RawGetString("ksize").(golua.LNumber)
+	disk := t.RawGetString("disk").(golua.LBool)
 
 	f := gift.Median(int(ksize), bool(disk))
 	return f
@@ -1630,16 +1630,16 @@ func minimumTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
 	/// @prop disk
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_MINIMUM))
-	state.SetTable(t, golua.LString("ksize"), golua.LNumber(ksize))
-	state.SetTable(t, golua.LString("disk"), golua.LBool(disk))
+	t.RawSetString("type", golua.LString(FILTER_MINIMUM))
+	t.RawSetString("ksize", golua.LNumber(ksize))
+	t.RawSetString("disk", golua.LBool(disk))
 
 	return t
 }
 
 func minimumBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	ksize := state.GetTable(t, golua.LString("ksize")).(golua.LNumber)
-	disk := state.GetTable(t, golua.LString("disk")).(golua.LBool)
+	ksize := t.RawGetString("ksize").(golua.LNumber)
+	disk := t.RawGetString("disk").(golua.LBool)
 
 	f := gift.Minimum(int(ksize), bool(disk))
 	return f
@@ -1652,16 +1652,16 @@ func sigmoidTable(state *golua.LState, midpoint, factor float64) *golua.LTable {
 	/// @prop factor
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_SIGMOID))
-	state.SetTable(t, golua.LString("midpoint"), golua.LNumber(midpoint))
-	state.SetTable(t, golua.LString("factor"), golua.LNumber(factor))
+	t.RawSetString("type", golua.LString(FILTER_SIGMOID))
+	t.RawSetString("midpoint", golua.LNumber(midpoint))
+	t.RawSetString("factor", golua.LNumber(factor))
 
 	return t
 }
 
 func sigmoidBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	midpoint := state.GetTable(t, golua.LString("midpoint")).(golua.LNumber)
-	factor := state.GetTable(t, golua.LString("factor")).(golua.LNumber)
+	midpoint := t.RawGetString("midpoint").(golua.LNumber)
+	factor := t.RawGetString("factor").(golua.LNumber)
 
 	f := gift.Sigmoid(float32(midpoint), float32(factor))
 	return f
@@ -1675,18 +1675,18 @@ func unsharpMaskTable(state *golua.LState, sigma, amount, threshold float64) *go
 	/// @prop threshold
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_UNSHARP_MASK))
-	state.SetTable(t, golua.LString("sigma"), golua.LNumber(sigma))
-	state.SetTable(t, golua.LString("amount"), golua.LNumber(amount))
-	state.SetTable(t, golua.LString("threshold"), golua.LNumber(threshold))
+	t.RawSetString("type", golua.LString(FILTER_UNSHARP_MASK))
+	t.RawSetString("sigma", golua.LNumber(sigma))
+	t.RawSetString("amount", golua.LNumber(amount))
+	t.RawSetString("threshold", golua.LNumber(threshold))
 
 	return t
 }
 
 func unsharpMaskBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	sigma := state.GetTable(t, golua.LString("sigma")).(golua.LNumber)
-	amount := state.GetTable(t, golua.LString("amount")).(golua.LNumber)
-	threshold := state.GetTable(t, golua.LString("threshold")).(golua.LNumber)
+	sigma := t.RawGetString("sigma").(golua.LNumber)
+	amount := t.RawGetString("amount").(golua.LNumber)
+	threshold := t.RawGetString("threshold").(golua.LNumber)
 
 	f := gift.UnsharpMask(float32(sigma), float32(amount), float32(threshold))
 	return f
@@ -1700,18 +1700,18 @@ func resizeTable(state *golua.LState, width, height, resampling int) *golua.LTab
 	/// @prop resampling
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_RESIZE))
-	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
-	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
-	state.SetTable(t, golua.LString("resampling"), golua.LNumber(resampling))
+	t.RawSetString("type", golua.LString(FILTER_RESIZE))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
+	t.RawSetString("resampling", golua.LNumber(resampling))
 
 	return t
 }
 
 func resizeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	width := state.GetTable(t, golua.LString("width")).(golua.LNumber)
-	height := state.GetTable(t, golua.LString("height")).(golua.LNumber)
-	resampling := state.GetTable(t, golua.LString("resampling")).(golua.LNumber)
+	width := t.RawGetString("width").(golua.LNumber)
+	height := t.RawGetString("height").(golua.LNumber)
+	resampling := t.RawGetString("resampling").(golua.LNumber)
 
 	s := samplers[int(resampling)]
 	f := gift.Resize(int(width), int(height), s)
@@ -1727,20 +1727,20 @@ func resizeToFillTable(state *golua.LState, width, height, resampling, anchor in
 	/// @prop anchor
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_RESIZE_TO_FILL))
-	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
-	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
-	state.SetTable(t, golua.LString("resampling"), golua.LNumber(resampling))
-	state.SetTable(t, golua.LString("anchor"), golua.LNumber(anchor))
+	t.RawSetString("type", golua.LString(FILTER_RESIZE_TO_FILL))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
+	t.RawSetString("resampling", golua.LNumber(resampling))
+	t.RawSetString("anchor", golua.LNumber(anchor))
 
 	return t
 }
 
 func resizeToFillBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	width := state.GetTable(t, golua.LString("width")).(golua.LNumber)
-	height := state.GetTable(t, golua.LString("height")).(golua.LNumber)
-	resampling := state.GetTable(t, golua.LString("resampling")).(golua.LNumber)
-	anchor := state.GetTable(t, golua.LString("anchor")).(golua.LNumber)
+	width := t.RawGetString("width").(golua.LNumber)
+	height := t.RawGetString("height").(golua.LNumber)
+	resampling := t.RawGetString("resampling").(golua.LNumber)
+	anchor := t.RawGetString("anchor").(golua.LNumber)
 
 	s := samplers[int(resampling)]
 	f := gift.ResizeToFill(int(width), int(height), s, gift.Anchor(anchor))
@@ -1755,18 +1755,18 @@ func resizeToFitTable(state *golua.LState, width, height, resampling int) *golua
 	/// @prop resampling
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_RESIZE_TO_FIT))
-	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
-	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
-	state.SetTable(t, golua.LString("resampling"), golua.LNumber(resampling))
+	t.RawSetString("type", golua.LString(FILTER_RESIZE_TO_FIT))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
+	t.RawSetString("resampling", golua.LNumber(resampling))
 
 	return t
 }
 
 func resizeToFitBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	width := state.GetTable(t, golua.LString("width")).(golua.LNumber)
-	height := state.GetTable(t, golua.LString("height")).(golua.LNumber)
-	resampling := state.GetTable(t, golua.LString("resampling")).(golua.LNumber)
+	width := t.RawGetString("width").(golua.LNumber)
+	height := t.RawGetString("height").(golua.LNumber)
+	resampling := t.RawGetString("resampling").(golua.LNumber)
 
 	s := samplers[int(resampling)]
 	f := gift.ResizeToFit(int(width), int(height), s)
@@ -1779,14 +1779,14 @@ func colorFuncTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
 	/// @prop fn
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLOR_FUNC))
-	state.SetTable(t, golua.LString("fn"), fn)
+	t.RawSetString("type", golua.LString(FILTER_COLOR_FUNC))
+	t.RawSetString("fn", fn)
 
 	return t
 }
 
 func colorFuncBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	fn := state.GetTable(t, golua.LString("fn")).(*golua.LFunction)
+	fn := t.RawGetString("fn").(*golua.LFunction)
 
 	f := gift.ColorFunc(func(r0, g0, b0, a0 float32) (r float32, g float32, b float32, a float32) {
 		cfInner, _ := state.NewThread()
@@ -1813,14 +1813,14 @@ func colorFuncUnsafeTable(state *golua.LState, fn *golua.LFunction) *golua.LTabl
 	/// @prop fn
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(FILTER_COLOR_FUNC_UNSAFE))
-	state.SetTable(t, golua.LString("fn"), fn)
+	t.RawSetString("type", golua.LString(FILTER_COLOR_FUNC_UNSAFE))
+	t.RawSetString("fn", fn)
 
 	return t
 }
 
 func colorFuncUnsafeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
-	fn := state.GetTable(t, golua.LString("fn")).(*golua.LFunction)
+	fn := t.RawGetString("fn").(*golua.LFunction)
 
 	f := gift.ColorFunc(func(r0, g0, b0, a0 float32) (r float32, g float32, b float32, a float32) {
 		state.Push(fn)

@@ -416,10 +416,10 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 	/// @const RECOVERY_MEDIUM
 	/// @const RECOVERY_HIGH
 	/// @const RECOVERY_HIGHEST
-	r.State.SetField(tab, "RECOVERY_LOW", golua.LNumber(qrcode.Low))
-	r.State.SetField(tab, "RECOVERY_MEDIUM", golua.LNumber(qrcode.Medium))
-	r.State.SetField(tab, "RECOVERY_HIGH", golua.LNumber(qrcode.High))
-	r.State.SetField(tab, "RECOVERY_HIGHEST", golua.LNumber(qrcode.Highest))
+	tab.RawSetString("RECOVERY_LOW", golua.LNumber(qrcode.Low))
+	tab.RawSetString("RECOVERY_MEDIUM", golua.LNumber(qrcode.Medium))
+	tab.RawSetString("RECOVERY_HIGH", golua.LNumber(qrcode.High))
+	tab.RawSetString("RECOVERY_HIGHEST", golua.LNumber(qrcode.Highest))
 }
 
 var recoveryLevelList = []qrcode.RecoveryLevel{

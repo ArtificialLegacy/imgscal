@@ -385,11 +385,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			st := args["shortcuts"].(*golua.LTable)
 			stList := []g.WindowShortcut{}
 			for i := range st.Len() {
-				s := state.GetTable(st, golua.LNumber(i+1)).(*golua.LTable)
+				s := st.RawGetInt(i + 1).(*golua.LTable)
 
-				key := state.GetTable(s, golua.LString("key")).(golua.LNumber)
-				mod := state.GetTable(s, golua.LString("mod")).(golua.LNumber)
-				callback := state.GetTable(s, golua.LString("callback"))
+				key := s.RawGetString("key").(golua.LNumber)
+				mod := s.RawGetString("mod").(golua.LNumber)
+				callback := s.RawGetString("callback")
 
 				shortcut := g.WindowShortcut{
 					Key:      g.Key(key),
@@ -570,7 +570,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			widgets := args["widgets"].(*golua.LTable)
-			layout := g.Layout(layoutBuild(r, state, parseWidgets(parseTable(widgets, state), state, lg), lg))
+			layout := g.Layout(layoutBuild(r, state, parseWidgets(parseTable(widgets), state, lg), lg))
 			layout.Build()
 
 			return 0
@@ -677,9 +677,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			callback := args["callback"].(*golua.LFunction)
 
 			t := state.NewTable()
-			state.SetTable(t, golua.LString("key"), golua.LNumber(key))
-			state.SetTable(t, golua.LString("mod"), golua.LNumber(mod))
-			state.SetTable(t, golua.LString("callback"), callback)
+			t.RawSetString("key", golua.LNumber(key))
+			t.RawSetString("mod", golua.LNumber(mod))
+			t.RawSetString("callback", callback)
 
 			state.Push(t)
 			return 1
@@ -699,8 +699,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			label := args["label"].(string)
 
 			t := state.NewTable()
-			state.SetTable(t, golua.LString("position"), golua.LNumber(pos))
-			state.SetTable(t, golua.LString("label"), golua.LString(label))
+			t.RawSetString("position", golua.LNumber(pos))
+			t.RawSetString("label", golua.LString(label))
 
 			state.Push(t)
 			return 1
@@ -1776,7 +1776,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			text := args["text"].(string)
-			items := args["items"].(golua.LValue)
+			items := args["items"].(*golua.LTable)
 			i32ref := args["i32ref"].(int)
 
 			sref, err := r.CR_REF.Item(i32ref)
@@ -1784,7 +1784,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
 			}
 			selected := sref.Value.(*int32)
-			preview := state.GetTable(items.(*golua.LTable), golua.LNumber(*selected+1)).(golua.LString)
+			sel := int(*selected)
+			preview := items.RawGetInt(sel + 1).(golua.LString)
 
 			t := comboTable(state, text, string(preview), items, i32ref)
 
@@ -3318,7 +3319,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			strSlice := []string{}
 
 			for i := range strList.Len() {
-				v := state.GetTable(strList, golua.LNumber(i+1)).(golua.LString)
+				v := strList.RawGetInt(i + 1).(golua.LString)
 				strSlice = append(strSlice, string(v))
 			}
 
@@ -3426,35 +3427,35 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGCOLOREDIT_DATATYPEMASK
 	/// @const FLAGCOLOREDIT_PICKERMASK
 	/// @const FLAGCOLOREDIT_INPUTMASK
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NONE"), golua.LNumber(FLAGCOLOREDIT_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOALPHA"), golua.LNumber(FLAGCOLOREDIT_NOALPHA))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOPICKER"), golua.LNumber(FLAGCOLOREDIT_NOPICKER))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOOPTIONS"), golua.LNumber(FLAGCOLOREDIT_NOOPTIONS))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOSMALLPREVIEW"), golua.LNumber(FLAGCOLOREDIT_NOSMALLPREVIEW))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOINPUTS"), golua.LNumber(FLAGCOLOREDIT_NOINPUTS))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOTOOLTIP"), golua.LNumber(FLAGCOLOREDIT_NOTOOLTIP))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOLABEL"), golua.LNumber(FLAGCOLOREDIT_NOLABEL))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOSIDEPREVIEW"), golua.LNumber(FLAGCOLOREDIT_NOSIDEPREVIEW))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NODRAGDROP"), golua.LNumber(FLAGCOLOREDIT_NODRAGDROP))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_NOBORDER"), golua.LNumber(FLAGCOLOREDIT_NOBORDER))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_ALPHABAR"), golua.LNumber(FLAGCOLOREDIT_ALPHABAR))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_ALPHAPREVIEW"), golua.LNumber(FLAGCOLOREDIT_ALPHAPREVIEW))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_ALPHAPREVIEWHALF"), golua.LNumber(FLAGCOLOREDIT_ALPHAPREVIEWHALF))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_HDR"), golua.LNumber(FLAGCOLOREDIT_HDR))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_DISPLAYRGB"), golua.LNumber(FLAGCOLOREDIT_DISPLAYRGB))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_DISPLAYHSV"), golua.LNumber(FLAGCOLOREDIT_DISPLAYHSV))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_DISPLAYHEX"), golua.LNumber(FLAGCOLOREDIT_DISPLAYHEX))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_UINT8"), golua.LNumber(FLAGCOLOREDIT_UINT8))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_FLOAT"), golua.LNumber(FLAGCOLOREDIT_FLOAT))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_HUEBAR"), golua.LNumber(FLAGCOLOREDIT_HUEBAR))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_HUEWHEEL"), golua.LNumber(FLAGCOLOREDIT_HUEWHEEL))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_INPUTRGB"), golua.LNumber(FLAGCOLOREDIT_INPUTRGB))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_INPUTHSV"), golua.LNumber(FLAGCOLOREDIT_INPUTHSV))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_DEFAULTOPTIONS"), golua.LNumber(FLAGCOLOREDIT_DEFAULTOPTIONS))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_DISPLAYMASK"), golua.LNumber(FLAGCOLOREDIT_DISPLAYMASK))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_DATATYPEMASK"), golua.LNumber(FLAGCOLOREDIT_DATATYPEMASK))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_PICKERMASK"), golua.LNumber(FLAGCOLOREDIT_PICKERMASK))
-	r.State.SetTable(tab, golua.LString("FLAGCOLOREDIT_INPUTMASK"), golua.LNumber(FLAGCOLOREDIT_INPUTMASK))
+	tab.RawSetString("FLAGCOLOREDIT_NONE", golua.LNumber(FLAGCOLOREDIT_NONE))
+	tab.RawSetString("FLAGCOLOREDIT_NOALPHA", golua.LNumber(FLAGCOLOREDIT_NOALPHA))
+	tab.RawSetString("FLAGCOLOREDIT_NOPICKER", golua.LNumber(FLAGCOLOREDIT_NOPICKER))
+	tab.RawSetString("FLAGCOLOREDIT_NOOPTIONS", golua.LNumber(FLAGCOLOREDIT_NOOPTIONS))
+	tab.RawSetString("FLAGCOLOREDIT_NOSMALLPREVIEW", golua.LNumber(FLAGCOLOREDIT_NOSMALLPREVIEW))
+	tab.RawSetString("FLAGCOLOREDIT_NOINPUTS", golua.LNumber(FLAGCOLOREDIT_NOINPUTS))
+	tab.RawSetString("FLAGCOLOREDIT_NOTOOLTIP", golua.LNumber(FLAGCOLOREDIT_NOTOOLTIP))
+	tab.RawSetString("FLAGCOLOREDIT_NOLABEL", golua.LNumber(FLAGCOLOREDIT_NOLABEL))
+	tab.RawSetString("FLAGCOLOREDIT_NOSIDEPREVIEW", golua.LNumber(FLAGCOLOREDIT_NOSIDEPREVIEW))
+	tab.RawSetString("FLAGCOLOREDIT_NODRAGDROP", golua.LNumber(FLAGCOLOREDIT_NODRAGDROP))
+	tab.RawSetString("FLAGCOLOREDIT_NOBORDER", golua.LNumber(FLAGCOLOREDIT_NOBORDER))
+	tab.RawSetString("FLAGCOLOREDIT_ALPHABAR", golua.LNumber(FLAGCOLOREDIT_ALPHABAR))
+	tab.RawSetString("FLAGCOLOREDIT_ALPHAPREVIEW", golua.LNumber(FLAGCOLOREDIT_ALPHAPREVIEW))
+	tab.RawSetString("FLAGCOLOREDIT_ALPHAPREVIEWHALF", golua.LNumber(FLAGCOLOREDIT_ALPHAPREVIEWHALF))
+	tab.RawSetString("FLAGCOLOREDIT_HDR", golua.LNumber(FLAGCOLOREDIT_HDR))
+	tab.RawSetString("FLAGCOLOREDIT_DISPLAYRGB", golua.LNumber(FLAGCOLOREDIT_DISPLAYRGB))
+	tab.RawSetString("FLAGCOLOREDIT_DISPLAYHSV", golua.LNumber(FLAGCOLOREDIT_DISPLAYHSV))
+	tab.RawSetString("FLAGCOLOREDIT_DISPLAYHEX", golua.LNumber(FLAGCOLOREDIT_DISPLAYHEX))
+	tab.RawSetString("FLAGCOLOREDIT_UINT8", golua.LNumber(FLAGCOLOREDIT_UINT8))
+	tab.RawSetString("FLAGCOLOREDIT_FLOAT", golua.LNumber(FLAGCOLOREDIT_FLOAT))
+	tab.RawSetString("FLAGCOLOREDIT_HUEBAR", golua.LNumber(FLAGCOLOREDIT_HUEBAR))
+	tab.RawSetString("FLAGCOLOREDIT_HUEWHEEL", golua.LNumber(FLAGCOLOREDIT_HUEWHEEL))
+	tab.RawSetString("FLAGCOLOREDIT_INPUTRGB", golua.LNumber(FLAGCOLOREDIT_INPUTRGB))
+	tab.RawSetString("FLAGCOLOREDIT_INPUTHSV", golua.LNumber(FLAGCOLOREDIT_INPUTHSV))
+	tab.RawSetString("FLAGCOLOREDIT_DEFAULTOPTIONS", golua.LNumber(FLAGCOLOREDIT_DEFAULTOPTIONS))
+	tab.RawSetString("FLAGCOLOREDIT_DISPLAYMASK", golua.LNumber(FLAGCOLOREDIT_DISPLAYMASK))
+	tab.RawSetString("FLAGCOLOREDIT_DATATYPEMASK", golua.LNumber(FLAGCOLOREDIT_DATATYPEMASK))
+	tab.RawSetString("FLAGCOLOREDIT_PICKERMASK", golua.LNumber(FLAGCOLOREDIT_PICKERMASK))
+	tab.RawSetString("FLAGCOLOREDIT_INPUTMASK", golua.LNumber(FLAGCOLOREDIT_INPUTMASK))
 
 	/// @constants Combo Flags
 	/// @const FLAGCOMBO_NONE
@@ -3467,30 +3468,30 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGCOMBO_NOPREVIEW
 	/// @const FLAGCOMBO_WIDTHFITPREVIEW
 	/// @const FLAGCOMBO_HEIGHTMASK
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_NONE"), golua.LNumber(FLAGCOMBO_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_POPUPALIGNLEFT"), golua.LNumber(FLAGCOMBO_POPUPALIGNLEFT))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_HEIGHTSMALL"), golua.LNumber(FLAGCOMBO_HEIGHTSMALL))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_HEIGHTREGULAR"), golua.LNumber(FLAGCOMBO_HEIGHTREGULAR))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_HEIGHTLARGEST"), golua.LNumber(FLAGCOMBO_HEIGHTLARGEST))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_NOARROWBUTTON"), golua.LNumber(FLAGCOMBO_NOARROWBUTTON))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_NOARROWBUTTON"), golua.LNumber(FLAGCOMBO_NOARROWBUTTON))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_NOPREVIEW"), golua.LNumber(FLAGCOMBO_NOPREVIEW))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_WIDTHFITPREVIEW"), golua.LNumber(FLAGCOMBO_WIDTHFITPREVIEW))
-	r.State.SetTable(tab, golua.LString("FLAGCOMBO_HEIGHTMASK"), golua.LNumber(FLAGCOMBO_HEIGHTMASK))
+	tab.RawSetString("FLAGCOMBO_NONE", golua.LNumber(FLAGCOMBO_NONE))
+	tab.RawSetString("FLAGCOMBO_POPUPALIGNLEFT", golua.LNumber(FLAGCOMBO_POPUPALIGNLEFT))
+	tab.RawSetString("FLAGCOMBO_HEIGHTSMALL", golua.LNumber(FLAGCOMBO_HEIGHTSMALL))
+	tab.RawSetString("FLAGCOMBO_HEIGHTREGULAR", golua.LNumber(FLAGCOMBO_HEIGHTREGULAR))
+	tab.RawSetString("FLAGCOMBO_HEIGHTLARGEST", golua.LNumber(FLAGCOMBO_HEIGHTLARGEST))
+	tab.RawSetString("FLAGCOMBO_NOARROWBUTTON", golua.LNumber(FLAGCOMBO_NOARROWBUTTON))
+	tab.RawSetString("FLAGCOMBO_NOARROWBUTTON", golua.LNumber(FLAGCOMBO_NOARROWBUTTON))
+	tab.RawSetString("FLAGCOMBO_NOPREVIEW", golua.LNumber(FLAGCOMBO_NOPREVIEW))
+	tab.RawSetString("FLAGCOMBO_WIDTHFITPREVIEW", golua.LNumber(FLAGCOMBO_WIDTHFITPREVIEW))
+	tab.RawSetString("FLAGCOMBO_HEIGHTMASK", golua.LNumber(FLAGCOMBO_HEIGHTMASK))
 
 	/// @constants Mouse Buttons
 	/// @const MOUSEBUTTON_LEFT
 	/// @const MOUSEBUTTON_RIGHT
 	/// @const MOUSEBUTTON_MIDDLE
-	r.State.SetTable(tab, golua.LString("MOUSEBUTTON_LEFT"), golua.LNumber(MOUSEBUTTON_LEFT))
-	r.State.SetTable(tab, golua.LString("MOUSEBUTTON_RIGHT"), golua.LNumber(MOUSEBUTTON_RIGHT))
-	r.State.SetTable(tab, golua.LString("MOUSEBUTTON_MIDDLE"), golua.LNumber(MOUSEBUTTON_MIDDLE))
+	tab.RawSetString("MOUSEBUTTON_LEFT", golua.LNumber(MOUSEBUTTON_LEFT))
+	tab.RawSetString("MOUSEBUTTON_RIGHT", golua.LNumber(MOUSEBUTTON_RIGHT))
+	tab.RawSetString("MOUSEBUTTON_MIDDLE", golua.LNumber(MOUSEBUTTON_MIDDLE))
 
 	/// @constants Date Picker Labels
 	/// @const DATEPICKERLABEL_MONTH
 	/// @const DATEPICKERLABEL_YEAR
-	r.State.SetTable(tab, golua.LString("DATEPICKERLABEL_MONTH"), golua.LString(DATEPICKERLABEL_MONTH))
-	r.State.SetTable(tab, golua.LString("DATEPICKERLABEL_YEAR"), golua.LString(DATEPICKERLABEL_YEAR))
+	tab.RawSetString("DATEPICKERLABEL_MONTH", golua.LString(DATEPICKERLABEL_MONTH))
+	tab.RawSetString("DATEPICKERLABEL_YEAR", golua.LString(DATEPICKERLABEL_YEAR))
 
 	/// @constants Input Text Flags
 	/// @const FLAGINPUTTEXT_NONE
@@ -3515,28 +3516,28 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGINPUTTEXT_CALLBACKRESIZE
 	/// @const FLAGINPUTTEXT_CALLBACKEDIT
 	/// @const FLAGINPUTTEXT_ESCAPECLEARSALL
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_NONE"), golua.LNumber(FLAGINPUTTEXT_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CHARSDECIMAL"), golua.LNumber(FLAGINPUTTEXT_CHARSDECIMAL))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CHARSHEXADECIMAL"), golua.LNumber(FLAGINPUTTEXT_CHARSHEXADECIMAL))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CHARSUPPERCASE"), golua.LNumber(FLAGINPUTTEXT_CHARSUPPERCASE))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CHARSNOBLANK"), golua.LNumber(FLAGINPUTTEXT_CHARSNOBLANK))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_AUTOSELECTALL"), golua.LNumber(FLAGINPUTTEXT_AUTOSELECTALL))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_ENTERRETURNSTRUE"), golua.LNumber(FLAGINPUTTEXT_ENTERRETURNSTRUE))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKCOMPLETION"), golua.LNumber(FLAGINPUTTEXT_CALLBACKCOMPLETION))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKHISTORY"), golua.LNumber(FLAGINPUTTEXT_CALLBACKHISTORY))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKALWAYS"), golua.LNumber(FLAGINPUTTEXT_CALLBACKALWAYS))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKCHARFILTER"), golua.LNumber(FLAGINPUTTEXT_CALLBACKCHARFILTER))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_ALLOWTABINPUT"), golua.LNumber(FLAGINPUTTEXT_ALLOWTABINPUT))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CTRLENTERFORNEWLINE"), golua.LNumber(FLAGINPUTTEXT_CTRLENTERFORNEWLINE))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_NOHORIZONTALSCROLL"), golua.LNumber(FLAGINPUTTEXT_NOHORIZONTALSCROLL))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_ALWAYSOVERWRITE"), golua.LNumber(FLAGINPUTTEXT_ALWAYSOVERWRITE))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_READONLY"), golua.LNumber(FLAGINPUTTEXT_READONLY))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_PASSWORD"), golua.LNumber(FLAGINPUTTEXT_PASSWORD))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_NOUNDOREDO"), golua.LNumber(FLAGINPUTTEXT_NOUNDOREDO))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CHARSSCIENTIFIC"), golua.LNumber(FLAGINPUTTEXT_CHARSSCIENTIFIC))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKRESIZE"), golua.LNumber(FLAGINPUTTEXT_CALLBACKRESIZE))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_CALLBACKEDIT"), golua.LNumber(FLAGINPUTTEXT_CALLBACKEDIT))
-	r.State.SetTable(tab, golua.LString("FLAGINPUTTEXT_ESCAPECLEARSALL"), golua.LNumber(FLAGINPUTTEXT_ESCAPECLEARSALL))
+	tab.RawSetString("FLAGINPUTTEXT_NONE", golua.LNumber(FLAGINPUTTEXT_NONE))
+	tab.RawSetString("FLAGINPUTTEXT_CHARSDECIMAL", golua.LNumber(FLAGINPUTTEXT_CHARSDECIMAL))
+	tab.RawSetString("FLAGINPUTTEXT_CHARSHEXADECIMAL", golua.LNumber(FLAGINPUTTEXT_CHARSHEXADECIMAL))
+	tab.RawSetString("FLAGINPUTTEXT_CHARSUPPERCASE", golua.LNumber(FLAGINPUTTEXT_CHARSUPPERCASE))
+	tab.RawSetString("FLAGINPUTTEXT_CHARSNOBLANK", golua.LNumber(FLAGINPUTTEXT_CHARSNOBLANK))
+	tab.RawSetString("FLAGINPUTTEXT_AUTOSELECTALL", golua.LNumber(FLAGINPUTTEXT_AUTOSELECTALL))
+	tab.RawSetString("FLAGINPUTTEXT_ENTERRETURNSTRUE", golua.LNumber(FLAGINPUTTEXT_ENTERRETURNSTRUE))
+	tab.RawSetString("FLAGINPUTTEXT_CALLBACKCOMPLETION", golua.LNumber(FLAGINPUTTEXT_CALLBACKCOMPLETION))
+	tab.RawSetString("FLAGINPUTTEXT_CALLBACKHISTORY", golua.LNumber(FLAGINPUTTEXT_CALLBACKHISTORY))
+	tab.RawSetString("FLAGINPUTTEXT_CALLBACKALWAYS", golua.LNumber(FLAGINPUTTEXT_CALLBACKALWAYS))
+	tab.RawSetString("FLAGINPUTTEXT_CALLBACKCHARFILTER", golua.LNumber(FLAGINPUTTEXT_CALLBACKCHARFILTER))
+	tab.RawSetString("FLAGINPUTTEXT_ALLOWTABINPUT", golua.LNumber(FLAGINPUTTEXT_ALLOWTABINPUT))
+	tab.RawSetString("FLAGINPUTTEXT_CTRLENTERFORNEWLINE", golua.LNumber(FLAGINPUTTEXT_CTRLENTERFORNEWLINE))
+	tab.RawSetString("FLAGINPUTTEXT_NOHORIZONTALSCROLL", golua.LNumber(FLAGINPUTTEXT_NOHORIZONTALSCROLL))
+	tab.RawSetString("FLAGINPUTTEXT_ALWAYSOVERWRITE", golua.LNumber(FLAGINPUTTEXT_ALWAYSOVERWRITE))
+	tab.RawSetString("FLAGINPUTTEXT_READONLY", golua.LNumber(FLAGINPUTTEXT_READONLY))
+	tab.RawSetString("FLAGINPUTTEXT_PASSWORD", golua.LNumber(FLAGINPUTTEXT_PASSWORD))
+	tab.RawSetString("FLAGINPUTTEXT_NOUNDOREDO", golua.LNumber(FLAGINPUTTEXT_NOUNDOREDO))
+	tab.RawSetString("FLAGINPUTTEXT_CHARSSCIENTIFIC", golua.LNumber(FLAGINPUTTEXT_CHARSSCIENTIFIC))
+	tab.RawSetString("FLAGINPUTTEXT_CALLBACKRESIZE", golua.LNumber(FLAGINPUTTEXT_CALLBACKRESIZE))
+	tab.RawSetString("FLAGINPUTTEXT_CALLBACKEDIT", golua.LNumber(FLAGINPUTTEXT_CALLBACKEDIT))
+	tab.RawSetString("FLAGINPUTTEXT_ESCAPECLEARSALL", golua.LNumber(FLAGINPUTTEXT_ESCAPECLEARSALL))
 
 	/// @constants Selectable Flags
 	/// @const FLAGSELECTABLE_NONE
@@ -3545,12 +3546,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGSELECTABLE_ALLOWDOUBLECLICK
 	/// @const FLAGSELECTABLE_DISABLED
 	/// @const FLAGSELECTABLE_ALLOWOVERLAP
-	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_NONE"), golua.LNumber(FLAGSELECTABLE_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_DONTCLOSEPOPUPS"), golua.LNumber(FLAGSELECTABLE_DONTCLOSEPOPUPS))
-	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_SPANALLCOLUMNS"), golua.LNumber(FLAGSELECTABLE_SPANALLCOLUMNS))
-	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_ALLOWDOUBLECLICK"), golua.LNumber(FLAGSELECTABLE_ALLOWDOUBLECLICK))
-	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_DISABLED"), golua.LNumber(FLAGSELECTABLE_DISABLED))
-	r.State.SetTable(tab, golua.LString("FLAGSELECTABLE_ALLOWOVERLAP"), golua.LNumber(FLAGSELECTABLE_ALLOWOVERLAP))
+	tab.RawSetString("FLAGSELECTABLE_NONE", golua.LNumber(FLAGSELECTABLE_NONE))
+	tab.RawSetString("FLAGSELECTABLE_DONTCLOSEPOPUPS", golua.LNumber(FLAGSELECTABLE_DONTCLOSEPOPUPS))
+	tab.RawSetString("FLAGSELECTABLE_SPANALLCOLUMNS", golua.LNumber(FLAGSELECTABLE_SPANALLCOLUMNS))
+	tab.RawSetString("FLAGSELECTABLE_ALLOWDOUBLECLICK", golua.LNumber(FLAGSELECTABLE_ALLOWDOUBLECLICK))
+	tab.RawSetString("FLAGSELECTABLE_DISABLED", golua.LNumber(FLAGSELECTABLE_DISABLED))
+	tab.RawSetString("FLAGSELECTABLE_ALLOWOVERLAP", golua.LNumber(FLAGSELECTABLE_ALLOWOVERLAP))
 
 	/// @constants Slider Flags
 	/// @const FLAGSLIDER_NONE
@@ -3559,12 +3560,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGSLIDER_NOROUNDTOFORMAT
 	/// @const FLAGSLIDER_NOINPUT
 	/// @const FLAGSLIDER_INVALIDMASK
-	r.State.SetTable(tab, golua.LString("FLAGSLIDER_NONE"), golua.LNumber(FLAGSLIDER_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGSLIDER_ALWAYSCLAMP"), golua.LNumber(FLAGSLIDER_ALWAYSCLAMP))
-	r.State.SetTable(tab, golua.LString("FLAGSLIDER_LOGARITHMIC"), golua.LNumber(FLAGSLIDER_LOGARITHMIC))
-	r.State.SetTable(tab, golua.LString("FLAGSLIDER_NOROUNDTOFORMAT"), golua.LNumber(FLAGSLIDER_NOROUNDTOFORMAT))
-	r.State.SetTable(tab, golua.LString("FLAGSLIDER_NOINPUT"), golua.LNumber(FLAGSLIDER_NOINPUT))
-	r.State.SetTable(tab, golua.LString("FLAGSLIDER_INVALIDMASK"), golua.LNumber(FLAGSLIDER_INVALIDMASK))
+	tab.RawSetString("FLAGSLIDER_NONE", golua.LNumber(FLAGSLIDER_NONE))
+	tab.RawSetString("FLAGSLIDER_ALWAYSCLAMP", golua.LNumber(FLAGSLIDER_ALWAYSCLAMP))
+	tab.RawSetString("FLAGSLIDER_LOGARITHMIC", golua.LNumber(FLAGSLIDER_LOGARITHMIC))
+	tab.RawSetString("FLAGSLIDER_NOROUNDTOFORMAT", golua.LNumber(FLAGSLIDER_NOROUNDTOFORMAT))
+	tab.RawSetString("FLAGSLIDER_NOINPUT", golua.LNumber(FLAGSLIDER_NOINPUT))
+	tab.RawSetString("FLAGSLIDER_INVALIDMASK", golua.LNumber(FLAGSLIDER_INVALIDMASK))
 
 	/// @constants Tab Bar Flags
 	/// @const FLAGTABBAR_NONE
@@ -3578,17 +3579,17 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGTABBAR_FITTINGPOLICYSCROLL
 	/// @const FLAGTABBAR_FITTINGPOLICYMASK
 	/// @const FLAGTABBAR_FITTINGPOLICYDEFAULT
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NONE"), golua.LNumber(FLAGTABBAR_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_REORDERABLE"), golua.LNumber(FLAGTABBAR_REORDERABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_AUTOSELECTNEWTABS"), golua.LNumber(FLAGTABBAR_AUTOSELECTNEWTABS))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_TABLLISTPOPUPBUTTON"), golua.LNumber(FLAGTABBAR_TABLLISTPOPUPBUTTON))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON"), golua.LNumber(FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS"), golua.LNumber(FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_NOTOOLTIP"), golua.LNumber(FLAGTABBAR_NOTOOLTIP))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYRESIZEDOWN"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYRESIZEDOWN))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYSCROLL"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYSCROLL))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYMASK"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYMASK))
-	r.State.SetTable(tab, golua.LString("FLAGTABBAR_FITTINGPOLICYDEFAULT"), golua.LNumber(FLAGTABBAR_FITTINGPOLICYDEFAULT))
+	tab.RawSetString("FLAGTABBAR_NONE", golua.LNumber(FLAGTABBAR_NONE))
+	tab.RawSetString("FLAGTABBAR_REORDERABLE", golua.LNumber(FLAGTABBAR_REORDERABLE))
+	tab.RawSetString("FLAGTABBAR_AUTOSELECTNEWTABS", golua.LNumber(FLAGTABBAR_AUTOSELECTNEWTABS))
+	tab.RawSetString("FLAGTABBAR_TABLLISTPOPUPBUTTON", golua.LNumber(FLAGTABBAR_TABLLISTPOPUPBUTTON))
+	tab.RawSetString("FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON", golua.LNumber(FLAGTABBAR_NOCLOSEWITHMIDDLEMOUSEBUTTON))
+	tab.RawSetString("FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS", golua.LNumber(FLAGTABBAR_NOTABLISTSCROLLINGBUTTONS))
+	tab.RawSetString("FLAGTABBAR_NOTOOLTIP", golua.LNumber(FLAGTABBAR_NOTOOLTIP))
+	tab.RawSetString("FLAGTABBAR_FITTINGPOLICYRESIZEDOWN", golua.LNumber(FLAGTABBAR_FITTINGPOLICYRESIZEDOWN))
+	tab.RawSetString("FLAGTABBAR_FITTINGPOLICYSCROLL", golua.LNumber(FLAGTABBAR_FITTINGPOLICYSCROLL))
+	tab.RawSetString("FLAGTABBAR_FITTINGPOLICYMASK", golua.LNumber(FLAGTABBAR_FITTINGPOLICYMASK))
+	tab.RawSetString("FLAGTABBAR_FITTINGPOLICYDEFAULT", golua.LNumber(FLAGTABBAR_FITTINGPOLICYDEFAULT))
 
 	/// @constants Tab Item Flags
 	/// @const FLAGTABITEM_NONE
@@ -3601,16 +3602,16 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGTABITEM_LEADING
 	/// @const FLAGTABITEM_TRAILING
 	/// @const FLAGTABITEM_NOASSUMEDCLOSURE
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NONE"), golua.LNumber(FLAGTABITEM_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_UNSAVEDOCUMENT"), golua.LNumber(FLAGTABITEM_UNSAVEDOCUMENT))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_SETSELECTED"), golua.LNumber(FLAGTABITEM_SETSELECTED))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON"), golua.LNumber(FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOPUSHID"), golua.LNumber(FLAGTABITEM_NOPUSHID))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOTOOLTIP"), golua.LNumber(FLAGTABITEM_NOTOOLTIP))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOREORDER"), golua.LNumber(FLAGTABITEM_NOREORDER))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_LEADING"), golua.LNumber(FLAGTABITEM_LEADING))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_TRAILING"), golua.LNumber(FLAGTABITEM_TRAILING))
-	r.State.SetTable(tab, golua.LString("FLAGTABITEM_NOASSUMEDCLOSURE"), golua.LNumber(FLAGTABITEM_NOASSUMEDCLOSURE))
+	tab.RawSetString("FLAGTABITEM_NONE", golua.LNumber(FLAGTABITEM_NONE))
+	tab.RawSetString("FLAGTABITEM_UNSAVEDOCUMENT", golua.LNumber(FLAGTABITEM_UNSAVEDOCUMENT))
+	tab.RawSetString("FLAGTABITEM_SETSELECTED", golua.LNumber(FLAGTABITEM_SETSELECTED))
+	tab.RawSetString("FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON", golua.LNumber(FLAGTABITEM_NOCLOSEWITHMIDDLEMOUSEBUTTON))
+	tab.RawSetString("FLAGTABITEM_NOPUSHID", golua.LNumber(FLAGTABITEM_NOPUSHID))
+	tab.RawSetString("FLAGTABITEM_NOTOOLTIP", golua.LNumber(FLAGTABITEM_NOTOOLTIP))
+	tab.RawSetString("FLAGTABITEM_NOREORDER", golua.LNumber(FLAGTABITEM_NOREORDER))
+	tab.RawSetString("FLAGTABITEM_LEADING", golua.LNumber(FLAGTABITEM_LEADING))
+	tab.RawSetString("FLAGTABITEM_TRAILING", golua.LNumber(FLAGTABITEM_TRAILING))
+	tab.RawSetString("FLAGTABITEM_NOASSUMEDCLOSURE", golua.LNumber(FLAGTABITEM_NOASSUMEDCLOSURE))
 
 	/// @constants Table Column Flags
 	/// @const FLAGTABLECOLUMN_NONE
@@ -3638,37 +3639,37 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGTABLECOLUMN_INDENTMASK
 	/// @const FLAGTABLECOLUMN_STATUSMASK
 	/// @const FLAGTABLECOLUMN_NODIRECTRESIZE
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NONE"), golua.LNumber(FLAGTABLECOLUMN_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_DEFAULTHIDE"), golua.LNumber(FLAGTABLECOLUMN_DEFAULTHIDE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_DEFAULTSORT"), golua.LNumber(FLAGTABLECOLUMN_DEFAULTSORT))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_WIDTHSTRETCH"), golua.LNumber(FLAGTABLECOLUMN_WIDTHSTRETCH))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_WIDTHFIXED"), golua.LNumber(FLAGTABLECOLUMN_WIDTHFIXED))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NORESIZE"), golua.LNumber(FLAGTABLECOLUMN_NORESIZE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOREORDER"), golua.LNumber(FLAGTABLECOLUMN_NOREORDER))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOHIDE"), golua.LNumber(FLAGTABLECOLUMN_NOHIDE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOCLIP"), golua.LNumber(FLAGTABLECOLUMN_NOCLIP))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOSORT"), golua.LNumber(FLAGTABLECOLUMN_NOSORT))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOSORTASCENDING"), golua.LNumber(FLAGTABLECOLUMN_NOSORTASCENDING))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOSORTDESCENDING"), golua.LNumber(FLAGTABLECOLUMN_NOSORTDESCENDING))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NOHEADERWIDTH"), golua.LNumber(FLAGTABLECOLUMN_NOHEADERWIDTH))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_PREFERSORTASCENDING"), golua.LNumber(FLAGTABLECOLUMN_PREFERSORTASCENDING))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_PREFERSORTDESCENDING"), golua.LNumber(FLAGTABLECOLUMN_PREFERSORTDESCENDING))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_INDENTENABLE"), golua.LNumber(FLAGTABLECOLUMN_INDENTENABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_INDENTDISABLE"), golua.LNumber(FLAGTABLECOLUMN_INDENTDISABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISENABLED"), golua.LNumber(FLAGTABLECOLUMN_ISENABLED))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISVISIBLE"), golua.LNumber(FLAGTABLECOLUMN_ISVISIBLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISSORTED"), golua.LNumber(FLAGTABLECOLUMN_ISSORTED))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_ISHOVERED"), golua.LNumber(FLAGTABLECOLUMN_ISHOVERED))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_WIDTHMASK"), golua.LNumber(FLAGTABLECOLUMN_WIDTHMASK))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_INDENTMASK"), golua.LNumber(FLAGTABLECOLUMN_INDENTMASK))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_STATUSMASK"), golua.LNumber(FLAGTABLECOLUMN_STATUSMASK))
-	r.State.SetTable(tab, golua.LString("FLAGTABLECOLUMN_NODIRECTRESIZE"), golua.LNumber(FLAGTABLECOLUMN_NODIRECTRESIZE))
+	tab.RawSetString("FLAGTABLECOLUMN_NONE", golua.LNumber(FLAGTABLECOLUMN_NONE))
+	tab.RawSetString("FLAGTABLECOLUMN_DEFAULTHIDE", golua.LNumber(FLAGTABLECOLUMN_DEFAULTHIDE))
+	tab.RawSetString("FLAGTABLECOLUMN_DEFAULTSORT", golua.LNumber(FLAGTABLECOLUMN_DEFAULTSORT))
+	tab.RawSetString("FLAGTABLECOLUMN_WIDTHSTRETCH", golua.LNumber(FLAGTABLECOLUMN_WIDTHSTRETCH))
+	tab.RawSetString("FLAGTABLECOLUMN_WIDTHFIXED", golua.LNumber(FLAGTABLECOLUMN_WIDTHFIXED))
+	tab.RawSetString("FLAGTABLECOLUMN_NORESIZE", golua.LNumber(FLAGTABLECOLUMN_NORESIZE))
+	tab.RawSetString("FLAGTABLECOLUMN_NOREORDER", golua.LNumber(FLAGTABLECOLUMN_NOREORDER))
+	tab.RawSetString("FLAGTABLECOLUMN_NOHIDE", golua.LNumber(FLAGTABLECOLUMN_NOHIDE))
+	tab.RawSetString("FLAGTABLECOLUMN_NOCLIP", golua.LNumber(FLAGTABLECOLUMN_NOCLIP))
+	tab.RawSetString("FLAGTABLECOLUMN_NOSORT", golua.LNumber(FLAGTABLECOLUMN_NOSORT))
+	tab.RawSetString("FLAGTABLECOLUMN_NOSORTASCENDING", golua.LNumber(FLAGTABLECOLUMN_NOSORTASCENDING))
+	tab.RawSetString("FLAGTABLECOLUMN_NOSORTDESCENDING", golua.LNumber(FLAGTABLECOLUMN_NOSORTDESCENDING))
+	tab.RawSetString("FLAGTABLECOLUMN_NOHEADERWIDTH", golua.LNumber(FLAGTABLECOLUMN_NOHEADERWIDTH))
+	tab.RawSetString("FLAGTABLECOLUMN_PREFERSORTASCENDING", golua.LNumber(FLAGTABLECOLUMN_PREFERSORTASCENDING))
+	tab.RawSetString("FLAGTABLECOLUMN_PREFERSORTDESCENDING", golua.LNumber(FLAGTABLECOLUMN_PREFERSORTDESCENDING))
+	tab.RawSetString("FLAGTABLECOLUMN_INDENTENABLE", golua.LNumber(FLAGTABLECOLUMN_INDENTENABLE))
+	tab.RawSetString("FLAGTABLECOLUMN_INDENTDISABLE", golua.LNumber(FLAGTABLECOLUMN_INDENTDISABLE))
+	tab.RawSetString("FLAGTABLECOLUMN_ISENABLED", golua.LNumber(FLAGTABLECOLUMN_ISENABLED))
+	tab.RawSetString("FLAGTABLECOLUMN_ISVISIBLE", golua.LNumber(FLAGTABLECOLUMN_ISVISIBLE))
+	tab.RawSetString("FLAGTABLECOLUMN_ISSORTED", golua.LNumber(FLAGTABLECOLUMN_ISSORTED))
+	tab.RawSetString("FLAGTABLECOLUMN_ISHOVERED", golua.LNumber(FLAGTABLECOLUMN_ISHOVERED))
+	tab.RawSetString("FLAGTABLECOLUMN_WIDTHMASK", golua.LNumber(FLAGTABLECOLUMN_WIDTHMASK))
+	tab.RawSetString("FLAGTABLECOLUMN_INDENTMASK", golua.LNumber(FLAGTABLECOLUMN_INDENTMASK))
+	tab.RawSetString("FLAGTABLECOLUMN_STATUSMASK", golua.LNumber(FLAGTABLECOLUMN_STATUSMASK))
+	tab.RawSetString("FLAGTABLECOLUMN_NODIRECTRESIZE", golua.LNumber(FLAGTABLECOLUMN_NODIRECTRESIZE))
 
 	/// @constants Table Row Flags
 	/// @const FLAGTABLEROW_NONE
 	/// @const FLAGTABLEROW_HEADERS
-	r.State.SetTable(tab, golua.LString("FLAGTABLEROW_NONE"), golua.LNumber(FLAGTABLEROW_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLEROW_HEADERS"), golua.LNumber(FLAGTABLEROW_HEADERS))
+	tab.RawSetString("FLAGTABLEROW_NONE", golua.LNumber(FLAGTABLEROW_NONE))
+	tab.RawSetString("FLAGTABLEROW_HEADERS", golua.LNumber(FLAGTABLEROW_HEADERS))
 
 	/// @constants Table Flags
 	/// @const FLAGTABLE_NONE
@@ -3708,43 +3709,43 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGTABLE_SORTTRISTATE
 	/// @const FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN
 	/// @const FLAGTABLE_SIZINGMASK
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NONE"), golua.LNumber(FLAGTABLE_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_RESIZEABLE"), golua.LNumber(FLAGTABLE_RESIZEABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_REORDERABLE"), golua.LNumber(FLAGTABLE_REORDERABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_HIDEABLE"), golua.LNumber(FLAGTABLE_HIDEABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SORTABLE"), golua.LNumber(FLAGTABLE_SORTABLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOSAVEDSETTINGS"), golua.LNumber(FLAGTABLE_NOSAVEDSETTINGS))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_CONTEXTMENUINBODY"), golua.LNumber(FLAGTABLE_CONTEXTMENUINBODY))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_ROWBG"), golua.LNumber(FLAGTABLE_ROWBG))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSINNERH"), golua.LNumber(FLAGTABLE_BORDERSINNERH))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSOUTERH"), golua.LNumber(FLAGTABLE_BORDERSOUTERH))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSINNERV"), golua.LNumber(FLAGTABLE_BORDERSINNERV))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSOUTERV"), golua.LNumber(FLAGTABLE_BORDERSOUTERV))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSH"), golua.LNumber(FLAGTABLE_BORDERSH))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSV"), golua.LNumber(FLAGTABLE_BORDERSV))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSINNER"), golua.LNumber(FLAGTABLE_BORDERSINNER))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERSOUTER"), golua.LNumber(FLAGTABLE_BORDERSOUTER))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_BORDERS"), golua.LNumber(FLAGTABLE_BORDERS))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOBORDERSINBODY"), golua.LNumber(FLAGTABLE_NOBORDERSINBODY))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOBORDERSINBODYUNTILRESIZE"), golua.LNumber(FLAGTABLE_NOBORDERSINBODYUNTILRESIZE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGFIXEDFIT"), golua.LNumber(FLAGTABLE_SIZINGFIXEDFIT))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGFIXEDSAME"), golua.LNumber(FLAGTABLE_SIZINGFIXEDSAME))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGSTRETCHPROP"), golua.LNumber(FLAGTABLE_SIZINGSTRETCHPROP))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGSTRETCHSAME"), golua.LNumber(FLAGTABLE_SIZINGSTRETCHSAME))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOHOSTEXTENDX"), golua.LNumber(FLAGTABLE_NOHOSTEXTENDX))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOHOSTEXTENDY"), golua.LNumber(FLAGTABLE_NOHOSTEXTENDY))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOKEEPCOLUMNSVISIBLE"), golua.LNumber(FLAGTABLE_NOKEEPCOLUMNSVISIBLE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_PRECISEWIDTHS"), golua.LNumber(FLAGTABLE_PRECISEWIDTHS))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOCLIP"), golua.LNumber(FLAGTABLE_NOCLIP))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_PADOUTERX"), golua.LNumber(FLAGTABLE_PADOUTERX))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOPADOUTERX"), golua.LNumber(FLAGTABLE_NOPADOUTERX))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_NOPADINNERX"), golua.LNumber(FLAGTABLE_NOPADINNERX))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SCROLLX"), golua.LNumber(FLAGTABLE_SCROLLX))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SCROLLY"), golua.LNumber(FLAGTABLE_SCROLLY))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SORTMULTI"), golua.LNumber(FLAGTABLE_SORTMULTI))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SORTTRISTATE"), golua.LNumber(FLAGTABLE_SORTTRISTATE))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN"), golua.LNumber(FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN))
-	r.State.SetTable(tab, golua.LString("FLAGTABLE_SIZINGMASK"), golua.LNumber(FLAGTABLE_SIZINGMASK))
+	tab.RawSetString("FLAGTABLE_NONE", golua.LNumber(FLAGTABLE_NONE))
+	tab.RawSetString("FLAGTABLE_RESIZEABLE", golua.LNumber(FLAGTABLE_RESIZEABLE))
+	tab.RawSetString("FLAGTABLE_REORDERABLE", golua.LNumber(FLAGTABLE_REORDERABLE))
+	tab.RawSetString("FLAGTABLE_HIDEABLE", golua.LNumber(FLAGTABLE_HIDEABLE))
+	tab.RawSetString("FLAGTABLE_SORTABLE", golua.LNumber(FLAGTABLE_SORTABLE))
+	tab.RawSetString("FLAGTABLE_NOSAVEDSETTINGS", golua.LNumber(FLAGTABLE_NOSAVEDSETTINGS))
+	tab.RawSetString("FLAGTABLE_CONTEXTMENUINBODY", golua.LNumber(FLAGTABLE_CONTEXTMENUINBODY))
+	tab.RawSetString("FLAGTABLE_ROWBG", golua.LNumber(FLAGTABLE_ROWBG))
+	tab.RawSetString("FLAGTABLE_BORDERSINNERH", golua.LNumber(FLAGTABLE_BORDERSINNERH))
+	tab.RawSetString("FLAGTABLE_BORDERSOUTERH", golua.LNumber(FLAGTABLE_BORDERSOUTERH))
+	tab.RawSetString("FLAGTABLE_BORDERSINNERV", golua.LNumber(FLAGTABLE_BORDERSINNERV))
+	tab.RawSetString("FLAGTABLE_BORDERSOUTERV", golua.LNumber(FLAGTABLE_BORDERSOUTERV))
+	tab.RawSetString("FLAGTABLE_BORDERSH", golua.LNumber(FLAGTABLE_BORDERSH))
+	tab.RawSetString("FLAGTABLE_BORDERSV", golua.LNumber(FLAGTABLE_BORDERSV))
+	tab.RawSetString("FLAGTABLE_BORDERSINNER", golua.LNumber(FLAGTABLE_BORDERSINNER))
+	tab.RawSetString("FLAGTABLE_BORDERSOUTER", golua.LNumber(FLAGTABLE_BORDERSOUTER))
+	tab.RawSetString("FLAGTABLE_BORDERS", golua.LNumber(FLAGTABLE_BORDERS))
+	tab.RawSetString("FLAGTABLE_NOBORDERSINBODY", golua.LNumber(FLAGTABLE_NOBORDERSINBODY))
+	tab.RawSetString("FLAGTABLE_NOBORDERSINBODYUNTILRESIZE", golua.LNumber(FLAGTABLE_NOBORDERSINBODYUNTILRESIZE))
+	tab.RawSetString("FLAGTABLE_SIZINGFIXEDFIT", golua.LNumber(FLAGTABLE_SIZINGFIXEDFIT))
+	tab.RawSetString("FLAGTABLE_SIZINGFIXEDSAME", golua.LNumber(FLAGTABLE_SIZINGFIXEDSAME))
+	tab.RawSetString("FLAGTABLE_SIZINGSTRETCHPROP", golua.LNumber(FLAGTABLE_SIZINGSTRETCHPROP))
+	tab.RawSetString("FLAGTABLE_SIZINGSTRETCHSAME", golua.LNumber(FLAGTABLE_SIZINGSTRETCHSAME))
+	tab.RawSetString("FLAGTABLE_NOHOSTEXTENDX", golua.LNumber(FLAGTABLE_NOHOSTEXTENDX))
+	tab.RawSetString("FLAGTABLE_NOHOSTEXTENDY", golua.LNumber(FLAGTABLE_NOHOSTEXTENDY))
+	tab.RawSetString("FLAGTABLE_NOKEEPCOLUMNSVISIBLE", golua.LNumber(FLAGTABLE_NOKEEPCOLUMNSVISIBLE))
+	tab.RawSetString("FLAGTABLE_PRECISEWIDTHS", golua.LNumber(FLAGTABLE_PRECISEWIDTHS))
+	tab.RawSetString("FLAGTABLE_NOCLIP", golua.LNumber(FLAGTABLE_NOCLIP))
+	tab.RawSetString("FLAGTABLE_PADOUTERX", golua.LNumber(FLAGTABLE_PADOUTERX))
+	tab.RawSetString("FLAGTABLE_NOPADOUTERX", golua.LNumber(FLAGTABLE_NOPADOUTERX))
+	tab.RawSetString("FLAGTABLE_NOPADINNERX", golua.LNumber(FLAGTABLE_NOPADINNERX))
+	tab.RawSetString("FLAGTABLE_SCROLLX", golua.LNumber(FLAGTABLE_SCROLLX))
+	tab.RawSetString("FLAGTABLE_SCROLLY", golua.LNumber(FLAGTABLE_SCROLLY))
+	tab.RawSetString("FLAGTABLE_SORTMULTI", golua.LNumber(FLAGTABLE_SORTMULTI))
+	tab.RawSetString("FLAGTABLE_SORTTRISTATE", golua.LNumber(FLAGTABLE_SORTTRISTATE))
+	tab.RawSetString("FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN", golua.LNumber(FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN))
+	tab.RawSetString("FLAGTABLE_SIZINGMASK", golua.LNumber(FLAGTABLE_SIZINGMASK))
 
 	/// @constants Directions
 	/// @const DIR_NONE
@@ -3753,12 +3754,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const DIR_UP
 	/// @const DIR_DOWN
 	/// @const DIR_COUNT
-	r.State.SetTable(tab, golua.LString("DIR_NONE"), golua.LNumber(DIR_NONE))
-	r.State.SetTable(tab, golua.LString("DIR_LEFT"), golua.LNumber(DIR_LEFT))
-	r.State.SetTable(tab, golua.LString("DIR_RIGHT"), golua.LNumber(DIR_RIGHT))
-	r.State.SetTable(tab, golua.LString("DIR_UP"), golua.LNumber(DIR_UP))
-	r.State.SetTable(tab, golua.LString("DIR_DOWN"), golua.LNumber(DIR_DOWN))
-	r.State.SetTable(tab, golua.LString("DIR_COUNT"), golua.LNumber(DIR_COUNT))
+	tab.RawSetString("DIR_NONE", golua.LNumber(DIR_NONE))
+	tab.RawSetString("DIR_LEFT", golua.LNumber(DIR_LEFT))
+	tab.RawSetString("DIR_RIGHT", golua.LNumber(DIR_RIGHT))
+	tab.RawSetString("DIR_UP", golua.LNumber(DIR_UP))
+	tab.RawSetString("DIR_DOWN", golua.LNumber(DIR_DOWN))
+	tab.RawSetString("DIR_COUNT", golua.LNumber(DIR_COUNT))
 
 	/// @constants Tree Node Flags
 	/// @const FLAGTREENODE_NONE
@@ -3778,23 +3779,23 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGTREENODE_SPANALLCOLUMNS
 	/// @const FLAGTREENODE_NAVLEFTJUMPSBACKHERE
 	/// @const FLAGTREENODE_COLLAPSINGHEADER
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NONE"), golua.LNumber(FLAGTREENODE_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SELECTED"), golua.LNumber(FLAGTREENODE_SELECTED))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_FRAMED"), golua.LNumber(FLAGTREENODE_FRAMED))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_ALLOWOVERLAP"), golua.LNumber(FLAGTREENODE_ALLOWOVERLAP))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NOTREEPUSHONOPEN"), golua.LNumber(FLAGTREENODE_NOTREEPUSHONOPEN))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NOAUTOOPENONLOG"), golua.LNumber(FLAGTREENODE_NOAUTOOPENONLOG))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_DEFAULTOPEN"), golua.LNumber(FLAGTREENODE_DEFAULTOPEN))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_OPENONDOUBLECLICK"), golua.LNumber(FLAGTREENODE_OPENONDOUBLECLICK))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_OPENONARROW"), golua.LNumber(FLAGTREENODE_OPENONARROW))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_LEAF"), golua.LNumber(FLAGTREENODE_LEAF))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_BULLET"), golua.LNumber(FLAGTREENODE_BULLET))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_FRAMEPADDING"), golua.LNumber(FLAGTREENODE_FRAMEPADDING))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SPANAVAILWIDTH"), golua.LNumber(FLAGTREENODE_SPANAVAILWIDTH))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SPANFULLWIDTH"), golua.LNumber(FLAGTREENODE_SPANFULLWIDTH))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_SPANALLCOLUMNS"), golua.LNumber(FLAGTREENODE_SPANALLCOLUMNS))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_NAVLEFTJUMPSBACKHERE"), golua.LNumber(FLAGTREENODE_NAVLEFTJUMPSBACKHERE))
-	r.State.SetTable(tab, golua.LString("FLAGTREENODE_COLLAPSINGHEADER"), golua.LNumber(FLAGTREENODE_COLLAPSINGHEADER))
+	tab.RawSetString("FLAGTREENODE_NONE", golua.LNumber(FLAGTREENODE_NONE))
+	tab.RawSetString("FLAGTREENODE_SELECTED", golua.LNumber(FLAGTREENODE_SELECTED))
+	tab.RawSetString("FLAGTREENODE_FRAMED", golua.LNumber(FLAGTREENODE_FRAMED))
+	tab.RawSetString("FLAGTREENODE_ALLOWOVERLAP", golua.LNumber(FLAGTREENODE_ALLOWOVERLAP))
+	tab.RawSetString("FLAGTREENODE_NOTREEPUSHONOPEN", golua.LNumber(FLAGTREENODE_NOTREEPUSHONOPEN))
+	tab.RawSetString("FLAGTREENODE_NOAUTOOPENONLOG", golua.LNumber(FLAGTREENODE_NOAUTOOPENONLOG))
+	tab.RawSetString("FLAGTREENODE_DEFAULTOPEN", golua.LNumber(FLAGTREENODE_DEFAULTOPEN))
+	tab.RawSetString("FLAGTREENODE_OPENONDOUBLECLICK", golua.LNumber(FLAGTREENODE_OPENONDOUBLECLICK))
+	tab.RawSetString("FLAGTREENODE_OPENONARROW", golua.LNumber(FLAGTREENODE_OPENONARROW))
+	tab.RawSetString("FLAGTREENODE_LEAF", golua.LNumber(FLAGTREENODE_LEAF))
+	tab.RawSetString("FLAGTREENODE_BULLET", golua.LNumber(FLAGTREENODE_BULLET))
+	tab.RawSetString("FLAGTREENODE_FRAMEPADDING", golua.LNumber(FLAGTREENODE_FRAMEPADDING))
+	tab.RawSetString("FLAGTREENODE_SPANAVAILWIDTH", golua.LNumber(FLAGTREENODE_SPANAVAILWIDTH))
+	tab.RawSetString("FLAGTREENODE_SPANFULLWIDTH", golua.LNumber(FLAGTREENODE_SPANFULLWIDTH))
+	tab.RawSetString("FLAGTREENODE_SPANALLCOLUMNS", golua.LNumber(FLAGTREENODE_SPANALLCOLUMNS))
+	tab.RawSetString("FLAGTREENODE_NAVLEFTJUMPSBACKHERE", golua.LNumber(FLAGTREENODE_NAVLEFTJUMPSBACKHERE))
+	tab.RawSetString("FLAGTREENODE_COLLAPSINGHEADER", golua.LNumber(FLAGTREENODE_COLLAPSINGHEADER))
 
 	/// @constants Master Window Flags
 	/// @const FLAGMASTERWINDOW_NOTRESIZABLE
@@ -3802,11 +3803,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGMASTERWINDOW_FLOATING
 	/// @const FLAGMASTERWINDOW_FRAMELESS
 	/// @const FLAGMASTERWINDOW_TRANSPARENT
-	r.State.SetTable(tab, golua.LString("FLAGMASTERWINDOW_NOTRESIZABLE"), golua.LNumber(FLAGMASTERWINDOW_NOTRESIZABLE))
-	r.State.SetTable(tab, golua.LString("FLAGMASTERWINDOW_MAXIMIZED"), golua.LNumber(FLAGMASTERWINDOW_MAXIMIZED))
-	r.State.SetTable(tab, golua.LString("FLAGMASTERWINDOW_FLOATING"), golua.LNumber(FLAGMASTERWINDOW_FLOATING))
-	r.State.SetTable(tab, golua.LString("FLAGMASTERWINDOW_FRAMELESS"), golua.LNumber(FLAGMASTERWINDOW_FRAMELESS))
-	r.State.SetTable(tab, golua.LString("FLAGMASTERWINDOW_TRANSPARENT"), golua.LNumber(FLAGMASTERWINDOW_TRANSPARENT))
+	tab.RawSetString("FLAGMASTERWINDOW_NOTRESIZABLE", golua.LNumber(FLAGMASTERWINDOW_NOTRESIZABLE))
+	tab.RawSetString("FLAGMASTERWINDOW_MAXIMIZED", golua.LNumber(FLAGMASTERWINDOW_MAXIMIZED))
+	tab.RawSetString("FLAGMASTERWINDOW_FLOATING", golua.LNumber(FLAGMASTERWINDOW_FLOATING))
+	tab.RawSetString("FLAGMASTERWINDOW_FRAMELESS", golua.LNumber(FLAGMASTERWINDOW_FRAMELESS))
+	tab.RawSetString("FLAGMASTERWINDOW_TRANSPARENT", golua.LNumber(FLAGMASTERWINDOW_TRANSPARENT))
 
 	/// @constants Window Flags
 	/// @const FLAGWINDOW_NONE
@@ -3832,51 +3833,51 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGWINDOW_NONAV
 	/// @const FLAGWINDOW_NODECORATION
 	/// @const FLAGWINDOW_NOINPUTS
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NONE"), golua.LNumber(FLAGWINDOW_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOTITLEBAR"), golua.LNumber(FLAGWINDOW_NOTITLEBAR))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NORESIZE"), golua.LNumber(FLAGWINDOW_NORESIZE))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOMOVE"), golua.LNumber(FLAGWINDOW_NOMOVE))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOSCROLLBAR"), golua.LNumber(FLAGWINDOW_NOSCROLLBAR))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOSCROLLWITHMOUSE"), golua.LNumber(FLAGWINDOW_NOSCROLLWITHMOUSE))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOCOLLAPSE"), golua.LNumber(FLAGWINDOW_NOCOLLAPSE))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_ALWAYSAUTORESIZE"), golua.LNumber(FLAGWINDOW_ALWAYSAUTORESIZE))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOBACKGROUND"), golua.LNumber(FLAGWINDOW_NOBACKGROUND))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOSAVEDSETTINGS"), golua.LNumber(FLAGWINDOW_NOSAVEDSETTINGS))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOMOUSEINPUTS"), golua.LNumber(FLAGWINDOW_NOMOUSEINPUTS))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_MENUBAR"), golua.LNumber(FLAGWINDOW_MENUBAR))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_HORIZONTALSCROLLBAR"), golua.LNumber(FLAGWINDOW_HORIZONTALSCROLLBAR))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOFOCUSONAPPEARING"), golua.LNumber(FLAGWINDOW_NOFOCUSONAPPEARING))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOBRINGTOFRONTONFOCUS"), golua.LNumber(FLAGWINDOW_NOBRINGTOFRONTONFOCUS))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_ALWAYSVERTICALSCROLLBAR"), golua.LNumber(FLAGWINDOW_ALWAYSVERTICALSCROLLBAR))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_ALWAYSHORIZONTALSCROLLBAR"), golua.LNumber(FLAGWINDOW_ALWAYSHORIZONTALSCROLLBAR))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NONAVINPUTS"), golua.LNumber(FLAGWINDOW_NONAVINPUTS))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NONAVFOCUS"), golua.LNumber(FLAGWINDOW_NONAVFOCUS))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_UNSAVEDDOCUMENT"), golua.LNumber(FLAGWINDOW_UNSAVEDDOCUMENT))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NONAV"), golua.LNumber(FLAGWINDOW_NONAV))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NODECORATION"), golua.LNumber(FLAGWINDOW_NODECORATION))
-	r.State.SetTable(tab, golua.LString("FLAGWINDOW_NOINPUTS"), golua.LNumber(FLAGWINDOW_NOINPUTS))
+	tab.RawSetString("FLAGWINDOW_NONE", golua.LNumber(FLAGWINDOW_NONE))
+	tab.RawSetString("FLAGWINDOW_NOTITLEBAR", golua.LNumber(FLAGWINDOW_NOTITLEBAR))
+	tab.RawSetString("FLAGWINDOW_NORESIZE", golua.LNumber(FLAGWINDOW_NORESIZE))
+	tab.RawSetString("FLAGWINDOW_NOMOVE", golua.LNumber(FLAGWINDOW_NOMOVE))
+	tab.RawSetString("FLAGWINDOW_NOSCROLLBAR", golua.LNumber(FLAGWINDOW_NOSCROLLBAR))
+	tab.RawSetString("FLAGWINDOW_NOSCROLLWITHMOUSE", golua.LNumber(FLAGWINDOW_NOSCROLLWITHMOUSE))
+	tab.RawSetString("FLAGWINDOW_NOCOLLAPSE", golua.LNumber(FLAGWINDOW_NOCOLLAPSE))
+	tab.RawSetString("FLAGWINDOW_ALWAYSAUTORESIZE", golua.LNumber(FLAGWINDOW_ALWAYSAUTORESIZE))
+	tab.RawSetString("FLAGWINDOW_NOBACKGROUND", golua.LNumber(FLAGWINDOW_NOBACKGROUND))
+	tab.RawSetString("FLAGWINDOW_NOSAVEDSETTINGS", golua.LNumber(FLAGWINDOW_NOSAVEDSETTINGS))
+	tab.RawSetString("FLAGWINDOW_NOMOUSEINPUTS", golua.LNumber(FLAGWINDOW_NOMOUSEINPUTS))
+	tab.RawSetString("FLAGWINDOW_MENUBAR", golua.LNumber(FLAGWINDOW_MENUBAR))
+	tab.RawSetString("FLAGWINDOW_HORIZONTALSCROLLBAR", golua.LNumber(FLAGWINDOW_HORIZONTALSCROLLBAR))
+	tab.RawSetString("FLAGWINDOW_NOFOCUSONAPPEARING", golua.LNumber(FLAGWINDOW_NOFOCUSONAPPEARING))
+	tab.RawSetString("FLAGWINDOW_NOBRINGTOFRONTONFOCUS", golua.LNumber(FLAGWINDOW_NOBRINGTOFRONTONFOCUS))
+	tab.RawSetString("FLAGWINDOW_ALWAYSVERTICALSCROLLBAR", golua.LNumber(FLAGWINDOW_ALWAYSVERTICALSCROLLBAR))
+	tab.RawSetString("FLAGWINDOW_ALWAYSHORIZONTALSCROLLBAR", golua.LNumber(FLAGWINDOW_ALWAYSHORIZONTALSCROLLBAR))
+	tab.RawSetString("FLAGWINDOW_NONAVINPUTS", golua.LNumber(FLAGWINDOW_NONAVINPUTS))
+	tab.RawSetString("FLAGWINDOW_NONAVFOCUS", golua.LNumber(FLAGWINDOW_NONAVFOCUS))
+	tab.RawSetString("FLAGWINDOW_UNSAVEDDOCUMENT", golua.LNumber(FLAGWINDOW_UNSAVEDDOCUMENT))
+	tab.RawSetString("FLAGWINDOW_NONAV", golua.LNumber(FLAGWINDOW_NONAV))
+	tab.RawSetString("FLAGWINDOW_NODECORATION", golua.LNumber(FLAGWINDOW_NODECORATION))
+	tab.RawSetString("FLAGWINDOW_NOINPUTS", golua.LNumber(FLAGWINDOW_NOINPUTS))
 
 	/// @constants Split Direction
 	/// @const SPLITDIRECTION_HORIZONTAL
 	/// @const SPLITDIRECTION_VERTICAL
-	r.State.SetTable(tab, golua.LString("SPLITDIRECTION_HORIZONTAL"), golua.LNumber(SPLITDIRECTION_HORIZONTAL))
-	r.State.SetTable(tab, golua.LString("SPLITDIRECTION_VERTICAL"), golua.LNumber(SPLITDIRECTION_VERTICAL))
+	tab.RawSetString("SPLITDIRECTION_HORIZONTAL", golua.LNumber(SPLITDIRECTION_HORIZONTAL))
+	tab.RawSetString("SPLITDIRECTION_VERTICAL", golua.LNumber(SPLITDIRECTION_VERTICAL))
 
 	/// @constants Alignment
 	/// @const ALIGN_LEFT
 	/// @const ALIGN_CENTER
 	/// @const ALIGN_RIGHT
-	r.State.SetTable(tab, golua.LString("ALIGN_LEFT"), golua.LNumber(ALIGN_LEFT))
-	r.State.SetTable(tab, golua.LString("ALIGN_CENTER"), golua.LNumber(ALIGN_CENTER))
-	r.State.SetTable(tab, golua.LString("ALIGN_RIGHT"), golua.LNumber(ALIGN_RIGHT))
+	tab.RawSetString("ALIGN_LEFT", golua.LNumber(ALIGN_LEFT))
+	tab.RawSetString("ALIGN_CENTER", golua.LNumber(ALIGN_CENTER))
+	tab.RawSetString("ALIGN_RIGHT", golua.LNumber(ALIGN_RIGHT))
 
 	/// @constants MSG Box Buttons
 	/// @const MSGBOXBUTTONS_YESNO
 	/// @const MSGBOXBUTTONS_OKCANCEL
 	/// @const MSGBOXBUTTONS_OK
-	r.State.SetTable(tab, golua.LString("MSGBOXBUTTONS_YESNO"), golua.LNumber(MSGBOXBUTTONS_YESNO))
-	r.State.SetTable(tab, golua.LString("MSGBOXBUTTONS_OKCANCEL"), golua.LNumber(MSGBOXBUTTONS_OKCANCEL))
-	r.State.SetTable(tab, golua.LString("MSGBOXBUTTONS_OK"), golua.LNumber(MSGBOXBUTTONS_OK))
+	tab.RawSetString("MSGBOXBUTTONS_YESNO", golua.LNumber(MSGBOXBUTTONS_YESNO))
+	tab.RawSetString("MSGBOXBUTTONS_OKCANCEL", golua.LNumber(MSGBOXBUTTONS_OKCANCEL))
+	tab.RawSetString("MSGBOXBUTTONS_OK", golua.LNumber(MSGBOXBUTTONS_OK))
 
 	/// @constants Color IDs
 	/// @const COLID_TEXT
@@ -3935,62 +3936,62 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const COLID_NAVWINDOWINGDIMBG
 	/// @const COLID_MODALWINDOWDIMBG
 	/// @const COLID_COUNT
-	r.State.SetTable(tab, golua.LString("COLID_TEXT"), golua.LNumber(COLID_TEXT))
-	r.State.SetTable(tab, golua.LString("COLID_TEXTDISABLED"), golua.LNumber(COLID_TEXTDISABLED))
-	r.State.SetTable(tab, golua.LString("COLID_WINDOWBG"), golua.LNumber(COLID_WINDOWBG))
-	r.State.SetTable(tab, golua.LString("COLID_CHILDBG"), golua.LNumber(COLID_CHILDBG))
-	r.State.SetTable(tab, golua.LString("COLID_POPUPBG"), golua.LNumber(COLID_POPUPBG))
-	r.State.SetTable(tab, golua.LString("COLID_BORDER"), golua.LNumber(COLID_BORDER))
-	r.State.SetTable(tab, golua.LString("COLID_BORDERSHADOW"), golua.LNumber(COLID_BORDERSHADOW))
-	r.State.SetTable(tab, golua.LString("COLID_FRAMEBG"), golua.LNumber(COLID_FRAMEBG))
-	r.State.SetTable(tab, golua.LString("COLID_FRAMEBGHOVERED"), golua.LNumber(COLID_FRAMEBGHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_FRAMEBGACTIVE"), golua.LNumber(COLID_FRAMEBGACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_TITLEBG"), golua.LNumber(COLID_TITLEBG))
-	r.State.SetTable(tab, golua.LString("COLID_TITLEBGACTIVE"), golua.LNumber(COLID_TITLEBGACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_TITLEBGCOLLAPSED"), golua.LNumber(COLID_TITLEBGCOLLAPSED))
-	r.State.SetTable(tab, golua.LString("COLID_MENUBARBG"), golua.LNumber(COLID_MENUBARBG))
-	r.State.SetTable(tab, golua.LString("COLID_SCROLLBARBG"), golua.LNumber(COLID_SCROLLBARBG))
-	r.State.SetTable(tab, golua.LString("COLID_SCROLLBARGRAB"), golua.LNumber(COLID_SCROLLBARGRAB))
-	r.State.SetTable(tab, golua.LString("COLID_SCROLLBARGRABHOVERED"), golua.LNumber(COLID_SCROLLBARGRABHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_SCROLLBARGRABACTIVE"), golua.LNumber(COLID_SCROLLBARGRABACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_CHECKMARK"), golua.LNumber(COLID_CHECKMARK))
-	r.State.SetTable(tab, golua.LString("COLID_SLIDERGRAB"), golua.LNumber(COLID_SLIDERGRAB))
-	r.State.SetTable(tab, golua.LString("COLID_SLIDERGRABACTIVE"), golua.LNumber(COLID_SLIDERGRABACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_BUTTON"), golua.LNumber(COLID_BUTTON))
-	r.State.SetTable(tab, golua.LString("COLID_BUTTONHOVERED"), golua.LNumber(COLID_BUTTONHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_BUTTONACTIVE"), golua.LNumber(COLID_BUTTONACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_HEADER"), golua.LNumber(COLID_HEADER))
-	r.State.SetTable(tab, golua.LString("COLID_HEADERHOVERED"), golua.LNumber(COLID_HEADERHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_HEADERACTIVE"), golua.LNumber(COLID_HEADERACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_SEPARATOR"), golua.LNumber(COLID_SEPARATOR))
-	r.State.SetTable(tab, golua.LString("COLID_SEPARATORHOVERED"), golua.LNumber(COLID_SEPARATORHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_SEPARATORACTIVE"), golua.LNumber(COLID_SEPARATORACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_RESIZEGRIP"), golua.LNumber(COLID_RESIZEGRIP))
-	r.State.SetTable(tab, golua.LString("COLID_RESIZEGRIPHOVERED"), golua.LNumber(COLID_RESIZEGRIPHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_RESIZEGRIPACTIVE"), golua.LNumber(COLID_RESIZEGRIPACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_TAB"), golua.LNumber(COLID_TAB))
-	r.State.SetTable(tab, golua.LString("COLID_TABHOVERED"), golua.LNumber(COLID_TABHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_TABACTIVE"), golua.LNumber(COLID_TABACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_TABUNFOCUSED"), golua.LNumber(COLID_TABUNFOCUSED))
-	r.State.SetTable(tab, golua.LString("COLID_TABUNFOCUSEDACTIVE"), golua.LNumber(COLID_TABUNFOCUSEDACTIVE))
-	r.State.SetTable(tab, golua.LString("COLID_DOCKINGPREVIEW"), golua.LNumber(COLID_DOCKINGPREVIEW))
-	r.State.SetTable(tab, golua.LString("COLID_DOCKINGEMPTYBG"), golua.LNumber(COLID_DOCKINGEMPTYBG))
-	r.State.SetTable(tab, golua.LString("COLID_PLOTLINES"), golua.LNumber(COLID_PLOTLINES))
-	r.State.SetTable(tab, golua.LString("COLID_PLOTLINESHOVERED"), golua.LNumber(COLID_PLOTLINESHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_PLOTHISTOGRAM"), golua.LNumber(COLID_PLOTHISTOGRAM))
-	r.State.SetTable(tab, golua.LString("COLID_PLOTHISTOGRAMHOVERED"), golua.LNumber(COLID_PLOTHISTOGRAMHOVERED))
-	r.State.SetTable(tab, golua.LString("COLID_TABLEHEADERBG"), golua.LNumber(COLID_TABLEHEADERBG))
-	r.State.SetTable(tab, golua.LString("COLID_TABLEBORDERSTRONG"), golua.LNumber(COLID_TABLEBORDERSTRONG))
-	r.State.SetTable(tab, golua.LString("COLID_TABLEBORDERLIGHT"), golua.LNumber(COLID_TABLEBORDERLIGHT))
-	r.State.SetTable(tab, golua.LString("COLID_TABLEROWBG"), golua.LNumber(COLID_TABLEROWBG))
-	r.State.SetTable(tab, golua.LString("COLID_TABLEROWBGALT"), golua.LNumber(COLID_TABLEROWBGALT))
-	r.State.SetTable(tab, golua.LString("COLID_TEXTSELECTEDBG"), golua.LNumber(COLID_TEXTSELECTEDBG))
-	r.State.SetTable(tab, golua.LString("COLID_DRAGDROPTARGET"), golua.LNumber(COLID_DRAGDROPTARGET))
-	r.State.SetTable(tab, golua.LString("COLID_NAVHIGHLIGHT"), golua.LNumber(COLID_NAVHIGHLIGHT))
-	r.State.SetTable(tab, golua.LString("COLID_NAVWINDOWINGHIGHLIGHT"), golua.LNumber(COLID_NAVWINDOWINGHIGHLIGHT))
-	r.State.SetTable(tab, golua.LString("COLID_NAVWINDOWINGDIMBG"), golua.LNumber(COLID_NAVWINDOWINGDIMBG))
-	r.State.SetTable(tab, golua.LString("COLID_MODALWINDOWDIMBG"), golua.LNumber(COLID_MODALWINDOWDIMBG))
-	r.State.SetTable(tab, golua.LString("COLID_COUNT"), golua.LNumber(COLID_COUNT))
+	tab.RawSetString("COLID_TEXT", golua.LNumber(COLID_TEXT))
+	tab.RawSetString("COLID_TEXTDISABLED", golua.LNumber(COLID_TEXTDISABLED))
+	tab.RawSetString("COLID_WINDOWBG", golua.LNumber(COLID_WINDOWBG))
+	tab.RawSetString("COLID_CHILDBG", golua.LNumber(COLID_CHILDBG))
+	tab.RawSetString("COLID_POPUPBG", golua.LNumber(COLID_POPUPBG))
+	tab.RawSetString("COLID_BORDER", golua.LNumber(COLID_BORDER))
+	tab.RawSetString("COLID_BORDERSHADOW", golua.LNumber(COLID_BORDERSHADOW))
+	tab.RawSetString("COLID_FRAMEBG", golua.LNumber(COLID_FRAMEBG))
+	tab.RawSetString("COLID_FRAMEBGHOVERED", golua.LNumber(COLID_FRAMEBGHOVERED))
+	tab.RawSetString("COLID_FRAMEBGACTIVE", golua.LNumber(COLID_FRAMEBGACTIVE))
+	tab.RawSetString("COLID_TITLEBG", golua.LNumber(COLID_TITLEBG))
+	tab.RawSetString("COLID_TITLEBGACTIVE", golua.LNumber(COLID_TITLEBGACTIVE))
+	tab.RawSetString("COLID_TITLEBGCOLLAPSED", golua.LNumber(COLID_TITLEBGCOLLAPSED))
+	tab.RawSetString("COLID_MENUBARBG", golua.LNumber(COLID_MENUBARBG))
+	tab.RawSetString("COLID_SCROLLBARBG", golua.LNumber(COLID_SCROLLBARBG))
+	tab.RawSetString("COLID_SCROLLBARGRAB", golua.LNumber(COLID_SCROLLBARGRAB))
+	tab.RawSetString("COLID_SCROLLBARGRABHOVERED", golua.LNumber(COLID_SCROLLBARGRABHOVERED))
+	tab.RawSetString("COLID_SCROLLBARGRABACTIVE", golua.LNumber(COLID_SCROLLBARGRABACTIVE))
+	tab.RawSetString("COLID_CHECKMARK", golua.LNumber(COLID_CHECKMARK))
+	tab.RawSetString("COLID_SLIDERGRAB", golua.LNumber(COLID_SLIDERGRAB))
+	tab.RawSetString("COLID_SLIDERGRABACTIVE", golua.LNumber(COLID_SLIDERGRABACTIVE))
+	tab.RawSetString("COLID_BUTTON", golua.LNumber(COLID_BUTTON))
+	tab.RawSetString("COLID_BUTTONHOVERED", golua.LNumber(COLID_BUTTONHOVERED))
+	tab.RawSetString("COLID_BUTTONACTIVE", golua.LNumber(COLID_BUTTONACTIVE))
+	tab.RawSetString("COLID_HEADER", golua.LNumber(COLID_HEADER))
+	tab.RawSetString("COLID_HEADERHOVERED", golua.LNumber(COLID_HEADERHOVERED))
+	tab.RawSetString("COLID_HEADERACTIVE", golua.LNumber(COLID_HEADERACTIVE))
+	tab.RawSetString("COLID_SEPARATOR", golua.LNumber(COLID_SEPARATOR))
+	tab.RawSetString("COLID_SEPARATORHOVERED", golua.LNumber(COLID_SEPARATORHOVERED))
+	tab.RawSetString("COLID_SEPARATORACTIVE", golua.LNumber(COLID_SEPARATORACTIVE))
+	tab.RawSetString("COLID_RESIZEGRIP", golua.LNumber(COLID_RESIZEGRIP))
+	tab.RawSetString("COLID_RESIZEGRIPHOVERED", golua.LNumber(COLID_RESIZEGRIPHOVERED))
+	tab.RawSetString("COLID_RESIZEGRIPACTIVE", golua.LNumber(COLID_RESIZEGRIPACTIVE))
+	tab.RawSetString("COLID_TAB", golua.LNumber(COLID_TAB))
+	tab.RawSetString("COLID_TABHOVERED", golua.LNumber(COLID_TABHOVERED))
+	tab.RawSetString("COLID_TABACTIVE", golua.LNumber(COLID_TABACTIVE))
+	tab.RawSetString("COLID_TABUNFOCUSED", golua.LNumber(COLID_TABUNFOCUSED))
+	tab.RawSetString("COLID_TABUNFOCUSEDACTIVE", golua.LNumber(COLID_TABUNFOCUSEDACTIVE))
+	tab.RawSetString("COLID_DOCKINGPREVIEW", golua.LNumber(COLID_DOCKINGPREVIEW))
+	tab.RawSetString("COLID_DOCKINGEMPTYBG", golua.LNumber(COLID_DOCKINGEMPTYBG))
+	tab.RawSetString("COLID_PLOTLINES", golua.LNumber(COLID_PLOTLINES))
+	tab.RawSetString("COLID_PLOTLINESHOVERED", golua.LNumber(COLID_PLOTLINESHOVERED))
+	tab.RawSetString("COLID_PLOTHISTOGRAM", golua.LNumber(COLID_PLOTHISTOGRAM))
+	tab.RawSetString("COLID_PLOTHISTOGRAMHOVERED", golua.LNumber(COLID_PLOTHISTOGRAMHOVERED))
+	tab.RawSetString("COLID_TABLEHEADERBG", golua.LNumber(COLID_TABLEHEADERBG))
+	tab.RawSetString("COLID_TABLEBORDERSTRONG", golua.LNumber(COLID_TABLEBORDERSTRONG))
+	tab.RawSetString("COLID_TABLEBORDERLIGHT", golua.LNumber(COLID_TABLEBORDERLIGHT))
+	tab.RawSetString("COLID_TABLEROWBG", golua.LNumber(COLID_TABLEROWBG))
+	tab.RawSetString("COLID_TABLEROWBGALT", golua.LNumber(COLID_TABLEROWBGALT))
+	tab.RawSetString("COLID_TEXTSELECTEDBG", golua.LNumber(COLID_TEXTSELECTEDBG))
+	tab.RawSetString("COLID_DRAGDROPTARGET", golua.LNumber(COLID_DRAGDROPTARGET))
+	tab.RawSetString("COLID_NAVHIGHLIGHT", golua.LNumber(COLID_NAVHIGHLIGHT))
+	tab.RawSetString("COLID_NAVWINDOWINGHIGHLIGHT", golua.LNumber(COLID_NAVWINDOWINGHIGHLIGHT))
+	tab.RawSetString("COLID_NAVWINDOWINGDIMBG", golua.LNumber(COLID_NAVWINDOWINGDIMBG))
+	tab.RawSetString("COLID_MODALWINDOWDIMBG", golua.LNumber(COLID_MODALWINDOWDIMBG))
+	tab.RawSetString("COLID_COUNT", golua.LNumber(COLID_COUNT))
 
 	/// @constants Style Var
 	/// @const STYLEVAR_ALPHA
@@ -4024,37 +4025,37 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const STYLEVAR_SEPARATORTEXTPADDING
 	/// @const STYLEVAR_DOCKINGSEPARATORSIZE
 	/// @const STYLEVAR_COUNT
-	r.State.SetTable(tab, golua.LString("STYLEVAR_ALPHA"), golua.LNumber(STYLEVAR_ALPHA))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_DISABLEDALPHA"), golua.LNumber(STYLEVAR_DISABLEDALPHA))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_WINDOWPADDING"), golua.LNumber(STYLEVAR_WINDOWPADDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_WINDOWROUNDING"), golua.LNumber(STYLEVAR_WINDOWROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_WINDOWBORDERSIZE"), golua.LNumber(STYLEVAR_WINDOWBORDERSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_WINDOWMINSIZE"), golua.LNumber(STYLEVAR_WINDOWMINSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_WINDOWTITLEALIGN"), golua.LNumber(STYLEVAR_WINDOWTITLEALIGN))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_CHILDROUNDING"), golua.LNumber(STYLEVAR_CHILDROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_CHILDBORDERSIZE"), golua.LNumber(STYLEVAR_CHILDBORDERSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_POPUPROUNDING"), golua.LNumber(STYLEVAR_POPUPROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_POPUPBORDERSIZE"), golua.LNumber(STYLEVAR_POPUPBORDERSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_FRAMEPADDING"), golua.LNumber(STYLEVAR_FRAMEPADDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_FRAMEROUNDING"), golua.LNumber(STYLEVAR_FRAMEROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_FRAMEBORDERSIZE"), golua.LNumber(STYLEVAR_FRAMEBORDERSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_ITEMSPACING"), golua.LNumber(STYLEVAR_ITEMSPACING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_ITEMINNERSPACING"), golua.LNumber(STYLEVAR_ITEMINNERSPACING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_INDENTSPACING"), golua.LNumber(STYLEVAR_INDENTSPACING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_CELLPADDING"), golua.LNumber(STYLEVAR_CELLPADDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_SCROLLBARSIZE"), golua.LNumber(STYLEVAR_SCROLLBARSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_SCROLLBARROUNDING"), golua.LNumber(STYLEVAR_SCROLLBARROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_GRABMINSIZE"), golua.LNumber(STYLEVAR_GRABMINSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_GRABROUNDING"), golua.LNumber(STYLEVAR_GRABROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_TABROUNDING"), golua.LNumber(STYLEVAR_TABROUNDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_TABBARBORDERSIZE"), golua.LNumber(STYLEVAR_TABBARBORDERSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_BUTTONTEXTALIGN"), golua.LNumber(STYLEVAR_BUTTONTEXTALIGN))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_SELECTABLETEXTALIGN"), golua.LNumber(STYLEVAR_SELECTABLETEXTALIGN))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_SEPARATORTEXTBORDERSIZE"), golua.LNumber(STYLEVAR_SEPARATORTEXTBORDERSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_SEPARATORTEXTALIGN"), golua.LNumber(STYLEVAR_SEPARATORTEXTALIGN))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_SEPARATORTEXTPADDING"), golua.LNumber(STYLEVAR_SEPARATORTEXTPADDING))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_DOCKINGSEPARATORSIZE"), golua.LNumber(STYLEVAR_DOCKINGSEPARATORSIZE))
-	r.State.SetTable(tab, golua.LString("STYLEVAR_COUNT"), golua.LNumber(STYLEVAR_COUNT))
+	tab.RawSetString("STYLEVAR_ALPHA", golua.LNumber(STYLEVAR_ALPHA))
+	tab.RawSetString("STYLEVAR_DISABLEDALPHA", golua.LNumber(STYLEVAR_DISABLEDALPHA))
+	tab.RawSetString("STYLEVAR_WINDOWPADDING", golua.LNumber(STYLEVAR_WINDOWPADDING))
+	tab.RawSetString("STYLEVAR_WINDOWROUNDING", golua.LNumber(STYLEVAR_WINDOWROUNDING))
+	tab.RawSetString("STYLEVAR_WINDOWBORDERSIZE", golua.LNumber(STYLEVAR_WINDOWBORDERSIZE))
+	tab.RawSetString("STYLEVAR_WINDOWMINSIZE", golua.LNumber(STYLEVAR_WINDOWMINSIZE))
+	tab.RawSetString("STYLEVAR_WINDOWTITLEALIGN", golua.LNumber(STYLEVAR_WINDOWTITLEALIGN))
+	tab.RawSetString("STYLEVAR_CHILDROUNDING", golua.LNumber(STYLEVAR_CHILDROUNDING))
+	tab.RawSetString("STYLEVAR_CHILDBORDERSIZE", golua.LNumber(STYLEVAR_CHILDBORDERSIZE))
+	tab.RawSetString("STYLEVAR_POPUPROUNDING", golua.LNumber(STYLEVAR_POPUPROUNDING))
+	tab.RawSetString("STYLEVAR_POPUPBORDERSIZE", golua.LNumber(STYLEVAR_POPUPBORDERSIZE))
+	tab.RawSetString("STYLEVAR_FRAMEPADDING", golua.LNumber(STYLEVAR_FRAMEPADDING))
+	tab.RawSetString("STYLEVAR_FRAMEROUNDING", golua.LNumber(STYLEVAR_FRAMEROUNDING))
+	tab.RawSetString("STYLEVAR_FRAMEBORDERSIZE", golua.LNumber(STYLEVAR_FRAMEBORDERSIZE))
+	tab.RawSetString("STYLEVAR_ITEMSPACING", golua.LNumber(STYLEVAR_ITEMSPACING))
+	tab.RawSetString("STYLEVAR_ITEMINNERSPACING", golua.LNumber(STYLEVAR_ITEMINNERSPACING))
+	tab.RawSetString("STYLEVAR_INDENTSPACING", golua.LNumber(STYLEVAR_INDENTSPACING))
+	tab.RawSetString("STYLEVAR_CELLPADDING", golua.LNumber(STYLEVAR_CELLPADDING))
+	tab.RawSetString("STYLEVAR_SCROLLBARSIZE", golua.LNumber(STYLEVAR_SCROLLBARSIZE))
+	tab.RawSetString("STYLEVAR_SCROLLBARROUNDING", golua.LNumber(STYLEVAR_SCROLLBARROUNDING))
+	tab.RawSetString("STYLEVAR_GRABMINSIZE", golua.LNumber(STYLEVAR_GRABMINSIZE))
+	tab.RawSetString("STYLEVAR_GRABROUNDING", golua.LNumber(STYLEVAR_GRABROUNDING))
+	tab.RawSetString("STYLEVAR_TABROUNDING", golua.LNumber(STYLEVAR_TABROUNDING))
+	tab.RawSetString("STYLEVAR_TABBARBORDERSIZE", golua.LNumber(STYLEVAR_TABBARBORDERSIZE))
+	tab.RawSetString("STYLEVAR_BUTTONTEXTALIGN", golua.LNumber(STYLEVAR_BUTTONTEXTALIGN))
+	tab.RawSetString("STYLEVAR_SELECTABLETEXTALIGN", golua.LNumber(STYLEVAR_SELECTABLETEXTALIGN))
+	tab.RawSetString("STYLEVAR_SEPARATORTEXTBORDERSIZE", golua.LNumber(STYLEVAR_SEPARATORTEXTBORDERSIZE))
+	tab.RawSetString("STYLEVAR_SEPARATORTEXTALIGN", golua.LNumber(STYLEVAR_SEPARATORTEXTALIGN))
+	tab.RawSetString("STYLEVAR_SEPARATORTEXTPADDING", golua.LNumber(STYLEVAR_SEPARATORTEXTPADDING))
+	tab.RawSetString("STYLEVAR_DOCKINGSEPARATORSIZE", golua.LNumber(STYLEVAR_DOCKINGSEPARATORSIZE))
+	tab.RawSetString("STYLEVAR_COUNT", golua.LNumber(STYLEVAR_COUNT))
 
 	/// @constants Keys
 	/// @const KEY_NONE
@@ -4225,174 +4226,174 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const KEY_NAMEDKEYCOUNT
 	/// @const KEY_KEYSDATASIZE
 	/// @const KEY_KEYSDATAOFFSET
-	r.State.SetTable(tab, golua.LString("KEY_NONE"), golua.LNumber(KEY_NONE))
-	r.State.SetTable(tab, golua.LString("KEY_TAB"), golua.LNumber(KEY_TAB))
-	r.State.SetTable(tab, golua.LString("KEY_LEFTARROW"), golua.LNumber(KEY_LEFTARROW))
-	r.State.SetTable(tab, golua.LString("KEY_RIGHTARROW"), golua.LNumber(KEY_RIGHTARROW))
-	r.State.SetTable(tab, golua.LString("KEY_UPARROW"), golua.LNumber(KEY_UPARROW))
-	r.State.SetTable(tab, golua.LString("KEY_DOWNARROW"), golua.LNumber(KEY_DOWNARROW))
-	r.State.SetTable(tab, golua.LString("KEY_PAGEUP"), golua.LNumber(KEY_PAGEUP))
-	r.State.SetTable(tab, golua.LString("KEY_PAGEDOWN"), golua.LNumber(KEY_PAGEDOWN))
-	r.State.SetTable(tab, golua.LString("KEY_HOME"), golua.LNumber(KEY_HOME))
-	r.State.SetTable(tab, golua.LString("KEY_END"), golua.LNumber(KEY_END))
-	r.State.SetTable(tab, golua.LString("KEY_INSERT"), golua.LNumber(KEY_INSERT))
-	r.State.SetTable(tab, golua.LString("KEY_DELETE"), golua.LNumber(KEY_DELETE))
-	r.State.SetTable(tab, golua.LString("KEY_BACKSPACE"), golua.LNumber(KEY_BACKSPACE))
-	r.State.SetTable(tab, golua.LString("KEY_SPACE"), golua.LNumber(KEY_SPACE))
-	r.State.SetTable(tab, golua.LString("KEY_ENTER"), golua.LNumber(KEY_ENTER))
-	r.State.SetTable(tab, golua.LString("KEY_ESCAPE"), golua.LNumber(KEY_ESCAPE))
-	r.State.SetTable(tab, golua.LString("KEY_LEFTCTRL"), golua.LNumber(KEY_LEFTCTRL))
-	r.State.SetTable(tab, golua.LString("KEY_LEFTSHIFT"), golua.LNumber(KEY_LEFTSHIFT))
-	r.State.SetTable(tab, golua.LString("KEY_LEFTALT"), golua.LNumber(KEY_LEFTALT))
-	r.State.SetTable(tab, golua.LString("KEY_LEFTSUPER"), golua.LNumber(KEY_LEFTSUPER))
-	r.State.SetTable(tab, golua.LString("KEY_RIGHTCTRL"), golua.LNumber(KEY_RIGHTCTRL))
-	r.State.SetTable(tab, golua.LString("KEY_RIGHTSHIFT"), golua.LNumber(KEY_RIGHTSHIFT))
-	r.State.SetTable(tab, golua.LString("KEY_RIGHTALT"), golua.LNumber(KEY_RIGHTALT))
-	r.State.SetTable(tab, golua.LString("KEY_RIGHTSUPER"), golua.LNumber(KEY_RIGHTSUPER))
-	r.State.SetTable(tab, golua.LString("KEY_MENU"), golua.LNumber(KEY_MENU))
-	r.State.SetTable(tab, golua.LString("KEY_0"), golua.LNumber(KEY_0))
-	r.State.SetTable(tab, golua.LString("KEY_1"), golua.LNumber(KEY_1))
-	r.State.SetTable(tab, golua.LString("KEY_2"), golua.LNumber(KEY_2))
-	r.State.SetTable(tab, golua.LString("KEY_3"), golua.LNumber(KEY_3))
-	r.State.SetTable(tab, golua.LString("KEY_4"), golua.LNumber(KEY_4))
-	r.State.SetTable(tab, golua.LString("KEY_5"), golua.LNumber(KEY_5))
-	r.State.SetTable(tab, golua.LString("KEY_6"), golua.LNumber(KEY_6))
-	r.State.SetTable(tab, golua.LString("KEY_7"), golua.LNumber(KEY_7))
-	r.State.SetTable(tab, golua.LString("KEY_8"), golua.LNumber(KEY_8))
-	r.State.SetTable(tab, golua.LString("KEY_9"), golua.LNumber(KEY_9))
-	r.State.SetTable(tab, golua.LString("KEY_A"), golua.LNumber(KEY_A))
-	r.State.SetTable(tab, golua.LString("KEY_B"), golua.LNumber(KEY_B))
-	r.State.SetTable(tab, golua.LString("KEY_C"), golua.LNumber(KEY_C))
-	r.State.SetTable(tab, golua.LString("KEY_D"), golua.LNumber(KEY_D))
-	r.State.SetTable(tab, golua.LString("KEY_E"), golua.LNumber(KEY_E))
-	r.State.SetTable(tab, golua.LString("KEY_F"), golua.LNumber(KEY_F))
-	r.State.SetTable(tab, golua.LString("KEY_G"), golua.LNumber(KEY_G))
-	r.State.SetTable(tab, golua.LString("KEY_H"), golua.LNumber(KEY_H))
-	r.State.SetTable(tab, golua.LString("KEY_I"), golua.LNumber(KEY_I))
-	r.State.SetTable(tab, golua.LString("KEY_J"), golua.LNumber(KEY_J))
-	r.State.SetTable(tab, golua.LString("KEY_K"), golua.LNumber(KEY_K))
-	r.State.SetTable(tab, golua.LString("KEY_L"), golua.LNumber(KEY_L))
-	r.State.SetTable(tab, golua.LString("KEY_M"), golua.LNumber(KEY_M))
-	r.State.SetTable(tab, golua.LString("KEY_N"), golua.LNumber(KEY_N))
-	r.State.SetTable(tab, golua.LString("KEY_O"), golua.LNumber(KEY_O))
-	r.State.SetTable(tab, golua.LString("KEY_P"), golua.LNumber(KEY_P))
-	r.State.SetTable(tab, golua.LString("KEY_Q"), golua.LNumber(KEY_Q))
-	r.State.SetTable(tab, golua.LString("KEY_R"), golua.LNumber(KEY_R))
-	r.State.SetTable(tab, golua.LString("KEY_S"), golua.LNumber(KEY_S))
-	r.State.SetTable(tab, golua.LString("KEY_T"), golua.LNumber(KEY_T))
-	r.State.SetTable(tab, golua.LString("KEY_U"), golua.LNumber(KEY_U))
-	r.State.SetTable(tab, golua.LString("KEY_V"), golua.LNumber(KEY_V))
-	r.State.SetTable(tab, golua.LString("KEY_W"), golua.LNumber(KEY_W))
-	r.State.SetTable(tab, golua.LString("KEY_X"), golua.LNumber(KEY_X))
-	r.State.SetTable(tab, golua.LString("KEY_Y"), golua.LNumber(KEY_Y))
-	r.State.SetTable(tab, golua.LString("KEY_Z"), golua.LNumber(KEY_Z))
-	r.State.SetTable(tab, golua.LString("KEY_F1"), golua.LNumber(KEY_F1))
-	r.State.SetTable(tab, golua.LString("KEY_F2"), golua.LNumber(KEY_F2))
-	r.State.SetTable(tab, golua.LString("KEY_F3"), golua.LNumber(KEY_F3))
-	r.State.SetTable(tab, golua.LString("KEY_F4"), golua.LNumber(KEY_F4))
-	r.State.SetTable(tab, golua.LString("KEY_F5"), golua.LNumber(KEY_F5))
-	r.State.SetTable(tab, golua.LString("KEY_F6"), golua.LNumber(KEY_F6))
-	r.State.SetTable(tab, golua.LString("KEY_F7"), golua.LNumber(KEY_F7))
-	r.State.SetTable(tab, golua.LString("KEY_F8"), golua.LNumber(KEY_F8))
-	r.State.SetTable(tab, golua.LString("KEY_F9"), golua.LNumber(KEY_F9))
-	r.State.SetTable(tab, golua.LString("KEY_F10"), golua.LNumber(KEY_F10))
-	r.State.SetTable(tab, golua.LString("KEY_F11"), golua.LNumber(KEY_F11))
-	r.State.SetTable(tab, golua.LString("KEY_F12"), golua.LNumber(KEY_F12))
-	r.State.SetTable(tab, golua.LString("KEY_F13"), golua.LNumber(KEY_F13))
-	r.State.SetTable(tab, golua.LString("KEY_F14"), golua.LNumber(KEY_F14))
-	r.State.SetTable(tab, golua.LString("KEY_F15"), golua.LNumber(KEY_F15))
-	r.State.SetTable(tab, golua.LString("KEY_F16"), golua.LNumber(KEY_F16))
-	r.State.SetTable(tab, golua.LString("KEY_F17"), golua.LNumber(KEY_F17))
-	r.State.SetTable(tab, golua.LString("KEY_F18"), golua.LNumber(KEY_F18))
-	r.State.SetTable(tab, golua.LString("KEY_F19"), golua.LNumber(KEY_F19))
-	r.State.SetTable(tab, golua.LString("KEY_F20"), golua.LNumber(KEY_F20))
-	r.State.SetTable(tab, golua.LString("KEY_F21"), golua.LNumber(KEY_F21))
-	r.State.SetTable(tab, golua.LString("KEY_F22"), golua.LNumber(KEY_F22))
-	r.State.SetTable(tab, golua.LString("KEY_F23"), golua.LNumber(KEY_F23))
-	r.State.SetTable(tab, golua.LString("KEY_F24"), golua.LNumber(KEY_F24))
-	r.State.SetTable(tab, golua.LString("KEY_APOSTROPHE"), golua.LNumber(KEY_APOSTROPHE))
-	r.State.SetTable(tab, golua.LString("KEY_COMMA"), golua.LNumber(KEY_COMMA))
-	r.State.SetTable(tab, golua.LString("KEY_MINUS"), golua.LNumber(KEY_MINUS))
-	r.State.SetTable(tab, golua.LString("KEY_PERIOD"), golua.LNumber(KEY_PERIOD))
-	r.State.SetTable(tab, golua.LString("KEY_SLASH"), golua.LNumber(KEY_SLASH))
-	r.State.SetTable(tab, golua.LString("KEY_SEMICOLON"), golua.LNumber(KEY_SEMICOLON))
-	r.State.SetTable(tab, golua.LString("KEY_EQUAL"), golua.LNumber(KEY_EQUAL))
-	r.State.SetTable(tab, golua.LString("KEY_LEFTBRACKET"), golua.LNumber(KEY_LEFTBRACKET))
-	r.State.SetTable(tab, golua.LString("KEY_BACKSLASH"), golua.LNumber(KEY_BACKSLASH))
-	r.State.SetTable(tab, golua.LString("KEY_RIGHTBRACKET"), golua.LNumber(KEY_RIGHTBRACKET))
-	r.State.SetTable(tab, golua.LString("KEY_GRAVEACCENT"), golua.LNumber(KEY_GRAVEACCENT))
-	r.State.SetTable(tab, golua.LString("KEY_CAPSLOCK"), golua.LNumber(KEY_CAPSLOCK))
-	r.State.SetTable(tab, golua.LString("KEY_SCROLLLOCK"), golua.LNumber(KEY_SCROLLLOCK))
-	r.State.SetTable(tab, golua.LString("KEY_NUMLOCK"), golua.LNumber(KEY_NUMLOCK))
-	r.State.SetTable(tab, golua.LString("KEY_PRINTSCREEN"), golua.LNumber(KEY_PRINTSCREEN))
-	r.State.SetTable(tab, golua.LString("KEY_PAUSE"), golua.LNumber(KEY_PAUSE))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD0"), golua.LNumber(KEY_KEYPAD0))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD1"), golua.LNumber(KEY_KEYPAD1))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD2"), golua.LNumber(KEY_KEYPAD2))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD3"), golua.LNumber(KEY_KEYPAD3))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD4"), golua.LNumber(KEY_KEYPAD4))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD5"), golua.LNumber(KEY_KEYPAD5))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD6"), golua.LNumber(KEY_KEYPAD6))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD7"), golua.LNumber(KEY_KEYPAD7))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD8"), golua.LNumber(KEY_KEYPAD8))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPAD9"), golua.LNumber(KEY_KEYPAD9))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADDECIMAL"), golua.LNumber(KEY_KEYPADDECIMAL))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADDIVIDE"), golua.LNumber(KEY_KEYPADDIVIDE))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADMULTIPLY"), golua.LNumber(KEY_KEYPADMULTIPLY))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADSUBTRACT"), golua.LNumber(KEY_KEYPADSUBTRACT))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADADD"), golua.LNumber(KEY_KEYPADADD))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADENTER"), golua.LNumber(KEY_KEYPADENTER))
-	r.State.SetTable(tab, golua.LString("KEY_KEYPADEQUAL"), golua.LNumber(KEY_KEYPADEQUAL))
-	r.State.SetTable(tab, golua.LString("KEY_APPBACK"), golua.LNumber(KEY_APPBACK))
-	r.State.SetTable(tab, golua.LString("KEY_APPFORWARD"), golua.LNumber(KEY_APPFORWARD))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADSTART"), golua.LNumber(KEY_GAMEPADSTART))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADBACK"), golua.LNumber(KEY_GAMEPADBACK))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADFACELEFT"), golua.LNumber(KEY_GAMEPADFACELEFT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADFACERIGHT"), golua.LNumber(KEY_GAMEPADFACERIGHT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADFACEUP"), golua.LNumber(KEY_GAMEPADFACEUP))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADFACEDOWN"), golua.LNumber(KEY_GAMEPADFACEDOWN))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADDPADLEFT"), golua.LNumber(KEY_GAMEPADDPADLEFT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADDPADRIGHT"), golua.LNumber(KEY_GAMEPADDPADRIGHT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADDPADUP"), golua.LNumber(KEY_GAMEPADDPADUP))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADDPADDOWN"), golua.LNumber(KEY_GAMEPADDPADDOWN))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADL1"), golua.LNumber(KEY_GAMEPADL1))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADR1"), golua.LNumber(KEY_GAMEPADR1))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADL2"), golua.LNumber(KEY_GAMEPADL2))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADR2"), golua.LNumber(KEY_GAMEPADR2))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADL3"), golua.LNumber(KEY_GAMEPADL3))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADR3"), golua.LNumber(KEY_GAMEPADR3))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADLSTICKLEFT"), golua.LNumber(KEY_GAMEPADLSTICKLEFT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADLSTICKRIGHT"), golua.LNumber(KEY_GAMEPADLSTICKRIGHT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADLSTICKUP"), golua.LNumber(KEY_GAMEPADLSTICKUP))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADLSTICKDOWN"), golua.LNumber(KEY_GAMEPADLSTICKDOWN))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADRSTICKLEFT"), golua.LNumber(KEY_GAMEPADRSTICKLEFT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADRSTICKRIGHT"), golua.LNumber(KEY_GAMEPADRSTICKRIGHT))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADRSTICKUP"), golua.LNumber(KEY_GAMEPADRSTICKUP))
-	r.State.SetTable(tab, golua.LString("KEY_GAMEPADRSTICKDOWN"), golua.LNumber(KEY_GAMEPADRSTICKDOWN))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSELEFT"), golua.LNumber(KEY_MOUSELEFT))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSERIGHT"), golua.LNumber(KEY_MOUSERIGHT))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSEMIDDLE"), golua.LNumber(KEY_MOUSEMIDDLE))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSEX1"), golua.LNumber(KEY_MOUSEX1))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSEX2"), golua.LNumber(KEY_MOUSEX2))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSEWHEELX"), golua.LNumber(KEY_MOUSEWHEELX))
-	r.State.SetTable(tab, golua.LString("KEY_MOUSEWHEELY"), golua.LNumber(KEY_MOUSEWHEELY))
-	r.State.SetTable(tab, golua.LString("KEY_RESERVEDFORMODCTRL"), golua.LNumber(KEY_RESERVEDFORMODCTRL))
-	r.State.SetTable(tab, golua.LString("KEY_RESERVEDFORMODSHIFT"), golua.LNumber(KEY_RESERVEDFORMODSHIFT))
-	r.State.SetTable(tab, golua.LString("KEY_RESERVEDFORMODALT"), golua.LNumber(KEY_RESERVEDFORMODALT))
-	r.State.SetTable(tab, golua.LString("KEY_RESERVEDFORMODSUPER"), golua.LNumber(KEY_RESERVEDFORMODSUPER))
-	r.State.SetTable(tab, golua.LString("KEY_COUNT"), golua.LNumber(KEY_COUNT))
-	r.State.SetTable(tab, golua.LString("KEY_MODNONE"), golua.LNumber(KEY_MODNONE))
-	r.State.SetTable(tab, golua.LString("KEY_MODCTRL"), golua.LNumber(KEY_MODCTRL))
-	r.State.SetTable(tab, golua.LString("KEY_MODSHIFT"), golua.LNumber(KEY_MODSHIFT))
-	r.State.SetTable(tab, golua.LString("KEY_MODALT"), golua.LNumber(KEY_MODALT))
-	r.State.SetTable(tab, golua.LString("KEY_MODSUPER"), golua.LNumber(KEY_MODSUPER))
-	r.State.SetTable(tab, golua.LString("KEY_MODSHORTCUT"), golua.LNumber(KEY_MODSHORTCUT))
-	r.State.SetTable(tab, golua.LString("KEY_MODMASK"), golua.LNumber(KEY_MODMASK))
-	r.State.SetTable(tab, golua.LString("KEY_NAMEDKEYBEGIN"), golua.LNumber(KEY_NAMEDKEYBEGIN))
-	r.State.SetTable(tab, golua.LString("KEY_NAMEDKEYEND"), golua.LNumber(KEY_NAMEDKEYEND))
-	r.State.SetTable(tab, golua.LString("KEY_NAMEDKEYCOUNT"), golua.LNumber(KEY_NAMEDKEYCOUNT))
-	r.State.SetTable(tab, golua.LString("KEY_KEYSDATASIZE"), golua.LNumber(KEY_KEYSDATASIZE))
-	r.State.SetTable(tab, golua.LString("KEY_KEYSDATAOFFSET"), golua.LNumber(KEY_KEYSDATAOFFSET))
+	tab.RawSetString("KEY_NONE", golua.LNumber(KEY_NONE))
+	tab.RawSetString("KEY_TAB", golua.LNumber(KEY_TAB))
+	tab.RawSetString("KEY_LEFTARROW", golua.LNumber(KEY_LEFTARROW))
+	tab.RawSetString("KEY_RIGHTARROW", golua.LNumber(KEY_RIGHTARROW))
+	tab.RawSetString("KEY_UPARROW", golua.LNumber(KEY_UPARROW))
+	tab.RawSetString("KEY_DOWNARROW", golua.LNumber(KEY_DOWNARROW))
+	tab.RawSetString("KEY_PAGEUP", golua.LNumber(KEY_PAGEUP))
+	tab.RawSetString("KEY_PAGEDOWN", golua.LNumber(KEY_PAGEDOWN))
+	tab.RawSetString("KEY_HOME", golua.LNumber(KEY_HOME))
+	tab.RawSetString("KEY_END", golua.LNumber(KEY_END))
+	tab.RawSetString("KEY_INSERT", golua.LNumber(KEY_INSERT))
+	tab.RawSetString("KEY_DELETE", golua.LNumber(KEY_DELETE))
+	tab.RawSetString("KEY_BACKSPACE", golua.LNumber(KEY_BACKSPACE))
+	tab.RawSetString("KEY_SPACE", golua.LNumber(KEY_SPACE))
+	tab.RawSetString("KEY_ENTER", golua.LNumber(KEY_ENTER))
+	tab.RawSetString("KEY_ESCAPE", golua.LNumber(KEY_ESCAPE))
+	tab.RawSetString("KEY_LEFTCTRL", golua.LNumber(KEY_LEFTCTRL))
+	tab.RawSetString("KEY_LEFTSHIFT", golua.LNumber(KEY_LEFTSHIFT))
+	tab.RawSetString("KEY_LEFTALT", golua.LNumber(KEY_LEFTALT))
+	tab.RawSetString("KEY_LEFTSUPER", golua.LNumber(KEY_LEFTSUPER))
+	tab.RawSetString("KEY_RIGHTCTRL", golua.LNumber(KEY_RIGHTCTRL))
+	tab.RawSetString("KEY_RIGHTSHIFT", golua.LNumber(KEY_RIGHTSHIFT))
+	tab.RawSetString("KEY_RIGHTALT", golua.LNumber(KEY_RIGHTALT))
+	tab.RawSetString("KEY_RIGHTSUPER", golua.LNumber(KEY_RIGHTSUPER))
+	tab.RawSetString("KEY_MENU", golua.LNumber(KEY_MENU))
+	tab.RawSetString("KEY_0", golua.LNumber(KEY_0))
+	tab.RawSetString("KEY_1", golua.LNumber(KEY_1))
+	tab.RawSetString("KEY_2", golua.LNumber(KEY_2))
+	tab.RawSetString("KEY_3", golua.LNumber(KEY_3))
+	tab.RawSetString("KEY_4", golua.LNumber(KEY_4))
+	tab.RawSetString("KEY_5", golua.LNumber(KEY_5))
+	tab.RawSetString("KEY_6", golua.LNumber(KEY_6))
+	tab.RawSetString("KEY_7", golua.LNumber(KEY_7))
+	tab.RawSetString("KEY_8", golua.LNumber(KEY_8))
+	tab.RawSetString("KEY_9", golua.LNumber(KEY_9))
+	tab.RawSetString("KEY_A", golua.LNumber(KEY_A))
+	tab.RawSetString("KEY_B", golua.LNumber(KEY_B))
+	tab.RawSetString("KEY_C", golua.LNumber(KEY_C))
+	tab.RawSetString("KEY_D", golua.LNumber(KEY_D))
+	tab.RawSetString("KEY_E", golua.LNumber(KEY_E))
+	tab.RawSetString("KEY_F", golua.LNumber(KEY_F))
+	tab.RawSetString("KEY_G", golua.LNumber(KEY_G))
+	tab.RawSetString("KEY_H", golua.LNumber(KEY_H))
+	tab.RawSetString("KEY_I", golua.LNumber(KEY_I))
+	tab.RawSetString("KEY_J", golua.LNumber(KEY_J))
+	tab.RawSetString("KEY_K", golua.LNumber(KEY_K))
+	tab.RawSetString("KEY_L", golua.LNumber(KEY_L))
+	tab.RawSetString("KEY_M", golua.LNumber(KEY_M))
+	tab.RawSetString("KEY_N", golua.LNumber(KEY_N))
+	tab.RawSetString("KEY_O", golua.LNumber(KEY_O))
+	tab.RawSetString("KEY_P", golua.LNumber(KEY_P))
+	tab.RawSetString("KEY_Q", golua.LNumber(KEY_Q))
+	tab.RawSetString("KEY_R", golua.LNumber(KEY_R))
+	tab.RawSetString("KEY_S", golua.LNumber(KEY_S))
+	tab.RawSetString("KEY_T", golua.LNumber(KEY_T))
+	tab.RawSetString("KEY_U", golua.LNumber(KEY_U))
+	tab.RawSetString("KEY_V", golua.LNumber(KEY_V))
+	tab.RawSetString("KEY_W", golua.LNumber(KEY_W))
+	tab.RawSetString("KEY_X", golua.LNumber(KEY_X))
+	tab.RawSetString("KEY_Y", golua.LNumber(KEY_Y))
+	tab.RawSetString("KEY_Z", golua.LNumber(KEY_Z))
+	tab.RawSetString("KEY_F1", golua.LNumber(KEY_F1))
+	tab.RawSetString("KEY_F2", golua.LNumber(KEY_F2))
+	tab.RawSetString("KEY_F3", golua.LNumber(KEY_F3))
+	tab.RawSetString("KEY_F4", golua.LNumber(KEY_F4))
+	tab.RawSetString("KEY_F5", golua.LNumber(KEY_F5))
+	tab.RawSetString("KEY_F6", golua.LNumber(KEY_F6))
+	tab.RawSetString("KEY_F7", golua.LNumber(KEY_F7))
+	tab.RawSetString("KEY_F8", golua.LNumber(KEY_F8))
+	tab.RawSetString("KEY_F9", golua.LNumber(KEY_F9))
+	tab.RawSetString("KEY_F10", golua.LNumber(KEY_F10))
+	tab.RawSetString("KEY_F11", golua.LNumber(KEY_F11))
+	tab.RawSetString("KEY_F12", golua.LNumber(KEY_F12))
+	tab.RawSetString("KEY_F13", golua.LNumber(KEY_F13))
+	tab.RawSetString("KEY_F14", golua.LNumber(KEY_F14))
+	tab.RawSetString("KEY_F15", golua.LNumber(KEY_F15))
+	tab.RawSetString("KEY_F16", golua.LNumber(KEY_F16))
+	tab.RawSetString("KEY_F17", golua.LNumber(KEY_F17))
+	tab.RawSetString("KEY_F18", golua.LNumber(KEY_F18))
+	tab.RawSetString("KEY_F19", golua.LNumber(KEY_F19))
+	tab.RawSetString("KEY_F20", golua.LNumber(KEY_F20))
+	tab.RawSetString("KEY_F21", golua.LNumber(KEY_F21))
+	tab.RawSetString("KEY_F22", golua.LNumber(KEY_F22))
+	tab.RawSetString("KEY_F23", golua.LNumber(KEY_F23))
+	tab.RawSetString("KEY_F24", golua.LNumber(KEY_F24))
+	tab.RawSetString("KEY_APOSTROPHE", golua.LNumber(KEY_APOSTROPHE))
+	tab.RawSetString("KEY_COMMA", golua.LNumber(KEY_COMMA))
+	tab.RawSetString("KEY_MINUS", golua.LNumber(KEY_MINUS))
+	tab.RawSetString("KEY_PERIOD", golua.LNumber(KEY_PERIOD))
+	tab.RawSetString("KEY_SLASH", golua.LNumber(KEY_SLASH))
+	tab.RawSetString("KEY_SEMICOLON", golua.LNumber(KEY_SEMICOLON))
+	tab.RawSetString("KEY_EQUAL", golua.LNumber(KEY_EQUAL))
+	tab.RawSetString("KEY_LEFTBRACKET", golua.LNumber(KEY_LEFTBRACKET))
+	tab.RawSetString("KEY_BACKSLASH", golua.LNumber(KEY_BACKSLASH))
+	tab.RawSetString("KEY_RIGHTBRACKET", golua.LNumber(KEY_RIGHTBRACKET))
+	tab.RawSetString("KEY_GRAVEACCENT", golua.LNumber(KEY_GRAVEACCENT))
+	tab.RawSetString("KEY_CAPSLOCK", golua.LNumber(KEY_CAPSLOCK))
+	tab.RawSetString("KEY_SCROLLLOCK", golua.LNumber(KEY_SCROLLLOCK))
+	tab.RawSetString("KEY_NUMLOCK", golua.LNumber(KEY_NUMLOCK))
+	tab.RawSetString("KEY_PRINTSCREEN", golua.LNumber(KEY_PRINTSCREEN))
+	tab.RawSetString("KEY_PAUSE", golua.LNumber(KEY_PAUSE))
+	tab.RawSetString("KEY_KEYPAD0", golua.LNumber(KEY_KEYPAD0))
+	tab.RawSetString("KEY_KEYPAD1", golua.LNumber(KEY_KEYPAD1))
+	tab.RawSetString("KEY_KEYPAD2", golua.LNumber(KEY_KEYPAD2))
+	tab.RawSetString("KEY_KEYPAD3", golua.LNumber(KEY_KEYPAD3))
+	tab.RawSetString("KEY_KEYPAD4", golua.LNumber(KEY_KEYPAD4))
+	tab.RawSetString("KEY_KEYPAD5", golua.LNumber(KEY_KEYPAD5))
+	tab.RawSetString("KEY_KEYPAD6", golua.LNumber(KEY_KEYPAD6))
+	tab.RawSetString("KEY_KEYPAD7", golua.LNumber(KEY_KEYPAD7))
+	tab.RawSetString("KEY_KEYPAD8", golua.LNumber(KEY_KEYPAD8))
+	tab.RawSetString("KEY_KEYPAD9", golua.LNumber(KEY_KEYPAD9))
+	tab.RawSetString("KEY_KEYPADDECIMAL", golua.LNumber(KEY_KEYPADDECIMAL))
+	tab.RawSetString("KEY_KEYPADDIVIDE", golua.LNumber(KEY_KEYPADDIVIDE))
+	tab.RawSetString("KEY_KEYPADMULTIPLY", golua.LNumber(KEY_KEYPADMULTIPLY))
+	tab.RawSetString("KEY_KEYPADSUBTRACT", golua.LNumber(KEY_KEYPADSUBTRACT))
+	tab.RawSetString("KEY_KEYPADADD", golua.LNumber(KEY_KEYPADADD))
+	tab.RawSetString("KEY_KEYPADENTER", golua.LNumber(KEY_KEYPADENTER))
+	tab.RawSetString("KEY_KEYPADEQUAL", golua.LNumber(KEY_KEYPADEQUAL))
+	tab.RawSetString("KEY_APPBACK", golua.LNumber(KEY_APPBACK))
+	tab.RawSetString("KEY_APPFORWARD", golua.LNumber(KEY_APPFORWARD))
+	tab.RawSetString("KEY_GAMEPADSTART", golua.LNumber(KEY_GAMEPADSTART))
+	tab.RawSetString("KEY_GAMEPADBACK", golua.LNumber(KEY_GAMEPADBACK))
+	tab.RawSetString("KEY_GAMEPADFACELEFT", golua.LNumber(KEY_GAMEPADFACELEFT))
+	tab.RawSetString("KEY_GAMEPADFACERIGHT", golua.LNumber(KEY_GAMEPADFACERIGHT))
+	tab.RawSetString("KEY_GAMEPADFACEUP", golua.LNumber(KEY_GAMEPADFACEUP))
+	tab.RawSetString("KEY_GAMEPADFACEDOWN", golua.LNumber(KEY_GAMEPADFACEDOWN))
+	tab.RawSetString("KEY_GAMEPADDPADLEFT", golua.LNumber(KEY_GAMEPADDPADLEFT))
+	tab.RawSetString("KEY_GAMEPADDPADRIGHT", golua.LNumber(KEY_GAMEPADDPADRIGHT))
+	tab.RawSetString("KEY_GAMEPADDPADUP", golua.LNumber(KEY_GAMEPADDPADUP))
+	tab.RawSetString("KEY_GAMEPADDPADDOWN", golua.LNumber(KEY_GAMEPADDPADDOWN))
+	tab.RawSetString("KEY_GAMEPADL1", golua.LNumber(KEY_GAMEPADL1))
+	tab.RawSetString("KEY_GAMEPADR1", golua.LNumber(KEY_GAMEPADR1))
+	tab.RawSetString("KEY_GAMEPADL2", golua.LNumber(KEY_GAMEPADL2))
+	tab.RawSetString("KEY_GAMEPADR2", golua.LNumber(KEY_GAMEPADR2))
+	tab.RawSetString("KEY_GAMEPADL3", golua.LNumber(KEY_GAMEPADL3))
+	tab.RawSetString("KEY_GAMEPADR3", golua.LNumber(KEY_GAMEPADR3))
+	tab.RawSetString("KEY_GAMEPADLSTICKLEFT", golua.LNumber(KEY_GAMEPADLSTICKLEFT))
+	tab.RawSetString("KEY_GAMEPADLSTICKRIGHT", golua.LNumber(KEY_GAMEPADLSTICKRIGHT))
+	tab.RawSetString("KEY_GAMEPADLSTICKUP", golua.LNumber(KEY_GAMEPADLSTICKUP))
+	tab.RawSetString("KEY_GAMEPADLSTICKDOWN", golua.LNumber(KEY_GAMEPADLSTICKDOWN))
+	tab.RawSetString("KEY_GAMEPADRSTICKLEFT", golua.LNumber(KEY_GAMEPADRSTICKLEFT))
+	tab.RawSetString("KEY_GAMEPADRSTICKRIGHT", golua.LNumber(KEY_GAMEPADRSTICKRIGHT))
+	tab.RawSetString("KEY_GAMEPADRSTICKUP", golua.LNumber(KEY_GAMEPADRSTICKUP))
+	tab.RawSetString("KEY_GAMEPADRSTICKDOWN", golua.LNumber(KEY_GAMEPADRSTICKDOWN))
+	tab.RawSetString("KEY_MOUSELEFT", golua.LNumber(KEY_MOUSELEFT))
+	tab.RawSetString("KEY_MOUSERIGHT", golua.LNumber(KEY_MOUSERIGHT))
+	tab.RawSetString("KEY_MOUSEMIDDLE", golua.LNumber(KEY_MOUSEMIDDLE))
+	tab.RawSetString("KEY_MOUSEX1", golua.LNumber(KEY_MOUSEX1))
+	tab.RawSetString("KEY_MOUSEX2", golua.LNumber(KEY_MOUSEX2))
+	tab.RawSetString("KEY_MOUSEWHEELX", golua.LNumber(KEY_MOUSEWHEELX))
+	tab.RawSetString("KEY_MOUSEWHEELY", golua.LNumber(KEY_MOUSEWHEELY))
+	tab.RawSetString("KEY_RESERVEDFORMODCTRL", golua.LNumber(KEY_RESERVEDFORMODCTRL))
+	tab.RawSetString("KEY_RESERVEDFORMODSHIFT", golua.LNumber(KEY_RESERVEDFORMODSHIFT))
+	tab.RawSetString("KEY_RESERVEDFORMODALT", golua.LNumber(KEY_RESERVEDFORMODALT))
+	tab.RawSetString("KEY_RESERVEDFORMODSUPER", golua.LNumber(KEY_RESERVEDFORMODSUPER))
+	tab.RawSetString("KEY_COUNT", golua.LNumber(KEY_COUNT))
+	tab.RawSetString("KEY_MODNONE", golua.LNumber(KEY_MODNONE))
+	tab.RawSetString("KEY_MODCTRL", golua.LNumber(KEY_MODCTRL))
+	tab.RawSetString("KEY_MODSHIFT", golua.LNumber(KEY_MODSHIFT))
+	tab.RawSetString("KEY_MODALT", golua.LNumber(KEY_MODALT))
+	tab.RawSetString("KEY_MODSUPER", golua.LNumber(KEY_MODSUPER))
+	tab.RawSetString("KEY_MODSHORTCUT", golua.LNumber(KEY_MODSHORTCUT))
+	tab.RawSetString("KEY_MODMASK", golua.LNumber(KEY_MODMASK))
+	tab.RawSetString("KEY_NAMEDKEYBEGIN", golua.LNumber(KEY_NAMEDKEYBEGIN))
+	tab.RawSetString("KEY_NAMEDKEYEND", golua.LNumber(KEY_NAMEDKEYEND))
+	tab.RawSetString("KEY_NAMEDKEYCOUNT", golua.LNumber(KEY_NAMEDKEYCOUNT))
+	tab.RawSetString("KEY_KEYSDATASIZE", golua.LNumber(KEY_KEYSDATASIZE))
+	tab.RawSetString("KEY_KEYSDATAOFFSET", golua.LNumber(KEY_KEYSDATAOFFSET))
 
 	/// @constants Exec Conditions
 	/// @const COND_NONE
@@ -4400,11 +4401,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const COND_ONCE
 	/// @const COND_FIRSTUSEEVER
 	/// @const COND_APPEARING
-	r.State.SetTable(tab, golua.LString("COND_NONE"), golua.LNumber(COND_NONE))
-	r.State.SetTable(tab, golua.LString("COND_ALWAYS"), golua.LNumber(COND_ALWAYS))
-	r.State.SetTable(tab, golua.LString("COND_ONCE"), golua.LNumber(COND_ONCE))
-	r.State.SetTable(tab, golua.LString("COND_FIRSTUSEEVER"), golua.LNumber(COND_FIRSTUSEEVER))
-	r.State.SetTable(tab, golua.LString("COND_APPEARING"), golua.LNumber(COND_APPEARING))
+	tab.RawSetString("COND_NONE", golua.LNumber(COND_NONE))
+	tab.RawSetString("COND_ALWAYS", golua.LNumber(COND_ALWAYS))
+	tab.RawSetString("COND_ONCE", golua.LNumber(COND_ONCE))
+	tab.RawSetString("COND_FIRSTUSEEVER", golua.LNumber(COND_FIRSTUSEEVER))
+	tab.RawSetString("COND_APPEARING", golua.LNumber(COND_APPEARING))
 
 	/// @constants Plot Flags
 	/// @const FLAGPLOT_NONE
@@ -4418,17 +4419,17 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGPLOT_EQUAL
 	/// @const FLAGPLOT_CROSSHAIRS
 	/// @const FLAGPLOT_CANVASONLY
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NONE"), golua.LNumber(FLAGPLOT_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOTITLE"), golua.LNumber(FLAGPLOT_NOTITLE))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOLEGEND"), golua.LNumber(FLAGPLOT_NOLEGEND))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOMOUSETEXT"), golua.LNumber(FLAGPLOT_NOMOUSETEXT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOINPUTS"), golua.LNumber(FLAGPLOT_NOINPUTS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOMENUS"), golua.LNumber(FLAGPLOT_NOMENUS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOBOXSELECT"), golua.LNumber(FLAGPLOT_NOBOXSELECT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_NOFRAME"), golua.LNumber(FLAGPLOT_NOFRAME))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_EQUAL"), golua.LNumber(FLAGPLOT_EQUAL))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_CROSSHAIRS"), golua.LNumber(FLAGPLOT_CROSSHAIRS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOT_CANVASONLY"), golua.LNumber(FLAGPLOT_CANVASONLY))
+	tab.RawSetString("FLAGPLOT_NONE", golua.LNumber(FLAGPLOT_NONE))
+	tab.RawSetString("FLAGPLOT_NOTITLE", golua.LNumber(FLAGPLOT_NOTITLE))
+	tab.RawSetString("FLAGPLOT_NOLEGEND", golua.LNumber(FLAGPLOT_NOLEGEND))
+	tab.RawSetString("FLAGPLOT_NOMOUSETEXT", golua.LNumber(FLAGPLOT_NOMOUSETEXT))
+	tab.RawSetString("FLAGPLOT_NOINPUTS", golua.LNumber(FLAGPLOT_NOINPUTS))
+	tab.RawSetString("FLAGPLOT_NOMENUS", golua.LNumber(FLAGPLOT_NOMENUS))
+	tab.RawSetString("FLAGPLOT_NOBOXSELECT", golua.LNumber(FLAGPLOT_NOBOXSELECT))
+	tab.RawSetString("FLAGPLOT_NOFRAME", golua.LNumber(FLAGPLOT_NOFRAME))
+	tab.RawSetString("FLAGPLOT_EQUAL", golua.LNumber(FLAGPLOT_EQUAL))
+	tab.RawSetString("FLAGPLOT_CROSSHAIRS", golua.LNumber(FLAGPLOT_CROSSHAIRS))
+	tab.RawSetString("FLAGPLOT_CANVASONLY", golua.LNumber(FLAGPLOT_CANVASONLY))
 
 	/// @constants Plot Axis
 	/// @const PLOTAXIS_X1
@@ -4438,13 +4439,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const PLOTAXIS_Y2
 	/// @const PLOTAXIS_Y3
 	/// @const PLOTAXIS_COUNT
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_X1"), golua.LNumber(PLOTAXIS_X1))
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_X2"), golua.LNumber(PLOTAXIS_X2))
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_X3"), golua.LNumber(PLOTAXIS_X3))
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_Y1"), golua.LNumber(PLOTAXIS_Y1))
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_Y2"), golua.LNumber(PLOTAXIS_Y2))
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_Y3"), golua.LNumber(PLOTAXIS_Y3))
-	r.State.SetTable(tab, golua.LString("PLOTAXIS_COUNT"), golua.LNumber(PLOTAXIS_COUNT))
+	tab.RawSetString("PLOTAXIS_X1", golua.LNumber(PLOTAXIS_X1))
+	tab.RawSetString("PLOTAXIS_X2", golua.LNumber(PLOTAXIS_X2))
+	tab.RawSetString("PLOTAXIS_X3", golua.LNumber(PLOTAXIS_X3))
+	tab.RawSetString("PLOTAXIS_Y1", golua.LNumber(PLOTAXIS_Y1))
+	tab.RawSetString("PLOTAXIS_Y2", golua.LNumber(PLOTAXIS_Y2))
+	tab.RawSetString("PLOTAXIS_Y3", golua.LNumber(PLOTAXIS_Y3))
+	tab.RawSetString("PLOTAXIS_COUNT", golua.LNumber(PLOTAXIS_COUNT))
 
 	/// @constants Plot Axis Flags
 	/// @const FLAGPLOTAXIS_NONE
@@ -4467,34 +4468,34 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGPLOTAXIS_LOCK
 	/// @const FLAGPLOTAXIS_NODECORATIONS
 	/// @const FLAGPLOTAXIS_AUXDEFAULT
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NONE"), golua.LNumber(FLAGPLOTAXIS_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOLABEL"), golua.LNumber(FLAGPLOTAXIS_NOLABEL))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOGRIDLINES"), golua.LNumber(FLAGPLOTAXIS_NOGRIDLINES))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOTICKMARKS"), golua.LNumber(FLAGPLOTAXIS_NOTICKMARKS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOTICKLABELS"), golua.LNumber(FLAGPLOTAXIS_NOTICKLABELS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOINITIALFIT"), golua.LNumber(FLAGPLOTAXIS_NOINITIALFIT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOMENUS"), golua.LNumber(FLAGPLOTAXIS_NOMENUS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOSIDESWITCH"), golua.LNumber(FLAGPLOTAXIS_NOSIDESWITCH))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NOHIGHLIGHT"), golua.LNumber(FLAGPLOTAXIS_NOHIGHLIGHT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_OPPOSITE"), golua.LNumber(FLAGPLOTAXIS_OPPOSITE))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_FOREGROUND"), golua.LNumber(FLAGPLOTAXIS_FOREGROUND))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_INVERT"), golua.LNumber(FLAGPLOTAXIS_INVERT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_AUTOFIT"), golua.LNumber(FLAGPLOTAXIS_AUTOFIT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_RANGEFIT"), golua.LNumber(FLAGPLOTAXIS_RANGEFIT))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_PANSTRETCH"), golua.LNumber(FLAGPLOTAXIS_PANSTRETCH))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_LOCKMIN"), golua.LNumber(FLAGPLOTAXIS_LOCKMIN))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_LOCKMAX"), golua.LNumber(FLAGPLOTAXIS_LOCKMAX))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_LOCK"), golua.LNumber(FLAGPLOTAXIS_LOCK))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_NODECORATIONS"), golua.LNumber(FLAGPLOTAXIS_NODECORATIONS))
-	r.State.SetTable(tab, golua.LString("FLAGPLOTAXIS_AUXDEFAULT"), golua.LNumber(FLAGPLOTAXIS_AUXDEFAULT))
+	tab.RawSetString("FLAGPLOTAXIS_NONE", golua.LNumber(FLAGPLOTAXIS_NONE))
+	tab.RawSetString("FLAGPLOTAXIS_NOLABEL", golua.LNumber(FLAGPLOTAXIS_NOLABEL))
+	tab.RawSetString("FLAGPLOTAXIS_NOGRIDLINES", golua.LNumber(FLAGPLOTAXIS_NOGRIDLINES))
+	tab.RawSetString("FLAGPLOTAXIS_NOTICKMARKS", golua.LNumber(FLAGPLOTAXIS_NOTICKMARKS))
+	tab.RawSetString("FLAGPLOTAXIS_NOTICKLABELS", golua.LNumber(FLAGPLOTAXIS_NOTICKLABELS))
+	tab.RawSetString("FLAGPLOTAXIS_NOINITIALFIT", golua.LNumber(FLAGPLOTAXIS_NOINITIALFIT))
+	tab.RawSetString("FLAGPLOTAXIS_NOMENUS", golua.LNumber(FLAGPLOTAXIS_NOMENUS))
+	tab.RawSetString("FLAGPLOTAXIS_NOSIDESWITCH", golua.LNumber(FLAGPLOTAXIS_NOSIDESWITCH))
+	tab.RawSetString("FLAGPLOTAXIS_NOHIGHLIGHT", golua.LNumber(FLAGPLOTAXIS_NOHIGHLIGHT))
+	tab.RawSetString("FLAGPLOTAXIS_OPPOSITE", golua.LNumber(FLAGPLOTAXIS_OPPOSITE))
+	tab.RawSetString("FLAGPLOTAXIS_FOREGROUND", golua.LNumber(FLAGPLOTAXIS_FOREGROUND))
+	tab.RawSetString("FLAGPLOTAXIS_INVERT", golua.LNumber(FLAGPLOTAXIS_INVERT))
+	tab.RawSetString("FLAGPLOTAXIS_AUTOFIT", golua.LNumber(FLAGPLOTAXIS_AUTOFIT))
+	tab.RawSetString("FLAGPLOTAXIS_RANGEFIT", golua.LNumber(FLAGPLOTAXIS_RANGEFIT))
+	tab.RawSetString("FLAGPLOTAXIS_PANSTRETCH", golua.LNumber(FLAGPLOTAXIS_PANSTRETCH))
+	tab.RawSetString("FLAGPLOTAXIS_LOCKMIN", golua.LNumber(FLAGPLOTAXIS_LOCKMIN))
+	tab.RawSetString("FLAGPLOTAXIS_LOCKMAX", golua.LNumber(FLAGPLOTAXIS_LOCKMAX))
+	tab.RawSetString("FLAGPLOTAXIS_LOCK", golua.LNumber(FLAGPLOTAXIS_LOCK))
+	tab.RawSetString("FLAGPLOTAXIS_NODECORATIONS", golua.LNumber(FLAGPLOTAXIS_NODECORATIONS))
+	tab.RawSetString("FLAGPLOTAXIS_AUXDEFAULT", golua.LNumber(FLAGPLOTAXIS_AUXDEFAULT))
 
 	/// @constants Plot Y Axis
 	/// @const PLOTYAXIS_LEFT
 	/// @const PLOTYAXIS_FIRSTONRIGHT
 	/// @const PLOTYAXIS_SECONDONRIGHT
-	r.State.SetTable(tab, golua.LString("PLOTYAXIS_LEFT"), golua.LNumber(PLOTYAXIS_LEFT))
-	r.State.SetTable(tab, golua.LString("PLOTYAXIS_FIRSTONRIGHT"), golua.LNumber(PLOTYAXIS_FIRSTONRIGHT))
-	r.State.SetTable(tab, golua.LString("PLOTYAXIS_SECONDONRIGHT"), golua.LNumber(PLOTYAXIS_SECONDONRIGHT))
+	tab.RawSetString("PLOTYAXIS_LEFT", golua.LNumber(PLOTYAXIS_LEFT))
+	tab.RawSetString("PLOTYAXIS_FIRSTONRIGHT", golua.LNumber(PLOTYAXIS_FIRSTONRIGHT))
+	tab.RawSetString("PLOTYAXIS_SECONDONRIGHT", golua.LNumber(PLOTYAXIS_SECONDONRIGHT))
 
 	/// @constants Draw Flags
 	/// @const FLAGDRAW_NONE
@@ -4511,20 +4512,20 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGDRAW_ROUNDCORNERSALL
 	/// @const FLAGDRAW_ROUNDCORNERSDEFAULT
 	/// @const FLAGDRAW_ROUNDCORNERSMASK
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_NONE"), golua.LNumber(FLAGDRAW_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_CLOSED"), golua.LNumber(FLAGDRAW_CLOSED))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSTOPLEFT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSTOPLEFT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSTOPRIGHT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSTOPRIGHT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSBOTTOMLEFT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOMLEFT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSNONE"), golua.LNumber(FLAGDRAW_ROUNDCORNERSNONE))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSTOP"), golua.LNumber(FLAGDRAW_ROUNDCORNERSTOP))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSBOTTOM"), golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOM))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSLEFT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSLEFT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSRIGHT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSRIGHT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSALL"), golua.LNumber(FLAGDRAW_ROUNDCORNERSALL))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSDEFAULT"), golua.LNumber(FLAGDRAW_ROUNDCORNERSDEFAULT))
-	r.State.SetTable(tab, golua.LString("FLAGDRAW_ROUNDCORNERSMASK"), golua.LNumber(FLAGDRAW_ROUNDCORNERSMASK))
+	tab.RawSetString("FLAGDRAW_NONE", golua.LNumber(FLAGDRAW_NONE))
+	tab.RawSetString("FLAGDRAW_CLOSED", golua.LNumber(FLAGDRAW_CLOSED))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSTOPLEFT", golua.LNumber(FLAGDRAW_ROUNDCORNERSTOPLEFT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSTOPRIGHT", golua.LNumber(FLAGDRAW_ROUNDCORNERSTOPRIGHT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSBOTTOMLEFT", golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOMLEFT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT", golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOMRIGHT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSNONE", golua.LNumber(FLAGDRAW_ROUNDCORNERSNONE))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSTOP", golua.LNumber(FLAGDRAW_ROUNDCORNERSTOP))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSBOTTOM", golua.LNumber(FLAGDRAW_ROUNDCORNERSBOTTOM))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSLEFT", golua.LNumber(FLAGDRAW_ROUNDCORNERSLEFT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSRIGHT", golua.LNumber(FLAGDRAW_ROUNDCORNERSRIGHT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSALL", golua.LNumber(FLAGDRAW_ROUNDCORNERSALL))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSDEFAULT", golua.LNumber(FLAGDRAW_ROUNDCORNERSDEFAULT))
+	tab.RawSetString("FLAGDRAW_ROUNDCORNERSMASK", golua.LNumber(FLAGDRAW_ROUNDCORNERSMASK))
 
 	/// @constants Focus Flags
 	/// @const FLAGFOCUS_NONE
@@ -4534,13 +4535,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGFOCUS_NOPOPUPHIERARCHY
 	/// @const FLAGFOCUS_DOCKHIERARCHY
 	/// @const FLAGFOCUS_ROOTANDCHILDWINDOWS
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_NONE"), golua.LNumber(FLAGFOCUS_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_CHILDWINDOWS"), golua.LNumber(FLAGFOCUS_CHILDWINDOWS))
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_ROOTWINDOW"), golua.LNumber(FLAGFOCUS_ROOTWINDOW))
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_ANYWINDOW"), golua.LNumber(FLAGFOCUS_ANYWINDOW))
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_NOPOPUPHIERARCHY"), golua.LNumber(FLAGFOCUS_NOPOPUPHIERARCHY))
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_DOCKHIERARCHY"), golua.LNumber(FLAGFOCUS_DOCKHIERARCHY))
-	r.State.SetTable(tab, golua.LString("FLAGFOCUS_ROOTANDCHILDWINDOWS"), golua.LNumber(FLAGFOCUS_ROOTANDCHILDWINDOWS))
+	tab.RawSetString("FLAGFOCUS_NONE", golua.LNumber(FLAGFOCUS_NONE))
+	tab.RawSetString("FLAGFOCUS_CHILDWINDOWS", golua.LNumber(FLAGFOCUS_CHILDWINDOWS))
+	tab.RawSetString("FLAGFOCUS_ROOTWINDOW", golua.LNumber(FLAGFOCUS_ROOTWINDOW))
+	tab.RawSetString("FLAGFOCUS_ANYWINDOW", golua.LNumber(FLAGFOCUS_ANYWINDOW))
+	tab.RawSetString("FLAGFOCUS_NOPOPUPHIERARCHY", golua.LNumber(FLAGFOCUS_NOPOPUPHIERARCHY))
+	tab.RawSetString("FLAGFOCUS_DOCKHIERARCHY", golua.LNumber(FLAGFOCUS_DOCKHIERARCHY))
+	tab.RawSetString("FLAGFOCUS_ROOTANDCHILDWINDOWS", golua.LNumber(FLAGFOCUS_ROOTANDCHILDWINDOWS))
 
 	/// @constants Hover Flags
 	/// @const FLAGHOVERED_NONE
@@ -4564,27 +4565,27 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FLAGHOVERED_DELAYSHORT
 	/// @const FLAGHOVERED_DELAYNORMAL
 	/// @const FLAGHOVERED_NOSHAREDDELAY
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NONE"), golua.LNumber(FLAGHOVERED_NONE))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_CHILDWINDOWS"), golua.LNumber(FLAGHOVERED_CHILDWINDOWS))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ROOTWINDOW"), golua.LNumber(FLAGHOVERED_ROOTWINDOW))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ANYWINDOW"), golua.LNumber(FLAGHOVERED_ANYWINDOW))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NOPOPUPHIERARCHY"), golua.LNumber(FLAGHOVERED_NOPOPUPHIERARCHY))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DOCKHIERARCHY"), golua.LNumber(FLAGHOVERED_DOCKHIERARCHY))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP"), golua.LNumber(FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM"), golua.LNumber(FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM"), golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW"), golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENDISABLED"), golua.LNumber(FLAGHOVERED_ALLOWWHENDISABLED))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NONAVOVERRIDE"), golua.LNumber(FLAGHOVERED_NONAVOVERRIDE))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ALLOWWHENOVERLAPPED"), golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPED))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_RECTONLY"), golua.LNumber(FLAGHOVERED_RECTONLY))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_ROOTANDCHILDWINDOWS"), golua.LNumber(FLAGHOVERED_ROOTANDCHILDWINDOWS))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_FORTOOLTIP"), golua.LNumber(FLAGHOVERED_FORTOOLTIP))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_STATIONARY"), golua.LNumber(FLAGHOVERED_STATIONARY))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DELAYNONE"), golua.LNumber(FLAGHOVERED_DELAYNONE))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DELAYSHORT"), golua.LNumber(FLAGHOVERED_DELAYSHORT))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_DELAYNORMAL"), golua.LNumber(FLAGHOVERED_DELAYNORMAL))
-	r.State.SetTable(tab, golua.LString("FLAGHOVERED_NOSHAREDDELAY"), golua.LNumber(FLAGHOVERED_NOSHAREDDELAY))
+	tab.RawSetString("FLAGHOVERED_NONE", golua.LNumber(FLAGHOVERED_NONE))
+	tab.RawSetString("FLAGHOVERED_CHILDWINDOWS", golua.LNumber(FLAGHOVERED_CHILDWINDOWS))
+	tab.RawSetString("FLAGHOVERED_ROOTWINDOW", golua.LNumber(FLAGHOVERED_ROOTWINDOW))
+	tab.RawSetString("FLAGHOVERED_ANYWINDOW", golua.LNumber(FLAGHOVERED_ANYWINDOW))
+	tab.RawSetString("FLAGHOVERED_NOPOPUPHIERARCHY", golua.LNumber(FLAGHOVERED_NOPOPUPHIERARCHY))
+	tab.RawSetString("FLAGHOVERED_DOCKHIERARCHY", golua.LNumber(FLAGHOVERED_DOCKHIERARCHY))
+	tab.RawSetString("FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP", golua.LNumber(FLAGHOVERED_ALLOWWHENBLOCKEDBYPOPUP))
+	tab.RawSetString("FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM", golua.LNumber(FLAGHOVERED_ALLOWWHENBLOCKEDBYACTIVEITEM))
+	tab.RawSetString("FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM", golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPEDBYITEM))
+	tab.RawSetString("FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW", golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPEDBYWINDOW))
+	tab.RawSetString("FLAGHOVERED_ALLOWWHENDISABLED", golua.LNumber(FLAGHOVERED_ALLOWWHENDISABLED))
+	tab.RawSetString("FLAGHOVERED_NONAVOVERRIDE", golua.LNumber(FLAGHOVERED_NONAVOVERRIDE))
+	tab.RawSetString("FLAGHOVERED_ALLOWWHENOVERLAPPED", golua.LNumber(FLAGHOVERED_ALLOWWHENOVERLAPPED))
+	tab.RawSetString("FLAGHOVERED_RECTONLY", golua.LNumber(FLAGHOVERED_RECTONLY))
+	tab.RawSetString("FLAGHOVERED_ROOTANDCHILDWINDOWS", golua.LNumber(FLAGHOVERED_ROOTANDCHILDWINDOWS))
+	tab.RawSetString("FLAGHOVERED_FORTOOLTIP", golua.LNumber(FLAGHOVERED_FORTOOLTIP))
+	tab.RawSetString("FLAGHOVERED_STATIONARY", golua.LNumber(FLAGHOVERED_STATIONARY))
+	tab.RawSetString("FLAGHOVERED_DELAYNONE", golua.LNumber(FLAGHOVERED_DELAYNONE))
+	tab.RawSetString("FLAGHOVERED_DELAYSHORT", golua.LNumber(FLAGHOVERED_DELAYSHORT))
+	tab.RawSetString("FLAGHOVERED_DELAYNORMAL", golua.LNumber(FLAGHOVERED_DELAYNORMAL))
+	tab.RawSetString("FLAGHOVERED_NOSHAREDDELAY", golua.LNumber(FLAGHOVERED_NOSHAREDDELAY))
 
 	/// @constants Mouse Cursors
 	/// @const MOUSECURSOR_NONE
@@ -4598,29 +4599,29 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const MOUSECURSOR_HAND
 	/// @const MOUSECURSOR_NOTALLOWED
 	/// @const MOUSECURSOR_COUNT
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_NONE"), golua.LNumber(MOUSECURSOR_NONE))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_ARROW"), golua.LNumber(MOUSECURSOR_ARROW))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_TEXTINPUT"), golua.LNumber(MOUSECURSOR_TEXTINPUT))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZEALL"), golua.LNumber(MOUSECURSOR_RESIZEALL))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZENS"), golua.LNumber(MOUSECURSOR_RESIZENS))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZEEW"), golua.LNumber(MOUSECURSOR_RESIZEEW))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZENESW"), golua.LNumber(MOUSECURSOR_RESIZENESW))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_RESIZENWSE"), golua.LNumber(MOUSECURSOR_RESIZENWSE))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_HAND"), golua.LNumber(MOUSECURSOR_HAND))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_NOTALLOWED"), golua.LNumber(MOUSECURSOR_NOTALLOWED))
-	r.State.SetTable(tab, golua.LString("MOUSECURSOR_COUNT"), golua.LNumber(MOUSECURSOR_COUNT))
+	tab.RawSetString("MOUSECURSOR_NONE", golua.LNumber(MOUSECURSOR_NONE))
+	tab.RawSetString("MOUSECURSOR_ARROW", golua.LNumber(MOUSECURSOR_ARROW))
+	tab.RawSetString("MOUSECURSOR_TEXTINPUT", golua.LNumber(MOUSECURSOR_TEXTINPUT))
+	tab.RawSetString("MOUSECURSOR_RESIZEALL", golua.LNumber(MOUSECURSOR_RESIZEALL))
+	tab.RawSetString("MOUSECURSOR_RESIZENS", golua.LNumber(MOUSECURSOR_RESIZENS))
+	tab.RawSetString("MOUSECURSOR_RESIZEEW", golua.LNumber(MOUSECURSOR_RESIZEEW))
+	tab.RawSetString("MOUSECURSOR_RESIZENESW", golua.LNumber(MOUSECURSOR_RESIZENESW))
+	tab.RawSetString("MOUSECURSOR_RESIZENWSE", golua.LNumber(MOUSECURSOR_RESIZENWSE))
+	tab.RawSetString("MOUSECURSOR_HAND", golua.LNumber(MOUSECURSOR_HAND))
+	tab.RawSetString("MOUSECURSOR_NOTALLOWED", golua.LNumber(MOUSECURSOR_NOTALLOWED))
+	tab.RawSetString("MOUSECURSOR_COUNT", golua.LNumber(MOUSECURSOR_COUNT))
 
 	/// @constants Actions
 	/// @const ACTION_RELEASE
 	/// @const ACTION_PRESS
 	/// @const ACTION_REPEAT
-	r.State.SetTable(tab, golua.LString("ACTION_RELEASE"), golua.LNumber(ACTION_RELEASE))
-	r.State.SetTable(tab, golua.LString("ACTION_PRESS"), golua.LNumber(ACTION_PRESS))
-	r.State.SetTable(tab, golua.LString("ACTION_REPEAT"), golua.LNumber(ACTION_REPEAT))
+	tab.RawSetString("ACTION_RELEASE", golua.LNumber(ACTION_RELEASE))
+	tab.RawSetString("ACTION_PRESS", golua.LNumber(ACTION_PRESS))
+	tab.RawSetString("ACTION_REPEAT", golua.LNumber(ACTION_REPEAT))
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
-	state.SetTable(t, golua.LString(name), state.NewFunction(func(state *golua.LState) int {
+	t.RawSetString(name, state.NewFunction(func(state *golua.LState) int {
 		self := state.CheckTable(1)
 
 		fn(state, self)
@@ -5481,12 +5482,12 @@ func parseWidgets(widgetTable map[string]any, state *golua.LState, lg *log.Logge
 	return wts
 }
 
-func parseTable(t *golua.LTable, state *golua.LState) map[string]any {
+func parseTable(t *golua.LTable) map[string]any {
 	v := map[string]any{}
 
 	ln := t.Len()
 	for i := range ln {
-		v[string(i+1)] = state.GetTable(t, golua.LNumber(i+1))
+		v[string(i+1)] = t.RawGetInt(i + 1)
 	}
 
 	return v
@@ -5496,7 +5497,7 @@ func layoutBuild(r *lua.Runner, state *golua.LState, widgets []*golua.LTable, lg
 	w := []g.Widget{}
 
 	for _, wt := range widgets {
-		t := state.GetTable(wt, golua.LString("type")).String()
+		t := string(wt.RawGetString("type").(golua.LString))
 
 		build, ok := buildList[t]
 		if !ok {
@@ -5517,33 +5518,33 @@ func labelTable(state *golua.LState, text string) *golua.LTable {
 	/// @method font(fontref)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LABEL))
-	state.SetTable(t, golua.LString("label"), golua.LString(text))
-	state.SetTable(t, golua.LString("__wrapped"), golua.LNil)
-	state.SetTable(t, golua.LString("__font"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_LABEL))
+	t.RawSetString("label", golua.LString(text))
+	t.RawSetString("__wrapped", golua.LNil)
+	t.RawSetString("__font", golua.LNil)
 
 	tableBuilderFunc(state, t, "wrapped", func(state *golua.LState, t *golua.LTable) {
 		v := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__wrapped"), golua.LBool(v))
+		t.RawSetString("__wrapped", golua.LBool(v))
 	})
 
 	tableBuilderFunc(state, t, "font", func(state *golua.LState, t *golua.LTable) {
 		v := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__font"), v)
+		t.RawSetString("__font", v)
 	})
 
 	return t
 }
 
 func labelBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	l := g.Label(state.GetTable(t, golua.LString("label")).String())
+	l := g.Label(t.RawGetString("label").String())
 
-	wrapped := state.GetTable(t, golua.LString("__wrapped"))
+	wrapped := t.RawGetString("__wrapped")
 	if wrapped.Type() == golua.LTBool {
 		l.Wrapped(bool(wrapped.(golua.LBool)))
 	}
 
-	fontref := state.GetTable(t, golua.LString("__font"))
+	fontref := t.RawGetString("__font")
 	if fontref.Type() == golua.LTNumber {
 		ref := int(fontref.(golua.LNumber))
 		sref, err := r.CR_REF.Item(ref)
@@ -5567,48 +5568,48 @@ func buttonTable(state *golua.LState, text string) *golua.LTable {
 	/// @method on_click(callback)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON))
-	state.SetTable(t, golua.LString("label"), golua.LString(text))
-	state.SetTable(t, golua.LString("__disabled"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_BUTTON))
+	t.RawSetString("label", golua.LString(text))
+	t.RawSetString("__disabled", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__click", golua.LNil)
 
 	tableBuilderFunc(state, t, "disabled", func(state *golua.LState, t *golua.LTable) {
 		v := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__disabled"), golua.LBool(v))
+		t.RawSetString("__disabled", golua.LBool(v))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	return t
 }
 
 func buttonBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	b := g.Button(state.GetTable(t, golua.LString("label")).String())
+	b := g.Button(t.RawGetString("label").String())
 
-	disabled := state.GetTable(t, golua.LString("__disabled"))
+	disabled := t.RawGetString("__disabled")
 	if disabled.Type() == golua.LTBool {
 		b.Disabled(bool(disabled.(golua.LBool)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		b.OnClick(func() {
 			state.Push(click)
@@ -5626,16 +5627,16 @@ func dummyTable(state *golua.LState, width, height float64) *golua.LTable {
 	/// @prop height
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_DUMMY))
-	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
-	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
+	t.RawSetString("type", golua.LString(WIDGET_DUMMY))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
 
 	return t
 }
 
 func dummyBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	w := state.GetTable(t, golua.LString("width")).(golua.LNumber)
-	h := state.GetTable(t, golua.LString("height")).(golua.LNumber)
+	w := t.RawGetString("width").(golua.LNumber)
+	h := t.RawGetString("height").(golua.LNumber)
 	d := g.Dummy(float32(w), float32(h))
 
 	return d
@@ -5646,7 +5647,7 @@ func separatorTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SEPARATOR))
+	t.RawSetString("type", golua.LString(WIDGET_SEPARATOR))
 
 	return t
 }
@@ -5663,14 +5664,14 @@ func bulletTextTable(state *golua.LState, text string) *golua.LTable {
 	/// @prop text
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BULLET_TEXT))
-	state.SetTable(t, golua.LString("text"), golua.LString(text))
+	t.RawSetString("type", golua.LString(WIDGET_BULLET_TEXT))
+	t.RawSetString("text", golua.LString(text))
 
 	return t
 }
 
 func bulletTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	b := g.BulletText(state.GetTable(t, golua.LString("text")).String())
+	b := g.BulletText(t.RawGetString("text").String())
 
 	return b
 }
@@ -5680,7 +5681,7 @@ func bulletTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BULLET))
+	t.RawSetString("type", golua.LString(WIDGET_BULLET))
 
 	return t
 }
@@ -5699,21 +5700,21 @@ func checkboxTable(state *golua.LState, text string, boolref int) *golua.LTable 
 	/// @method on_change(callback(bool, boolref))
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CHECKBOX))
-	state.SetTable(t, golua.LString("text"), golua.LString(text))
-	state.SetTable(t, golua.LString("boolref"), golua.LNumber(boolref))
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_CHECKBOX))
+	t.RawSetString("text", golua.LString(text))
+	t.RawSetString("boolref", golua.LNumber(boolref))
+	t.RawSetString("__change", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	return t
 }
 
 func checkboxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("boolref")).(golua.LNumber))
+	ref := int(t.RawGetString("boolref").(golua.LNumber))
 
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
@@ -5721,9 +5722,9 @@ func checkboxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 	}
 
 	selected := sref.Value.(*bool)
-	c := g.Checkbox(state.GetTable(t, golua.LString("text")).String(), selected)
+	c := g.Checkbox(t.RawGetString("text").String(), selected)
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -5745,33 +5746,33 @@ func childTable(state *golua.LState) *golua.LTable {
 	/// @method flags(flags)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CHILD))
-	state.SetTable(t, golua.LString("__border"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_CHILD))
+	t.RawSetString("__border", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
 
 	tableBuilderFunc(state, t, "border", func(state *golua.LState, t *golua.LTable) {
 		b := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__border"), golua.LBool(b))
+		t.RawSetString("__border", golua.LBool(b))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	return t
@@ -5780,25 +5781,25 @@ func childTable(state *golua.LState) *golua.LTable {
 func childBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	c := g.Child()
 
-	border := state.GetTable(t, golua.LString("__border"))
+	border := t.RawGetString("__border")
 	if border.Type() == golua.LTBool {
 		c.Border(bool(border.(golua.LBool)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.WindowFlags(flags.(golua.LNumber)))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c
@@ -5814,33 +5815,33 @@ func colorEditTable(state *golua.LState, text string, colorref int) *golua.LTabl
 	/// @method flags(flags)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_COLOR_EDIT))
-	state.SetTable(t, golua.LString("label"), golua.LString(text))
-	state.SetTable(t, golua.LString("colorref"), golua.LNumber(colorref))
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_COLOR_EDIT))
+	t.RawSetString("label", golua.LString(text))
+	t.RawSetString("colorref", golua.LNumber(colorref))
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	return t
 }
 
 func colorEditBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("colorref")).(golua.LNumber))
+	ref := int(t.RawGetString("colorref").(golua.LNumber))
 
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
@@ -5848,14 +5849,14 @@ func colorEditBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 	}
 
 	selected := sref.Value.(*color.RGBA)
-	c := g.ColorEdit(state.GetTable(t, golua.LString("label")).String(), selected)
+	c := g.ColorEdit(t.RawGetString("label").String(), selected)
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			ct := imageutil.RGBAToTable(state, selected)
@@ -5867,7 +5868,7 @@ func colorEditBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 		})
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.ColorEditFlags(flags.(golua.LNumber)))
 	}
@@ -5881,8 +5882,8 @@ func columnTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 	/// @prop widgets
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_COLUMN))
-	state.SetTable(t, golua.LString("widgets"), widgets)
+	t.RawSetString("type", golua.LString(WIDGET_COLUMN))
+	t.RawSetString("widgets", widgets)
 
 	return t
 }
@@ -5890,9 +5891,9 @@ func columnTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 func columnBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	var widgets []g.Widget
 
-	wid := state.GetTable(t, golua.LString("widgets"))
+	wid := t.RawGetString("widgets")
 	if wid.Type() == golua.LTTable {
-		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable), state), state, lg), lg)
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable)), state, lg), lg)
 	}
 
 	s := g.Column(widgets...)
@@ -5906,8 +5907,8 @@ func rowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 	/// @prop widgets
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_ROW))
-	state.SetTable(t, golua.LString("widgets"), widgets)
+	t.RawSetString("type", golua.LString(WIDGET_ROW))
+	t.RawSetString("widgets", widgets)
 
 	return t
 }
@@ -5915,9 +5916,9 @@ func rowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 func rowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	var widgets []g.Widget
 
-	wid := state.GetTable(t, golua.LString("widgets"))
+	wid := t.RawGetString("widgets")
 	if wid.Type() == golua.LTTable {
-		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable), state), state, lg), lg)
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable)), state, lg), lg)
 	}
 
 	s := g.Row(widgets...)
@@ -5935,49 +5936,49 @@ func comboCustomTable(state *golua.LState, text, preview string) *golua.LTable {
 	/// @method flags(flags)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_COMBO_CUSTOM))
-	state.SetTable(t, golua.LString("text"), golua.LString(text))
-	state.SetTable(t, golua.LString("preview"), golua.LString(preview))
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_COMBO_CUSTOM))
+	t.RawSetString("text", golua.LString(text))
+	t.RawSetString("preview", golua.LString(preview))
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	return t
 }
 
 func comboCustomBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	text := state.GetTable(t, golua.LString("text")).String()
-	preview := state.GetTable(t, golua.LString("preview")).String()
+	text := t.RawGetString("text").String()
+	preview := t.RawGetString("preview").String()
 	c := g.ComboCustom(text, preview)
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.ComboFlags(flags.(golua.LNumber)))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c
@@ -5995,45 +5996,45 @@ func comboTable(state *golua.LState, text, preview string, items golua.LValue, i
 	/// @method flags(flags)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_COMBO))
-	state.SetTable(t, golua.LString("text"), golua.LString(text))
-	state.SetTable(t, golua.LString("preview"), golua.LString(preview))
-	state.SetTable(t, golua.LString("items"), items)
-	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(i32Ref))
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_COMBO))
+	t.RawSetString("text", golua.LString(text))
+	t.RawSetString("preview", golua.LString(preview))
+	t.RawSetString("items", items)
+	t.RawSetString("i32ref", golua.LNumber(i32Ref))
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	return t
 }
 
 func comboBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	text := state.GetTable(t, golua.LString("text")).String()
-	preview := state.GetTable(t, golua.LString("preview")).String()
+	text := t.RawGetString("text").String()
+	preview := t.RawGetString("preview").String()
 
 	items := []string{}
-	it := state.GetTable(t, golua.LString("items")).(*golua.LTable)
+	it := t.RawGetString("items").(*golua.LTable)
 	for i := range it.Len() {
-		v := state.GetTable(it, golua.LNumber(i+1)).(golua.LString)
+		v := it.RawGetInt(i + 1).(golua.LString)
 		items = append(items, string(v))
 	}
 
-	ref := int(state.GetTable(t, golua.LString("i32ref")).(golua.LNumber))
+	ref := int(t.RawGetString("i32ref").(golua.LNumber))
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -6042,17 +6043,17 @@ func comboBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 
 	c := g.Combo(text, preview, items, selected)
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.ComboFlags(flags.(golua.LNumber)))
 	}
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -6073,20 +6074,20 @@ func conditionTable(state *golua.LState, condition bool, layoutIf, layoutElse go
 	/// @prop layoutElse
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CONDITION))
-	state.SetTable(t, golua.LString("condition"), golua.LBool(condition))
-	state.SetTable(t, golua.LString("layoutIf"), layoutIf)
-	state.SetTable(t, golua.LString("layoutElse"), layoutElse)
+	t.RawSetString("type", golua.LString(WIDGET_CONDITION))
+	t.RawSetString("condition", golua.LBool(condition))
+	t.RawSetString("layoutIf", layoutIf)
+	t.RawSetString("layoutElse", layoutElse)
 
 	return t
 }
 
 func conditionBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	condition := state.GetTable(t, golua.LString("condition")).(golua.LBool)
+	condition := t.RawGetString("condition").(golua.LBool)
 
-	widIf := state.GetTable(t, golua.LString("layoutIf")).(*golua.LTable)
+	widIf := t.RawGetString("layoutIf").(*golua.LTable)
 	widgetsIf := layoutBuild(r, state, []*golua.LTable{widIf}, lg)
-	widElse := state.GetTable(t, golua.LString("layoutElse")).(*golua.LTable)
+	widElse := t.RawGetString("layoutElse").(*golua.LTable)
 	widgetsElse := layoutBuild(r, state, []*golua.LTable{widElse}, lg)
 
 	s := g.Condition(bool(condition), widgetsIf[0], widgetsElse[0])
@@ -6101,18 +6102,18 @@ func contextMenuTable(state *golua.LState) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CONTEXT_MENU))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__button"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_CONTEXT_MENU))
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__button", golua.LNil)
 
 	tableBuilderFunc(state, t, "mouse_button", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__button"), lt)
+		t.RawSetString("__button", lt)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
@@ -6121,14 +6122,14 @@ func contextMenuTable(state *golua.LState) *golua.LTable {
 func contextMenuBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	c := g.ContextMenu()
 
-	button := state.GetTable(t, golua.LString("__button"))
+	button := t.RawGetString("__button")
 	if button.Type() == golua.LTNumber {
 		c.MouseButton(g.MouseButton(button.(golua.LNumber)))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c
@@ -6146,34 +6147,34 @@ func datePickerTable(state *golua.LState, id string, timeref int) *golua.LTable 
 	/// @method translation(label, value)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_DATE_PICKER))
-	state.SetTable(t, golua.LString("id"), golua.LString(id))
-	state.SetTable(t, golua.LString("timeref"), golua.LNumber(timeref))
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__startofweek"), golua.LNil)
-	state.SetTable(t, golua.LString("__translationMonth"), golua.LNil)
-	state.SetTable(t, golua.LString("__translationYear"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_DATE_PICKER))
+	t.RawSetString("id", golua.LString(id))
+	t.RawSetString("timeref", golua.LNumber(timeref))
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__format", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__startofweek", golua.LNil)
+	t.RawSetString("__translationMonth", golua.LNil)
+	t.RawSetString("__translationYear", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "start_of_week", func(state *golua.LState, t *golua.LTable) {
 		sow := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__startofweek"), sow)
+		t.RawSetString("__startofweek", sow)
 	})
 
 	tableBuilderFunc(state, t, "translation", func(state *golua.LState, t *golua.LTable) {
@@ -6181,9 +6182,9 @@ func datePickerTable(state *golua.LState, id string, timeref int) *golua.LTable 
 		value := state.CheckString(-1)
 
 		if label == string(DATEPICKERLABEL_MONTH) {
-			state.SetTable(t, golua.LString("__translationMonth"), golua.LString(value))
+			t.RawSetString("__translationMonth", golua.LString(value))
 		} else if label == string(DATEPICKERLABEL_YEAR) {
-			state.SetTable(t, golua.LString("__translationYear"), golua.LString(value))
+			t.RawSetString("__translationYear", golua.LString(value))
 		}
 	})
 
@@ -6191,7 +6192,7 @@ func datePickerTable(state *golua.LState, id string, timeref int) *golua.LTable 
 }
 
 func datePickerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("timeref")).(golua.LNumber))
+	ref := int(t.RawGetString("timeref").(golua.LNumber))
 
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
@@ -6199,9 +6200,9 @@ func datePickerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 	}
 
 	date := sref.Value.(*time.Time)
-	c := g.DatePicker(state.GetTable(t, golua.LString("id")).String(), date)
+	c := g.DatePicker(t.RawGetString("id").String(), date)
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -6211,26 +6212,26 @@ func datePickerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		})
 	}
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		c.Format(string(format.(golua.LString)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	sow := state.GetTable(t, golua.LString("__startofweek"))
+	sow := t.RawGetString("__startofweek")
 	if sow.Type() == golua.LTNumber {
 		c.StartOfWeek(time.Weekday((sow.(golua.LNumber))))
 	}
 
-	translationMonth := state.GetTable(t, golua.LString("__translationMonth"))
+	translationMonth := t.RawGetString("__translationMonth")
 	if translationMonth.Type() == golua.LTString {
 		c.Translation(DATEPICKERLABEL_MONTH, translationMonth.String())
 	}
-	translationYear := state.GetTable(t, golua.LString("__translationYear"))
+	translationYear := t.RawGetString("__translationYear")
 	if translationYear.Type() == golua.LTString {
 		c.Translation(DATEPICKERLABEL_YEAR, translationYear.String())
 	}
@@ -6249,33 +6250,33 @@ func dragIntTable(state *golua.LState, text string, i32Ref, minValue, maxValue i
 	/// @method format(format)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_DRAG_INT))
-	state.SetTable(t, golua.LString("text"), golua.LString(text))
-	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(i32Ref))
-	state.SetTable(t, golua.LString("minvalue"), golua.LNumber(minValue))
-	state.SetTable(t, golua.LString("maxvalue"), golua.LNumber(maxValue))
-	state.SetTable(t, golua.LString("__speed"), golua.LNil)
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_DRAG_INT))
+	t.RawSetString("text", golua.LString(text))
+	t.RawSetString("i32ref", golua.LNumber(i32Ref))
+	t.RawSetString("minvalue", golua.LNumber(minValue))
+	t.RawSetString("maxvalue", golua.LNumber(maxValue))
+	t.RawSetString("__speed", golua.LNil)
+	t.RawSetString("__format", golua.LNil)
 
 	tableBuilderFunc(state, t, "speed", func(state *golua.LState, t *golua.LTable) {
 		speed := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__speed"), speed)
+		t.RawSetString("__speed", speed)
 	})
 
 	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	return t
 }
 
 func dragIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	text := state.GetTable(t, golua.LString("text")).String()
-	min := state.GetTable(t, golua.LString("minvalue")).(golua.LNumber)
-	max := state.GetTable(t, golua.LString("maxvalue")).(golua.LNumber)
+	text := t.RawGetString("text").String()
+	min := t.RawGetString("minvalue").(golua.LNumber)
+	max := t.RawGetString("maxvalue").(golua.LNumber)
 
-	ref := int(state.GetTable(t, golua.LString("i32ref")).(golua.LNumber))
+	ref := int(t.RawGetString("i32ref").(golua.LNumber))
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -6284,12 +6285,12 @@ func dragIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 
 	c := g.DragInt(text, selected, int32(min), int32(max))
 
-	speed := state.GetTable(t, golua.LString("__speed"))
+	speed := t.RawGetString("__speed")
 	if speed.Type() == golua.LTNumber {
 		c.Speed(float32(speed.(golua.LNumber)))
 	}
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		c.Format(string(format.(golua.LString)))
 	}
@@ -6310,56 +6311,56 @@ func inputFloatTable(state *golua.LState, floatref int) *golua.LTable {
 	/// @method step_size_fast(stepsize)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_INPUT_FLOAT))
-	state.SetTable(t, golua.LString("f32ref"), golua.LNumber(floatref))
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__stepsize"), golua.LNil)
-	state.SetTable(t, golua.LString("__stepsizefast"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_INPUT_FLOAT))
+	t.RawSetString("f32ref", golua.LNumber(floatref))
+	t.RawSetString("__format", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__stepsize", golua.LNil)
+	t.RawSetString("__stepsizefast", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "step_size", func(state *golua.LState, t *golua.LTable) {
 		stepsize := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__stepsize"), stepsize)
+		t.RawSetString("__stepsize", stepsize)
 	})
 
 	tableBuilderFunc(state, t, "step_size_fast", func(state *golua.LState, t *golua.LTable) {
 		stepsize := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__stepsizefast"), stepsize)
+		t.RawSetString("__stepsizefast", stepsize)
 	})
 
 	return t
 }
 
 func inputFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("f32ref")).(golua.LNumber))
+	ref := int(t.RawGetString("f32ref").(golua.LNumber))
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -6368,22 +6369,22 @@ func inputFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 
 	c := g.InputFloat(selected)
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		c.Format(string(format.(golua.LString)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.InputTextFlags(flags.(golua.LNumber)))
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		c.Label(string(label.(golua.LString)))
 	}
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -6393,17 +6394,17 @@ func inputFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		})
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	stepsize := state.GetTable(t, golua.LString("__stepsize"))
+	stepsize := t.RawGetString("__stepsize")
 	if stepsize.Type() == golua.LTNumber {
 		c.StepSize(float32(stepsize.(golua.LNumber)))
 	}
 
-	stepsizefast := state.GetTable(t, golua.LString("__stepsizefast"))
+	stepsizefast := t.RawGetString("__stepsizefast")
 	if stepsizefast.Type() == golua.LTNumber {
 		c.StepSizeFast(float32(stepsizefast.(golua.LNumber)))
 	}
@@ -6423,50 +6424,50 @@ func inputIntTable(state *golua.LState, intref int) *golua.LTable {
 	/// @method step_size_fast(stepsize)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_INPUT_INT))
-	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(intref))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__stepsize"), golua.LNil)
-	state.SetTable(t, golua.LString("__stepsizefast"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_INPUT_INT))
+	t.RawSetString("i32ref", golua.LNumber(intref))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__stepsize", golua.LNil)
+	t.RawSetString("__stepsizefast", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "step_size", func(state *golua.LState, t *golua.LTable) {
 		stepsize := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__stepsize"), stepsize)
+		t.RawSetString("__stepsize", stepsize)
 	})
 
 	tableBuilderFunc(state, t, "step_size_fast", func(state *golua.LState, t *golua.LTable) {
 		stepsize := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__stepsizefast"), stepsize)
+		t.RawSetString("__stepsizefast", stepsize)
 	})
 
 	return t
 }
 
 func inputIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("i32ref")).(golua.LNumber))
+	ref := int(t.RawGetString("i32ref").(golua.LNumber))
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -6475,17 +6476,17 @@ func inputIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 
 	c := g.InputInt(selected)
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.InputTextFlags(flags.(golua.LNumber)))
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		c.Label(string(label.(golua.LString)))
 	}
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -6495,17 +6496,17 @@ func inputIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 		})
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	stepsize := state.GetTable(t, golua.LString("__stepsize"))
+	stepsize := t.RawGetString("__stepsize")
 	if stepsize.Type() == golua.LTNumber {
 		c.StepSize(int(stepsize.(golua.LNumber)))
 	}
 
-	stepsizefast := state.GetTable(t, golua.LString("__stepsizefast"))
+	stepsizefast := t.RawGetString("__stepsizefast")
 	if stepsizefast.Type() == golua.LTNumber {
 		c.StepSizeFast(int(stepsizefast.(golua.LNumber)))
 	}
@@ -6525,56 +6526,56 @@ func inputTextTable(state *golua.LState, strref int) *golua.LTable {
 	/// @method hint(hint)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_INPUT_TEXT))
-	state.SetTable(t, golua.LString("strref"), golua.LNumber(strref))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__autocomplete"), golua.LNil)
-	state.SetTable(t, golua.LString("__callback"), golua.LNil)
-	state.SetTable(t, golua.LString("__hint"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_INPUT_TEXT))
+	t.RawSetString("strref", golua.LNumber(strref))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__autocomplete", golua.LNil)
+	t.RawSetString("__callback", golua.LNil)
+	t.RawSetString("__hint", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "autocomplete", func(state *golua.LState, t *golua.LTable) {
 		ac := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__autocomplete"), ac)
+		t.RawSetString("__autocomplete", ac)
 	})
 
 	tableBuilderFunc(state, t, "callback", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__callback"), fn)
+		t.RawSetString("__callback", fn)
 	})
 
 	tableBuilderFunc(state, t, "hint", func(state *golua.LState, t *golua.LTable) {
 		hint := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__hint"), golua.LString(hint))
+		t.RawSetString("__hint", golua.LString(hint))
 	})
 
 	return t
 }
 
 func inputTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("strref")).(golua.LNumber))
+	ref := int(t.RawGetString("strref").(golua.LNumber))
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -6583,22 +6584,22 @@ func inputTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 
 	c := g.InputText(selected)
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.InputTextFlags(flags.(golua.LNumber)))
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		c.Label(string(label.(golua.LString)))
 	}
 
-	hint := state.GetTable(t, golua.LString("__hint"))
+	hint := t.RawGetString("__hint")
 	if hint.Type() == golua.LTString {
 		c.Hint(string(hint.(golua.LString)))
 	}
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -6608,7 +6609,7 @@ func inputTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 		})
 	}
 
-	callback := state.GetTable(t, golua.LString("__callback"))
+	callback := t.RawGetString("__callback")
 	if callback.Type() == golua.LTFunction {
 		c.Callback(func(data imgui.InputTextCallbackData) int {
 			state.Push(callback)
@@ -6619,17 +6620,17 @@ func inputTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 		})
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)))
 	}
 
-	ac := state.GetTable(t, golua.LString("__autocomplete"))
+	ac := t.RawGetString("__autocomplete")
 	if ac.Type() == golua.LTTable {
 		acList := []string{}
 		at := ac.(*golua.LTable)
 		for i := range at.Len() {
-			ai := state.GetTable(at, golua.LNumber(i+1)).(golua.LString)
+			ai := at.RawGetInt(i + 1).(golua.LString)
 			acList = append(acList, string(ai))
 		}
 
@@ -6651,53 +6652,53 @@ func inputMultilineTextTable(state *golua.LState, strref int) *golua.LTable {
 	/// @method autoscroll_to_bottom(bool)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_INPUT_MULTILINE_TEXT))
-	state.SetTable(t, golua.LString("strref"), golua.LNumber(strref))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__callback"), golua.LNil)
-	state.SetTable(t, golua.LString("__autoscroll"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_INPUT_MULTILINE_TEXT))
+	t.RawSetString("strref", golua.LNumber(strref))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__callback", golua.LNil)
+	t.RawSetString("__autoscroll", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "callback", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__callback"), fn)
+		t.RawSetString("__callback", fn)
 	})
 
 	tableBuilderFunc(state, t, "autoscroll_to_bottom", func(state *golua.LState, t *golua.LTable) {
 		as := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__autoscroll"), golua.LBool(as))
+		t.RawSetString("__autoscroll", golua.LBool(as))
 	})
 
 	return t
 }
 
 func inputMultilineTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ref := int(state.GetTable(t, golua.LString("strref")).(golua.LNumber))
+	ref := int(t.RawGetString("strref").(golua.LNumber))
 	sref, err := r.CR_REF.Item(ref)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -6706,17 +6707,17 @@ func inputMultilineTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState,
 
 	c := g.InputTextMultiline(selected)
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.InputTextFlags(flags.(golua.LNumber)))
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		c.Label(string(label.(golua.LString)))
 	}
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
 			state.Push(change)
@@ -6726,7 +6727,7 @@ func inputMultilineTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState,
 		})
 	}
 
-	callback := state.GetTable(t, golua.LString("__callback"))
+	callback := t.RawGetString("__callback")
 	if callback.Type() == golua.LTFunction {
 		c.Callback(func(data imgui.InputTextCallbackData) int {
 			state.Push(callback)
@@ -6737,13 +6738,13 @@ func inputMultilineTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState,
 		})
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		c.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	autoscroll := state.GetTable(t, golua.LString("__autoscroll"))
+	autoscroll := t.RawGetString("__autoscroll")
 	if autoscroll.Type() == golua.LTBool {
 		c.AutoScrollToBottom(bool(autoscroll.(golua.LBool)))
 	}
@@ -6759,38 +6760,38 @@ func progressBarTable(state *golua.LState, fraction float64) *golua.LTable {
 	/// @method size(width, height)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_PROGRESS_BAR))
-	state.SetTable(t, golua.LString("fraction"), golua.LNumber(fraction))
-	state.SetTable(t, golua.LString("__overlay"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_PROGRESS_BAR))
+	t.RawSetString("fraction", golua.LNumber(fraction))
+	t.RawSetString("__overlay", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "overlay", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__overlay"), golua.LString(label))
+		t.RawSetString("__overlay", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	return t
 }
 
 func progressBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	fraction := state.GetTable(t, golua.LString("fraction")).(golua.LNumber)
+	fraction := t.RawGetString("fraction").(golua.LNumber)
 	p := g.ProgressBar(float32(fraction))
 
-	overlay := state.GetTable(t, golua.LString("__overlay"))
+	overlay := t.RawGetString("__overlay")
 	if overlay.Type() == golua.LTString {
 		p.Overlay(string(overlay.(golua.LString)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		p.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
@@ -6807,20 +6808,20 @@ func progressIndicatorTable(state *golua.LState, label string, width, height, ra
 	/// @prop radius
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_PROGRESS_INDICATOR))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("width"), golua.LNumber(width))
-	state.SetTable(t, golua.LString("height"), golua.LNumber(height))
-	state.SetTable(t, golua.LString("radius"), golua.LNumber(radius))
+	t.RawSetString("type", golua.LString(WIDGET_PROGRESS_INDICATOR))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
+	t.RawSetString("radius", golua.LNumber(radius))
 
 	return t
 }
 
 func progressIndicatorBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
-	width := state.GetTable(t, golua.LString("width")).(golua.LNumber)
-	height := state.GetTable(t, golua.LString("height")).(golua.LNumber)
-	radius := state.GetTable(t, golua.LString("radius")).(golua.LNumber)
+	label := t.RawGetString("label").(golua.LString)
+	width := t.RawGetString("width").(golua.LNumber)
+	height := t.RawGetString("height").(golua.LNumber)
+	radius := t.RawGetString("radius").(golua.LNumber)
 	p := g.ProgressIndicator(string(label), float32(width), float32(height), float32(radius))
 
 	return p
@@ -6831,7 +6832,7 @@ func spacingTable(state *golua.LState) *golua.LTable {
 	/// @prop type
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SPACING))
+	t.RawSetString("type", golua.LString(WIDGET_SPACING))
 
 	return t
 }
@@ -6849,23 +6850,23 @@ func buttonSmallTable(state *golua.LState, text string) *golua.LTable {
 	/// @method on_click(callback())
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_SMALL))
-	state.SetTable(t, golua.LString("label"), golua.LString(text))
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_BUTTON_SMALL))
+	t.RawSetString("label", golua.LString(text))
+	t.RawSetString("__click", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	return t
 }
 
 func buttonSmallBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	text := state.GetTable(t, golua.LString("label")).(golua.LString)
+	text := t.RawGetString("label").(golua.LString)
 	b := g.SmallButton(string(text))
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		b.OnClick(func() {
 			state.Push(click)
@@ -6884,25 +6885,25 @@ func buttonRadioTable(state *golua.LState, text string, active bool) *golua.LTab
 	/// @method on_change(callback())
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_RADIO))
-	state.SetTable(t, golua.LString("label"), golua.LString(text))
-	state.SetTable(t, golua.LString("active"), golua.LBool(active))
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_BUTTON_RADIO))
+	t.RawSetString("label", golua.LString(text))
+	t.RawSetString("active", golua.LBool(active))
+	t.RawSetString("__change", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	return t
 }
 
 func buttonRadioBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	text := state.GetTable(t, golua.LString("label")).(golua.LString)
-	active := state.GetTable(t, golua.LString("active")).(golua.LBool)
+	text := t.RawGetString("label").(golua.LString)
+	active := t.RawGetString("active").(golua.LBool)
 	b := g.RadioButton(string(text), bool(active))
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		b.OnChange(func() {
 			state.Push(change)
@@ -6926,73 +6927,73 @@ func imageUrlTable(state *golua.LState, url string) *golua.LTable {
 	/// @method on_ready(callback())
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_IMAGE_URL))
-	state.SetTable(t, golua.LString("url"), golua.LString(url))
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__timeout"), golua.LNil)
-	state.SetTable(t, golua.LString("__failwidgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__loadwidgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__failure"), golua.LNil)
-	state.SetTable(t, golua.LString("__ready"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_IMAGE_URL))
+	t.RawSetString("url", golua.LString(url))
+	t.RawSetString("__click", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__timeout", golua.LNil)
+	t.RawSetString("__failwidgets", golua.LNil)
+	t.RawSetString("__loadwidgets", golua.LNil)
+	t.RawSetString("__failure", golua.LNil)
+	t.RawSetString("__ready", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "timeout", func(state *golua.LState, t *golua.LTable) {
 		timeout := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__timeout"), timeout)
+		t.RawSetString("__timeout", timeout)
 	})
 
 	tableBuilderFunc(state, t, "layout_for_failure", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__failwidgets"), lt)
+		t.RawSetString("__failwidgets", lt)
 	})
 
 	tableBuilderFunc(state, t, "layout_for_loading", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__loadwidgets"), lt)
+		t.RawSetString("__loadwidgets", lt)
 	})
 
 	tableBuilderFunc(state, t, "on_failure", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__failure"), fn)
+		t.RawSetString("__failure", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_ready", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__ready"), fn)
+		t.RawSetString("__ready", fn)
 	})
 
 	return t
 }
 
 func imageUrlBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	url := state.GetTable(t, golua.LString("url")).(golua.LString)
+	url := t.RawGetString("url").(golua.LString)
 	i := g.ImageWithURL(string(url))
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		i.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	timeout := state.GetTable(t, golua.LString("__timeout"))
+	timeout := t.RawGetString("__timeout")
 	if timeout.Type() == golua.LTNumber {
 		i.Timeout(time.Duration(timeout.(golua.LNumber)))
 	}
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		i.OnClick(func() {
 			state.Push(click)
@@ -7000,17 +7001,17 @@ func imageUrlBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 		})
 	}
 
-	lfail := state.GetTable(t, golua.LString("__failwidgets"))
+	lfail := t.RawGetString("__failwidgets")
 	if lfail.Type() == golua.LTTable {
-		i.LayoutForFailure(layoutBuild(r, state, parseWidgets(parseTable(lfail.(*golua.LTable), state), state, lg), lg)...)
+		i.LayoutForFailure(layoutBuild(r, state, parseWidgets(parseTable(lfail.(*golua.LTable)), state, lg), lg)...)
 	}
 
-	lload := state.GetTable(t, golua.LString("__loadwidgets"))
+	lload := t.RawGetString("__loadwidgets")
 	if lload.Type() == golua.LTTable {
-		i.LayoutForFailure(layoutBuild(r, state, parseWidgets(parseTable(lload.(*golua.LTable), state), state, lg), lg)...)
+		i.LayoutForFailure(layoutBuild(r, state, parseWidgets(parseTable(lload.(*golua.LTable)), state, lg), lg)...)
 	}
 
-	failure := state.GetTable(t, golua.LString("__failure"))
+	failure := t.RawGetString("__failure")
 	if failure.Type() == golua.LTFunction {
 		i.OnFailure(func(err error) {
 			lg.Append(fmt.Sprintf("error occured while loading image url: %s", err), log.LEVEL_WARN)
@@ -7019,7 +7020,7 @@ func imageUrlBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 		})
 	}
 
-	ready := state.GetTable(t, golua.LString("__ready"))
+	ready := t.RawGetString("__ready")
 	if ready.Type() == golua.LTFunction {
 		i.OnReady(func() {
 			state.Push(ready)
@@ -7039,33 +7040,33 @@ func imageTable(state *golua.LState, image int, sync bool) *golua.LTable {
 	/// @method size(width, height)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_IMAGE))
-	state.SetTable(t, golua.LString("image"), golua.LNumber(image))
-	state.SetTable(t, golua.LString("sync"), golua.LBool(sync))
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_IMAGE))
+	t.RawSetString("image", golua.LNumber(image))
+	t.RawSetString("sync", golua.LBool(sync))
+	t.RawSetString("__click", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	return t
 }
 
 func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ig := state.GetTable(t, golua.LString("image")).(golua.LNumber)
+	ig := t.RawGetString("image").(golua.LNumber)
 	var img image.Image
 
-	sync := state.GetTable(t, golua.LString("sync")).(golua.LBool)
+	sync := t.RawGetString("sync").(golua.LBool)
 
 	if !sync {
 		<-r.IC.Schedule(int(ig), &collection.Task[collection.ItemImage]{
@@ -7089,13 +7090,13 @@ func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 
 	i := g.ImageWithRgba(img)
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		i.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		i.OnClick(func() {
 			state.Push(click)
@@ -7119,68 +7120,68 @@ func listBoxTable(state *golua.LState, items golua.LValue) *golua.LTable {
 	/// @method size(width, height)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LIST_BOX))
-	state.SetTable(t, golua.LString("items"), items)
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__border"), golua.LNil)
-	state.SetTable(t, golua.LString("__context"), golua.LNil)
-	state.SetTable(t, golua.LString("__dclick"), golua.LNil)
-	state.SetTable(t, golua.LString("__menu"), golua.LNil)
-	state.SetTable(t, golua.LString("__sel"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_LIST_BOX))
+	t.RawSetString("items", items)
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__border", golua.LNil)
+	t.RawSetString("__context", golua.LNil)
+	t.RawSetString("__dclick", golua.LNil)
+	t.RawSetString("__menu", golua.LNil)
+	t.RawSetString("__sel", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "border", func(state *golua.LState, t *golua.LTable) {
 		b := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__border"), golua.LBool(b))
+		t.RawSetString("__border", golua.LBool(b))
 	})
 
 	tableBuilderFunc(state, t, "context_menu", func(state *golua.LState, t *golua.LTable) {
 		cmt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__context"), cmt)
+		t.RawSetString("__context", cmt)
 	})
 
 	tableBuilderFunc(state, t, "on_double_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__dclick"), fn)
+		t.RawSetString("__dclick", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_menu", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__menu"), fn)
+		t.RawSetString("__menu", fn)
 	})
 
 	tableBuilderFunc(state, t, "selected_index", func(state *golua.LState, t *golua.LTable) {
 		sel := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__sel"), sel)
+		t.RawSetString("__sel", sel)
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	return t
 }
 
 func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	it := state.GetTable(t, golua.LString("items")).(*golua.LTable)
+	it := t.RawGetString("items").(*golua.LTable)
 	items := []string{}
 	for i := range it.Len() {
-		is := state.GetTable(it, golua.LNumber(i+1)).(golua.LString)
+		is := it.RawGetInt(i + 1).(golua.LString)
 		items = append(items, string(is))
 	}
 
 	b := g.ListBox(items)
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		b.OnChange(func(index int) {
 			state.Push(change)
@@ -7189,7 +7190,7 @@ func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 		})
 	}
 
-	dclick := state.GetTable(t, golua.LString("__dclick"))
+	dclick := t.RawGetString("__dclick")
 	if dclick.Type() == golua.LTFunction {
 		b.OnDClick(func(index int) {
 			state.Push(dclick)
@@ -7198,7 +7199,7 @@ func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 		})
 	}
 
-	selmenu := state.GetTable(t, golua.LString("__menu"))
+	selmenu := t.RawGetString("__menu")
 	if selmenu.Type() == golua.LTFunction {
 		b.OnMenu(func(index int, menu string) {
 			state.Push(selmenu)
@@ -7208,7 +7209,7 @@ func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 		})
 	}
 
-	sel := state.GetTable(t, golua.LString("__sel"))
+	sel := t.RawGetString("__sel")
 	if sel.Type() == golua.LTNumber {
 		ref, err := r.CR_REF.Item(int(sel.(golua.LNumber)))
 		if err != nil {
@@ -7217,8 +7218,8 @@ func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 		b.SelectedIndex(ref.Value.(*int32))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
@@ -7232,12 +7233,12 @@ func listClipperTable(state *golua.LState) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LIST_CLIPPER))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_LIST_CLIPPER))
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
@@ -7246,9 +7247,9 @@ func listClipperTable(state *golua.LState) *golua.LTable {
 func listClipperBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	c := g.ListClipper()
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c
@@ -7260,12 +7261,12 @@ func mainMenuBarTable(state *golua.LState) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU_BAR_MAIN))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_MENU_BAR_MAIN))
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
@@ -7274,9 +7275,9 @@ func mainMenuBarTable(state *golua.LState) *golua.LTable {
 func mainMenuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	c := g.MainMenuBar()
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c
@@ -7288,12 +7289,12 @@ func menuBarTable(state *golua.LState) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU_BAR))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_MENU_BAR))
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
@@ -7302,9 +7303,9 @@ func menuBarTable(state *golua.LState) *golua.LTable {
 func menuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	c := g.MenuBar()
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c
@@ -7320,41 +7321,41 @@ func menuItemTable(state *golua.LState, label string) *golua.LTable {
 	/// @method shortcut(string)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU_ITEM))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__enabled"), golua.LNil)
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
-	state.SetTable(t, golua.LString("__sel"), golua.LNil)
-	state.SetTable(t, golua.LString("__shortcut"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_MENU_ITEM))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__enabled", golua.LNil)
+	t.RawSetString("__click", golua.LNil)
+	t.RawSetString("__sel", golua.LNil)
+	t.RawSetString("__shortcut", golua.LNil)
 
 	tableBuilderFunc(state, t, "enabled", func(state *golua.LState, t *golua.LTable) {
 		en := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__enabled"), golua.LBool(en))
+		t.RawSetString("__enabled", golua.LBool(en))
 	})
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	tableBuilderFunc(state, t, "selected", func(state *golua.LState, t *golua.LTable) {
 		sel := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__sel"), golua.LBool(sel))
+		t.RawSetString("__sel", golua.LBool(sel))
 	})
 
 	tableBuilderFunc(state, t, "shortcut", func(state *golua.LState, t *golua.LTable) {
 		sc := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__shortcut"), golua.LString(sc))
+		t.RawSetString("__shortcut", golua.LString(sc))
 	})
 
 	return t
 }
 
 func menuItemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	m := g.MenuItem(string(label))
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		m.OnClick(func() {
 			state.Push(click)
@@ -7362,17 +7363,17 @@ func menuItemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 		})
 	}
 
-	enabled := state.GetTable(t, golua.LString("__enabled"))
+	enabled := t.RawGetString("__enabled")
 	if enabled.Type() == golua.LTBool {
 		m.Enabled(bool(enabled.(golua.LBool)))
 	}
 
-	sel := state.GetTable(t, golua.LString("__sel"))
+	sel := t.RawGetString("__sel")
 	if sel.Type() == golua.LTBool {
 		m.Selected(bool(sel.(golua.LBool)))
 	}
 
-	shortcut := state.GetTable(t, golua.LString("__shortcut"))
+	shortcut := t.RawGetString("__shortcut")
 	if shortcut.Type() == golua.LTString {
 		m.Shortcut(string(shortcut.(golua.LString)))
 	}
@@ -7388,36 +7389,36 @@ func menuTable(state *golua.LState, label string) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MENU))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__enabled"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_MENU))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__enabled", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "enabled", func(state *golua.LState, t *golua.LTable) {
 		en := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__enabled"), golua.LBool(en))
+		t.RawSetString("__enabled", golua.LBool(en))
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func menuBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	m := g.Menu(string(label))
 
-	enabled := state.GetTable(t, golua.LString("__enabled"))
+	enabled := t.RawGetString("__enabled")
 	if enabled.Type() == golua.LTBool {
 		m.Enabled(bool(enabled.(golua.LBool)))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return m
@@ -7434,50 +7435,50 @@ func selectableTable(state *golua.LState, label string) *golua.LTable {
 	/// @method flags(flags)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SELECTABLE))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
-	state.SetTable(t, golua.LString("__dclick"), golua.LNil)
-	state.SetTable(t, golua.LString("__sel"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_SELECTABLE))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__click", golua.LNil)
+	t.RawSetString("__dclick", golua.LNil)
+	t.RawSetString("__sel", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_double_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__dclick"), fn)
+		t.RawSetString("__dclick", fn)
 	})
 
 	tableBuilderFunc(state, t, "selected", func(state *golua.LState, t *golua.LTable) {
 		sel := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__sel"), golua.LBool(sel))
+		t.RawSetString("__sel", golua.LBool(sel))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	return t
 }
 
 func selectableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	b := g.Selectable(string(label))
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		b.OnClick(func() {
 			state.Push(click)
@@ -7485,7 +7486,7 @@ func selectableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		})
 	}
 
-	dclick := state.GetTable(t, golua.LString("__dclick"))
+	dclick := t.RawGetString("__dclick")
 	if dclick.Type() == golua.LTFunction {
 		b.OnDClick(func() {
 			state.Push(dclick)
@@ -7493,18 +7494,18 @@ func selectableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		})
 	}
 
-	sel := state.GetTable(t, golua.LString("__sel"))
+	sel := t.RawGetString("__sel")
 	if sel.Type() == golua.LTBool {
 		b.Selected(bool(sel.(golua.LBool)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		b.Flags(g.SelectableFlags(flags.(golua.LNumber)))
 	}
@@ -7524,50 +7525,50 @@ func sliderFloatTable(state *golua.LState, f32ref int, min, max float64) *golua.
 	/// @method size(width)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SLIDER_FLOAT))
-	state.SetTable(t, golua.LString("f32ref"), golua.LNumber(f32ref))
-	state.SetTable(t, golua.LString("min"), golua.LNumber(min))
-	state.SetTable(t, golua.LString("max"), golua.LNumber(max))
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_SLIDER_FLOAT))
+	t.RawSetString("f32ref", golua.LNumber(f32ref))
+	t.RawSetString("min", golua.LNumber(min))
+	t.RawSetString("max", golua.LNumber(max))
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__format", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	return t
 }
 
 func sliderFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	floatref := state.GetTable(t, golua.LString("f32ref")).(golua.LNumber)
+	floatref := t.RawGetString("f32ref").(golua.LNumber)
 	ref, err := r.CR_REF.Item(int(floatref))
 	value := ref.Value.(*float32)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
 	}
-	min := state.GetTable(t, golua.LString("min")).(golua.LNumber)
-	max := state.GetTable(t, golua.LString("max")).(golua.LNumber)
+	min := t.RawGetString("min").(golua.LNumber)
+	max := t.RawGetString("max").(golua.LNumber)
 	b := g.SliderFloat(value, float32(min), float32(max))
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		b.OnChange(func() {
 			state.Push(change)
@@ -7577,17 +7578,17 @@ func sliderFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 		})
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		b.Label(string(label.(golua.LString)))
 	}
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		b.Format(string(format.(golua.LString)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)))
 	}
@@ -7607,50 +7608,50 @@ func sliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTable
 	/// @method size(width)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SLIDER_INT))
-	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(i32ref))
-	state.SetTable(t, golua.LString("min"), golua.LNumber(min))
-	state.SetTable(t, golua.LString("max"), golua.LNumber(max))
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_SLIDER_INT))
+	t.RawSetString("i32ref", golua.LNumber(i32ref))
+	t.RawSetString("min", golua.LNumber(min))
+	t.RawSetString("max", golua.LNumber(max))
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__format", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	return t
 }
 
 func sliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	intref := state.GetTable(t, golua.LString("i32ref")).(golua.LNumber)
+	intref := t.RawGetString("i32ref").(golua.LNumber)
 	ref, err := r.CR_REF.Item(int(intref))
 	value := ref.Value.(*int32)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
 	}
-	min := state.GetTable(t, golua.LString("min")).(golua.LNumber)
-	max := state.GetTable(t, golua.LString("max")).(golua.LNumber)
+	min := t.RawGetString("min").(golua.LNumber)
+	max := t.RawGetString("max").(golua.LNumber)
 	b := g.SliderInt(value, int32(min), int32(max))
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		b.OnChange(func() {
 			state.Push(change)
@@ -7660,17 +7661,17 @@ func sliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 		})
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		b.Label(string(label.(golua.LString)))
 	}
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		b.Format(string(format.(golua.LString)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)))
 	}
@@ -7691,59 +7692,59 @@ func vsliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTabl
 	/// @method flags(flags)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_VSLIDER_INT))
-	state.SetTable(t, golua.LString("i32ref"), golua.LNumber(i32ref))
-	state.SetTable(t, golua.LString("min"), golua.LNumber(min))
-	state.SetTable(t, golua.LString("max"), golua.LNumber(max))
-	state.SetTable(t, golua.LString("__change"), golua.LNil)
-	state.SetTable(t, golua.LString("__label"), golua.LNil)
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_VSLIDER_INT))
+	t.RawSetString("i32ref", golua.LNumber(i32ref))
+	t.RawSetString("min", golua.LNumber(min))
+	t.RawSetString("max", golua.LNumber(max))
+	t.RawSetString("__change", golua.LNil)
+	t.RawSetString("__label", golua.LNil)
+	t.RawSetString("__format", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_change", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__change"), fn)
+		t.RawSetString("__change", fn)
 	})
 
 	tableBuilderFunc(state, t, "label", func(state *golua.LState, t *golua.LTable) {
 		label := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__label"), golua.LString(label))
+		t.RawSetString("__label", golua.LString(label))
 	})
 
 	tableBuilderFunc(state, t, "format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	return t
 }
 
 func vsliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	intref := state.GetTable(t, golua.LString("i32ref")).(golua.LNumber)
+	intref := t.RawGetString("i32ref").(golua.LNumber)
 	ref, err := r.CR_REF.Item(int(intref))
 	value := ref.Value.(*int32)
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
 	}
-	min := state.GetTable(t, golua.LString("min")).(golua.LNumber)
-	max := state.GetTable(t, golua.LString("max")).(golua.LNumber)
+	min := t.RawGetString("min").(golua.LNumber)
+	max := t.RawGetString("max").(golua.LNumber)
 	b := g.VSliderInt(value, int32(min), int32(max))
 
-	change := state.GetTable(t, golua.LString("__change"))
+	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		b.OnChange(func() {
 			state.Push(change)
@@ -7753,23 +7754,23 @@ func vsliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		})
 	}
 
-	label := state.GetTable(t, golua.LString("__label"))
+	label := t.RawGetString("__label")
 	if label.Type() == golua.LTString {
 		b.Label(string(label.(golua.LString)))
 	}
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		b.Format(string(format.(golua.LString)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		b.Flags(g.SliderFlags(flags.(golua.LNumber)))
 	}
@@ -7784,18 +7785,18 @@ func tabbarTable(state *golua.LState) *golua.LTable {
 	/// @method tab_items([]wg_tab_item)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TAB_BAR))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TAB_BAR))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "tab_items", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
@@ -7804,14 +7805,14 @@ func tabbarTable(state *golua.LState) *golua.LTable {
 func tabbarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	tb := g.TabBar()
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		tb.Flags(g.TabBarFlags(flags.(golua.LNumber)))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		wd := parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg)
+		wd := parseWidgets(parseTable(layout.(*golua.LTable)), state, lg)
 		wdi := []*g.TabItemWidget{}
 		for _, w := range wd {
 			i := tabitemBuild(r, lg, state, w)
@@ -7832,35 +7833,35 @@ func tabitemTable(state *golua.LState, label string) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TAB_ITEM))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__open"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TAB_ITEM))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__open", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "is_open", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__open"), flags)
+		t.RawSetString("__open", flags)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func tabitemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TabItemWidget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	i := g.TabItem(string(label))
 
-	open := state.GetTable(t, golua.LString("__open"))
+	open := t.RawGetString("__open")
 	if open.Type() == golua.LTNumber {
 		ref, err := r.CR_REF.Item(int(open.(golua.LNumber)))
 		if err != nil {
@@ -7869,12 +7870,12 @@ func tabitemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 		i.IsOpen(ref.Value.(*bool))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		i.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		i.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		i.Flags(g.TabItemFlags(flags.(golua.LNumber)))
 	}
@@ -7889,25 +7890,25 @@ func tooltipTable(state *golua.LState, tip string) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TOOLTIP))
-	state.SetTable(t, golua.LString("tip"), golua.LString(tip))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TOOLTIP))
+	t.RawSetString("tip", golua.LString(tip))
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func tooltipBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	tip := state.GetTable(t, golua.LString("tip")).(golua.LString)
+	tip := t.RawGetString("tip").(golua.LString)
 	i := g.Tooltip(string(tip))
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		i.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		i.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return i
@@ -7923,34 +7924,34 @@ func tableColumnTable(state *golua.LState, label string) *golua.LTable {
 	/// only used in table widget columns
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TABLE_COLUMN))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TABLE_COLUMN))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "inner_width_or_weight", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), flags)
+		t.RawSetString("__width", flags)
 	})
 
 	return t
 }
 
-func tableColumnBuild(state *golua.LState, t *golua.LTable) *g.TableColumnWidget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+func tableColumnBuild(t *golua.LTable) *g.TableColumnWidget {
+	label := t.RawGetString("label").(golua.LString)
 	c := g.TableColumn(string(label))
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		c.Flags(g.TableColumnFlags(flags.(golua.LNumber)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		c.InnerWidthOrWeight(float32(width.(golua.LNumber)))
 	}
@@ -7969,25 +7970,25 @@ func tableRowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 	/// only used in table widget rows
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TABLE_ROW))
-	state.SetTable(t, golua.LString("widgets"), widgets)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__color"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TABLE_ROW))
+	t.RawSetString("widgets", widgets)
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__color", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "bg_color", func(state *golua.LState, t *golua.LTable) {
 		clr := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__color"), clr)
+		t.RawSetString("__color", clr)
 	})
 
 	tableBuilderFunc(state, t, "min_height", func(state *golua.LState, t *golua.LTable) {
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__height", height)
 	})
 
 	return t
@@ -7996,24 +7997,24 @@ func tableRowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 func tableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TableRowWidget {
 	var widgets []g.Widget
 
-	wid := state.GetTable(t, golua.LString("widgets"))
+	wid := t.RawGetString("widgets")
 	if wid.Type() == golua.LTTable {
-		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable), state), state, lg), lg)
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable)), state, lg), lg)
 	}
 
 	s := g.TableRow(widgets...)
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		s.Flags(g.TableRowFlags(flags.(golua.LNumber)))
 	}
 
-	height := state.GetTable(t, golua.LString("__height"))
+	height := t.RawGetString("__height")
 	if height.Type() == golua.LTNumber {
 		s.MinHeight(float64(height.(golua.LNumber)))
 	}
 
-	clr := state.GetTable(t, golua.LString("__color"))
+	clr := t.RawGetString("__color")
 	if clr.Type() == golua.LTTable {
 		rgba := imageutil.TableToRGBA(state, clr.(*golua.LTable))
 		s.BgColor(rgba)
@@ -8034,56 +8035,56 @@ func tableTable(state *golua.LState) *golua.LTable {
 	/// @method freeze(col, row) - can be called multiple times
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TABLE))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__columns"), golua.LNil)
-	state.SetTable(t, golua.LString("__rows"), golua.LNil)
-	state.SetTable(t, golua.LString("__fast"), golua.LNil)
-	state.SetTable(t, golua.LString("__freeze"), state.NewTable())
-	state.SetTable(t, golua.LString("__innerwidth"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TABLE))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__columns", golua.LNil)
+	t.RawSetString("__rows", golua.LNil)
+	t.RawSetString("__fast", golua.LNil)
+	t.RawSetString("__freeze", state.NewTable())
+	t.RawSetString("__innerwidth", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "fast_mode", func(state *golua.LState, t *golua.LTable) {
 		fast := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__fast"), golua.LBool(fast))
+		t.RawSetString("__fast", golua.LBool(fast))
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "columns", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__columns"), lt)
+		t.RawSetString("__columns", lt)
 	})
 
 	tableBuilderFunc(state, t, "rows", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__rows"), lt)
+		t.RawSetString("__rows", lt)
 	})
 
 	tableBuilderFunc(state, t, "inner_width", func(state *golua.LState, t *golua.LTable) {
 		innerwidth := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__innerwidth"), innerwidth)
+		t.RawSetString("__innerwidth", innerwidth)
 	})
 
 	tableBuilderFunc(state, t, "freeze", func(state *golua.LState, t *golua.LTable) {
 		col := state.CheckNumber(-2)
 		row := state.CheckNumber(-1)
 		pt := state.NewTable()
-		state.SetTable(pt, golua.LString("col"), col)
-		state.SetTable(pt, golua.LString("row"), row)
+		pt.RawSetString("col", col)
+		pt.RawSetString("row", row)
 
-		ft := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+		ft := t.RawGetString("__freeze").(*golua.LTable)
 		ft.Append(pt)
 	})
 
@@ -8093,50 +8094,50 @@ func tableTable(state *golua.LState) *golua.LTable {
 func tableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	tb := g.Table()
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		tb.Flags(g.TableFlags(flags.(golua.LNumber)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		tb.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	innerwidth := state.GetTable(t, golua.LString("__innerwidth"))
+	innerwidth := t.RawGetString("__innerwidth")
 	if innerwidth.Type() == golua.LTNumber {
 		tb.InnerWidth(float64(innerwidth.(golua.LNumber)))
 	}
 
-	fast := state.GetTable(t, golua.LString("__fast"))
+	fast := t.RawGetString("__fast")
 	if fast.Type() == golua.LTBool {
 		tb.FastMode(bool(fast.(golua.LBool)))
 	}
 
-	freeze := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+	freeze := t.RawGetString("__freeze").(*golua.LTable)
 	for i := range freeze.Len() {
-		pt := state.GetTable(freeze, golua.LNumber(i+1)).(*golua.LTable)
-		col := state.GetTable(pt, golua.LString("col")).(golua.LNumber)
-		row := state.GetTable(pt, golua.LString("row")).(golua.LNumber)
+		pt := freeze.RawGetInt(i + 1).(*golua.LTable)
+		col := pt.RawGetString("col").(golua.LNumber)
+		row := pt.RawGetString("row").(golua.LNumber)
 
 		tb.Freeze(int(col), int(row))
 	}
 
-	columns := state.GetTable(t, golua.LString("__columns"))
+	columns := t.RawGetString("__columns")
 	if columns.Type() == golua.LTTable {
-		wd := parseWidgets(parseTable(columns.(*golua.LTable), state), state, lg)
+		wd := parseWidgets(parseTable(columns.(*golua.LTable)), state, lg)
 		wdi := []*g.TableColumnWidget{}
 		for _, w := range wd {
-			i := tableColumnBuild(state, w)
+			i := tableColumnBuild(w)
 			wdi = append(wdi, i)
 		}
 		tb.Columns(wdi...)
 	}
 
-	rows := state.GetTable(t, golua.LString("__rows"))
+	rows := t.RawGetString("__rows")
 	if rows.Type() == golua.LTTable {
-		wd := parseWidgets(parseTable(rows.(*golua.LTable), state), state, lg)
+		wd := parseWidgets(parseTable(rows.(*golua.LTable)), state, lg)
 		wdi := []*g.TableRowWidget{}
 		for _, w := range wd {
 			i := tableRowBuild(r, lg, state, w)
@@ -8155,23 +8156,23 @@ func buttonArrowTable(state *golua.LState, dir int) *golua.LTable {
 	/// @method on_click(callback)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_ARROW))
-	state.SetTable(t, golua.LString("dir"), golua.LNumber(dir))
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_BUTTON_ARROW))
+	t.RawSetString("dir", golua.LNumber(dir))
+	t.RawSetString("__click", golua.LNil)
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	return t
 }
 
 func buttonArrowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	dir := state.GetTable(t, golua.LString("dir")).(golua.LNumber)
+	dir := t.RawGetString("dir").(golua.LNumber)
 	b := g.ArrowButton(g.Direction(dir))
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		b.OnClick(func() {
 			state.Push(click)
@@ -8190,36 +8191,36 @@ func treeNodeTable(state *golua.LState, label string) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_NODE))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TREE_NODE))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func treeNodeBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	n := g.TreeNode(string(label))
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		n.Flags(g.TreeNodeFlags(flags.(golua.LNumber)))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		n.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		n.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return n
@@ -8236,44 +8237,44 @@ func treeTableRowTable(state *golua.LState, label string, widgets golua.LValue) 
 	/// only used in tree table widget rows
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_TABLE_ROW))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("widgets"), widgets)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__children"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TREE_TABLE_ROW))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("widgets", widgets)
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__children", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "children", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__children"), lt)
+		t.RawSetString("__children", lt)
 	})
 
 	return t
 }
 
 func treeTableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.TreeTableRowWidget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	var widgets []g.Widget
 
-	wid := state.GetTable(t, golua.LString("widgets"))
+	wid := t.RawGetString("widgets")
 	if wid.Type() == golua.LTTable {
-		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable), state), state, lg), lg)
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid.(*golua.LTable)), state, lg), lg)
 	}
 
 	n := g.TreeTableRow(string(label), widgets...)
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		n.Flags(g.TreeNodeFlags(flags.(golua.LNumber)))
 	}
 
-	children := state.GetTable(t, golua.LString("__children"))
+	children := t.RawGetString("__children")
 	if children.Type() == golua.LTTable {
-		rwid := parseWidgets(parseTable(children.(*golua.LTable), state), state, lg)
+		rwid := parseWidgets(parseTable(children.(*golua.LTable)), state, lg)
 		childs := []*g.TreeTableRowWidget{}
 		for _, c := range rwid {
 			childs = append(childs, treeTableRowBuild(r, lg, state, c))
@@ -8294,44 +8295,44 @@ func treeTableTable(state *golua.LState) *golua.LTable {
 	/// @method freeze(col, row) - can be called multiple times
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_TREE_TABLE))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__columns"), golua.LNil)
-	state.SetTable(t, golua.LString("__rows"), golua.LNil)
-	state.SetTable(t, golua.LString("__freeze"), state.NewTable())
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_TREE_TABLE))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__columns", golua.LNil)
+	t.RawSetString("__rows", golua.LNil)
+	t.RawSetString("__freeze", state.NewTable())
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "columns", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__columns"), lt)
+		t.RawSetString("__columns", lt)
 	})
 
 	tableBuilderFunc(state, t, "rows", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__rows"), lt)
+		t.RawSetString("__rows", lt)
 	})
 
 	tableBuilderFunc(state, t, "freeze", func(state *golua.LState, t *golua.LTable) {
 		col := state.CheckNumber(-2)
 		row := state.CheckNumber(-1)
 		pt := state.NewTable()
-		state.SetTable(pt, golua.LString("col"), col)
-		state.SetTable(pt, golua.LString("row"), row)
+		pt.RawSetString("col", col)
+		pt.RawSetString("row", row)
 
-		ft := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+		ft := t.RawGetString("__freeze").(*golua.LTable)
 		ft.Append(pt)
 	})
 
@@ -8341,40 +8342,40 @@ func treeTableTable(state *golua.LState) *golua.LTable {
 func treeTableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	tb := g.TreeTable()
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		tb.Flags(g.TableFlags(flags.(golua.LNumber)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		tb.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	freeze := state.GetTable(t, golua.LString("__freeze")).(*golua.LTable)
+	freeze := t.RawGetString("__freeze").(*golua.LTable)
 	for i := range freeze.Len() {
-		pt := state.GetTable(freeze, golua.LNumber(i+1)).(*golua.LTable)
-		col := state.GetTable(pt, golua.LString("col")).(golua.LNumber)
-		row := state.GetTable(pt, golua.LString("row")).(golua.LNumber)
+		pt := freeze.RawGetInt(i + 1).(*golua.LTable)
+		col := pt.RawGetString("col").(golua.LNumber)
+		row := pt.RawGetString("row").(golua.LNumber)
 
 		tb.Freeze(int(col), int(row))
 	}
 
-	columns := state.GetTable(t, golua.LString("__columns"))
+	columns := t.RawGetString("__columns")
 	if columns.Type() == golua.LTTable {
-		wd := parseWidgets(parseTable(columns.(*golua.LTable), state), state, lg)
+		wd := parseWidgets(parseTable(columns.(*golua.LTable)), state, lg)
 		wdi := []*g.TableColumnWidget{}
 		for _, w := range wd {
-			i := tableColumnBuild(state, w)
+			i := tableColumnBuild(w)
 			wdi = append(wdi, i)
 		}
 		tb.Columns(wdi...)
 	}
 
-	rows := state.GetTable(t, golua.LString("__rows"))
+	rows := t.RawGetString("__rows")
 	if rows.Type() == golua.LTTable {
-		wd := parseWidgets(parseTable(rows.(*golua.LTable), state), state, lg)
+		wd := parseWidgets(parseTable(rows.(*golua.LTable)), state, lg)
 		wdi := []*g.TreeTableRowWidget{}
 		for _, w := range wd {
 			i := treeTableRowBuild(r, lg, state, w)
@@ -8402,62 +8403,62 @@ func windowTable(r *lua.Runner, lg *log.Logger, state *golua.LState, single bool
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_WINDOW_SINGLE))
-	state.SetTable(t, golua.LString("single"), golua.LBool(single))
-	state.SetTable(t, golua.LString("menubar"), golua.LBool(menubar))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__front"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__open"), golua.LNil)
-	state.SetTable(t, golua.LString("__posx"), golua.LNil)
-	state.SetTable(t, golua.LString("__posy"), golua.LNil)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__ready"), golua.LNil)
-	state.SetTable(t, golua.LString("__shortcuts"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_WINDOW_SINGLE))
+	t.RawSetString("single", golua.LBool(single))
+	t.RawSetString("menubar", golua.LBool(menubar))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__front", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__open", golua.LNil)
+	t.RawSetString("__posx", golua.LNil)
+	t.RawSetString("__posy", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__ready", golua.LNil)
+	t.RawSetString("__shortcuts", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "pos", func(state *golua.LState, t *golua.LTable) {
 		posx := state.CheckNumber(-2)
 		posy := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__posx"), posx)
-		state.SetTable(t, golua.LString("__posy"), posy)
+		t.RawSetString("__posx", posx)
+		t.RawSetString("__posy", posy)
 	})
 
 	tableBuilderFunc(state, t, "is_open", func(state *golua.LState, t *golua.LTable) {
 		open := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__open"), open)
+		t.RawSetString("__open", open)
 	})
 
 	tableBuilderFunc(state, t, "bring_to_front", func(state *golua.LState, t *golua.LTable) {
-		state.SetTable(t, golua.LString("__front"), golua.LTrue)
+		t.RawSetString("__front", golua.LTrue)
 	})
 
 	tableBuilderFunc(state, t, "ready", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__ready"), fn)
+		t.RawSetString("__ready", fn)
 	})
 
 	tableBuilderFunc(state, t, "register_keyboard_shortcuts", func(state *golua.LState, t *golua.LTable) {
 		st := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__shortcuts"), st)
+		t.RawSetString("__shortcuts", st)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 		windowBuild(r, lg, state, t)
 	})
 
@@ -8467,44 +8468,44 @@ func windowTable(r *lua.Runner, lg *log.Logger, state *golua.LState, single bool
 func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) *g.WindowWidget {
 	var w *g.WindowWidget
 
-	single := state.GetTable(t, golua.LString("single")).(golua.LBool)
+	single := t.RawGetString("single").(golua.LBool)
 	if single {
-		menubar := state.GetTable(t, golua.LString("menubar")).(golua.LBool)
+		menubar := t.RawGetString("menubar").(golua.LBool)
 		if menubar {
 			w = g.SingleWindowWithMenuBar()
 		} else {
 			w = g.SingleWindow()
 		}
 	} else {
-		label := state.GetTable(t, golua.LString("label")).(golua.LString)
+		label := t.RawGetString("label").(golua.LString)
 		w = g.Window(string(label))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		w.Flags(g.WindowFlags(flags.(golua.LNumber)))
 	}
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		w.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	posx := state.GetTable(t, golua.LString("__posx"))
-	posy := state.GetTable(t, golua.LString("__posy"))
+	posx := t.RawGetString("__posx")
+	posy := t.RawGetString("__posy")
 	if posx.Type() == golua.LTNumber && posy.Type() == golua.LTNumber {
 		w.Pos(float32(posx.(golua.LNumber)), float32(posy.(golua.LNumber)))
 	}
 
-	front := state.GetTable(t, golua.LString("__front"))
+	front := t.RawGetString("__front")
 	if front.Type() == golua.LTBool {
 		if front.(golua.LBool) {
 			w.BringToFront()
 		}
 	}
 
-	open := state.GetTable(t, golua.LString("__open"))
+	open := t.RawGetString("__open")
 	if open.Type() == golua.LTNumber {
 		ref, err := r.CR_REF.Item(int(open.(golua.LNumber)))
 		if err != nil {
@@ -8517,11 +8518,11 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 	/// @method current_position() x, y
 	/// @method current_size() width, height
 	/// @method has_focus() bool
-	ready := state.GetTable(t, golua.LString("__ready"))
+	ready := t.RawGetString("__ready")
 	if ready.Type() == golua.LTFunction {
 		fnt := state.NewTable()
 
-		state.SetTable(fnt, golua.LString("current_position"), state.NewFunction(func(state *golua.LState) int {
+		fnt.RawSetString("current_position", state.NewFunction(func(state *golua.LState) int {
 			x, y := w.CurrentPosition()
 
 			state.Push(golua.LNumber(x))
@@ -8529,7 +8530,7 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 			return 2
 		}))
 
-		state.SetTable(fnt, golua.LString("current_size"), state.NewFunction(func(state *golua.LState) int {
+		fnt.RawSetString("current_size", state.NewFunction(func(state *golua.LState) int {
 			w, h := w.CurrentSize()
 
 			state.Push(golua.LNumber(w))
@@ -8537,7 +8538,7 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 			return 2
 		}))
 
-		state.SetTable(fnt, golua.LString("has_focus"), state.NewFunction(func(state *golua.LState) int {
+		fnt.RawSetString("has_focus", state.NewFunction(func(state *golua.LState) int {
 			f := w.HasFocus()
 
 			state.Push(golua.LBool(f))
@@ -8549,16 +8550,16 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 		state.Call(1, 0)
 	}
 
-	shortcuts := state.GetTable(t, golua.LString("__shortcuts"))
+	shortcuts := t.RawGetString("__shortcuts")
 	if shortcuts.Type() == golua.LTTable {
 		stList := []g.WindowShortcut{}
 		st := shortcuts.(*golua.LTable)
 		for i := range st.Len() {
-			s := state.GetTable(st, golua.LNumber(i+1)).(*golua.LTable)
+			s := st.RawGetInt(i + 1).(*golua.LTable)
 
-			key := state.GetTable(s, golua.LString("key")).(golua.LNumber)
-			mod := state.GetTable(s, golua.LString("mod")).(golua.LNumber)
-			callback := state.GetTable(s, golua.LString("callback"))
+			key := s.RawGetString("key").(golua.LNumber)
+			mod := s.RawGetString("mod").(golua.LNumber)
+			callback := s.RawGetString("callback")
 
 			shortcut := g.WindowShortcut{
 				Key:      g.Key(key),
@@ -8575,9 +8576,9 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 		w.RegisterKeyboardShortcuts(stList...)
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		w.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		w.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return w
@@ -8592,35 +8593,35 @@ func popupModalTable(state *golua.LState, label string) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_POPUP_MODAL))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__open"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_POPUP_MODAL))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__open", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "is_open", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__open"), flags)
+		t.RawSetString("__open", flags)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func popupModalBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	m := g.PopupModal(string(label))
 
-	open := state.GetTable(t, golua.LString("__open"))
+	open := t.RawGetString("__open")
 	if open.Type() == golua.LTNumber {
 		ref, err := r.CR_REF.Item(int(open.(golua.LNumber)))
 		if err != nil {
@@ -8629,12 +8630,12 @@ func popupModalBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		m.IsOpen(ref.Value.(*bool))
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		m.Flags(g.WindowFlags(flags.(golua.LNumber)))
 	}
@@ -8650,34 +8651,34 @@ func popupTable(state *golua.LState, label string) *golua.LTable {
 	/// @method layout([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_POPUP))
-	state.SetTable(t, golua.LString("label"), golua.LString(label))
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_POPUP))
+	t.RawSetString("label", golua.LString(label))
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "layout", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func popupBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	label := t.RawGetString("label").(golua.LString)
 	m := g.Popup(string(label))
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		m.Layout(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		m.Flags(g.WindowFlags(flags.(golua.LNumber)))
 	}
@@ -8695,25 +8696,25 @@ func splitLayoutTable(state *golua.LState, direction, floatref int, layout1 golu
 	/// @method border(bool)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_LAYOUT_SPLIT))
-	state.SetTable(t, golua.LString("direction"), golua.LNumber(direction))
-	state.SetTable(t, golua.LString("floatref"), golua.LNumber(floatref))
-	state.SetTable(t, golua.LString("layout1"), layout1)
-	state.SetTable(t, golua.LString("layout2"), layout2)
-	state.SetTable(t, golua.LString("__border"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_LAYOUT_SPLIT))
+	t.RawSetString("direction", golua.LNumber(direction))
+	t.RawSetString("floatref", golua.LNumber(floatref))
+	t.RawSetString("layout1", layout1)
+	t.RawSetString("layout2", layout2)
+	t.RawSetString("__border", golua.LNil)
 
 	tableBuilderFunc(state, t, "border", func(state *golua.LState, t *golua.LTable) {
 		border := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__border"), golua.LBool(border))
+		t.RawSetString("__border", golua.LBool(border))
 	})
 
 	return t
 }
 
 func splitLayoutBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	direction := state.GetTable(t, golua.LString("direction")).(golua.LNumber)
+	direction := t.RawGetString("direction").(golua.LNumber)
 
-	floatref := state.GetTable(t, golua.LString("floatref"))
+	floatref := t.RawGetString("floatref")
 	ref, err := r.CR_REF.Item(int(floatref.(golua.LNumber)))
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -8721,20 +8722,20 @@ func splitLayoutBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 	pos := ref.Value.(*float32)
 
 	var widgets1 []g.Widget
-	wid1 := state.GetTable(t, golua.LString("layout1"))
+	wid1 := t.RawGetString("layout1")
 	if wid1.Type() == golua.LTTable {
-		widgets1 = layoutBuild(r, state, parseWidgets(parseTable(wid1.(*golua.LTable), state), state, lg), lg)
+		widgets1 = layoutBuild(r, state, parseWidgets(parseTable(wid1.(*golua.LTable)), state, lg), lg)
 	}
 
 	var widgets2 []g.Widget
-	wid2 := state.GetTable(t, golua.LString("layout2"))
+	wid2 := t.RawGetString("layout2")
 	if wid2.Type() == golua.LTTable {
-		widgets2 = layoutBuild(r, state, parseWidgets(parseTable(wid2.(*golua.LTable), state), state, lg), lg)
+		widgets2 = layoutBuild(r, state, parseWidgets(parseTable(wid2.(*golua.LTable)), state, lg), lg)
 	}
 
 	s := g.SplitLayout(g.SplitDirection(direction), pos, g.Layout(widgets1), g.Layout(widgets2))
 
-	border := state.GetTable(t, golua.LString("__border"))
+	border := t.RawGetString("__border")
 	if border.Type() == golua.LTBool {
 		s.Border(bool(border.(golua.LBool)))
 	}
@@ -8750,26 +8751,26 @@ func splitterTable(state *golua.LState, direction, floatref int) *golua.LTable {
 	/// @method size(width, height)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_SPLITTER))
-	state.SetTable(t, golua.LString("direction"), golua.LNumber(direction))
-	state.SetTable(t, golua.LString("floatref"), golua.LNumber(floatref))
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_SPLITTER))
+	t.RawSetString("direction", golua.LNumber(direction))
+	t.RawSetString("floatref", golua.LNumber(floatref))
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	return t
 }
 
 func splitterBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	direction := state.GetTable(t, golua.LString("direction")).(golua.LNumber)
+	direction := t.RawGetString("direction").(golua.LNumber)
 
-	floatref := state.GetTable(t, golua.LString("floatref"))
+	floatref := t.RawGetString("floatref")
 	ref, err := r.CR_REF.Item(int(floatref.(golua.LNumber)))
 	if err != nil {
 		state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
@@ -8778,8 +8779,8 @@ func splitterBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 
 	s := g.Splitter(g.SplitDirection(direction), pos)
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		s.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
@@ -8794,20 +8795,20 @@ func stackTable(state *golua.LState, visible int, widgets golua.LValue) *golua.L
 	/// @prop widgets
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_STACK))
-	state.SetTable(t, golua.LString("visible"), golua.LNumber(visible))
-	state.SetTable(t, golua.LString("widgets"), widgets)
+	t.RawSetString("type", golua.LString(WIDGET_STACK))
+	t.RawSetString("visible", golua.LNumber(visible))
+	t.RawSetString("widgets", widgets)
 
 	return t
 }
 
 func stackBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	visible := state.GetTable(t, golua.LString("visible")).(golua.LNumber)
+	visible := t.RawGetString("visible").(golua.LNumber)
 
 	var widgets []g.Widget
-	wid1 := state.GetTable(t, golua.LString("widgets"))
+	wid1 := t.RawGetString("widgets")
 	if wid1.Type() == golua.LTTable {
-		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid1.(*golua.LTable), state), state, lg), lg)
+		widgets = layoutBuild(r, state, parseWidgets(parseTable(wid1.(*golua.LTable)), state, lg), lg)
 	}
 
 	s := g.Stack(int32(visible), widgets...)
@@ -8822,25 +8823,25 @@ func alignTable(state *golua.LState, at int) *golua.LTable {
 	/// @method to([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_ALIGN))
-	state.SetTable(t, golua.LString("at"), golua.LNumber(at))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_ALIGN))
+	t.RawSetString("at", golua.LNumber(at))
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "to", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func alignBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	at := state.GetTable(t, golua.LString("at")).(golua.LNumber)
+	at := t.RawGetString("at").(golua.LNumber)
 	a := g.Align(g.AlignmentType(at))
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		a.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		a.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return a
@@ -8855,20 +8856,20 @@ func msgBoxTable(state *golua.LState, title, content string) *golua.LTable {
 	/// @method result_callback(callback(bool))
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MSG_BOX))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("content"), golua.LString(content))
-	state.SetTable(t, golua.LString("__buttons"), golua.LNil)
-	state.SetTable(t, golua.LString("__callback"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_MSG_BOX))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("content", golua.LString(content))
+	t.RawSetString("__buttons", golua.LNil)
+	t.RawSetString("__callback", golua.LNil)
 
 	tableBuilderFunc(state, t, "buttons", func(state *golua.LState, t *golua.LTable) {
 		b := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__buttons"), b)
+		t.RawSetString("__buttons", b)
 	})
 
 	tableBuilderFunc(state, t, "result_callback", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__callback"), fn)
+		t.RawSetString("__callback", fn)
 	})
 
 	tableBuilderFunc(state, t, "build", func(state *golua.LState, t *golua.LTable) {
@@ -8879,16 +8880,16 @@ func msgBoxTable(state *golua.LState, title, content string) *golua.LTable {
 }
 
 func msgBoxBuild(state *golua.LState, t *golua.LTable) *g.MsgboxWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	content := state.GetTable(t, golua.LString("content")).(golua.LString)
+	title := t.RawGetString("title").(golua.LString)
+	content := t.RawGetString("content").(golua.LString)
 	m := g.Msgbox(string(title), string(content))
 
-	buttons := state.GetTable(t, golua.LString("__buttons"))
+	buttons := t.RawGetString("__buttons")
 	if buttons.Type() == golua.LTNumber {
 		m.Buttons(g.MsgboxButtons(buttons.(golua.LNumber)))
 	}
 
-	callback := state.GetTable(t, golua.LString("__callback"))
+	callback := t.RawGetString("__callback")
 	if callback.Type() == golua.LTFunction {
 		m.ResultCallback(func(dr g.DialogResult) {
 			state.Push(callback)
@@ -8907,7 +8908,7 @@ func msgBoxPrepareTable(state *golua.LState) *golua.LTable {
 	/// this is used internally with gui.prepare_msg_box()
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_MSG_BOX_PREPARE))
+	t.RawSetString("type", golua.LString(WIDGET_MSG_BOX_PREPARE))
 
 	return t
 }
@@ -8923,21 +8924,21 @@ func buttonInvisibleTable(state *golua.LState) *golua.LTable {
 	/// @method on_click(callback())
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_INVISIBLE))
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_BUTTON_INVISIBLE))
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__click", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	return t
@@ -8946,13 +8947,13 @@ func buttonInvisibleTable(state *golua.LState) *golua.LTable {
 func buttonInvisibleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	b := g.InvisibleButton()
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		b.OnClick(func() {
 			state.Push(click)
@@ -8976,60 +8977,60 @@ func buttonImageTable(state *golua.LState, id int, sync bool) *golua.LTable {
 	/// @method uv(uv0 point, uv1 point)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_BUTTON_IMAGE))
-	state.SetTable(t, golua.LString("id"), golua.LNumber(id))
-	state.SetTable(t, golua.LString("sync"), golua.LBool(sync))
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__click"), golua.LNil)
-	state.SetTable(t, golua.LString("__bgcolor"), golua.LNil)
-	state.SetTable(t, golua.LString("__padding"), golua.LNil)
-	state.SetTable(t, golua.LString("__tint"), golua.LNil)
-	state.SetTable(t, golua.LString("__uv0"), golua.LNil)
-	state.SetTable(t, golua.LString("__uv1"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_BUTTON_IMAGE))
+	t.RawSetString("id", golua.LNumber(id))
+	t.RawSetString("sync", golua.LBool(sync))
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__click", golua.LNil)
+	t.RawSetString("__bgcolor", golua.LNil)
+	t.RawSetString("__padding", golua.LNil)
+	t.RawSetString("__tint", golua.LNil)
+	t.RawSetString("__uv0", golua.LNil)
+	t.RawSetString("__uv1", golua.LNil)
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__click"), fn)
+		t.RawSetString("__click", fn)
 	})
 
 	tableBuilderFunc(state, t, "bg_color", func(state *golua.LState, t *golua.LTable) {
 		tc := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__bgcolor"), tc)
+		t.RawSetString("__bgcolor", tc)
 	})
 
 	tableBuilderFunc(state, t, "tint_color", func(state *golua.LState, t *golua.LTable) {
 		tc := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__tint"), tc)
+		t.RawSetString("__tint", tc)
 	})
 
 	tableBuilderFunc(state, t, "frame_padding", func(state *golua.LState, t *golua.LTable) {
 		n := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__padding"), n)
+		t.RawSetString("__padding", n)
 	})
 
 	tableBuilderFunc(state, t, "uv", func(state *golua.LState, t *golua.LTable) {
 		uv0 := state.CheckTable(-2)
 		uv1 := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__uv0"), uv0)
-		state.SetTable(t, golua.LString("__uv1"), uv1)
+		t.RawSetString("__uv0", uv0)
+		t.RawSetString("__uv1", uv1)
 	})
 
 	return t
 }
 
 func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	ig := state.GetTable(t, golua.LString("id")).(golua.LNumber)
+	ig := t.RawGetString("id").(golua.LNumber)
 	var img image.Image
 
-	sync := state.GetTable(t, golua.LString("sync")).(golua.LBool)
+	sync := t.RawGetString("sync").(golua.LBool)
 
 	if !sync {
 		<-r.IC.Schedule(int(ig), &collection.Task[collection.ItemImage]{
@@ -9053,13 +9054,13 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 
 	b := g.ImageButtonWithRgba(img)
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		b.Size(float32(width.(golua.LNumber)), float32(height.(golua.LNumber)))
 	}
 
-	click := state.GetTable(t, golua.LString("__click"))
+	click := t.RawGetString("__click")
 	if click.Type() == golua.LTFunction {
 		b.OnClick(func() {
 			state.Push(click)
@@ -9067,25 +9068,25 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 		})
 	}
 
-	bgcolor := state.GetTable(t, golua.LString("__bgcolor"))
+	bgcolor := t.RawGetString("__bgcolor")
 	if bgcolor.Type() == golua.LTTable {
 		rgba := imageutil.TableToRGBA(state, bgcolor.(*golua.LTable))
 		b.BgColor(rgba)
 	}
 
-	tint := state.GetTable(t, golua.LString("__tint"))
+	tint := t.RawGetString("__tint")
 	if tint.Type() == golua.LTTable {
 		rgba := imageutil.TableToRGBA(state, tint.(*golua.LTable))
 		b.TintColor(rgba)
 	}
 
-	padding := state.GetTable(t, golua.LString("__padding"))
+	padding := t.RawGetString("__padding")
 	if padding.Type() == golua.LTNumber {
 		b.FramePadding(int(padding.(golua.LNumber)))
 	}
 
-	uv0 := state.GetTable(t, golua.LString("__uv0"))
-	uv1 := state.GetTable(t, golua.LString("__uv1"))
+	uv0 := t.RawGetString("__uv0")
+	uv1 := t.RawGetString("__uv1")
 	if uv0.Type() == golua.LTTable && uv1.Type() == golua.LTTable {
 		p1 := imageutil.TableToPoint(state, uv0.(*golua.LTable))
 		p2 := imageutil.TableToPoint(state, uv1.(*golua.LTable))
@@ -9108,38 +9109,38 @@ func styleTable(state *golua.LState) *golua.LTable {
 	/// @method font(fontref)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_STYLE))
-	state.SetTable(t, golua.LString("__disabled"), golua.LNil)
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
-	state.SetTable(t, golua.LString("__fontsize"), golua.LNil)
-	state.SetTable(t, golua.LString("__colors"), state.NewTable())
-	state.SetTable(t, golua.LString("__styles"), state.NewTable())
-	state.SetTable(t, golua.LString("__stylesfloat"), state.NewTable())
-	state.SetTable(t, golua.LString("__font"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_STYLE))
+	t.RawSetString("__disabled", golua.LNil)
+	t.RawSetString("__widgets", golua.LNil)
+	t.RawSetString("__fontsize", golua.LNil)
+	t.RawSetString("__colors", state.NewTable())
+	t.RawSetString("__styles", state.NewTable())
+	t.RawSetString("__stylesfloat", state.NewTable())
+	t.RawSetString("__font", golua.LNil)
 
 	tableBuilderFunc(state, t, "set_disabled", func(state *golua.LState, t *golua.LTable) {
 		d := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__disabled"), golua.LBool(d))
+		t.RawSetString("__disabled", golua.LBool(d))
 	})
 
 	tableBuilderFunc(state, t, "to", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	tableBuilderFunc(state, t, "set_font_size", func(state *golua.LState, t *golua.LTable) {
 		fnt := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__fontsize"), fnt)
+		t.RawSetString("__fontsize", fnt)
 	})
 
 	tableBuilderFunc(state, t, "set_color", func(state *golua.LState, t *golua.LTable) {
 		cid := state.CheckNumber(-2)
 		col := state.CheckTable(-1)
 		ct := state.NewTable()
-		state.SetTable(ct, golua.LString("colorid"), cid)
-		state.SetTable(ct, golua.LString("color"), col)
+		ct.RawSetString("colorid", cid)
+		ct.RawSetString("color", col)
 
-		ft := state.GetTable(t, golua.LString("__colors")).(*golua.LTable)
+		ft := t.RawGetString("__colors").(*golua.LTable)
 		ft.Append(ct)
 	})
 
@@ -9148,11 +9149,11 @@ func styleTable(state *golua.LState) *golua.LTable {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
 		st := state.NewTable()
-		state.SetTable(st, golua.LString("styleid"), sid)
-		state.SetTable(st, golua.LString("width"), width)
-		state.SetTable(st, golua.LString("height"), height)
+		st.RawSetString("styleid", sid)
+		st.RawSetString("width", width)
+		st.RawSetString("height", height)
 
-		ft := state.GetTable(t, golua.LString("__styles")).(*golua.LTable)
+		ft := t.RawGetString("__styles").(*golua.LTable)
 		ft.Append(st)
 	})
 
@@ -9160,16 +9161,16 @@ func styleTable(state *golua.LState) *golua.LTable {
 		sid := state.CheckNumber(-2)
 		float := state.CheckNumber(-1)
 		st := state.NewTable()
-		state.SetTable(st, golua.LString("styleid"), sid)
-		state.SetTable(st, golua.LString("float"), float)
+		st.RawSetString("styleid", sid)
+		st.RawSetString("float", float)
 
-		ft := state.GetTable(t, golua.LString("__stylesfloat")).(*golua.LTable)
+		ft := t.RawGetString("__stylesfloat").(*golua.LTable)
 		ft.Append(st)
 	})
 
 	tableBuilderFunc(state, t, "font", func(state *golua.LState, t *golua.LTable) {
 		v := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__font"), v)
+		t.RawSetString("__font", v)
 	})
 
 	return t
@@ -9178,46 +9179,46 @@ func styleTable(state *golua.LState) *golua.LTable {
 func styleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	s := g.Style()
 
-	disabled := state.GetTable(t, golua.LString("__disabled"))
+	disabled := t.RawGetString("__disabled")
 	if disabled.Type() == golua.LTBool {
 		s.SetDisabled(bool(disabled.(golua.LBool)))
 	}
 
-	fontsize := state.GetTable(t, golua.LString("__fontsize"))
+	fontsize := t.RawGetString("__fontsize")
 	if fontsize.Type() == golua.LTNumber {
 		s.SetFontSize(float32(fontsize.(golua.LNumber)))
 	}
 
-	colors := state.GetTable(t, golua.LString("__colors")).(*golua.LTable)
+	colors := t.RawGetString("__colors").(*golua.LTable)
 	for i := range colors.Len() {
-		ct := state.GetTable(colors, golua.LNumber(i+1)).(*golua.LTable)
-		cid := state.GetTable(ct, golua.LString("colorid")).(golua.LNumber)
-		col := state.GetTable(ct, golua.LString("color")).(*golua.LTable)
+		ct := colors.RawGetInt(i + 1).(*golua.LTable)
+		cid := ct.RawGetString("colorid").(golua.LNumber)
+		col := ct.RawGetString("color").(*golua.LTable)
 
 		rgba := imageutil.TableToRGBA(state, col)
 		s.SetColor(g.StyleColorID(cid), rgba)
 	}
 
-	styles := state.GetTable(t, golua.LString("__styles")).(*golua.LTable)
+	styles := t.RawGetString("__styles").(*golua.LTable)
 	for i := range styles.Len() {
-		st := state.GetTable(styles, golua.LNumber(i+1)).(*golua.LTable)
-		sid := state.GetTable(st, golua.LString("styleid")).(golua.LNumber)
-		width := state.GetTable(st, golua.LString("width")).(golua.LNumber)
-		height := state.GetTable(st, golua.LString("height")).(golua.LNumber)
+		st := styles.RawGetInt(i + 1).(*golua.LTable)
+		sid := st.RawGetString("styleid").(golua.LNumber)
+		width := st.RawGetString("width").(golua.LNumber)
+		height := st.RawGetString("height").(golua.LNumber)
 
 		s.SetStyle(g.StyleVarID(sid), float32(width), float32(height))
 	}
 
-	stylesfloat := state.GetTable(t, golua.LString("__stylesfloat")).(*golua.LTable)
+	stylesfloat := t.RawGetString("__stylesfloat").(*golua.LTable)
 	for i := range stylesfloat.Len() {
-		st := state.GetTable(stylesfloat, golua.LNumber(i+1)).(*golua.LTable)
-		sid := state.GetTable(st, golua.LString("styleid")).(golua.LNumber)
-		float := state.GetTable(st, golua.LString("float")).(golua.LNumber)
+		st := stylesfloat.RawGetInt(i + 1).(*golua.LTable)
+		sid := st.RawGetString("styleid").(golua.LNumber)
+		float := st.RawGetString("float").(golua.LNumber)
 
 		s.SetStyleFloat(g.StyleVarID(sid), float32(float))
 	}
 
-	fontref := state.GetTable(t, golua.LString("__font"))
+	fontref := t.RawGetString("__font")
 	if fontref.Type() == golua.LTNumber {
 		ref := int(fontref.(golua.LNumber))
 		sref, err := r.CR_REF.Item(ref)
@@ -9229,9 +9230,9 @@ func styleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 		s.SetFont(font)
 	}
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		s.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		s.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return s
@@ -9243,14 +9244,14 @@ func customTable(state *golua.LState, builder *golua.LFunction) *golua.LTable {
 	/// @prop builder
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CUSTOM))
-	state.SetTable(t, golua.LString("builder"), builder)
+	t.RawSetString("type", golua.LString(WIDGET_CUSTOM))
+	t.RawSetString("builder", builder)
 
 	return t
 }
 
 func customBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	builder := state.GetTable(t, golua.LString("builder")).(*golua.LFunction)
+	builder := t.RawGetString("builder").(*golua.LFunction)
 
 	c := g.Custom(func() {
 		state.Push(builder)
@@ -9276,47 +9277,47 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 	/// @method on_mouse_released(key, callback())
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_EVENT_HANDLER))
-	state.SetTable(t, golua.LString("__activate"), golua.LNil)
-	state.SetTable(t, golua.LString("__active"), golua.LNil)
-	state.SetTable(t, golua.LString("__deactivate"), golua.LNil)
-	state.SetTable(t, golua.LString("__hover"), golua.LNil)
-	state.SetTable(t, golua.LString("__click"), state.NewTable())
-	state.SetTable(t, golua.LString("__dclick"), state.NewTable())
-	state.SetTable(t, golua.LString("__keydown"), state.NewTable())
-	state.SetTable(t, golua.LString("__keypressed"), state.NewTable())
-	state.SetTable(t, golua.LString("__keyreleased"), state.NewTable())
-	state.SetTable(t, golua.LString("__mousedown"), state.NewTable())
-	state.SetTable(t, golua.LString("__mousereleased"), state.NewTable())
+	t.RawSetString("type", golua.LString(WIDGET_EVENT_HANDLER))
+	t.RawSetString("__activate", golua.LNil)
+	t.RawSetString("__active", golua.LNil)
+	t.RawSetString("__deactivate", golua.LNil)
+	t.RawSetString("__hover", golua.LNil)
+	t.RawSetString("__click", state.NewTable())
+	t.RawSetString("__dclick", state.NewTable())
+	t.RawSetString("__keydown", state.NewTable())
+	t.RawSetString("__keypressed", state.NewTable())
+	t.RawSetString("__keyreleased", state.NewTable())
+	t.RawSetString("__mousedown", state.NewTable())
+	t.RawSetString("__mousereleased", state.NewTable())
 
 	tableBuilderFunc(state, t, "on_activate", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__activate"), fn)
+		t.RawSetString("__activate", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_active", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__active"), fn)
+		t.RawSetString("__active", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_deactivate", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__deactivate"), fn)
+		t.RawSetString("__deactivate", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_hover", func(state *golua.LState, t *golua.LTable) {
 		fn := state.CheckFunction(-1)
-		state.SetTable(t, golua.LString("__hover"), fn)
+		t.RawSetString("__hover", fn)
 	})
 
 	tableBuilderFunc(state, t, "on_click", func(state *golua.LState, t *golua.LTable) {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__click")).(*golua.LTable)
+		ft := t.RawGetString("__click").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9324,10 +9325,10 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__dclick")).(*golua.LTable)
+		ft := t.RawGetString("__dclick").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9335,10 +9336,10 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__keydown")).(*golua.LTable)
+		ft := t.RawGetString("__keydown").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9346,10 +9347,10 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__keypressed")).(*golua.LTable)
+		ft := t.RawGetString("__keypressed").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9357,10 +9358,10 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__keyreleased")).(*golua.LTable)
+		ft := t.RawGetString("__keyreleased").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9368,10 +9369,10 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__mousedown")).(*golua.LTable)
+		ft := t.RawGetString("__mousedown").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9379,10 +9380,10 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 		key := state.CheckNumber(-2)
 		cb := state.CheckFunction(-1)
 		ev := state.NewTable()
-		state.SetTable(ev, golua.LString("key"), key)
-		state.SetTable(ev, golua.LString("callback"), cb)
+		ev.RawSetString("key", key)
+		ev.RawSetString("callback", cb)
 
-		ft := state.GetTable(t, golua.LString("__mousereleased")).(*golua.LTable)
+		ft := t.RawGetString("__mousereleased").(*golua.LTable)
 		ft.Append(ev)
 	})
 
@@ -9392,7 +9393,7 @@ func eventHandlerTable(state *golua.LState) *golua.LTable {
 func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	e := g.Event()
 
-	activate := state.GetTable(t, golua.LString("__activate"))
+	activate := t.RawGetString("__activate")
 	if activate.Type() == golua.LTFunction {
 		e.OnActivate(func() {
 			state.Push(activate)
@@ -9400,7 +9401,7 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	active := state.GetTable(t, golua.LString("__active"))
+	active := t.RawGetString("__active")
 	if active.Type() == golua.LTFunction {
 		e.OnActive(func() {
 			state.Push(active)
@@ -9408,7 +9409,7 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	deactivate := state.GetTable(t, golua.LString("__deactivate"))
+	deactivate := t.RawGetString("__deactivate")
 	if deactivate.Type() == golua.LTFunction {
 		e.OnDeactivate(func() {
 			state.Push(deactivate)
@@ -9416,7 +9417,7 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	hover := state.GetTable(t, golua.LString("__hover"))
+	hover := t.RawGetString("__hover")
 	if hover.Type() == golua.LTFunction {
 		e.OnHover(func() {
 			state.Push(hover)
@@ -9424,11 +9425,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	click := state.GetTable(t, golua.LString("__click")).(*golua.LTable)
+	click := t.RawGetString("__click").(*golua.LTable)
 	for i := range click.Len() {
-		events := state.GetTable(click, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := click.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnClick(g.MouseButton(key), func() {
 			state.Push(callback)
@@ -9436,11 +9437,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	dclick := state.GetTable(t, golua.LString("__dclick")).(*golua.LTable)
+	dclick := t.RawGetString("__dclick").(*golua.LTable)
 	for i := range dclick.Len() {
-		events := state.GetTable(dclick, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := dclick.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnDClick(g.MouseButton(key), func() {
 			state.Push(callback)
@@ -9448,11 +9449,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	keydown := state.GetTable(t, golua.LString("__keydown")).(*golua.LTable)
+	keydown := t.RawGetString("__keydown").(*golua.LTable)
 	for i := range keydown.Len() {
-		events := state.GetTable(keydown, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := keydown.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnKeyDown(g.Key(key), func() {
 			state.Push(callback)
@@ -9460,11 +9461,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	keypressed := state.GetTable(t, golua.LString("__keypressed")).(*golua.LTable)
+	keypressed := t.RawGetString("__keypressed").(*golua.LTable)
 	for i := range keypressed.Len() {
-		events := state.GetTable(keypressed, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := keypressed.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnKeyPressed(g.Key(key), func() {
 			state.Push(callback)
@@ -9472,11 +9473,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	keyreleased := state.GetTable(t, golua.LString("__keyreleased")).(*golua.LTable)
+	keyreleased := t.RawGetString("__keyreleased").(*golua.LTable)
 	for i := range keyreleased.Len() {
-		events := state.GetTable(keyreleased, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := keyreleased.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnKeyReleased(g.Key(key), func() {
 			state.Push(callback)
@@ -9484,11 +9485,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	mousedown := state.GetTable(t, golua.LString("__mousedown")).(*golua.LTable)
+	mousedown := t.RawGetString("__mousedown").(*golua.LTable)
 	for i := range mousedown.Len() {
-		events := state.GetTable(mousedown, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := mousedown.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnMouseDown(g.MouseButton(key), func() {
 			state.Push(callback)
@@ -9496,11 +9497,11 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 		})
 	}
 
-	mousereleased := state.GetTable(t, golua.LString("__mousereleased")).(*golua.LTable)
+	mousereleased := t.RawGetString("__mousereleased").(*golua.LTable)
 	for i := range mousereleased.Len() {
-		events := state.GetTable(mousereleased, golua.LNumber(i+1)).(*golua.LTable)
-		key := state.GetTable(events, golua.LString("key")).(golua.LNumber)
-		callback := state.GetTable(events, golua.LString("callback")).(*golua.LFunction)
+		events := mousereleased.RawGetInt(i + 1).(*golua.LTable)
+		key := events.RawGetString("key").(golua.LNumber)
+		callback := events.RawGetString("callback").(*golua.LFunction)
 
 		e.OnMouseReleased(g.MouseButton(key), func() {
 			state.Push(callback)
@@ -9527,26 +9528,26 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 	/// @method plots([]plots)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_PLOT))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("__xmin"), golua.LNil)
-	state.SetTable(t, golua.LString("__xmax"), golua.LNil)
-	state.SetTable(t, golua.LString("__ymin"), golua.LNil)
-	state.SetTable(t, golua.LString("__ymax"), golua.LNil)
-	state.SetTable(t, golua.LString("__cond"), golua.LNil)
-	state.SetTable(t, golua.LString("__flags"), golua.LNil)
-	state.SetTable(t, golua.LString("__xlabels"), state.NewTable())
-	state.SetTable(t, golua.LString("__ylabels"), state.NewTable())
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__xaxeflags"), golua.LNil)
-	state.SetTable(t, golua.LString("__xticks"), golua.LNil)
-	state.SetTable(t, golua.LString("__xaticksdefault"), golua.LNil)
-	state.SetTable(t, golua.LString("__yaxeflags1"), golua.LNil)
-	state.SetTable(t, golua.LString("__yaxeflags2"), golua.LNil)
-	state.SetTable(t, golua.LString("__yaxeflags3"), golua.LNil)
-	state.SetTable(t, golua.LString("__yticks"), state.NewTable())
-	state.SetTable(t, golua.LString("__plots"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_PLOT))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("__xmin", golua.LNil)
+	t.RawSetString("__xmax", golua.LNil)
+	t.RawSetString("__ymin", golua.LNil)
+	t.RawSetString("__ymax", golua.LNil)
+	t.RawSetString("__cond", golua.LNil)
+	t.RawSetString("__flags", golua.LNil)
+	t.RawSetString("__xlabels", state.NewTable())
+	t.RawSetString("__ylabels", state.NewTable())
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__xaxeflags", golua.LNil)
+	t.RawSetString("__xticks", golua.LNil)
+	t.RawSetString("__xaticksdefault", golua.LNil)
+	t.RawSetString("__yaxeflags1", golua.LNil)
+	t.RawSetString("__yaxeflags2", golua.LNil)
+	t.RawSetString("__yaxeflags3", golua.LNil)
+	t.RawSetString("__yticks", state.NewTable())
+	t.RawSetString("__plots", golua.LNil)
 
 	tableBuilderFunc(state, t, "axis_limits", func(state *golua.LState, t *golua.LTable) {
 		xmin := state.CheckNumber(-5)
@@ -9554,26 +9555,26 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 		ymin := state.CheckNumber(-3)
 		ymax := state.CheckNumber(-2)
 		cond := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__xmin"), xmin)
-		state.SetTable(t, golua.LString("__xmax"), xmax)
-		state.SetTable(t, golua.LString("__ymin"), ymin)
-		state.SetTable(t, golua.LString("__ymax"), ymax)
-		state.SetTable(t, golua.LString("__cond"), cond)
+		t.RawSetString("__xmin", xmin)
+		t.RawSetString("__xmax", xmax)
+		t.RawSetString("__ymin", ymin)
+		t.RawSetString("__ymax", ymax)
+		t.RawSetString("__cond", cond)
 	})
 
 	tableBuilderFunc(state, t, "flags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__flags"), flags)
+		t.RawSetString("__flags", flags)
 	})
 
 	tableBuilderFunc(state, t, "set_xaxis_label", func(state *golua.LState, t *golua.LTable) {
 		axis := state.CheckNumber(-2)
 		label := state.CheckString(-1)
 		lt := state.NewTable()
-		state.SetTable(lt, golua.LString("axis"), axis)
-		state.SetTable(lt, golua.LString("label"), golua.LString(label))
+		lt.RawSetString("axis", axis)
+		lt.RawSetString("label", golua.LString(label))
 
-		ft := state.GetTable(t, golua.LString("__xlabels")).(*golua.LTable)
+		ft := t.RawGetString("__xlabels").(*golua.LTable)
 		ft.Append(lt)
 	})
 
@@ -9581,39 +9582,39 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 		axis := state.CheckNumber(-2)
 		label := state.CheckString(-1)
 		lt := state.NewTable()
-		state.SetTable(lt, golua.LString("axis"), axis)
-		state.SetTable(lt, golua.LString("label"), golua.LString(label))
+		lt.RawSetString("axis", axis)
+		lt.RawSetString("label", golua.LString(label))
 
-		ft := state.GetTable(t, golua.LString("__ylabels")).(*golua.LTable)
+		ft := t.RawGetString("__ylabels").(*golua.LTable)
 		ft.Append(lt)
 	})
 
 	tableBuilderFunc(state, t, "size", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-2)
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__width", width)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "x_axeflags", func(state *golua.LState, t *golua.LTable) {
 		flags := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__xaxeflags"), flags)
+		t.RawSetString("__xaxeflags", flags)
 	})
 
 	tableBuilderFunc(state, t, "xticks", func(state *golua.LState, t *golua.LTable) {
 		ticks := state.CheckTable(-2)
 		dflt := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__xticks"), ticks)
-		state.SetTable(t, golua.LString("__xaticksdefault"), golua.LBool(dflt))
+		t.RawSetString("__xticks", ticks)
+		t.RawSetString("__xaticksdefault", golua.LBool(dflt))
 	})
 
 	tableBuilderFunc(state, t, "y_axeflags", func(state *golua.LState, t *golua.LTable) {
 		flags1 := state.CheckNumber(-3)
 		flags2 := state.CheckNumber(-2)
 		flags3 := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__yaxeflags1"), flags1)
-		state.SetTable(t, golua.LString("__yaxeflags2"), flags2)
-		state.SetTable(t, golua.LString("__yaxeflags3"), flags3)
+		t.RawSetString("__yaxeflags1", flags1)
+		t.RawSetString("__yaxeflags2", flags2)
+		t.RawSetString("__yaxeflags3", flags3)
 	})
 
 	tableBuilderFunc(state, t, "yticks", func(state *golua.LState, t *golua.LTable) {
@@ -9621,54 +9622,54 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 		dflt := state.CheckBool(-2)
 		axis := state.CheckNumber(-1)
 		lt := state.NewTable()
-		state.SetTable(lt, golua.LString("ticks"), ticks)
-		state.SetTable(lt, golua.LString("dflt"), golua.LBool(dflt))
-		state.SetTable(lt, golua.LString("axis"), axis)
+		lt.RawSetString("ticks", ticks)
+		lt.RawSetString("dflt", golua.LBool(dflt))
+		lt.RawSetString("axis", axis)
 
-		ft := state.GetTable(t, golua.LString("__ylabels")).(*golua.LTable)
+		ft := t.RawGetString("__ylabels").(*golua.LTable)
 		ft.Append(lt)
 	})
 
 	tableBuilderFunc(state, t, "plots", func(state *golua.LState, t *golua.LTable) {
 		plots := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__plots"), plots)
+		t.RawSetString("__plots", plots)
 	})
 
 	return t
 }
 
 func plotBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
+	title := t.RawGetString("title").(golua.LString)
 	p := g.Plot(string(title))
 
-	width := state.GetTable(t, golua.LString("__width"))
-	height := state.GetTable(t, golua.LString("__height"))
+	width := t.RawGetString("__width")
+	height := t.RawGetString("__height")
 	if width.Type() == golua.LTNumber && height.Type() == golua.LTNumber {
 		p.Size(int(width.(golua.LNumber)), int(height.(golua.LNumber)))
 	}
 
-	flags := state.GetTable(t, golua.LString("__flags"))
+	flags := t.RawGetString("__flags")
 	if flags.Type() == golua.LTNumber {
 		p.Flags(g.PlotFlags(flags.(golua.LNumber)))
 	}
 
-	xaxeflags := state.GetTable(t, golua.LString("__xaxeflags"))
+	xaxeflags := t.RawGetString("__xaxeflags")
 	if xaxeflags.Type() == golua.LTNumber {
 		p.XAxeFlags(g.PlotAxisFlags(xaxeflags.(golua.LNumber)))
 	}
 
-	yaxeflags1 := state.GetTable(t, golua.LString("__yaxeflags1"))
-	yaxeflags2 := state.GetTable(t, golua.LString("__yaxeflags2"))
-	yaxeflags3 := state.GetTable(t, golua.LString("__yaxeflags3"))
+	yaxeflags1 := t.RawGetString("__yaxeflags1")
+	yaxeflags2 := t.RawGetString("__yaxeflags2")
+	yaxeflags3 := t.RawGetString("__yaxeflags3")
 	if yaxeflags1.Type() == golua.LTNumber && yaxeflags2.Type() == golua.LTNumber && yaxeflags3.Type() == golua.LTNumber {
 		p.YAxeFlags(g.PlotAxisFlags(yaxeflags1.(golua.LNumber)), g.PlotAxisFlags(yaxeflags2.(golua.LNumber)), g.PlotAxisFlags(yaxeflags3.(golua.LNumber)))
 	}
 
-	xmin := state.GetTable(t, golua.LString("__xmin"))
-	xmax := state.GetTable(t, golua.LString("__xmax"))
-	ymin := state.GetTable(t, golua.LString("__ymin"))
-	ymax := state.GetTable(t, golua.LString("__ymax"))
-	cond := state.GetTable(t, golua.LString("__cond"))
+	xmin := t.RawGetString("__xmin")
+	xmax := t.RawGetString("__xmax")
+	ymin := t.RawGetString("__ymin")
+	ymax := t.RawGetString("__ymax")
+	cond := t.RawGetString("__cond")
 	if xmin.Type() == golua.LTNumber && xmax.Type() == golua.LTNumber && ymin.Type() == golua.LTNumber && ymax.Type() == golua.LTNumber && cond.Type() == golua.LTNumber {
 		p.AxisLimits(
 			float64(xmin.(golua.LNumber)), float64(xmax.(golua.LNumber)),
@@ -9677,62 +9678,63 @@ func plotBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTab
 		)
 	}
 
-	xlabels := state.GetTable(t, golua.LString("__xlabels")).(*golua.LTable)
+	xlabels := t.RawGetString("__xlabels").(*golua.LTable)
 	for i := range xlabels.Len() {
-		lt := state.GetTable(xlabels, golua.LNumber(i+1)).(*golua.LTable)
-		axis := state.GetTable(lt, golua.LString("axis")).(golua.LNumber)
-		label := state.GetTable(lt, golua.LString("label")).(golua.LString)
+		lt := xlabels.RawGetInt(i + 1).(*golua.LTable)
+		axis := lt.RawGetString("axis").(golua.LNumber)
+		label := lt.RawGetString("label").(golua.LString)
 
 		p.SetXAxisLabel(g.PlotXAxis(axis), string(label))
 	}
 
-	ylabels := state.GetTable(t, golua.LString("__ylabels")).(*golua.LTable)
+	ylabels := t.RawGetString("__ylabels").(*golua.LTable)
 	for i := range ylabels.Len() {
-		lt := state.GetTable(ylabels, golua.LNumber(i+1)).(*golua.LTable)
-		axis := state.GetTable(lt, golua.LString("axis")).(golua.LNumber)
-		label := state.GetTable(lt, golua.LString("label")).(golua.LString)
+		lt := ylabels.RawGetInt(i + 1).(*golua.LTable)
+		axis := lt.RawGetString("axis").(golua.LNumber)
+		label := lt.RawGetString("label").(golua.LString)
 
 		p.SetYAxisLabel(g.PlotYAxis(axis), string(label))
 	}
 
-	xticks := state.GetTable(t, golua.LString("__xticks"))
-	xticksdefault := state.GetTable(t, golua.LString("__xticksdefault"))
+	xticks := t.RawGetString("__xticks")
+	xticksdefault := t.RawGetString("__xticksdefault")
 	if xticks.Type() == golua.LTTable && xticksdefault.Type() == golua.LTBool {
 		ticks := []g.PlotTicker{}
 
-		for i := range (xticks.(*golua.LTable)).Len() {
-			tick := state.GetTable(xticks, golua.LNumber(i+1)).(*golua.LTable)
-			ticks = append(ticks, plotTickerBuild(tick, state))
+		xtickst := xticks.(*golua.LTable)
+		for i := range xtickst.Len() {
+			tick := xtickst.RawGetInt(i + 1).(*golua.LTable)
+			ticks = append(ticks, plotTickerBuild(tick))
 		}
 
 		p.XTicks(ticks, bool(xticksdefault.(golua.LBool)))
 	}
 
-	yticks := state.GetTable(t, golua.LString("__yticks")).(*golua.LTable)
+	yticks := t.RawGetString("__yticks").(*golua.LTable)
 	for z := range yticks.Len() {
-		yticksaxis := state.GetTable(yticks, golua.LNumber(z+1)).(*golua.LTable)
+		yticksaxis := yticks.RawGetInt(z + 1).(*golua.LTable)
 
-		ytickaxis := state.GetTable(yticksaxis, golua.LString("ticks")).(*golua.LTable)
-		dflt := state.GetTable(yticksaxis, golua.LString("dflt")).(golua.LBool)
-		axis := state.GetTable(yticksaxis, golua.LString("axis")).(golua.LNumber)
+		ytickaxis := yticksaxis.RawGetString("ticks").(*golua.LTable)
+		dflt := yticksaxis.RawGetString("dflt").(golua.LBool)
+		axis := yticksaxis.RawGetString("axis").(golua.LNumber)
 
 		ticks := []g.PlotTicker{}
 
 		for i := range ytickaxis.Len() {
-			tick := state.GetTable(ytickaxis, golua.LNumber(i+1)).(*golua.LTable)
-			ticks = append(ticks, plotTickerBuild(tick, state))
+			tick := ytickaxis.RawGetInt(i + 1).(*golua.LTable)
+			ticks = append(ticks, plotTickerBuild(tick))
 		}
 
 		p.YTicks(ticks, bool(dflt), g.ImPlotYAxis(axis))
 	}
 
-	plots := state.GetTable(t, golua.LString("__plots"))
+	plots := t.RawGetString("__plots")
 	if plots.Type() == golua.LTTable {
 		plist := []g.PlotWidget{}
 
 		for i := range (plots.(*golua.LTable)).Len() {
-			pt := state.GetTable(plots.(*golua.LTable), golua.LNumber(i+1)).(*golua.LTable)
-			plottype := state.GetTable(pt, golua.LString("type")).(golua.LString)
+			pt := plots.(*golua.LTable).RawGetInt(i + 1).(*golua.LTable)
+			plottype := pt.RawGetString("type").(golua.LString)
 
 			build := plotList[string(plottype)]
 			plist = append(plist, build(r, lg, state, pt))
@@ -9744,13 +9746,13 @@ func plotBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTab
 	return p
 }
 
-func plotTickerBuild(t *golua.LTable, state *golua.LState) g.PlotTicker {
+func plotTickerBuild(t *golua.LTable) g.PlotTicker {
 	/// @struct plot_ticker
 	/// @prop position
 	/// @prop label
 
-	position := state.GetTable(t, golua.LString("position")).(golua.LNumber)
-	label := state.GetTable(t, golua.LString("label")).(golua.LString)
+	position := t.RawGetString("position").(golua.LNumber)
+	label := t.RawGetString("label").(golua.LString)
 
 	return g.PlotTicker{
 		Position: float64(position),
@@ -9768,54 +9770,54 @@ func plotBarHTable(state *golua.LState, title string, data golua.LValue) *golua.
 	/// @method shift(shift)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_BAR_H))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("data"), data)
-	state.SetTable(t, golua.LString("__height"), golua.LNil)
-	state.SetTable(t, golua.LString("__offset"), golua.LNil)
-	state.SetTable(t, golua.LString("__shift"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_BAR_H))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("data", data)
+	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__offset", golua.LNil)
+	t.RawSetString("__shift", golua.LNil)
 
 	tableBuilderFunc(state, t, "height", func(state *golua.LState, t *golua.LTable) {
 		height := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__height"), height)
+		t.RawSetString("__height", height)
 	})
 
 	tableBuilderFunc(state, t, "offset", func(state *golua.LState, t *golua.LTable) {
 		offset := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__offset"), offset)
+		t.RawSetString("__offset", offset)
 	})
 
 	tableBuilderFunc(state, t, "shift", func(state *golua.LState, t *golua.LTable) {
 		shift := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__shift"), shift)
+		t.RawSetString("__shift", shift)
 	})
 
 	return t
 }
 
 func plotBarHBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	data := state.GetTable(t, golua.LString("data")).(*golua.LTable)
+	title := t.RawGetString("title").(golua.LString)
+	data := t.RawGetString("data").(*golua.LTable)
 
 	dataPoints := []float64{}
 	for i := range data.Len() {
-		point := state.GetTable(data, golua.LNumber(i+1)).(golua.LNumber)
+		point := data.RawGetInt(i + 1).(golua.LNumber)
 		dataPoints = append(dataPoints, float64(point))
 	}
 
 	p := g.BarH(string(title), dataPoints)
 
-	height := state.GetTable(t, golua.LString("__height"))
+	height := t.RawGetString("__height")
 	if height.Type() == golua.LTNumber {
 		p.Height(float64(height.(golua.LNumber)))
 	}
 
-	offset := state.GetTable(t, golua.LString("__offset"))
+	offset := t.RawGetString("__offset")
 	if offset.Type() == golua.LTNumber {
 		p.Offset(int(offset.(golua.LNumber)))
 	}
 
-	shift := state.GetTable(t, golua.LString("__shift"))
+	shift := t.RawGetString("__shift")
 	if shift.Type() == golua.LTNumber {
 		p.Shift(float64(shift.(golua.LNumber)))
 	}
@@ -9833,54 +9835,54 @@ func plotBarTable(state *golua.LState, title string, data golua.LValue) *golua.L
 	/// @method shift(shift)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_BAR))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("data"), data)
-	state.SetTable(t, golua.LString("__width"), golua.LNil)
-	state.SetTable(t, golua.LString("__offset"), golua.LNil)
-	state.SetTable(t, golua.LString("__shift"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_BAR))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("data", data)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__offset", golua.LNil)
+	t.RawSetString("__shift", golua.LNil)
 
 	tableBuilderFunc(state, t, "width", func(state *golua.LState, t *golua.LTable) {
 		width := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__width"), width)
+		t.RawSetString("__width", width)
 	})
 
 	tableBuilderFunc(state, t, "offset", func(state *golua.LState, t *golua.LTable) {
 		offset := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__offset"), offset)
+		t.RawSetString("__offset", offset)
 	})
 
 	tableBuilderFunc(state, t, "shift", func(state *golua.LState, t *golua.LTable) {
 		shift := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__shift"), shift)
+		t.RawSetString("__shift", shift)
 	})
 
 	return t
 }
 
 func plotBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	data := state.GetTable(t, golua.LString("data")).(*golua.LTable)
+	title := t.RawGetString("title").(golua.LString)
+	data := t.RawGetString("data").(*golua.LTable)
 
 	dataPoints := []float64{}
 	for i := range data.Len() {
-		point := state.GetTable(data, golua.LNumber(i+1)).(golua.LNumber)
+		point := data.RawGetInt(i + 1).(golua.LNumber)
 		dataPoints = append(dataPoints, float64(point))
 	}
 
 	p := g.Bar(string(title), dataPoints)
 
-	width := state.GetTable(t, golua.LString("__width"))
+	width := t.RawGetString("__width")
 	if width.Type() == golua.LTNumber {
 		p.Width(float64(width.(golua.LNumber)))
 	}
 
-	offset := state.GetTable(t, golua.LString("__offset"))
+	offset := t.RawGetString("__offset")
 	if offset.Type() == golua.LTNumber {
 		p.Offset(int(offset.(golua.LNumber)))
 	}
 
-	shift := state.GetTable(t, golua.LString("__shift"))
+	shift := t.RawGetString("__shift")
 	if shift.Type() == golua.LTNumber {
 		p.Shift(float64(shift.(golua.LNumber)))
 	}
@@ -9899,65 +9901,65 @@ func plotLineTable(state *golua.LState, title string, data golua.LValue) *golua.
 	/// @method xscale(xscale)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_LINE))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("data"), data)
-	state.SetTable(t, golua.LString("__yaxis"), golua.LNil)
-	state.SetTable(t, golua.LString("__offset"), golua.LNil)
-	state.SetTable(t, golua.LString("__x0"), golua.LNil)
-	state.SetTable(t, golua.LString("__xscale"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_LINE))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("data", data)
+	t.RawSetString("__yaxis", golua.LNil)
+	t.RawSetString("__offset", golua.LNil)
+	t.RawSetString("__x0", golua.LNil)
+	t.RawSetString("__xscale", golua.LNil)
 
 	tableBuilderFunc(state, t, "set_plot_y_axis", func(state *golua.LState, t *golua.LTable) {
 		axis := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__yaxis"), axis)
+		t.RawSetString("__yaxis", axis)
 	})
 
 	tableBuilderFunc(state, t, "offset", func(state *golua.LState, t *golua.LTable) {
 		offset := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__offset"), offset)
+		t.RawSetString("__offset", offset)
 	})
 
 	tableBuilderFunc(state, t, "x0", func(state *golua.LState, t *golua.LTable) {
 		x0 := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__x0"), x0)
+		t.RawSetString("__x0", x0)
 	})
 
 	tableBuilderFunc(state, t, "xscale", func(state *golua.LState, t *golua.LTable) {
 		xscale := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__xscale"), xscale)
+		t.RawSetString("__xscale", xscale)
 	})
 
 	return t
 }
 
 func plotLineBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	data := state.GetTable(t, golua.LString("data")).(*golua.LTable)
+	title := t.RawGetString("title").(golua.LString)
+	data := t.RawGetString("data").(*golua.LTable)
 
 	dataPoints := []float64{}
 	for i := range data.Len() {
-		point := state.GetTable(data, golua.LNumber(i+1)).(golua.LNumber)
+		point := data.RawGetInt(i + 1).(golua.LNumber)
 		dataPoints = append(dataPoints, float64(point))
 	}
 
 	p := g.Line(string(title), dataPoints)
 
-	yaxis := state.GetTable(t, golua.LString("__yaxis"))
+	yaxis := t.RawGetString("__yaxis")
 	if yaxis.Type() == golua.LTNumber {
 		p.SetPlotYAxis(g.ImPlotYAxis(yaxis.(golua.LNumber)))
 	}
 
-	offset := state.GetTable(t, golua.LString("__offset"))
+	offset := t.RawGetString("__offset")
 	if offset.Type() == golua.LTNumber {
 		p.Offset(int(offset.(golua.LNumber)))
 	}
 
-	x0 := state.GetTable(t, golua.LString("__x0"))
+	x0 := t.RawGetString("__x0")
 	if x0.Type() == golua.LTNumber {
 		p.X0(float64(x0.(golua.LNumber)))
 	}
 
-	xscale := state.GetTable(t, golua.LString("__xscale"))
+	xscale := t.RawGetString("__xscale")
 	if xscale.Type() == golua.LTNumber {
 		p.XScale(float64(xscale.(golua.LNumber)))
 	}
@@ -9975,51 +9977,51 @@ func plotLineXYTable(state *golua.LState, title string, xdata, ydata golua.LValu
 	/// @method offset(offset)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_LINE_XY))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("xdata"), xdata)
-	state.SetTable(t, golua.LString("ydata"), ydata)
-	state.SetTable(t, golua.LString("__yaxis"), golua.LNil)
-	state.SetTable(t, golua.LString("__offset"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_LINE_XY))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("xdata", xdata)
+	t.RawSetString("ydata", ydata)
+	t.RawSetString("__yaxis", golua.LNil)
+	t.RawSetString("__offset", golua.LNil)
 
 	tableBuilderFunc(state, t, "set_plot_y_axis", func(state *golua.LState, t *golua.LTable) {
 		axis := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__yaxis"), axis)
+		t.RawSetString("__yaxis", axis)
 	})
 
 	tableBuilderFunc(state, t, "offset", func(state *golua.LState, t *golua.LTable) {
 		offset := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__offset"), offset)
+		t.RawSetString("__offset", offset)
 	})
 
 	return t
 }
 
 func plotLineXYBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	xdata := state.GetTable(t, golua.LString("xdata")).(*golua.LTable)
-	ydata := state.GetTable(t, golua.LString("ydata")).(*golua.LTable)
+	title := t.RawGetString("title").(golua.LString)
+	xdata := t.RawGetString("xdata").(*golua.LTable)
+	ydata := t.RawGetString("ydata").(*golua.LTable)
 
 	xdataPoints := []float64{}
 	for i := range xdata.Len() {
-		point := state.GetTable(xdata, golua.LNumber(i+1)).(golua.LNumber)
+		point := xdata.RawGetInt(i + 1).(golua.LNumber)
 		xdataPoints = append(xdataPoints, float64(point))
 	}
 
 	ydataPoints := []float64{}
 	for i := range ydata.Len() {
-		point := state.GetTable(ydata, golua.LNumber(i+1)).(golua.LNumber)
+		point := ydata.RawGetInt(i + 1).(golua.LNumber)
 		ydataPoints = append(ydataPoints, float64(point))
 	}
 
 	p := g.LineXY(string(title), xdataPoints, ydataPoints)
 
-	yaxis := state.GetTable(t, golua.LString("__yaxis"))
+	yaxis := t.RawGetString("__yaxis")
 	if yaxis.Type() == golua.LTNumber {
 		p.SetPlotYAxis(g.ImPlotYAxis(yaxis.(golua.LNumber)))
 	}
 
-	offset := state.GetTable(t, golua.LString("__offset"))
+	offset := t.RawGetString("__offset")
 	if offset.Type() == golua.LTNumber {
 		p.Offset(int(offset.(golua.LNumber)))
 	}
@@ -10040,66 +10042,66 @@ func plotPieTable(state *golua.LState, labels golua.LValue, data golua.LValue, x
 	/// @method normalize(bool)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_PIE_CHART))
-	state.SetTable(t, golua.LString("labels"), labels)
-	state.SetTable(t, golua.LString("data"), data)
-	state.SetTable(t, golua.LString("x"), golua.LNumber(x))
-	state.SetTable(t, golua.LString("y"), golua.LNumber(y))
-	state.SetTable(t, golua.LString("radius"), golua.LNumber(radius))
-	state.SetTable(t, golua.LString("__angle0"), golua.LNil)
-	state.SetTable(t, golua.LString("__format"), golua.LNil)
-	state.SetTable(t, golua.LString("__normalize"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_PIE_CHART))
+	t.RawSetString("labels", labels)
+	t.RawSetString("data", data)
+	t.RawSetString("x", golua.LNumber(x))
+	t.RawSetString("y", golua.LNumber(y))
+	t.RawSetString("radius", golua.LNumber(radius))
+	t.RawSetString("__angle0", golua.LNil)
+	t.RawSetString("__format", golua.LNil)
+	t.RawSetString("__normalize", golua.LNil)
 
 	tableBuilderFunc(state, t, "angle0", func(state *golua.LState, t *golua.LTable) {
 		angle0 := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__angle0"), angle0)
+		t.RawSetString("__angle0", angle0)
 	})
 
 	tableBuilderFunc(state, t, "label_format", func(state *golua.LState, t *golua.LTable) {
 		format := state.CheckString(-1)
-		state.SetTable(t, golua.LString("__format"), golua.LString(format))
+		t.RawSetString("__format", golua.LString(format))
 	})
 
 	tableBuilderFunc(state, t, "normalize", func(state *golua.LState, t *golua.LTable) {
 		normalize := state.CheckBool(-1)
-		state.SetTable(t, golua.LString("__normalize"), golua.LBool(normalize))
+		t.RawSetString("__normalize", golua.LBool(normalize))
 	})
 
 	return t
 }
 
 func plotPieBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	labels := state.GetTable(t, golua.LString("labels")).(*golua.LTable)
-	data := state.GetTable(t, golua.LString("data")).(*golua.LTable)
-	x := state.GetTable(t, golua.LString("x")).(golua.LNumber)
-	y := state.GetTable(t, golua.LString("y")).(golua.LNumber)
-	radius := state.GetTable(t, golua.LString("radius")).(golua.LNumber)
+	labels := t.RawGetString("labels").(*golua.LTable)
+	data := t.RawGetString("data").(*golua.LTable)
+	x := t.RawGetString("x").(golua.LNumber)
+	y := t.RawGetString("y").(golua.LNumber)
+	radius := t.RawGetString("radius").(golua.LNumber)
 
 	labelPoints := []string{}
 	for i := range labels.Len() {
-		point := state.GetTable(labels, golua.LNumber(i+1)).(golua.LString)
+		point := labels.RawGetInt(i + 1).(golua.LString)
 		labelPoints = append(labelPoints, string(point))
 	}
 
 	dataPoints := []float64{}
 	for i := range data.Len() {
-		point := state.GetTable(data, golua.LNumber(i+1)).(golua.LNumber)
+		point := data.RawGetInt(i + 1).(golua.LNumber)
 		dataPoints = append(dataPoints, float64(point))
 	}
 
 	p := g.PieChart(labelPoints, dataPoints, float64(x), float64(y), float64(radius))
 
-	angle0 := state.GetTable(t, golua.LString("__angle0"))
+	angle0 := t.RawGetString("__angle0")
 	if angle0.Type() == golua.LTNumber {
 		p.Angle0(float64(angle0.(golua.LNumber)))
 	}
 
-	format := state.GetTable(t, golua.LString("__format"))
+	format := t.RawGetString("__format")
 	if format.Type() == golua.LTString {
 		p.LabelFormat(string(format.(golua.LString)))
 	}
 
-	normalize := state.GetTable(t, golua.LString("__normalize"))
+	normalize := t.RawGetString("__normalize")
 	if normalize.Type() == golua.LTBool {
 		p.Normalize(bool(normalize.(golua.LBool)))
 	}
@@ -10117,54 +10119,54 @@ func plotScatterTable(state *golua.LState, title string, data golua.LValue) *gol
 	/// @method xscale(xscale)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_SCATTER))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("data"), data)
-	state.SetTable(t, golua.LString("__offset"), golua.LNil)
-	state.SetTable(t, golua.LString("__x0"), golua.LNil)
-	state.SetTable(t, golua.LString("__xscale"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_SCATTER))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("data", data)
+	t.RawSetString("__offset", golua.LNil)
+	t.RawSetString("__x0", golua.LNil)
+	t.RawSetString("__xscale", golua.LNil)
 
 	tableBuilderFunc(state, t, "offset", func(state *golua.LState, t *golua.LTable) {
 		offset := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__offset"), offset)
+		t.RawSetString("__offset", offset)
 	})
 
 	tableBuilderFunc(state, t, "x0", func(state *golua.LState, t *golua.LTable) {
 		x0 := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__x0"), x0)
+		t.RawSetString("__x0", x0)
 	})
 
 	tableBuilderFunc(state, t, "xscale", func(state *golua.LState, t *golua.LTable) {
 		xscale := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__xscale"), xscale)
+		t.RawSetString("__xscale", xscale)
 	})
 
 	return t
 }
 
 func plotScatterBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	data := state.GetTable(t, golua.LString("data")).(*golua.LTable)
+	title := t.RawGetString("title").(golua.LString)
+	data := t.RawGetString("data").(*golua.LTable)
 
 	dataPoints := []float64{}
 	for i := range data.Len() {
-		point := state.GetTable(data, golua.LNumber(i+1)).(golua.LNumber)
+		point := data.RawGetInt(i + 1).(golua.LNumber)
 		dataPoints = append(dataPoints, float64(point))
 	}
 
 	p := g.Scatter(string(title), dataPoints)
 
-	offset := state.GetTable(t, golua.LString("__offset"))
+	offset := t.RawGetString("__offset")
 	if offset.Type() == golua.LTNumber {
 		p.Offset(int(offset.(golua.LNumber)))
 	}
 
-	x0 := state.GetTable(t, golua.LString("__x0"))
+	x0 := t.RawGetString("__x0")
 	if x0.Type() == golua.LTNumber {
 		p.X0(float64(x0.(golua.LNumber)))
 	}
 
-	xscale := state.GetTable(t, golua.LString("__xscale"))
+	xscale := t.RawGetString("__xscale")
 	if xscale.Type() == golua.LTNumber {
 		p.XScale(float64(xscale.(golua.LNumber)))
 	}
@@ -10181,40 +10183,40 @@ func plotScatterXYTable(state *golua.LState, title string, xdata, ydata golua.LV
 	/// @method offset(offset)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_SCATTER_XY))
-	state.SetTable(t, golua.LString("title"), golua.LString(title))
-	state.SetTable(t, golua.LString("xdata"), xdata)
-	state.SetTable(t, golua.LString("ydata"), ydata)
-	state.SetTable(t, golua.LString("__offset"), golua.LNil)
+	t.RawSetString("type", golua.LString(PLOT_SCATTER_XY))
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("xdata", xdata)
+	t.RawSetString("ydata", ydata)
+	t.RawSetString("__offset", golua.LNil)
 
 	tableBuilderFunc(state, t, "offset", func(state *golua.LState, t *golua.LTable) {
 		offset := state.CheckNumber(-1)
-		state.SetTable(t, golua.LString("__offset"), offset)
+		t.RawSetString("__offset", offset)
 	})
 
 	return t
 }
 
 func plotScatterXYBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	title := state.GetTable(t, golua.LString("title")).(golua.LString)
-	xdata := state.GetTable(t, golua.LString("xdata")).(*golua.LTable)
-	ydata := state.GetTable(t, golua.LString("ydata")).(*golua.LTable)
+	title := t.RawGetString("title").(golua.LString)
+	xdata := t.RawGetString("xdata").(*golua.LTable)
+	ydata := t.RawGetString("ydata").(*golua.LTable)
 
 	xdataPoints := []float64{}
 	for i := range xdata.Len() {
-		point := state.GetTable(xdata, golua.LNumber(i+1)).(golua.LNumber)
+		point := xdata.RawGetInt(i + 1).(golua.LNumber)
 		xdataPoints = append(xdataPoints, float64(point))
 	}
 
 	ydataPoints := []float64{}
 	for i := range ydata.Len() {
-		point := state.GetTable(ydata, golua.LNumber(i+1)).(golua.LNumber)
+		point := ydata.RawGetInt(i + 1).(golua.LNumber)
 		ydataPoints = append(ydataPoints, float64(point))
 	}
 
 	p := g.ScatterXY(string(title), xdataPoints, ydataPoints)
 
-	offset := state.GetTable(t, golua.LString("__offset"))
+	offset := t.RawGetString("__offset")
 	if offset.Type() == golua.LTNumber {
 		p.Offset(int(offset.(golua.LNumber)))
 	}
@@ -10228,14 +10230,14 @@ func plotCustomTable(state *golua.LState, builder *golua.LFunction) *golua.LTabl
 	/// @prop builder
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(PLOT_CUSTOM))
-	state.SetTable(t, golua.LString("builder"), builder)
+	t.RawSetString("type", golua.LString(PLOT_CUSTOM))
+	t.RawSetString("builder", builder)
 
 	return t
 }
 
 func plotCustomBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget {
-	builder := state.GetTable(t, golua.LString("builder")).(*golua.LFunction)
+	builder := t.RawGetString("builder").(*golua.LFunction)
 
 	c := g.Custom(func() {
 		state.Push(builder)
@@ -10252,25 +10254,25 @@ func cssTagTable(state *golua.LState, tag string) *golua.LTable {
 	/// @method to([]widgets)
 
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("type"), golua.LString(WIDGET_CSS_TAG))
-	state.SetTable(t, golua.LString("tag"), golua.LString(tag))
-	state.SetTable(t, golua.LString("__widgets"), golua.LNil)
+	t.RawSetString("type", golua.LString(WIDGET_CSS_TAG))
+	t.RawSetString("tag", golua.LString(tag))
+	t.RawSetString("__widgets", golua.LNil)
 
 	tableBuilderFunc(state, t, "to", func(state *golua.LState, t *golua.LTable) {
 		lt := state.CheckTable(-1)
-		state.SetTable(t, golua.LString("__widgets"), lt)
+		t.RawSetString("__widgets", lt)
 	})
 
 	return t
 }
 
 func cssTagBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	tag := state.GetTable(t, golua.LString("tag")).(golua.LString)
+	tag := t.RawGetString("tag").(golua.LString)
 	c := g.CSSTag(string(tag))
 
-	layout := state.GetTable(t, golua.LString("__widgets"))
+	layout := t.RawGetString("__widgets")
 	if layout.Type() == golua.LTTable {
-		c.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable), state), state, lg), lg)...)
+		c.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
 	}
 
 	return c

@@ -86,19 +86,19 @@ func ConvertColor(model ColorModel, red, green, blue, alpha int) (int, int, int,
 
 func RGBAToTable(state *golua.LState, rgba *color.RGBA) *golua.LTable {
 	t := state.NewTable()
-	state.SetTable(t, golua.LString("red"), golua.LNumber(rgba.R))
-	state.SetTable(t, golua.LString("green"), golua.LNumber(rgba.G))
-	state.SetTable(t, golua.LString("blue"), golua.LNumber(rgba.B))
-	state.SetTable(t, golua.LString("alpha"), golua.LNumber(rgba.A))
+	t.RawSetString("red", golua.LNumber(rgba.R))
+	t.RawSetString("green", golua.LNumber(rgba.G))
+	t.RawSetString("blue", golua.LNumber(rgba.B))
+	t.RawSetString("alpha", golua.LNumber(rgba.A))
 
 	return t
 }
 
 func TableToRGBA(state *golua.LState, t *golua.LTable) *color.RGBA {
-	cr := state.GetTable(t, golua.LString("red")).(golua.LNumber)
-	cg := state.GetTable(t, golua.LString("green")).(golua.LNumber)
-	cb := state.GetTable(t, golua.LString("blue")).(golua.LNumber)
-	ca := state.GetTable(t, golua.LString("alpha")).(golua.LNumber)
+	cr := t.RawGetString("red").(golua.LNumber)
+	cg := t.RawGetString("green").(golua.LNumber)
+	cb := t.RawGetString("blue").(golua.LNumber)
+	ca := t.RawGetString("alpha").(golua.LNumber)
 
 	c := &color.RGBA{
 		R: uint8(cr),

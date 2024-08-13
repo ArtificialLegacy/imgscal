@@ -1959,40 +1959,40 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @constants Fill Rules
 	/// @const FILLRULE_WINDING
 	/// @const FILLRULE_EVENODD
-	r.State.SetField(tab, "FILLRULE_WINDING", golua.LNumber(gg.FillRuleWinding))
-	r.State.SetField(tab, "FILLRULE_EVENODD", golua.LNumber(gg.FillRuleEvenOdd))
+	tab.RawSetString("FILLRULE_WINDING", golua.LNumber(gg.FillRuleWinding))
+	tab.RawSetString("FILLRULE_EVENODD", golua.LNumber(gg.FillRuleEvenOdd))
 
 	/// @constants Line Caps
 	/// @const LINECAP_ROUND
 	/// @const LINECAP_BUTT
 	/// @const LINCAP_SQUARE
-	r.State.SetField(tab, "LINECAP_ROUND", golua.LNumber(gg.LineCapRound))
-	r.State.SetField(tab, "LINECAP_BUTT", golua.LNumber(gg.LineCapButt))
-	r.State.SetField(tab, "LINECAP_SQUARE", golua.LNumber(gg.LineCapSquare))
+	tab.RawSetString("LINECAP_ROUND", golua.LNumber(gg.LineCapRound))
+	tab.RawSetString("LINECAP_BUTT", golua.LNumber(gg.LineCapButt))
+	tab.RawSetString("LINECAP_SQUARE", golua.LNumber(gg.LineCapSquare))
 
 	/// @constants Line Joins
 	/// @const LINEJOIN_ROUND
 	/// @const LINEJOIN_BEVEL
-	r.State.SetField(tab, "LINEJOIN_ROUND", golua.LNumber(gg.LineJoinRound))
-	r.State.SetField(tab, "LINEJOIN_BEVEL", golua.LNumber(gg.LineJoinBevel))
+	tab.RawSetString("LINEJOIN_ROUND", golua.LNumber(gg.LineJoinRound))
+	tab.RawSetString("LINEJOIN_BEVEL", golua.LNumber(gg.LineJoinBevel))
 
 	/// @constants Repeat Ops
 	/// @const REPEAT_BOTH
 	/// @const REPEAT_X
 	/// @const REPEAT_Y
 	/// @const REPEAT_NONE
-	r.State.SetField(tab, "REPEAT_BOTH", golua.LNumber(gg.RepeatBoth))
-	r.State.SetField(tab, "REPEAT_X", golua.LNumber(gg.RepeatX))
-	r.State.SetField(tab, "REPEAT_Y", golua.LNumber(gg.RepeatY))
-	r.State.SetField(tab, "REPEAT_NONE", golua.LNumber(gg.RepeatNone))
+	tab.RawSetString("REPEAT_BOTH", golua.LNumber(gg.RepeatBoth))
+	tab.RawSetString("REPEAT_X", golua.LNumber(gg.RepeatX))
+	tab.RawSetString("REPEAT_Y", golua.LNumber(gg.RepeatY))
+	tab.RawSetString("REPEAT_NONE", golua.LNumber(gg.RepeatNone))
 
 	/// @constants Alignment
 	/// @const ALIGN_LEFT
 	/// @const ALIGN_CENTER
 	/// @const ALIGN_RIGHT
-	r.State.SetField(tab, "ALIGN_LEFT", golua.LNumber(gg.AlignLeft))
-	r.State.SetField(tab, "ALIGN_CENTER", golua.LNumber(gg.AlignCenter))
-	r.State.SetField(tab, "ALIGN_RIGHT", golua.LNumber(gg.AlignRight))
+	tab.RawSetString("ALIGN_LEFT", golua.LNumber(gg.AlignLeft))
+	tab.RawSetString("ALIGN_CENTER", golua.LNumber(gg.AlignCenter))
+	tab.RawSetString("ALIGN_RIGHT", golua.LNumber(gg.AlignRight))
 }
 
 var fillRules = []gg.FillRule{
