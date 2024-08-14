@@ -5,7 +5,19 @@ build-windows:
 	go build -o build/imgscal.exe ./cmd/cli/
 	mkdir build/workflows/
 	cp workflows/*.lua build/workflows/
-	cp asset/* build/assets/
+	cp assets/*.png build/assets/
+	make doc
+	mkdir build/docs/
+	cp docs/*.md build/docs/
+
+.PHONY: build
+build-linux:
+	rm -rf build/
+	go build -o build/imgscal ./cmd/cli
+	mkdir build/workflows/
+	cp workflows/*.lua build/workflows/
+	mkdir build/assets/
+	cp assets/*.png build/assets/
 	make doc
 	mkdir build/docs/
 	cp docs/*.md build/docs/

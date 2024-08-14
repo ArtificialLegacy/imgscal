@@ -1238,6 +1238,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MODEL_CMYK", golua.LNumber(imageutil.MODEL_CMYK))
 
 	/// @constants Encodings
+	/// @const ENCODING_PNG
+	/// @const ENCODING_JPEG
+	/// @const ENCODING_GIF
 	tab.RawSetString("ENCODING_PNG", golua.LNumber(imageutil.ENCODING_PNG))
 	tab.RawSetString("ENCODING_JPEG", golua.LNumber(imageutil.ENCODING_JPEG))
 	tab.RawSetString("ENCODING_GIF", golua.LNumber(imageutil.ENCODING_GIF))

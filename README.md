@@ -46,15 +46,21 @@ Demo workflow that creates an interface to apply filters to an image.
 
 ## Build
 
-### Windows
-
 * Requires
   * Go
   * Makefile
-  * Either mingw or TDM-GCC to use the gui library
+  * A C compiler (mingw, TDM-GCC or g++)
+
+* Windows
 
 ```sh
 make build-windows
+```
+
+* Linux
+
+```sh
+make build-linux
 ```
 
 **❗ Note: Removes the build directory, including any custom made workflows.**
@@ -68,5 +74,5 @@ Run `make doc` to generate the lua api documentation to `./docs/`.
 The make file includes a few shortcuts for log files:
 
 * make log - prints latest log to terminal using cat.
-* make logview - opens latest log in notepad.
+* make logview - opens latest log in notepad. (windows only)
 * make logclear - rm all log files.
