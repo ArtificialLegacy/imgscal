@@ -15,6 +15,7 @@ require (
 	github.com/AllenDang/cimgui-go v0.0.0-20240805083726-719fbcdaf7fa // indirect
 	github.com/AllenDang/giu v0.8.1 // indirect
 	github.com/AllenDang/go-findfont v0.0.0-20200702051237-9f180485aeb8 // indirect
+	github.com/akamensky/argparse v1.4.0 // indirect
 	github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 // indirect
 	github.com/crazy3lf/colorconv v1.2.0 // indirect
 	github.com/disintegration/gift v1.2.1 // indirect

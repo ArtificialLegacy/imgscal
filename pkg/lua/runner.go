@@ -10,6 +10,7 @@ import (
 	"github.com/AllenDang/giu"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
+	"github.com/akamensky/argparse"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -18,6 +19,8 @@ type Runner struct {
 	lg      *log.Logger
 	Plugins []string
 	Dir     string
+
+	CMDParser *argparse.Parser
 
 	// -- collections
 	TC *collection.Collection[collection.ItemTask]
@@ -36,6 +39,8 @@ func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
 		State:   state,
 		lg:      lg,
 		Plugins: plugins,
+
+		CMDParser: argparse.NewParser("imgscal", ""),
 
 		// -- collections
 		IC: collection.NewCollection[collection.ItemImage](lg),
@@ -274,7 +279,7 @@ func (l *Lib) getDefault(a Arg) any {
 		return map[string]any{}
 
 	case ANY:
-		fallthrough
+		return lua.LNil
 	default:
 		return nil
 	}

@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"path"
 	"strconv"
 	"strings"
 
@@ -1169,6 +1170,51 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			})
 
 			return 0
+		})
+
+	/// @func ext_to_encoding()
+	/// @arg ext
+	/// @returns encoding
+	lib.CreateFunction(tab, "ext_to_encoding",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "ext"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			encoding := imageutil.ExtensionEncoding(args["ext"].(string))
+
+			state.Push(golua.LNumber(encoding))
+			return 1
+		})
+
+	/// @func path_to_encoding()
+	/// @arg pth
+	/// @returns encoding
+	/// @desc
+	/// First gets the ext from the path.
+	lib.CreateFunction(tab, "path_to_encoding",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "pth"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ext := path.Ext(args["pth"].(string))
+			encoding := imageutil.ExtensionEncoding(ext)
+
+			state.Push(golua.LNumber(encoding))
+			return 1
+		})
+
+	/// @func encoding_to_ext()
+	/// @arg encoding
+	/// @returns ext
+	lib.CreateFunction(tab, "encoding_to_ext",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "encoding"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ext := imageutil.EncodingExtension(imageutil.ImageEncoding(args["encoding"].(int)))
+
+			state.Push(golua.LString(ext))
+			return 1
 		})
 
 	/// @constants Color Models

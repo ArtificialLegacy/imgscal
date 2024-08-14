@@ -14,10 +14,13 @@ import (
 )
 
 func WorkflowConfirm(sm *statemachine.StateMachine) error {
-	cli.Clear()
-
+	autoConfirm := sm.PopBool()
 	script := sm.PopString()
 	wf := workflow.NewWorkflow()
+
+	if !autoConfirm {
+		cli.Clear()
+	}
 
 	pwd, err := os.Getwd()
 	if err != nil {
@@ -33,6 +36,21 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
+
+		if autoConfirm {
+			fmt.Printf("error occured while running script: %s\n", err)
+			sm.SetState(STATE_EXIT)
+			return nil
+		}
+
+		sm.PushString(script)
+		sm.SetState(STATE_WORKFLOW_FAIL_LOAD)
+		return nil
+	}
+
+	if !autoConfirm && wf.CliExclusive {
+		lg.Append("workflow is marked cli exclusive, it can only be called by passing it in as a cmd arg.", log.LEVEL_ERROR)
+
 		sm.PushString(script)
 		sm.SetState(STATE_WORKFLOW_FAIL_LOAD)
 		return nil
@@ -48,22 +66,28 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 		lg.Append("name field was empty", log.LEVEL_WARN)
 	}
 
-	fmt.Printf("\n%s%s%s [%s] by %s.\n\n", cli.COLOR_BOLD, wf.Name, cli.COLOR_RESET, wf.Version, wf.Author)
-	fmt.Printf("%s\n\n", wf.Desc)
-	fmt.Printf("Required plugins: \n - %s\n\n;", strings.Join(wf.Requires, "\n - "))
+	var answer string
 
-	answer, err := cli.Question(
-		fmt.Sprintf("Do you wish to run the above workflow? %s(Y)%s/%sN%s", cli.COLOR_GREEN, cli.COLOR_RESET, cli.COLOR_RED, cli.COLOR_RESET),
-		cli.QuestionOptions{
-			Normalize: true,
-			Accepts:   []string{"y", "n"},
-			Fallback:  "y",
-		},
-	)
+	if !autoConfirm {
+		fmt.Printf("\n%s%s%s [%s] by %s.\n\n", cli.COLOR_BOLD, wf.Name, cli.COLOR_RESET, wf.Version, wf.Author)
+		fmt.Printf("%s\n\n", wf.Desc)
+		fmt.Printf("Required plugins: \n - %s\n\n;", strings.Join(wf.Requires, "\n - "))
 
-	if err != nil {
-		lg.Append(fmt.Sprintf("confirmation aborted from err during prompt: %s", err), log.LEVEL_ERROR)
-		return err
+		answer, err = cli.Question(
+			fmt.Sprintf("Do you wish to run the above workflow? %s(Y)%s/%sN%s", cli.COLOR_GREEN, cli.COLOR_RESET, cli.COLOR_RED, cli.COLOR_RESET),
+			cli.QuestionOptions{
+				Normalize: true,
+				Accepts:   []string{"y", "n"},
+				Fallback:  "y",
+			},
+		)
+
+		if err != nil {
+			lg.Append(fmt.Sprintf("confirmation aborted from err during prompt: %s", err), log.LEVEL_ERROR)
+			return err
+		}
+	} else {
+		answer = "y"
 	}
 
 	switch answer {
@@ -72,7 +96,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 			sm.PushString(s)
 		}
 		sm.PushString(script)
-		sm.PushBool(false)
+		sm.PushBool(autoConfirm)
 		sm.SetState(STATE_WORKFLOW_RUN)
 		lg.Append("confirmation answer y", log.LEVEL_INFO)
 	case "n":

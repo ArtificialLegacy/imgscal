@@ -263,6 +263,58 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LString(r.Dir))
 			return 1
 		})
+
+	/// @func base()
+	/// @arg pth
+	/// @returns string
+	/// @desc
+	/// returns the name of the file only, without the extension or trailing path
+	lib.CreateFunction(tab, "base",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "pth"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["pth"].(string)
+			pth = path.Base(pth)
+			base := strings.TrimSuffix(pth, path.Ext(pth))
+
+			state.Push(golua.LString(base))
+			return 1
+		})
+
+	/// @func path_to()
+	/// @arg pth
+	/// @returns string
+	/// @desc
+	/// returns the path to a file
+	lib.CreateFunction(tab, "path_to",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "pth"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["pth"].(string)
+			dir := path.Dir(pth)
+
+			state.Push(golua.LString(dir))
+			return 1
+		})
+
+	/// @func ext()
+	/// @arg pth
+	/// @returns string
+	/// @desc
+	/// returns the ext of the file only
+	lib.CreateFunction(tab, "ext",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "pth"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["pth"].(string)
+			ext := path.Ext(pth)
+
+			state.Push(golua.LString(ext))
+			return 1
+		})
 }
 
 func parseDir(fn string, pathstr string, filter []string, lib *lua.Lib) {

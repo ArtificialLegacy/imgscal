@@ -31,6 +31,11 @@ func WorkflowConfigState(wf *workflow.Workflow, lg *log.Logger) *lua.LState {
 			requires := t.RawGetString("requires").(*lua.LTable)
 			wf.Requires = []string{}
 
+			cliExclusive := t.RawGetString("cli_exclusive")
+			if cliExclusive.Type() == lua.LTBool {
+				wf.CliExclusive = bool(cliExclusive.(lua.LBool))
+			}
+
 			requires.ForEach(func(l1, l2 lua.LValue) {
 				wf.Requires = append(wf.Requires, strings.Clone(string(l2.(lua.LString))))
 			})

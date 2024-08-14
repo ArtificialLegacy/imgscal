@@ -782,10 +782,38 @@ main(function ()
                             ref.get(cropxmax),
                             ref.get(cropymax),
                         })),
-                        wg_slider_int("Min X:", cropxmin, 0, 200, 0),
-                        wg_slider_int("Max X:", cropxmax, 0, 200, 200),
-                        wg_slider_int("Min Y:", cropymin, 0, 200, 0),
-                        wg_slider_int("Max Y:", cropymax, 0, 200, 200),
+                        gui.wg_row({
+                            gui.wg_label("Min:"),
+                            gui.wg_dummy(
+                                50-gui.calc_text_size_width("Min:"),
+                                1
+                            ),
+                            gui.wg_slider_int(cropxmin, 0, 200)
+                                :size(175),
+                            gui.wg_slider_int(cropymin, 0, 200)
+                                :size(175),
+                            gui.wg_button_arrow(gui.DIR_LEFT)
+                                :on_click(function()
+                                    ref.set(cropxmin, 0)
+                                    ref.set(cropymin, 0)
+                                end),
+                        }),
+                        gui.wg_row({
+                            gui.wg_label("Max:"),
+                            gui.wg_dummy(
+                                50-gui.calc_text_size_width("Max:"),
+                                1
+                            ),
+                            gui.wg_slider_int(cropxmax, 0, 200)
+                                :size(175),
+                            gui.wg_slider_int(cropymax, 0, 200)
+                                :size(175),
+                            gui.wg_button_arrow(gui.DIR_LEFT)
+                                :on_click(function()
+                                    ref.set(cropxmax, 200)
+                                    ref.set(cropymax, 200)
+                                end),
+                        }),
                     }),
                     gui.wg_tab_item("Crop Size"):layout({
                         gui.wg_checkbox("Enabled", cropToSizeEnabled)

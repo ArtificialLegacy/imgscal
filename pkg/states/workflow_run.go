@@ -14,13 +14,15 @@ import (
 )
 
 func WorkflowRun(sm *statemachine.StateMachine) error {
-	cli.Clear()
-
 	exitFinish := sm.PopBool()
 	script := sm.PopString()
 	req := []string{}
 	for sm.Peek() {
 		req = append(req, sm.PopString())
+	}
+
+	if !exitFinish {
+		cli.Clear()
 	}
 
 	lg := log.NewLogger("execute")
@@ -74,6 +76,13 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
 
+		if exitFinish {
+			fmt.Printf("error occured while running script: %s\n", err)
+
+			sm.SetState(STATE_EXIT)
+			return nil
+		}
+
 		sm.PushString(err.Error())
 		sm.PushString(script)
 		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
@@ -81,11 +90,11 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
-	ert := collErr(runner.TC.Errs, "TC", script, &lg, sm)
-	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm)
-	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm)
-	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
-	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
+	ert := collErr(runner.TC.Errs, "TC", script, &lg, sm, exitFinish)
+	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm, exitFinish)
+	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm, exitFinish)
+	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm, exitFinish)
+	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm, exitFinish)
 	if ert || eri || erf || erc || erq {
 		if exitFinish {
 			sm.SetState(STATE_EXIT)
@@ -112,16 +121,22 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	return nil
 }
 
-func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine.StateMachine) bool {
+func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine.StateMachine, exitFinish bool) bool {
 	errExists := false
 
 	for _, err := range errs {
 		if err != nil {
 			lg.Append(fmt.Sprintf("error occured within %s collection: %s", name, err), log.LEVEL_ERROR)
 
-			sm.PushString(err.Error())
-			sm.PushString(script)
-			sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+			if exitFinish {
+				fmt.Printf("error occured within %s collection: %s\n", name, err)
+
+				sm.SetState(STATE_EXIT)
+			} else {
+				sm.PushString(err.Error())
+				sm.PushString(script)
+				sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+			}
 
 			errExists = true
 		}

@@ -3,6 +3,9 @@
 package main
 
 import (
+	"os"
+	"path"
+
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 	"github.com/ArtificialLegacy/imgscal/pkg/states"
 )
@@ -18,6 +21,17 @@ func main() {
 	sm.AddState(states.STATE_WORKFLOW_RUN, states.WorkflowRun)
 	sm.AddState(states.STATE_WORKFLOW_FAIL_RUN, states.WorkflowFailRun)
 	sm.AddState(states.STATE_WORKFLOW_FINISH, states.WorkflowFinish)
+
+	if len(os.Args) > 1 {
+		pth := os.Args[1]
+		if path.Ext(pth) != ".lua" {
+			pth += ".lua"
+		}
+
+		sm.PushString(path.Join("workflows/", pth))
+		sm.PushBool(true)
+		sm.SetState(states.STATE_WORKFLOW_CONFIRM)
+	}
 
 	for {
 		sm.Step()

@@ -3,6 +3,7 @@ package lib
 import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	golua "github.com/yuin/gopher-lua"
 )
 
 var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
@@ -25,4 +26,16 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_REF:         RegisterRef,
 	LIB_NOISE:       RegisterNoise,
 	LIB_FILTER:      RegisterFilter,
+	LIB_CMD:         RegisterCmd,
+}
+
+func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
+	t.RawSetString(name, state.NewFunction(func(state *golua.LState) int {
+		self := state.CheckTable(1)
+
+		fn(state, self)
+
+		state.Push(self)
+		return 1
+	}))
 }

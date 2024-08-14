@@ -33,6 +33,7 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 		sm.SetState(STATE_MAIN)
 	} else {
 		sm.PushString(scripts[result].Filepath)
+		sm.PushBool(false)
 		sm.SetState(STATE_WORKFLOW_CONFIRM)
 	}
 

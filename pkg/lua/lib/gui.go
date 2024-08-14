@@ -4620,17 +4620,6 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ACTION_REPEAT", golua.LNumber(ACTION_REPEAT))
 }
 
-func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
-	t.RawSetString(name, state.NewFunction(func(state *golua.LState) int {
-		self := state.CheckTable(1)
-
-		fn(state, self)
-
-		state.Push(self)
-		return 1
-	}))
-}
-
 // -- flags
 const (
 	FLAGCOMBO_NONE            int = 0b0000_0000

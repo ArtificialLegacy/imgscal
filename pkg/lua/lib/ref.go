@@ -74,6 +74,61 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func new_slice()
+	/// @arg ln
+	/// @arg? type
+	/// @returns id
+	/// @desc
+	/// References are used when go and lua need to share a reference to the same value.
+	/// The primitive type versions must be used when that value must be a Go value.
+	/// Also note that when refs are used for indexes in Go that they must start at 0 not 1.
+	lib.CreateFunction(tab, "new_slice",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "ln"},
+			{Type: lua.INT, Name: "type", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var id int
+
+			ln := args["len"].(int)
+
+			switch args["type"].(int) {
+			case REFTYPE_LUA:
+				val := make([]golua.LValue, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_BOOL:
+				val := make([]bool, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_INT:
+				val := make([]int, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_INT32:
+				val := make([]int32, ln)
+				r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_FLOAT:
+				val := make([]float64, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_FLOAT32:
+				val := make([]float32, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_STRING:
+				val := make([]string, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_RGBA:
+				val := make([]*color.RGBA, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+			case REFTYPE_TIME:
+				val := make([]*time.Time, ln)
+				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &val})
+
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for new_slice: %d", args["type"]), log.LEVEL_ERROR)), 0)
+			}
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
 	/// @func get()
 	/// @arg id
 	/// @returns value
@@ -113,6 +168,96 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 
 			default:
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for get: %T", item), log.LEVEL_ERROR)), 0)
+			}
+
+			return 1
+		})
+
+	/// @func get_slice()
+	/// @arg id
+	/// @arg index
+	/// @returns value
+	/// @desc
+	/// Note: this is a copy of the value being referenced, to mutate the ref use ref.set_slice().
+	lib.CreateFunction(tab, "get_slice",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "index"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			i, err := r.CR_REF.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			index := args["index"].(int)
+
+			switch item := i.Value.(type) {
+			case *[]golua.LValue:
+				state.Push((*item)[index])
+			case *[]bool:
+				state.Push(golua.LBool((*item)[index]))
+			case *[]int:
+				state.Push(golua.LNumber((*item)[index]))
+			case *[]int32:
+				state.Push(golua.LNumber((*item)[index]))
+			case *[]float64:
+				state.Push(golua.LNumber((*item)[index]))
+			case *[]float32:
+				state.Push(golua.LNumber((*item)[index]))
+			case *[]string:
+				state.Push(golua.LString((*item)[index]))
+			case *[]*color.RGBA:
+				state.Push(imageutil.RGBAToTable(state, (*item)[index]))
+			case *[]*time.Time:
+				state.Push(golua.LNumber((*item)[index].UnixMilli()))
+			case *[]*g.FontInfo:
+				state.Push(golua.LString((*item)[index].String()))
+
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for get_slice: %T", item), log.LEVEL_ERROR)), 0)
+			}
+
+			return 1
+		})
+
+	/// @func len_slice()
+	/// @arg id
+	/// @returns len of slice ref
+	lib.CreateFunction(tab, "len_slice",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			i, err := r.CR_REF.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			switch item := i.Value.(type) {
+			case *[]golua.LValue:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]bool:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]int:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]int32:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]float64:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]float32:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]string:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]*color.RGBA:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]*time.Time:
+				state.Push(golua.LNumber(len(*item)))
+			case *[]*g.FontInfo:
+				state.Push(golua.LNumber(len(*item)))
+
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for len_slice: %T", item), log.LEVEL_ERROR)), 0)
 			}
 
 			return 1
@@ -163,6 +308,54 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 
 			default:
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for set: %T", i.Value), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func set_slice()
+	/// @arg id
+	/// @arg index
+	/// @arg value
+	lib.CreateFunction(tab, "set_slice",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "index"},
+			{Type: lua.ANY, Name: "value"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			i, err := r.CR_REF.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			index := args["index"].(int)
+
+			val := args["value"].(golua.LValue)
+
+			switch v := i.Value.(type) {
+			case *[]golua.LValue:
+				(*v)[index] = val
+			case *[]bool:
+				(*v)[index] = bool(val.(golua.LBool))
+			case *[]int:
+				(*v)[index] = int(val.(golua.LNumber))
+			case *[]int32:
+				(*v)[index] = int32(val.(golua.LNumber))
+			case *[]float64:
+				(*v)[index] = float64(val.(golua.LNumber))
+			case *[]float32:
+				(*v)[index] = float32(val.(golua.LNumber))
+			case *[]string:
+				(*v)[index] = string(val.(golua.LString))
+			case *[]*color.RGBA:
+				(*v)[index] = imageutil.TableToRGBA(state, val.(*golua.LTable))
+			case *[]*time.Time:
+				t := time.UnixMilli(int64(val.(golua.LNumber)))
+				(*v)[index] = &t
+
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown reftype for set_slice: %T", i.Value), log.LEVEL_ERROR)), 0)
 			}
 
 			return 0
