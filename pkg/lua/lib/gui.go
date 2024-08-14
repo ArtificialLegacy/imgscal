@@ -1,16 +1,17 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
 	"os"
-	"path"
 	"sync"
 	"time"
 
 	imgui "github.com/AllenDang/cimgui-go"
 	g "github.com/AllenDang/giu"
+	"github.com/ArtificialLegacy/imgscal/pkg/assets"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -214,30 +215,27 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			iconPaths := []string{
-				"favicon-16x16.png",
-				"favicon-32x32.png",
-			}
-			if args["circled"].(bool) {
-				iconPaths = []string{
-					"favicon-16x16-circle.png",
-					"favicon-32x32-circle.png",
+			circled := args["circled"].(bool)
+			var iconBytes [][]byte
+
+			if !circled {
+				iconBytes = [][]byte{
+					assets.FAVICON_16x16,
+					assets.FAVICON_32x32,
+				}
+			} else {
+				iconBytes = [][]byte{
+					assets.FAVICON_16x16_circle,
+					assets.FAVICON_32x32_circle,
 				}
 			}
 
 			icons := []image.Image{}
 
-			wd, _ := os.Getwd()
-			for _, p := range iconPaths {
-				f, err := os.Open(path.Join(wd, "assets", p))
+			for _, f := range iconBytes {
+				ic, err := imageutil.Decode(bytes.NewReader(f), imageutil.ENCODING_PNG)
 				if err != nil {
-					state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot open %s", p), log.LEVEL_ERROR)), 0)
-				}
-				defer f.Close()
-
-				ic, err := imageutil.Decode(f, imageutil.ENCODING_PNG)
-				if err != nil {
-					state.Error(golua.LString(lg.Append(fmt.Sprintf("%s is an invalid image: %s", p, err), log.LEVEL_ERROR)), 0)
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid image: %s", err), log.LEVEL_ERROR)), 0)
 				}
 
 				icons = append(icons, ic)

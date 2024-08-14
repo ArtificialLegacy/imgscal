@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ArtificialLegacy/imgscal/pkg/assets"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -67,6 +69,76 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 						Name:     strings.TrimSuffix(file.Name(), path.Ext(file.Name())),
 						Image:    img,
 						Encoding: encoding,
+						Model:    model,
+					}
+				},
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func load_embedded()
+	/// @arg embedded
+	/// @arg? model - used only to specify default of unsupported color models
+	/// @returns int - the image id
+	lib.CreateFunction(tab, "load_embedded",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "embedded"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var asset []byte
+			var name string
+
+			switch args["embedded"].(int) {
+			case EMBEDDED_ICONCIRCLE_16x16:
+				asset = assets.FAVICON_16x16_circle
+				name = "embedded_favicon_16x16_circle"
+			case EMBEDDED_ICONCIRCLE_32x32:
+				asset = assets.FAVICON_32x32_circle
+				name = "embedded_favicon_32x32_circle"
+			case EMBEDDED_ICON_16x16:
+				asset = assets.FAVICON_16x16
+				name = "embedded_favicon_16x16"
+			case EMBEDDED_ICON_32x32:
+				asset = assets.FAVICON_32x32
+				name = "embedded_favicon_32x32"
+			case EMBEDDED_ICON_180x180:
+				asset = assets.FAVICON_180x180
+				name = "embedded_favicon_180x180"
+			case EMBEDDED_ICON_192x192:
+				asset = assets.FAVICON_192x192
+				name = "embedded_favicon_192x192"
+			case EMBEDDED_ICON_512x512:
+				asset = assets.FAVICON_512x512
+				name = "embedded_favicon_512x512"
+
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid embedded asset selected: %d", args["embedded"]), log.LEVEL_ERROR)), 0)
+			}
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img, err := imageutil.Decode(bytes.NewReader(asset), imageutil.ENCODING_PNG)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("provided embedded is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
+					i.Self = &collection.ItemImage{
+						Name:     name,
+						Image:    img,
+						Encoding: imageutil.ENCODING_PNG,
 						Model:    model,
 					}
 				},
@@ -325,7 +397,33 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LString(ext))
 			return 1
 		})
+
+	/// @constants Embedded Assets
+	/// @const  EMBEDDED_ICONCIRCLE_16x16
+	/// @const  EMBEDDED_ICONCIRCLE_32x32
+	/// @const  EMBEDDED_ICON_16x16
+	/// @const  EMBEDDED_ICON_32x32
+	/// @const  EMBEDDED_ICON_180x180
+	/// @const  EMBEDDED_ICON_192x192
+	/// @const  EMBEDDED_ICON_512x512
+	tab.RawSetString("EMBEDDED_ICONCIRCLE_16x16", golua.LNumber(EMBEDDED_ICONCIRCLE_16x16))
+	tab.RawSetString("EMBEDDED_ICONCIRCLE_32x32", golua.LNumber(EMBEDDED_ICONCIRCLE_32x32))
+	tab.RawSetString("EMBEDDED_ICON_16x16", golua.LNumber(EMBEDDED_ICON_16x16))
+	tab.RawSetString("EMBEDDED_ICON_32x32", golua.LNumber(EMBEDDED_ICON_32x32))
+	tab.RawSetString("EMBEDDED_ICON_180x180", golua.LNumber(EMBEDDED_ICON_180x180))
+	tab.RawSetString("EMBEDDED_ICON_192x192", golua.LNumber(EMBEDDED_ICON_192x192))
+	tab.RawSetString("EMBEDDED_ICON_512x512", golua.LNumber(EMBEDDED_ICON_512x512))
 }
+
+const (
+	EMBEDDED_ICONCIRCLE_16x16 int = iota
+	EMBEDDED_ICONCIRCLE_32x32
+	EMBEDDED_ICON_16x16
+	EMBEDDED_ICON_32x32
+	EMBEDDED_ICON_180x180
+	EMBEDDED_ICON_192x192
+	EMBEDDED_ICON_512x512
+)
 
 func parseDir(fn string, pathstr string, filter []string, lib *lua.Lib) {
 	f, err := os.Stat(pathstr)

@@ -1,5 +1,5 @@
 
-# ![icon](./assets/favicon-32x32.png) ImgScal
+# ![icon](./pkg/assets/icons/favicon-32x32.png) ImgScal
 
 A tool for automating image processing. Allows for creating of custom workflows
 writing in lua.
@@ -9,19 +9,19 @@ writing in lua.
 
 ## Examples
 
-### GUI/Noise
+> Examples can be installed by running `make install-examples`.
+> This requires ImgScal to have been run at least **once**,
+> as the config file and workflow directory must exist.
+
+### GUI/Noise - [Source](/examples/example_noise.lua)
 
 Demo workflow that creates an interface with controls to generate noise maps.
 
-> [Source File](/workflows/example_noise.lua)
-
 ![noise example](assets/demos/example_noise.png)
 
-### GUI/Filter
+### GUI/Filter - [Source](/examples/example_filter.lua)
 
 Demo workflow that creates an interface to apply filters to an image.
-
-> [Source File](/workflows//example_filter.lua)
 
 ![filter example](assets/demos/example_filters.png)
 
@@ -33,11 +33,8 @@ Demo workflow that creates an interface to apply filters to an image.
   * Recommended to run through WSL when using the gui library on Windows.
 * Some parts of the `gui` library may not work properly.
   * `gui.css_parse()` is added but the underlying `g.ParseCSSStyleSheet()` is currently broken.
-    * `wg_css_tag()` can still be used, but will not have any affect until the upstream issue is fixed.
-  * Bindings for the text editor widget have not been added, as it is currently disabled upstream.
-  * Bindings for the markdown widget have also not been added for the same reason.
-  * No lua bindings for manually pushing and popping `wg_style` as widgets only exist as tables within lua.
-* When a lua panic occurs outside of the `gui.window_run()` loop, it may cause the window to now close until the process is closed.
+  * `gui.wg_css_tag()` can still be used, but will not have any affect until the upstream issue is fixed.
+* When a lua panic occurs outside of the `gui.window_run()` loop, it may cause the window to not close until the process is closed.
   * Looking for a solution as calling `.Close()` on an already closed window causes GLFW to break until the process is restarted, and there is no publically exported field to check if a window is active.
 * It is currently possible to deadlock in certain circumstances.
   * Passing the same collection item twice into a function that schedules on it. e.g. `image.draw()`
@@ -62,8 +59,6 @@ make build-windows
 ```sh
 make build-linux
 ```
-
-**❗ Note: Removes the build directory, including any custom made workflows.**
 
 ## Documentation
 
