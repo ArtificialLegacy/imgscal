@@ -26,8 +26,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 			name := args["name"].(string)
 
-			chLog := log.NewLogger(fmt.Sprintf("task_%s", name))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(fmt.Sprintf("task_%s", name), lg)
 			lg.Append(fmt.Sprintf("child log created: task_%s", name), log.LEVEL_INFO)
 
 			id := r.TC.AddItem(&chLog)

@@ -11,7 +11,7 @@ import (
 func WorkflowList(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
-	scripts, err := script.WorkflowList()
+	scripts, err := script.WorkflowList(sm.Config.WorkflowDirectory)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,6 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 		sm.SetState(STATE_MAIN)
 	} else {
 		sm.PushString(scripts[result].Filepath)
-		sm.PushBool(false)
 		sm.SetState(STATE_WORKFLOW_CONFIRM)
 	}
 

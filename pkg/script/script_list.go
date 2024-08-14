@@ -11,10 +11,10 @@ type Script struct {
 	Name     string
 }
 
-func WorkflowList() ([]Script, error) {
+func WorkflowList(workflowDir string) ([]Script, error) {
 	scripts := []Script{}
 
-	err := scriptScan("workflows", "", &scripts)
+	err := scriptScan(workflowDir, "", &scripts)
 	if err != nil {
 		return nil, err
 	}
@@ -23,12 +23,7 @@ func WorkflowList() ([]Script, error) {
 }
 
 func scriptScan(dir, prefix string, scripts *[]Script) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	files, err := os.ReadDir(path.Join(wd, dir))
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return err
 	}

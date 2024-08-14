@@ -139,8 +139,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			name := fmt.Sprintf("context_%d", r.CC.Next())
 
-			chLog := log.NewLogger(name)
-			chLog.Parent(lg)
+			chLog := log.NewLogger(name, lg)
 			lg.Append(fmt.Sprintf("child log created: %s", name), log.LEVEL_INFO)
 
 			id := r.CC.AddItem(&chLog)
@@ -186,8 +185,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			tempName := fmt.Sprintf("context_%d", r.CC.Next())
 
-			chLog := log.NewLogger(tempName)
-			chLog.Parent(lg)
+			chLog := log.NewLogger(tempName, lg)
 			lg.Append(fmt.Sprintf("child log created: %s", tempName), log.LEVEL_INFO)
 
 			id := r.CC.AddItem(&chLog)
@@ -245,8 +243,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			chLog := log.NewLogger(args["name"].(string))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(args["name"].(string), lg)
 			lg.Append(fmt.Sprintf("child log created: %s", args["name"].(string)), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)
@@ -307,8 +304,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			chLog := log.NewLogger(args["name"].(string))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(args["name"].(string), lg)
 			lg.Append(fmt.Sprintf("child log created: %s", args["name"].(string)), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)

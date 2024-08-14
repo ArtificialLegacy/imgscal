@@ -3,7 +3,6 @@ package lua
 import (
 	"fmt"
 	"math"
-	"os"
 	"path"
 	"strconv"
 
@@ -19,6 +18,7 @@ type Runner struct {
 	lg      *log.Logger
 	Plugins []string
 	Dir     string
+	Output  string
 
 	CMDParser *argparse.Parser
 
@@ -61,18 +61,14 @@ func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
 }
 
 func (r *Runner) Run(file string) error {
-	pwd, _ := os.Getwd()
-
 	defer func() {
 		if p := recover(); p != nil {
 			r.lg.Append("recovered from panic during lua runtime.", log.LEVEL_ERROR)
 		}
 	}()
 
-	pth := path.Join(pwd, file)
-	r.Dir = path.Dir(pth)
-
-	err := r.State.DoFile(pth)
+	r.Dir = path.Dir(file)
+	err := r.State.DoFile(file)
 	if err != nil {
 		return err
 	}

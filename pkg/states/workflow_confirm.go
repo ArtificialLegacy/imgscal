@@ -2,8 +2,6 @@ package states
 
 import (
 	"fmt"
-	"os"
-	"path"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
@@ -14,30 +12,31 @@ import (
 )
 
 func WorkflowConfirm(sm *statemachine.StateMachine) error {
-	autoConfirm := sm.PopBool()
 	script := sm.PopString()
 	wf := workflow.NewWorkflow()
 
-	if !autoConfirm {
+	autoConfirm := sm.CliMode || sm.Config.AlwaysConfirm
+
+	if !sm.CliMode {
 		cli.Clear()
 	}
 
-	pwd, err := os.Getwd()
-	if err != nil {
-		return err
+	var lg log.Logger
+	if sm.Config.DisableLogs {
+		lg = log.NewLoggerEmpty()
+	} else {
+		lg = log.NewLoggerBase("config", sm.Config.LogDirectory, false)
 	}
-
-	lg := log.NewLogger("config")
 	defer lg.Close()
 
 	lg.Append("log started for workflow_confirm", log.LEVEL_SYSTEM)
 	state := lua.WorkflowConfigState(&wf, &lg)
-	err = state.DoFile(path.Join(pwd, script))
+	err := state.DoFile(script)
 
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
 
-		if autoConfirm {
+		if sm.CliMode {
 			fmt.Printf("error occured while running script: %s\n", err)
 			sm.SetState(STATE_EXIT)
 			return nil
@@ -48,7 +47,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
-	if !autoConfirm && wf.CliExclusive {
+	if !sm.CliMode && wf.CliExclusive {
 		lg.Append("workflow is marked cli exclusive, it can only be called by passing it in as a cmd arg.", log.LEVEL_ERROR)
 
 		sm.PushString(script)
@@ -74,7 +73,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 		fmt.Printf("Required plugins: \n - %s\n\n;", strings.Join(wf.Requires, "\n - "))
 
 		answer, err = cli.Question(
-			fmt.Sprintf("Do you wish to run the above workflow? %s(Y)%s/%sN%s", cli.COLOR_GREEN, cli.COLOR_RESET, cli.COLOR_RED, cli.COLOR_RESET),
+			fmt.Sprintf("Do you wish to run the above workflow? %s(Y)%s/%s%sN%s", cli.COLOR_GREEN, cli.COLOR_RESET, cli.COLOR_BOLD, cli.COLOR_RED, cli.COLOR_RESET),
 			cli.QuestionOptions{
 				Normalize: true,
 				Accepts:   []string{"y", "n"},
@@ -96,7 +95,6 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 			sm.PushString(s)
 		}
 		sm.PushString(script)
-		sm.PushBool(autoConfirm)
 		sm.SetState(STATE_WORKFLOW_RUN)
 		lg.Append("confirmation answer y", log.LEVEL_INFO)
 	case "n":

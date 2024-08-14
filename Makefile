@@ -30,12 +30,4 @@ doc:
 
 .PHONY: log
 log:
-	cat ./log/@latest.txt
-
-.PHONY: logview
-logview:
-	notepad ./log/@latest.txt
-
-.PHONY: logclear
-logclear:
-	rm ./log/*
+	go run ./cmd/log

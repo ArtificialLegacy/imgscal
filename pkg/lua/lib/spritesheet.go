@@ -244,8 +244,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			for ind := 0; ind < count; ind++ {
 				name := fmt.Sprintf("%d_", ind) + args["name"].(string)
 
-				chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-				chLog.Parent(lg)
+				chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
 				lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 				id := r.IC.AddItem(&chLog)
@@ -342,8 +341,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			name := args["name"].(string)
 
-			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)

@@ -39,8 +39,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR)), 0)
 			}
 
-			chLog := log.NewLogger(fmt.Sprintf("image_%s", file.Name()))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", file.Name()), lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", file.Name()), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)
@@ -261,6 +260,17 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			state.Push(golua.LString(r.Dir))
+			return 1
+		})
+
+	/// @func default_output()
+	/// @returns string
+	/// @desc
+	/// returns the default output directory specified in the config file.
+	lib.CreateFunction(tab, "default_output",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LString(r.Output))
 			return 1
 		})
 

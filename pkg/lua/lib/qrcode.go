@@ -28,8 +28,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "recovery"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			chLog := log.NewLogger(fmt.Sprintf("qrcode_%d", r.QR.Next()))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(fmt.Sprintf("qrcode_%d", r.QR.Next()), lg)
 			lg.Append(fmt.Sprintf("child log created: qrcode_%d", r.QR.Next()), log.LEVEL_INFO)
 
 			id := r.QR.AddItem(&chLog)
@@ -84,8 +83,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 
 			name := args["name"].(string)
 
-			chLog := log.NewLogger(fmt.Sprintf("image_%s", name))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
 			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 			id := r.IC.AddItem(&chLog)

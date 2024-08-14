@@ -1,6 +1,10 @@
 package statemachine
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/ArtificialLegacy/imgscal/pkg/config"
+)
 
 type StateFunction func(sm *StateMachine) error
 
@@ -12,6 +16,9 @@ type StateMachine struct {
 
 	stack        []any
 	stackPointer int
+
+	Config  *config.Config
+	CliMode bool
 }
 
 func NewStateMachine(stateCount int) *StateMachine {

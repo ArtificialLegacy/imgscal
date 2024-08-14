@@ -19,8 +19,6 @@ const (
 	LEVEL_SYSTEM
 )
 
-const LOG_DIR = "./log"
-
 type logoutput interface {
 	Printf(format string, v ...any)
 }
@@ -33,18 +31,20 @@ type Logger struct {
 	parent       *Logger
 	childrenGrab []string
 	verbose      bool
+	empty        bool
+	dir          string
 }
 
-func NewLogger(name string) Logger {
+func NewLoggerBase(name string, dir string, verbose bool) Logger {
 	logTime := time.Now().UTC().UnixMilli()
 	fileName := fmt.Sprintf("%s_%d.txt", name, logTime)
 
-	_, err := os.Stat(LOG_DIR)
+	_, err := os.Stat(dir)
 	if err != nil {
-		os.MkdirAll(LOG_DIR, 0o777)
+		os.MkdirAll(dir, 0o777)
 	}
 
-	file, _ := os.OpenFile(path.Join(LOG_DIR, fileName), os.O_CREATE|os.O_RDWR, 0o666)
+	file, _ := os.OpenFile(path.Join(dir, fileName), os.O_CREATE|os.O_RDWR, 0o666)
 
 	lg := Logger{
 		logFile:      fileName,
@@ -53,6 +53,42 @@ func NewLogger(name string) Logger {
 		file:         file,
 		parent:       nil,
 		childrenGrab: []string{},
+		empty:        false,
+		verbose:      verbose,
+		dir:          dir,
+	}
+
+	return lg
+}
+
+func NewLogger(name string, parent *Logger) Logger {
+	if parent.empty {
+		return NewLoggerEmpty()
+	}
+
+	dir := parent.dir
+	verbose := parent.verbose
+
+	logTime := time.Now().UTC().UnixMilli()
+	fileName := fmt.Sprintf("%s_%d.txt", name, logTime)
+
+	_, err := os.Stat(dir)
+	if err != nil {
+		os.MkdirAll(dir, 0o777)
+	}
+
+	file, _ := os.OpenFile(path.Join(dir, fileName), os.O_CREATE|os.O_RDWR, 0o666)
+
+	lg := Logger{
+		logFile:      fileName,
+		name:         name,
+		logger:       log.New(file, "", 0),
+		file:         file,
+		parent:       parent,
+		childrenGrab: []string{},
+		empty:        false,
+		verbose:      verbose,
+		dir:          dir,
 	}
 
 	return lg
@@ -67,14 +103,10 @@ func NewLoggerEmpty() Logger {
 		logFile: "",
 		logger:  emptyLog{},
 		parent:  nil,
+		empty:   true,
 	}
 
 	return lg
-}
-
-func (l *Logger) Parent(lg *Logger) {
-	l.verbose = lg.verbose
-	l.parent = lg
 }
 
 func (l Logger) EnableVerbose() Logger {
@@ -83,6 +115,9 @@ func (l Logger) EnableVerbose() Logger {
 }
 
 func (l *Logger) Append(str string, level LogLevel) string {
+	if l.empty {
+		return str
+	}
 	if !l.verbose && level == LEVEL_VERBOSE {
 		return str
 	}
@@ -115,6 +150,10 @@ func (l *Logger) Append(str string, level LogLevel) string {
 }
 
 func (l *Logger) Close() {
+	if l.empty {
+		return
+	}
+
 	if l.parent != nil {
 		l.parent.childrenGrab = append(l.parent.childrenGrab, l.file.Name())
 	}
@@ -134,12 +173,12 @@ func (l *Logger) Close() {
 	l.file.Close()
 
 	if l.parent == nil {
-		f, err := os.OpenFile(path.Join(LOG_DIR, "@latest.txt"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+		f, err := os.OpenFile(path.Join(l.dir, "@latest.txt"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 		if err != nil {
 			return
 		}
 
-		b, err := os.ReadFile(path.Join(LOG_DIR, l.logFile))
+		b, err := os.ReadFile(path.Join(l.dir, l.logFile))
 		if err != nil {
 			return
 		}

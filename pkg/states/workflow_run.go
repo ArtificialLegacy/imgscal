@@ -14,22 +14,28 @@ import (
 )
 
 func WorkflowRun(sm *statemachine.StateMachine) error {
-	exitFinish := sm.PopBool()
 	script := sm.PopString()
 	req := []string{}
 	for sm.Peek() {
 		req = append(req, sm.PopString())
 	}
 
-	if !exitFinish {
+	if !sm.CliMode {
 		cli.Clear()
 	}
 
-	lg := log.NewLogger("execute")
+	var lg log.Logger
+
+	if sm.Config.DisableLogs {
+		lg = log.NewLoggerEmpty()
+	} else {
+		lg = log.NewLoggerBase("execute", sm.Config.LogDirectory, false)
+	}
 
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := lua.WorkflowRunState(&lg)
 	runner := lua.NewRunner(req, state, &lg)
+	runner.Output = sm.Config.OutputDirectory
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -76,7 +82,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
 
-		if exitFinish {
+		if sm.CliMode {
 			fmt.Printf("error occured while running script: %s\n", err)
 
 			sm.SetState(STATE_EXIT)
@@ -90,13 +96,13 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
-	ert := collErr(runner.TC.Errs, "TC", script, &lg, sm, exitFinish)
-	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm, exitFinish)
-	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm, exitFinish)
-	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm, exitFinish)
-	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm, exitFinish)
+	ert := collErr(runner.TC.Errs, "TC", script, &lg, sm)
+	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm)
+	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm)
+	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
+	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
 	if ert || eri || erf || erc || erq {
-		if exitFinish {
+		if sm.CliMode {
 			sm.SetState(STATE_EXIT)
 			return fmt.Errorf("error running script")
 		}
@@ -110,7 +116,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	lg.Append("workflow finished", log.LEVEL_INFO)
 
-	if exitFinish {
+	if sm.CliMode {
 		sm.SetState(STATE_EXIT)
 		return nil
 	}
@@ -121,14 +127,14 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	return nil
 }
 
-func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine.StateMachine, exitFinish bool) bool {
+func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine.StateMachine) bool {
 	errExists := false
 
 	for _, err := range errs {
 		if err != nil {
 			lg.Append(fmt.Sprintf("error occured within %s collection: %s", name, err), log.LEVEL_ERROR)
 
-			if exitFinish {
+			if sm.CliMode {
 				fmt.Printf("error occured within %s collection: %s\n", name, err)
 
 				sm.SetState(STATE_EXIT)

@@ -41,8 +41,7 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("path provided is not a dir: %s", args["path"].(string)), log.LEVEL_ERROR)), 0)
 			}
 
-			chLog := log.NewLogger(fmt.Sprintf("file_%s", fi.Name()))
-			chLog.Parent(lg)
+			chLog := log.NewLogger(fmt.Sprintf("file_%s", fi.Name()), lg)
 			lg.Append(fmt.Sprintf("child log created: file_%s", fi.Name()), log.LEVEL_INFO)
 
 			id := r.FC.AddItem(&chLog)

@@ -23,7 +23,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "msg"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			println(args["msg"].(string))
+			fmt.Println(args["msg"].(string))
 			lg.Append(fmt.Sprintf("lua msg printed: %s", args["msg"]), log.LEVEL_INFO)
 			return 0
 		})
