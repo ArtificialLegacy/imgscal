@@ -3,6 +3,7 @@
 
 Automate image processing programmatically.
 
+* Built around concurrency.
 * Workflows writteng in lua.
 * Builtin handling for image encodings and color models.
 * Included ImGui wrapper for building custom GUI tools.
