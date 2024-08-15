@@ -34,7 +34,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := lua.WorkflowRunState(&lg)
-	runner := lua.NewRunner(req, state, &lg)
+	runner := lua.NewRunner(req, state, &lg, sm.CliMode)
 	runner.Output = sm.Config.OutputDirectory
 
 	defer func() {

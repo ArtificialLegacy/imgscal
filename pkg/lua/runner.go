@@ -21,6 +21,7 @@ type Runner struct {
 	Output  string
 
 	CMDParser *argparse.Parser
+	CLIMode   bool
 
 	// -- collections
 	TC *collection.Collection[collection.ItemTask]
@@ -34,13 +35,14 @@ type Runner struct {
 	CR_REF *collection.Crate[collection.RefItem[any]]
 }
 
-func NewRunner(plugins []string, state *lua.LState, lg *log.Logger) Runner {
+func NewRunner(plugins []string, state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 	return Runner{
 		State:   state,
 		lg:      lg,
 		Plugins: plugins,
 
 		CMDParser: argparse.NewParser("imgscal", ""),
+		CLIMode:   cliMode,
 
 		// -- collections
 		IC: collection.NewCollection[collection.ItemImage](lg),

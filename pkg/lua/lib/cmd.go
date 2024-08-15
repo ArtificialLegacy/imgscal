@@ -23,6 +23,12 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "parse",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if !r.CLIMode {
+				state.Push(golua.LFalse)
+				state.Push(golua.LString("workflow was not called directly, cannot parse args."))
+				return 2
+			}
+
 			err := r.CMDParser.Parse(os.Args[1:])
 			if err != nil {
 				state.Push(golua.LFalse)
@@ -33,6 +39,15 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			}
 
 			return 2
+		})
+
+	/// @func called()
+	/// @returns bool - if the workflow was called directly from the cmd line
+	lib.CreateFunction(tab, "called",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(r.CLIMode))
+			return 1
 		})
 
 	/// @func options()
