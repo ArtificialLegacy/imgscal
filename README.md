@@ -1,11 +1,13 @@
 
 # ![icon](./pkg/assets/icons/favicon-32x32.png) ImgScal
 
-A tool for automating image processing. Allows for creating of custom workflows
-writing in lua.
+Automate image processing programmatically.
 
-* Run image processing tasks written using lua.
-* CLI interface with portable exe.
+* Workflows writteng in lua.
+* Builtin handling for image encodings and color models.
+* Included ImGui wrapper for building custom GUI tools.
+* Spritesheet support.
+* Command-line support, e.g. `imgscal resize ./image.png 100 100`.
 
 ## Run
 
@@ -35,22 +37,6 @@ Demo workflow that creates an interface with controls to generate noise maps.
 Demo workflow that creates an interface to apply filters to an image.
 
 ![filter example](assets/demos/example_filters.png)
-
-## Known Issues
-
-* There is an upstream issue related to `mainthread` when running on Windows.
-  * Sometimes causes the application to crash within the first frame of the master window.
-  * Sometimes prevents `gui.update()` from updating the UI when called from a scheduled function.
-  * Recommended to run through WSL when using the gui library on Windows.
-* Some parts of the `gui` library may not work properly.
-  * `gui.css_parse()` is added but the underlying `g.ParseCSSStyleSheet()` is currently broken.
-  * `gui.wg_css_tag()` can still be used, but will not have any affect until the upstream issue is fixed.
-* When a lua panic occurs outside of the `gui.window_run()` loop, it may cause the window to not close until the process is closed.
-  * Looking for a solution as calling `.Close()` on an already closed window causes GLFW to break until the process is restarted, and there is no publically exported field to check if a window is active.
-* It is currently possible to deadlock in certain circumstances.
-  * Passing the same collection item twice into a function that schedules on it. e.g. `image.draw()`
-  * Calling a function that schedules on a collection item within a function already running for that
-    collection item. e.g. Calling `image.size()` within the callback of `image.map()` for the same images.
 
 ## Build
 
@@ -127,3 +113,19 @@ relative paths should take precedent when outputting.
   * The most recently generated log also gets saved as `@latest.txt`.
 * `disable_logs` when set to true turns off all log output to files.
 * `always_confirm` when set to true skips the confirmation screen before running a workflow.
+
+## Known Issues
+
+* There is an upstream issue related to `mainthread` when running on Windows.
+  * Sometimes causes the application to crash within the first frame of the master window.
+  * Sometimes prevents `gui.update()` from updating the UI when called from a scheduled function.
+  * Recommended to run through WSL when using the gui library on Windows.
+* Some parts of the `gui` library may not work properly.
+  * `gui.css_parse()` is added but the underlying `g.ParseCSSStyleSheet()` is currently broken.
+  * `gui.wg_css_tag()` can still be used, but will not have any affect until the upstream issue is fixed.
+* When a lua panic occurs outside of the `gui.window_run()` loop, it may cause the window to not close until the process is closed.
+  * Looking for a solution as calling `.Close()` on an already closed window causes GLFW to break until the process is restarted, and there is no publically exported field to check if a window is active.
+* It is currently possible to deadlock in certain circumstances.
+  * Passing the same collection item twice into a function that schedules on it. e.g. `image.draw()`
+  * Calling a function that schedules on a collection item within a function already running for that
+    collection item. e.g. Calling `image.size()` within the callback of `image.map()` for the same images.
