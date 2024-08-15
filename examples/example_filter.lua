@@ -583,7 +583,7 @@ main(function ()
                         if ref.get(rotType) == -1 then
                             table.insert(filters, filter.rotate(
                                 ref.get(rotAngle),
-                                image.color_rgba_gray(0, 0),
+                                image.color_graya(0, 0),
                                 ref.get(rotInterp)
                             ))
                         end

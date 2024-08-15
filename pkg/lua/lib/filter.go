@@ -1366,7 +1366,7 @@ func rotateBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 	bgcolor := t.RawGetString("bgcolor").(*golua.LTable)
 	interpolation := t.RawGetString("interpolation").(golua.LNumber)
 
-	c := imageutil.TableToRGBA(state, bgcolor)
+	c := imageutil.ColorTableToRGBAColor(bgcolor)
 
 	f := gift.Rotate(float32(angle), c, gift.Interpolation(interpolation))
 	return f

@@ -1191,7 +1191,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorButton(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorButton(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1202,7 +1202,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorButtonActive(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorButtonActive(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1213,7 +1213,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorButtonHovered(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorButtonHovered(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1224,7 +1224,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorFrameBg(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorFrameBg(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1235,7 +1235,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorText(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorText(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1246,7 +1246,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorTextDisabled(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorTextDisabled(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1257,7 +1257,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushColorWindowBg(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushColorWindowBg(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1341,7 +1341,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.PushStyleColor(g.StyleColorID(args["id"].(int)), imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			g.PushStyleColor(g.StyleColorID(args["id"].(int)), imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1525,7 +1525,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			cuint := g.ColorToUint(imageutil.TableToRGBA(state, args["color"].(*golua.LTable)))
+			cuint := g.ColorToUint(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
 
 			state.Push(golua.LNumber(cuint))
 			return 1
@@ -1533,14 +1533,14 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func uint32_to_color()
 	/// @arg ucolor
-	/// @returns color
+	/// @returns color [RGBA]
 	lib.CreateFunction(tab, "uint32_to_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ucolor"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.UintToColor(uint32(args["ucolor"].(int)))
-			state.Push(imageutil.RGBAToTable(state, c))
+			state.Push(imageutil.RGBAColorToColorTable(state, c))
 			return 1
 		})
 
@@ -2777,7 +2777,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			cp0 := imageutil.TableToPoint(state, args["cp0"].(*golua.LTable))
 			cp1 := imageutil.TableToPoint(state, args["cp1"].(*golua.LTable))
 			pos1 := imageutil.TableToPoint(state, args["pos1"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 			segments := args["segments"].(int)
 
@@ -2804,7 +2804,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
 			radius := args["radius"].(float64)
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			segments := args["segments"].(int)
 			thickness := args["thickness"].(float64)
 
@@ -2827,7 +2827,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
 			radius := args["radius"].(float64)
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
 			c.AddCircleFilled(center, float32(radius), col)
 			return 0
@@ -2850,7 +2850,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
 			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 
 			c.AddLine(p1, p2, col, float32(thickness))
@@ -2880,7 +2880,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
 			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
 			p4 := imageutil.TableToPoint(state, args["p4"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 
 			c.AddQuad(p1, p2, p3, p4, col, float32(thickness))
@@ -2908,7 +2908,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
 			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
 			p4 := imageutil.TableToPoint(state, args["p4"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
 			c.AddQuadFilled(p1, p2, p3, p4, col)
 			return 0
@@ -2935,7 +2935,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
 			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			rounding := args["rounding"].(float64)
 			flags := args["flags"].(int)
 			thickness := args["thickness"].(float64)
@@ -2963,7 +2963,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
 			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			rounding := args["rounding"].(float64)
 			flags := args["flags"].(int)
 
@@ -2985,7 +2985,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			c := g.GetCanvas()
 
 			pos := imageutil.TableToPoint(state, args["pos"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			text := args["text"].(string)
 
 			c.AddText(pos, col, text)
@@ -3012,7 +3012,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
 			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
 			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 
 			c.AddTriangle(p1, p2, p3, col, float32(thickness))
@@ -3037,7 +3037,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
 			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
 			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
 			c.AddTriangleFilled(p1, p2, p3, col)
 			return 0
@@ -3137,7 +3137,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
 			c.PathFillConvex(col)
 			return 0
@@ -3188,7 +3188,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			col := imageutil.TableToRGBA(state, args["color"].(*golua.LTable))
+			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			flags := args["flags"].(int)
 			thickness := args["thickness"].(float64)
 
@@ -5846,7 +5846,7 @@ func colorEditBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 	change := t.RawGetString("__change")
 	if change.Type() == golua.LTFunction {
 		c.OnChange(func() {
-			ct := imageutil.RGBAToTable(state, selected)
+			ct := imageutil.RGBAColorToColorTable(state, selected)
 
 			state.Push(change)
 			state.Push(ct)
@@ -8003,7 +8003,7 @@ func tableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 
 	clr := t.RawGetString("__color")
 	if clr.Type() == golua.LTTable {
-		rgba := imageutil.TableToRGBA(state, clr.(*golua.LTable))
+		rgba := imageutil.ColorTableToRGBAColor(clr.(*golua.LTable))
 		s.BgColor(rgba)
 	}
 
@@ -9057,13 +9057,13 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 
 	bgcolor := t.RawGetString("__bgcolor")
 	if bgcolor.Type() == golua.LTTable {
-		rgba := imageutil.TableToRGBA(state, bgcolor.(*golua.LTable))
+		rgba := imageutil.ColorTableToRGBAColor(bgcolor.(*golua.LTable))
 		b.BgColor(rgba)
 	}
 
 	tint := t.RawGetString("__tint")
 	if tint.Type() == golua.LTTable {
-		rgba := imageutil.TableToRGBA(state, tint.(*golua.LTable))
+		rgba := imageutil.ColorTableToRGBAColor(tint.(*golua.LTable))
 		b.TintColor(rgba)
 	}
 
@@ -9182,7 +9182,7 @@ func styleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 		cid := ct.RawGetString("colorid").(golua.LNumber)
 		col := ct.RawGetString("color").(*golua.LTable)
 
-		rgba := imageutil.TableToRGBA(state, col)
+		rgba := imageutil.ColorTableToRGBAColor(col)
 		s.SetColor(g.StyleColorID(cid), rgba)
 	}
 

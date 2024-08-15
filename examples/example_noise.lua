@@ -40,7 +40,7 @@ function genNoise2(img, seed, scale, direct, ecolor, ealpha, normal, ready)
         image.map(img, function(x, y, c)
             local v = noise.simplex_2d(seed, x * scale, y * scale, normal)
             local i = math.floor(255 * v)
-            return image.color_rgb_gray(i)
+            return image.color_gray(i)
         end)
     end
 
@@ -57,7 +57,7 @@ function genNoise3(img, seed, scale, aoff, normal, ready)
         local v2 = noise.simplex_3d(seed, x * scale, y * scale, aoff, normal)
         local i1 = math.floor(255 * v1)
         local i2 = math.floor(255 * v2)
-        return image.color_rgba_gray(i1, i2)
+        return image.color_graya(i1, i2)
     end)
 
     collection.schedule(collection.IMAGE, img, function()

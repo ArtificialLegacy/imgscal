@@ -58,7 +58,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 				id = r.CR_REF.Add(&collection.RefItem[any]{Value: &v})
 			case REFTYPE_RGBA:
 				v := v.(*golua.LTable)
-				c := imageutil.TableToRGBA(state, v)
+				c := imageutil.ColorTableToRGBAColor(v)
 
 				id = r.CR_REF.Add(&collection.RefItem[any]{Value: c})
 			case REFTYPE_TIME:
@@ -160,7 +160,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			case *string:
 				state.Push(golua.LString(*item))
 			case *color.RGBA:
-				state.Push(imageutil.RGBAToTable(state, item))
+				state.Push(imageutil.RGBAColorToColorTable(state, item))
 			case *time.Time:
 				state.Push(golua.LNumber(item.UnixMilli()))
 			case *g.FontInfo:
@@ -208,7 +208,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			case *[]string:
 				state.Push(golua.LString((*item)[index]))
 			case *[]*color.RGBA:
-				state.Push(imageutil.RGBAToTable(state, (*item)[index]))
+				state.Push(imageutil.RGBAColorToColorTable(state, (*item)[index]))
 			case *[]*time.Time:
 				state.Push(golua.LNumber((*item)[index].UnixMilli()))
 			case *[]*g.FontInfo:
@@ -301,7 +301,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 				v := string(v.(golua.LString))
 				i.Value = &v
 			case *color.RGBA:
-				i.Value = imageutil.TableToRGBA(state, v.(*golua.LTable))
+				i.Value = imageutil.ColorTableToRGBAColor(v.(*golua.LTable))
 			case *time.Time:
 				v := time.UnixMilli(int64(v.(golua.LNumber)))
 				i.Value = &v
@@ -349,7 +349,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			case *[]string:
 				(*v)[index] = string(val.(golua.LString))
 			case *[]*color.RGBA:
-				(*v)[index] = imageutil.TableToRGBA(state, val.(*golua.LTable))
+				(*v)[index] = imageutil.ColorTableToRGBAColor(val.(*golua.LTable))
 			case *[]*time.Time:
 				t := time.UnixMilli(int64(val.(golua.LNumber)))
 				(*v)[index] = &t
@@ -395,7 +395,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 	/// @const FLOAT
 	/// @const FLOAT32
 	/// @const STRING
-	/// @const RGBA
+	/// @const RGBA - color struct [RGBA]
 	/// @const TIME - timestamp in ms
 	/// @const FONT - giu.FontInfo - cannot be created or set, getting will return .String()
 	tab.RawSetString("LUA", golua.LNumber(REFTYPE_LUA))
