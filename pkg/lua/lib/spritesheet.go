@@ -3,8 +3,8 @@ package lib
 import (
 	"fmt"
 	"image"
-	"math"
 	"strconv"
+	"sync"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
@@ -23,7 +23,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg width
 	/// @arg height
 	/// @arg perRow
-	/// @arg? offsets - {hpixel, vpixel, hcell, vcell}
+	/// @arg? offsets - {hpixel, vpixel, hcell, vcell, index}
 	/// @arg? hsep
 	/// @arg? vsep
 	/// @returns spritesheet struct
@@ -38,6 +38,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.INT, Name: "vpixel", Optional: true},
 				{Type: lua.INT, Name: "hcell", Optional: true},
 				{Type: lua.INT, Name: "vcell", Optional: true},
+				{Type: lua.INT, Name: "index", Optional: true},
 			}},
 			{Type: lua.INT, Name: "hsep", Optional: true},
 			{Type: lua.INT, Name: "vsep", Optional: true},
@@ -48,7 +49,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			/// @prop width
 			/// @prop height
 			/// @prop perRow
-			/// @prop offsets - {hpixel, vpixel, hcell, vcell}
+			/// @prop offsets - {hpixel, vpixel, hcell, vcell, index}
 			/// @prop hsep
 			/// @prop vsep
 
@@ -65,6 +66,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			ot.RawSetString("vpixel", golua.LNumber(offsets["vpixel"].(int)))
 			ot.RawSetString("hcell", golua.LNumber(offsets["hcell"].(int)))
 			ot.RawSetString("vcell", golua.LNumber(offsets["vcell"].(int)))
+			ot.RawSetString("index", golua.LNumber(offsets["index"].(int)))
 			t.RawSetString("offsets", ot)
 
 			t.RawSetString("hsep", golua.LNumber(args["hsep"].(int)))
@@ -79,6 +81,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg vpixel
 	/// @arg hcell
 	/// @arg vcell
+	/// @arg index
 	/// @returns offset struct
 	lib.CreateFunction(tab, "offset",
 		[]lua.Arg{
@@ -86,6 +89,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "vpixel"},
 			{Type: lua.INT, Name: "hcell"},
 			{Type: lua.INT, Name: "vcell"},
+			{Type: lua.INT, Name: "index"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct offset
@@ -93,6 +97,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			/// @prop vpixel
 			/// @prop hcell
 			/// @prop vcell
+			/// @prop index
 
 			t := state.NewTable()
 
@@ -100,6 +105,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			t.RawSetString("vpixel", golua.LNumber(args["vpixel"].(int)))
 			t.RawSetString("hcell", golua.LNumber(args["hcell"].(int)))
 			t.RawSetString("vcell", golua.LNumber(args["vcell"].(int)))
+			t.RawSetString("index", golua.LNumber(args["index"].(int)))
 
 			state.Push(t)
 			return 1
@@ -115,18 +121,13 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "vpixel"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct offset
-			/// @prop hpixel
-			/// @prop vpixel
-			/// @prop hcell
-			/// @prop vcell
-
 			t := state.NewTable()
 
 			t.RawSetString("hpixel", golua.LNumber(args["hpixel"].(int)))
 			t.RawSetString("vpixel", golua.LNumber(args["vpixel"].(int)))
 			t.RawSetString("hcell", golua.LNumber(0))
 			t.RawSetString("vcell", golua.LNumber(0))
+			t.RawSetString("index", golua.LNumber(0))
 
 			state.Push(t)
 			return 1
@@ -142,18 +143,33 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "vcell"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct offset
-			/// @prop hpixel
-			/// @prop vpixel
-			/// @prop hcell
-			/// @prop vcell
-
 			t := state.NewTable()
 
 			t.RawSetString("hpixel", golua.LNumber(0))
 			t.RawSetString("vpixel", golua.LNumber(0))
 			t.RawSetString("hcell", golua.LNumber(args["hcell"].(int)))
 			t.RawSetString("vcell", golua.LNumber(args["vcell"].(int)))
+			t.RawSetString("index", golua.LNumber(0))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func offset_index()
+	/// @arg index
+	/// @returns offset struct
+	lib.CreateFunction(tab, "offset_index",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "index"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := state.NewTable()
+
+			t.RawSetString("hpixel", golua.LNumber(0))
+			t.RawSetString("vpixel", golua.LNumber(0))
+			t.RawSetString("hcell", golua.LNumber(0))
+			t.RawSetString("vcell", golua.LNumber(0))
+			t.RawSetString("index", golua.LNumber(args["index"].(int)))
 
 			state.Push(t)
 			return 1
@@ -162,112 +178,98 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @func to_frames()
 	/// @arg id
 	/// @arg name - will be prefixed with the img index as `I_name`
-	/// @arg count
-	/// @arg width
-	/// @arg height
-	/// @arg perRow
-	/// @arg? offsets - {hpixel, vpixel, hcell, vcell}
-	/// @arg? hsep
-	/// @arg? vsep
+	/// @arg spritesheet
+	/// @arg? nocopy
 	/// @returns array of new images
 	lib.CreateFunction(tab, "to_frames",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
-			{Type: lua.INT, Name: "count"},
-			{Type: lua.INT, Name: "width"},
-			{Type: lua.INT, Name: "height"},
-			{Type: lua.INT, Name: "perRow"},
-			{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "hpixel", Optional: true},
-				{Type: lua.INT, Name: "vpixel", Optional: true},
-				{Type: lua.INT, Name: "hcell", Optional: true},
-				{Type: lua.INT, Name: "vcell", Optional: true},
+			{Type: lua.TABLE, Name: "sheet", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "count"},
+				{Type: lua.INT, Name: "width"},
+				{Type: lua.INT, Name: "height"},
+				{Type: lua.INT, Name: "perRow"},
+				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
+					{Type: lua.INT, Name: "hpixel", Optional: true},
+					{Type: lua.INT, Name: "vpixel", Optional: true},
+					{Type: lua.INT, Name: "hcell", Optional: true},
+					{Type: lua.INT, Name: "vcell", Optional: true},
+					{Type: lua.INT, Name: "index", Optional: true},
+				}},
+				{Type: lua.INT, Name: "hsep", Optional: true},
+				{Type: lua.INT, Name: "vsep", Optional: true},
 			}},
-			{Type: lua.INT, Name: "hsep", Optional: true},
-			{Type: lua.INT, Name: "vsep", Optional: true},
+			{Type: lua.BOOL, Name: "nocopy", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			count := args["count"].(int)
-			frameSimg := []chan image.Image{}
+			name := args["name"].(string)
+
+			sheet := args["sheet"].(map[string]any)
+			count := sheet["count"].(int)
+			frames := make([]int, count)
+			frameChannels := make([]chan image.Image, count)
 			var encoding imageutil.ImageEncoding
 			var model imageutil.ColorModel
 
-			for i := 0; i < count; i++ {
-				frameSimg = append(frameSimg, make(chan image.Image, 2))
-			}
+			for ind := range count {
+				frameName := fmt.Sprintf("%d_", ind) + name
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					encoding = i.Self.Encoding
-					model = i.Self.Model
-
-					width := args["width"].(int)
-					height := args["height"].(int)
-
-					offsets := args["offsets"].(map[string]any)
-					offsetx := offsets["hpixel"].(int) + (offsets["hcell"].(int) * width)
-					offsety := offsets["vpixel"].(int) + (offsets["vcell"].(int) * height)
-
-					topx := offsetx + i.Self.Image.Bounds().Min.X
-					topy := offsety + i.Self.Image.Bounds().Min.Y
-					bottomx := topx + width + i.Self.Image.Bounds().Min.X
-					bottomy := topy + height + i.Self.Image.Bounds().Min.Y
-
-					for ind := 0; ind < count; ind++ {
-						simg := imageutil.SubImage(i.Self.Image, topx, topy, bottomx, bottomy, true)
-						frameSimg[ind] <- simg
-
-						if (ind+1)%args["perRow"].(int) == 0 {
-							topx = offsetx
-							bottomx = topx + width
-
-							topy += height + args["vsep"].(int)
-							bottomy = topy + height
-						} else {
-							topx += width + args["hsep"].(int)
-							bottomx = topx + width
-						}
-					}
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					for ind := 0; ind < count; ind++ {
-						frameSimg[ind] <- nil
-					}
-				},
-			})
-
-			frames := []int{}
-
-			for ind := 0; ind < count; ind++ {
-				name := fmt.Sprintf("%d_", ind) + args["name"].(string)
-
-				chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
-				lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+				chLog := log.NewLogger(fmt.Sprintf("image_%s", frameName), lg)
+				lg.Append(fmt.Sprintf("child log created: image_%s", frameName), log.LEVEL_INFO)
 
 				id := r.IC.AddItem(&chLog)
-				frames = append(frames, id)
+				frames[ind] = id
+				frameChannels[ind] = make(chan image.Image)
 
 				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
-						simg := <-frameSimg[ind]
+						img := <-frameChannels[ind]
 						i.Self = &collection.ItemImage{
-							Image:    simg,
+							Image:    img,
 							Encoding: encoding,
-							Name:     name,
+							Name:     frameName,
 							Model:    model,
 						}
 					},
 				})
 			}
 
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					width := sheet["width"].(int)
+					height := sheet["height"].(int)
+
+					perRow := sheet["perRow"].(int)
+
+					offsets := sheet["offsets"].(map[string]any)
+					hpixel := offsets["hpixel"].(int)
+					vpixel := offsets["vpixel"].(int)
+					hcell := offsets["hcell"].(int)
+					vcell := offsets["vcell"].(int)
+					index := offsets["index"].(int)
+
+					hsep := sheet["hsep"].(int)
+					vsep := sheet["vsep"].(int)
+
+					imgs := imageutil.SpritesheetToFrames(i.Self.Image, !args["nocopy"].(bool), count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+
+					encoding = i.Self.Encoding
+					model = i.Self.Model
+
+					for fi, img := range imgs {
+						frameChannels[fi] <- img
+					}
+				},
+			})
+
 			t := state.NewTable()
 			for i, f := range frames {
-				state.SetTable(t, golua.LNumber(i+1), golua.LNumber(f))
+				t.RawSetInt(i+1, golua.LNumber(f))
 			}
 
 			state.Push(t)
@@ -277,64 +279,56 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @func from_frames()
 	/// @arg ids - array of image ids
 	/// @arg name
-	/// @arg width
-	/// @arg height
 	/// @arg model
 	/// @arg encoding
-	/// @arg? perRow
-	/// @arg? offsets - {hpixel, vpixel, hcell, vcell}
-	/// @arg? hsep
-	/// @arg? vsep
+	/// @arg spritesheet
 	/// @returns new image
 	lib.CreateFunction(tab, "from_frames",
 		[]lua.Arg{
 			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
 			{Type: lua.STRING, Name: "name"},
-			{Type: lua.INT, Name: "width"},
-			{Type: lua.INT, Name: "height"},
 			{Type: lua.INT, Name: "model"},
 			{Type: lua.INT, Name: "encoding"},
-			{Type: lua.INT, Name: "perRow", Optional: true},
-			{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "hpixel", Optional: true},
-				{Type: lua.INT, Name: "vpixel", Optional: true},
-				{Type: lua.INT, Name: "hcell", Optional: true},
-				{Type: lua.INT, Name: "vcell", Optional: true},
+			{Type: lua.TABLE, Name: "sheet", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "count"},
+				{Type: lua.INT, Name: "width"},
+				{Type: lua.INT, Name: "height"},
+				{Type: lua.INT, Name: "perRow"},
+				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
+					{Type: lua.INT, Name: "hpixel", Optional: true},
+					{Type: lua.INT, Name: "vpixel", Optional: true},
+					{Type: lua.INT, Name: "hcell", Optional: true},
+					{Type: lua.INT, Name: "vcell", Optional: true},
+					{Type: lua.INT, Name: "index", Optional: true},
+				}},
+				{Type: lua.INT, Name: "hsep", Optional: true},
+				{Type: lua.INT, Name: "vsep", Optional: true},
 			}},
-			{Type: lua.INT, Name: "hsep", Optional: true},
-			{Type: lua.INT, Name: "vsep", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgs := args["ids"].(map[string]any)
-			simg := make(chan *imgData, len(imgs)+1)
+			wg := sync.WaitGroup{}
+			finish := make(chan struct{})
 
-			width := args["width"].(int)
-			height := args["height"].(int)
+			sheet := args["sheet"].(map[string]any)
 
-			for ind, v := range imgs {
-				id := v.(int)
-				indHere64, _ := strconv.ParseInt(ind, 10, 64)
-				indHere := int(indHere64) - 1
+			imgList := make([]image.Image, len(imgs))
+
+			count := sheet["count"].(int)
+			width := sheet["width"].(int)
+			height := sheet["height"].(int)
+
+			wg.Add(len(imgs))
+			for ind := range len(imgs) {
+				id := imgs[strconv.Itoa(ind+1)].(int)
 
 				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
-						finish := make(chan struct{}, 2)
-						simg <- &imgData{
-							Img:    i.Self.Image,
-							Index:  indHere,
-							Finish: finish,
-						}
-
+						imgList[ind] = i.Self.Image
+						wg.Done()
 						<-finish
-					},
-					Fail: func(i *collection.Item[collection.ItemImage]) {
-						simg <- &imgData{
-							Img:    nil,
-							Index:  -1,
-							Finish: make(chan struct{}, 2),
-						}
 					},
 				})
 			}
@@ -353,60 +347,172 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
 					encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
 
-					offsets := args["offsets"].(map[string]any)
-					offsetx := offsets["hpixel"].(int) + (offsets["hcell"].(int) * width)
-					offsety := offsets["vpixel"].(int) + (offsets["vcell"].(int) * height)
+					perRow := sheet["perRow"].(int)
 
-					count := len(imgs)
+					offsets := sheet["offsets"].(map[string]any)
+					hpixel := offsets["hpixel"].(int)
+					vpixel := offsets["vpixel"].(int)
+					hcell := offsets["hcell"].(int)
+					vcell := offsets["vcell"].(int)
+					index := offsets["index"].(int)
 
-					perRow := args["perRow"].(int)
-					if perRow == 0 {
-						perRow = count
-					}
+					hsep := sheet["hsep"].(int)
+					vsep := sheet["vsep"].(int)
 
-					rows := int(math.Ceil(float64(count) / float64(perRow)))
+					wg.Wait()
 
-					hsep := args["hsep"].(int)
-					vsep := args["vsep"].(int)
-
-					ssWidth := offsetx*2 + perRow*width + hsep*(perRow-1)
-					ssHeight := offsety*2 + rows*height + vsep*(rows-1)
-
+					img := imageutil.FramesToSpritesheet(imgList, model, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
 					i.Self = &collection.ItemImage{
-						Image:    imageutil.NewImage(ssWidth, ssHeight, model),
+						Image:    img,
 						Name:     name,
 						Encoding: encoding,
 						Model:    model,
 					}
 
-					for range imgs {
-						si := <-simg
-
-						col := si.Index % perRow
-						row := si.Index / perRow
-						x := offsetx + col*width + hsep*col
-						y := offsety + row*height + vsep*row
-
-						imageutil.Draw(i.Self.Image, si.Img, x, y, args["width"].(int), args["height"].(int))
-
-						si.Finish <- struct{}{}
-					}
+					close(finish)
 				},
 				Fail: func(i *collection.Item[collection.ItemImage]) {
-					for range len(simg) {
-						si := <-simg
-						si.Finish <- struct{}{}
-					}
+					close(finish)
 				},
 			})
 
 			state.Push(golua.LNumber(id))
 			return 1
 		})
-}
 
-type imgData struct {
-	Img    image.Image
-	Index  int
-	Finish chan struct{}
+	/// @func extract()
+	/// @arg id - source spritesheet
+	/// @arg name
+	/// @arg spritesheet_in
+	/// @arg spritesheet_out
+	/// @returns new image
+	/// @desc
+	/// note it is more efficient to exclude frames using index and count from spritesheet_in
+	/// than from spritesheet_out.
+	lib.CreateFunction(tab, "extract",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.TABLE, Name: "sheetin", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "count"},
+				{Type: lua.INT, Name: "width"},
+				{Type: lua.INT, Name: "height"},
+				{Type: lua.INT, Name: "perRow"},
+				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
+					{Type: lua.INT, Name: "hpixel", Optional: true},
+					{Type: lua.INT, Name: "vpixel", Optional: true},
+					{Type: lua.INT, Name: "hcell", Optional: true},
+					{Type: lua.INT, Name: "vcell", Optional: true},
+					{Type: lua.INT, Name: "index", Optional: true},
+				}},
+				{Type: lua.INT, Name: "hsep", Optional: true},
+				{Type: lua.INT, Name: "vsep", Optional: true},
+			}},
+			{Type: lua.TABLE, Name: "sheetout", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "count"},
+				{Type: lua.INT, Name: "width"},
+				{Type: lua.INT, Name: "height"},
+				{Type: lua.INT, Name: "perRow"},
+				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
+					{Type: lua.INT, Name: "hpixel", Optional: true},
+					{Type: lua.INT, Name: "vpixel", Optional: true},
+					{Type: lua.INT, Name: "hcell", Optional: true},
+					{Type: lua.INT, Name: "vcell", Optional: true},
+					{Type: lua.INT, Name: "index", Optional: true},
+				}},
+				{Type: lua.INT, Name: "hsep", Optional: true},
+				{Type: lua.INT, Name: "vsep", Optional: true},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var encoding imageutil.ImageEncoding
+			var model imageutil.ColorModel
+
+			var imgs []image.Image
+			ready := make(chan struct{})
+			finish := make(chan struct{})
+
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					sheet := args["sheetin"].(map[string]any)
+
+					count := sheet["count"].(int)
+					width := sheet["width"].(int)
+					height := sheet["height"].(int)
+					perRow := sheet["perRow"].(int)
+
+					offsets := sheet["offsets"].(map[string]any)
+					hpixel := offsets["hpixel"].(int)
+					vpixel := offsets["vpixel"].(int)
+					hcell := offsets["hcell"].(int)
+					vcell := offsets["vcell"].(int)
+					index := offsets["index"].(int)
+
+					hsep := sheet["hsep"].(int)
+					vsep := sheet["vsep"].(int)
+
+					imgs = imageutil.SpritesheetToFrames(i.Self.Image, false, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+
+					encoding = i.Self.Encoding
+					model = i.Self.Model
+
+					ready <- struct{}{}
+					<-finish
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					ready <- struct{}{}
+				},
+			})
+
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					sheet := args["sheetout"].(map[string]any)
+
+					count := sheet["count"].(int)
+					width := sheet["width"].(int)
+					height := sheet["height"].(int)
+					perRow := sheet["perRow"].(int)
+
+					offsets := sheet["offsets"].(map[string]any)
+					hpixel := offsets["hpixel"].(int)
+					vpixel := offsets["vpixel"].(int)
+					hcell := offsets["hcell"].(int)
+					vcell := offsets["vcell"].(int)
+					index := offsets["index"].(int)
+
+					hsep := sheet["hsep"].(int)
+					vsep := sheet["vsep"].(int)
+
+					<-ready
+
+					img := imageutil.FramesToSpritesheet(imgs, model, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+					i.Self = &collection.ItemImage{
+						Image:    img,
+						Name:     name,
+						Encoding: encoding,
+						Model:    model,
+					}
+
+					finish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					finish <- struct{}{}
+				},
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		},
+	)
 }

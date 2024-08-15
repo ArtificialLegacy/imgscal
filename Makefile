@@ -22,6 +22,10 @@ install-examples:
 start:
 	go run ./cmd/cli/
 
+dev:
+	make install-examples
+	make start
+
 doc:
 	go run ./cmd/doc
 

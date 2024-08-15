@@ -7,6 +7,17 @@ writing in lua.
 * Run image processing tasks written using lua.
 * CLI interface with portable exe.
 
+## Run
+
+```sh
+make start
+# or
+make dev
+```
+
+* `make dev` runs `make install-examples` then `make start`.
+* Use `make start` for a first time launch, as `make install-examples` requires a valid config.
+
 ## Examples
 
 > Examples can be installed by running `make install-examples`.
@@ -66,14 +77,23 @@ Run `make doc` to generate the lua api documentation to `./docs/`.
 
 ## Logs
 
-There is an entrypoint at `./cmd/log` that can be called to print the log file `@latest.txt` if it exists.
+There is an entrypoint at `./cmd/log` that can be called to print the log file `@latest.txt` if it exists. `make log` is a shortcut for calling this.
 
-> This can also be used to pipe the results of the file.
+> This can also be used to pipe the output.
 
 ```sh
-make log | nvim
+make log | grep '! ERROR'
+make log | kate -i
 make log > latest.txt
 ```
+
+### Log Prefixes
+
+* `# SYSTEM`
+* `# INFO`
+* `? WARN`
+* `! ERROR`
+* `!! IMPORTANT` - Reserved for debug logs during development.
 
 ## Config
 

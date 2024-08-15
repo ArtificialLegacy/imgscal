@@ -206,14 +206,12 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 	case TABLE:
 		if value.Type() == lua.LTTable {
 			v := value.(*lua.LTable)
-
 			m := map[string]any{}
 
-			i := 0
-			v.ForEach(func(l1, l2 lua.LValue) {
-				m = l.ParseValue(state, pos, l2, (*arg.Table)[i], m)
-				i++
-			})
+			for _, a := range *arg.Table {
+				m = l.ParseValue(state, pos, v.RawGetString(a.Name), a, m)
+			}
+
 			argMap[arg.Name] = m
 		} else if value.Type() == lua.LTNil && arg.Optional {
 			argMap[arg.Name] = l.getDefault(arg)

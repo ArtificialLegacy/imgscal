@@ -8,9 +8,11 @@ import (
 )
 
 func WorkflowFinish(sm *statemachine.StateMachine) error {
-	cli.Clear()
+	//cli.Clear()
 
 	script := sm.PopString()
+
+	fmt.Printf("\n\n")
 
 	cli.Question(fmt.Sprintf("Script %s%s%s%s ran successfully...", cli.COLOR_GREEN, script, cli.COLOR_RESET, cli.COLOR_BOLD), cli.QuestionOptions{})
 

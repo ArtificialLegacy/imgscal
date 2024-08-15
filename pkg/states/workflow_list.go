@@ -16,6 +16,17 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 		return err
 	}
 
+	if len(scripts) == 0 {
+		fmt.Printf("\nWorkflow directory empty, nothing to run.\n")
+		fmt.Printf("%s%s%s\n\n", configPathColor, sm.Config.WorkflowDirectory, cli.COLOR_RESET)
+
+		fmt.Printf(" > Try \u001b[48;5;234mmake install-examples%s\n\n", cli.COLOR_RESET)
+
+		cli.Question("Press any key to continue...", cli.QuestionOptions{})
+		sm.SetState(STATE_MAIN)
+		return nil
+	}
+
 	options := []string{}
 
 	for _, s := range scripts {
