@@ -46,15 +46,9 @@ Demo workflow that creates an interface to apply filters to an image.
   * Makefile
   * A C compiler (mingw, TDM-GCC or g++)
 
-* Windows
-
 ```sh
 make build-windows
-```
-
-* Linux
-
-```sh
+# or
 make build-linux
 ```
 
