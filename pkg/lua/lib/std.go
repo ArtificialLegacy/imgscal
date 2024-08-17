@@ -10,6 +10,11 @@ import (
 
 const LIB_STD = "std"
 
+/// @lib Standard
+/// @import std
+/// @desc
+/// A library of miscellaneous functions.
+
 func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_STD, r, r.State, lg)
 

@@ -10,6 +10,11 @@ import (
 
 const LIB_NSFW = "nsfw"
 
+/// @lib NSFW
+/// @import nsfw
+/// @desc
+/// Provides basic functionality for filtering image content, carry-over from when SD was supported.
+
 func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_NSFW, r, r.State, lg)
 

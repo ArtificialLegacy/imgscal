@@ -5,6 +5,10 @@ import (
 	"io"
 )
 
+func HTMLFormat(lib Lib) {
+
+}
+
 func Format(out io.StringWriter, lib Lib) {
 	out.WriteString(fmt.Sprintf("# %s\n", lib.Name))
 

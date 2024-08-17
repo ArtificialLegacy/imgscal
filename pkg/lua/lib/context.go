@@ -15,14 +15,19 @@ import (
 
 const LIB_CONTEXT = "context"
 
+/// @lib Context
+/// @import context
+/// @desc
+/// Library for creating and drawing to canvases.
+
 type Point map[string]float64
 
 func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_CONTEXT, r, r.State, lg)
 
-	/// @func degrees()
-	/// @arg radians - float
-	/// @returns degrees - float
+	/// @func degrees(radians) -> float
+	/// @arg radians {float}
+	/// @returns {float} - Degrees.
 	lib.CreateFunction(tab, "degrees",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "rad"},
@@ -33,9 +38,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func radians()
-	/// @arg degrees - float
-	/// @returns radians - float
+	/// @func radians(degrees) -> float
+	/// @arg degrees {float}
+	/// @returns {float} - Radians.
 	lib.CreateFunction(tab, "radians",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "deg"},
@@ -46,16 +51,20 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func point()
-	/// @arg x
-	/// @arg y
-	/// returns point{x, y}
+	/// @func point(x, y) -> struct<context.Point>
+	/// @arg x {float}
+	/// @arg y {float}
+	/// returns {struct<context.Point>}
 	lib.CreateFunction(tab, "point",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct Point
+			/// @prop x {float}
+			/// @prop y {float}
+
 			t := state.NewTable()
 
 			state.SetField(t, "x", golua.LNumber(args["x"].(float64)))
@@ -65,10 +74,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func distance()
-	/// @arg p1 - point{x, y}
-	/// @arg p2 - point{x, y}
-	/// @returns float
+	/// @func distance(p1, p2) -> float
+	/// @arg p1 {struct<context.Point>}
+	/// @arg p2 {struct<context.Point>}
+	/// @returns {float}
 	lib.CreateFunction(tab, "distance",
 		[]lua.Arg{
 			{Type: lua.TABLE, Name: "p1", Table: &[]lua.Arg{
@@ -93,11 +102,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func interpolate()
-	/// @arg p1 - point{x, y}
-	/// @arg p2 - point{x, y}
-	/// @arg t - float
-	/// @returns point{x, y}
+	/// @func interpolate(p1, p2, t) -> struct<context.Point>
+	/// @arg p1 {struct<context.Point>}
+	/// @arg p2 {struct<context.Point>}
+	/// @arg t {float}
+	/// @returns {struct<context.Point>}
 	lib.CreateFunction(tab, "interpolate",
 		[]lua.Arg{
 			{Type: lua.TABLE, Name: "p1", Table: &[]lua.Arg{
@@ -128,10 +137,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func new()
-	/// @arg width - int
-	/// @arg height - int
-	/// returns id
+	/// @func new(width, height) -> int<collection.CONTEXT>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// returns {int<collection.CONTEXT>}
 	lib.CreateFunction(tab, "new",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
@@ -159,9 +168,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func new_image()
-	/// @arg id - image id to create a context for
-	/// @returns new context id
+	/// @func new_image(id) -> int<collection.CONTEXT>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {int<collection.CONTEXT>}
 	lib.CreateFunction(tab, "new_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -212,13 +221,15 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func new_direct()
-	/// @arg id - image id to create a context for
-	/// @returns new context id
+	/// @func new_direct(id) -> int<collection.CONTEXT>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {int<collection.CONTEXT>}
 	/// @desc
-	/// creates a new context directly on the image,
-	/// this requires the image to use the RGBA color model
-	/// or it will be converted.
+	/// Creates a new context directly on the image,
+	/// this requires the image to use the RGBA color model.
+	/// If not it will be converted to RGBA.
+	/// This is also not thread safe, as modifying either the image or the context will affect the other,
+	/// with no guarantee of the order of operations.
 	lib.CreateFunction(tab, "new_direct",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -275,18 +286,20 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func to_image()
-	/// @arg id
-	/// @arg name
-	/// @arg encoding
-	/// @arg? model
-	/// @returns id - new image id
+	/// @func to_image(id, name, encoding, model?, copy?) -> int<collection.IMAGE>
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg? model {int<image.Model>}
+	/// @arg? copy {bool} - Set to true to copy the image, otherwise continuing to draw can affect the image.
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "to_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "encoding"},
 			{Type: lua.INT, Name: "model", Optional: true},
+			{Type: lua.BOOL, Name: "copy", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			contextFinish := make(chan struct{}, 2)
@@ -318,13 +331,18 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					<-contextReady
 
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
 					img := context.Image()
+					if args["copy"].(bool) {
+						img = imageutil.CopyImage(img, model)
+					}
 
 					i.Self = &collection.ItemImage{
 						Image:    img,
 						Name:     args["name"].(string),
 						Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
-						Model:    lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib),
+						Model:    model,
 					}
 
 					contextFinish <- struct{}{}
@@ -338,11 +356,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func to_mask()
-	/// @arg id
-	/// @arg name
-	/// @arg encoding
-	/// @returns id - new alpha image
+	/// @func to_mask(id, name, encoding) -> int<collection.IMAGE>
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @returns {int<collection.IMAGE>} - The returned image will use the 'image.MODEL_ALPHA' color model.
 	lib.CreateFunction(tab, "to_mask",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -399,27 +417,27 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func mask()
-	/// @arg id
-	/// @arg img_id
+	/// @func mask(id, img)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg img {int<collection.IMAGE>}
+	/// @desc
+	/// The image will be copied and converted to 'image.MODEL_ALPHA'.
 	lib.CreateFunction(tab, "mask",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "img"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			imgFinish := make(chan struct{}, 2)
 			imgReady := make(chan struct{}, 2)
 
-			var img image.Image
+			var img *image.Alpha
 
 			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					img = i.Self.Image
+					img = imageutil.CopyImage(img, imageutil.MODEL_ALPHA).(*image.Alpha)
 					imgReady <- struct{}{}
-					<-imgFinish
 				},
 				Fail: func(i *collection.Item[collection.ItemImage]) {
 					imgReady <- struct{}{}
@@ -431,27 +449,19 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
 					<-imgReady
-					aimg, ok := img.(*image.Alpha)
-					if !ok {
-						state.Error(golua.LString(lg.Append("invalid image provided to context.mask", log.LEVEL_ERROR)), 0)
-					}
-					err := i.Self.Context.SetMask(aimg)
+					err := i.Self.Context.SetMask(img)
 					if err != nil {
 						state.Error(golua.LString(lg.Append("failed to set image mask, image may be the wrong size.", log.LEVEL_ERROR)), 0)
 					}
-					imgFinish <- struct{}{}
-				},
-				Fail: func(i *collection.Item[collection.ItemContext]) {
-					imgFinish <- struct{}{}
 				},
 			})
 			return 0
 		})
 
-	/// @func size()
-	/// @arg id
-	/// @returns width
-	/// @returns height
+	/// @func size(id) -> int, int
+	/// @arg id {int<collection.CONTEXT>}
+	/// @returns {int} - The width of the context.
+	/// @returns {int} - The height of the context.
 	/// @blocking
 	lib.CreateFunction(tab, "size",
 		[]lua.Arg{
@@ -475,9 +485,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func font_height()
-	/// @arg id
-	/// @returns height
+	/// @func font_height(id) -> float
+	/// @arg id {int<collection.CONTEXT>}
+	/// @returns {float} - The height of text rendered with the current font.
 	/// @blocking
 	lib.CreateFunction(tab, "font_height",
 		[]lua.Arg{
@@ -498,11 +508,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func string_measure()
-	/// @arg id
-	/// @arg str
-	/// @returns width
-	/// @returns height
+	/// @func string_measure(id, str) -> float, float
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg str {string}
+	/// @returns {float} - The width of text rendered with the current font.
+	/// @returns {float} - The height of text rendered with the current font.
 	/// @blocking
 	lib.CreateFunction(tab, "string_measure",
 		[]lua.Arg{
@@ -526,12 +536,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func string_measure_multiline()
-	/// @arg id
-	/// @arg str
-	/// @arg spacing
-	/// @returns width
-	/// @returns height
+	/// @func string_measure_multiline(id, str, spacing) -> float, float
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg str {string}
+	/// @arg spacing {float} - The space between each line.
+	/// @returns {float} - The width of text rendered with the current font.
+	/// @returns {float} - The height of text rendered with the current font.
 	/// @blocking
 	lib.CreateFunction(tab, "string_measure_multiline",
 		[]lua.Arg{
@@ -556,11 +566,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func current_point()
-	/// @arg id
-	/// @returns x
-	/// @returns y
-	/// @returns exists
+	/// @func current_point(id) -> float, float, bool
+	/// @arg id {int<collection.CONTEXT>}
+	/// @returns {float} - The x location of the current point.
+	/// @returns {float} - The y location of the current point.
+	/// @returns {bool} - If the current point has been set.
 	/// @blocking
 	lib.CreateFunction(tab, "current_point",
 		[]lua.Arg{
@@ -588,15 +598,15 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 3
 		})
 
-	/// @arg transform_point()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @returns x
-	/// @returns y
+	/// @func transform_point(id, x, y) -> float, float
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @returns {float} -> New x position.
+	/// @returns {float} -> New y position.
 	/// @blocking
 	/// @desc
-	/// multiplies a point by the current matrix.
+	/// Multiplies a point by the current matrix.
 	lib.CreateFunction(tab, "transform_point",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -620,10 +630,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func clear()
-	/// @arg id
+	/// @func clear(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// fills the context with the current color
+	/// Fills the context with the current color.
 	lib.CreateFunction(tab, "clear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -640,11 +650,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func clip()
-	/// @arg id
-	/// @arg? preserve - keep the path or not
+	/// @func clip(id, preserve?)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg? preserve {bool} - Set in order to keep the current path.
 	/// @desc
-	/// updates the clipping region by intersecting the current clipping region with the current path as it would be filled by fill().
+	/// Updates the clipping region by intersecting the current clipping region with the current path as it would be filled by fill().
 	lib.CreateFunction(tab, "clip",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -666,10 +676,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func clip_reset()
-	/// @arg id
+	/// @func clip_reset(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// clears the clipping region
+	/// Clears the clipping region.
 	lib.CreateFunction(tab, "clip_reset",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -686,10 +696,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func path_clear()
-	/// @arg id
+	/// @func path_clear(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// removes all points from the current path
+	/// Removes all points from the current path.
 	lib.CreateFunction(tab, "path_clear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -706,10 +716,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func path_close()
-	/// @arg id
+	/// @func path_close(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// adds a line segment from the current point to the first point
+	/// Adds a line segment from the current point to the initial point.
 	lib.CreateFunction(tab, "path_close",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -726,12 +736,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func path_to()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func path_to(id, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// starts a new subpath starting at the given point.
+	/// Starts a new subpath starting at the given point.
 	lib.CreateFunction(tab, "path_to",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -753,11 +763,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func subpath()
-	/// @arg id
+	/// @func subpath(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// starts a new subpath starting at the current point.
-	/// no current point will be set after.
+	/// Starts a new subpath starting at the current point.
+	/// No current point will be set after.
 	lib.CreateFunction(tab, "subpath",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -774,17 +784,17 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_cubic()
-	/// @arg id
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
-	/// @arg x3
-	/// @arg y3
+	/// @func draw_cubic(id, x1, y1, x2, y2, x3, y3)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @arg x2 {flaot}
+	/// @arg y2 {float}
+	/// @arg x3 {float}
+	/// @arg y3 {float}
 	/// @desc
-	/// draws a bezier curve to the path starting at the current point
-	/// if this isn't a current point, it moves to (x1, y1)
+	/// Draws a cubic bezier curve to the path starting at the current point,
+	/// if there isn't a current point, it moves to (x1, y1).
 	lib.CreateFunction(tab, "draw_cubic",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -814,15 +824,15 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_quadratic()
-	/// @arg id
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
+	/// @func draw_quadratic(id, x1, y1, x2, y2)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @arg x2 {float}
+	/// @arg y2 {float}
 	/// @desc
-	/// draws a quadratic bezier curve to the path starting at the current point
-	/// if this isn't a current point, it moves to (x1, y1)
+	/// Draws a quadratic bezier curve to the path starting at the current point,
+	/// if there isn't a current point, it moves to (x1, y1).
 	lib.CreateFunction(tab, "draw_quadratic",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -848,13 +858,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_arc()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg r
-	/// @arg angle1
-	/// @arg angle2
+	/// @func draw_arc(id, x, y, r, angle1, angle2)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg r {float}
+	/// @arg angle1 {float}
+	/// @arg angle2 {float}
 	lib.CreateFunction(tab, "draw_arc",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -882,11 +892,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_circle()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg r
+	/// @func draw_circle(id, x, y, r)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg r {float}
 	lib.CreateFunction(tab, "draw_circle",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -910,12 +920,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_ellipse()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg rx
-	/// @arg ry
+	/// @func draw_ellipse(id, x, y, rx, xy)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg rx {float}
+	/// @arg ry {float}
 	lib.CreateFunction(tab, "draw_ellipse",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -941,14 +951,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_elliptical_arc()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg rx
-	/// @arg ry
-	/// @arg angle1
-	/// @arg angle2
+	/// @func draw_elliptical_arc(id, x, y, rx, ry, angle1, angle2)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg rx {float}
+	/// @arg ry {float}
+	/// @arg angle1 {float}
+	/// @arg angle2 {float}
 	lib.CreateFunction(tab, "draw_elliptical_arc",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -978,11 +988,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_image()
-	/// @arg id
-	/// @arg img_id
-	/// @arg x
-	/// @arg y
+	/// @func draw_image(id, img, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg img {int<collection.IMAGE>}
+	/// @arg x {int}
+	/// @arg y {int}
 	lib.CreateFunction(tab, "draw_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1024,15 +1034,15 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_image_anchor()
-	/// @arg id
-	/// @arg img_id
-	/// @arg x
-	/// @arg y
-	/// @arg ax - float
-	/// @arg ay - float
+	/// @func draw_image_anchor(id, img, x, y, ax, ay)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg img {int<collection.IMAGE>}
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg ax {float}
+	/// @arg ay {float}
 	/// @desc
-	/// anchor is between 0 and 1, so 0.5 is centered.
+	/// The anchor is a point between (0,0) and (1,1), so (0.5,0.5) is centered.
 	lib.CreateFunction(tab, "draw_image_anchor",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1076,12 +1086,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_line()
-	/// @arg id
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
+	/// @func draw_line(id, x1, y1, x2, y2)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @arg x2 {float}
+	/// @arg y2 {float}
 	lib.CreateFunction(tab, "draw_line",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1107,12 +1117,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_line_to()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func draw_line_to(id, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// draws a line relative to the current point.
+	/// Draws a line to the point, starting from the current point.
+	/// If there is no current point, no line will be drawn and the current point will be set.
 	lib.CreateFunction(tab, "draw_line_to",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1134,14 +1145,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_point()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg r
+	/// @func draw_point(id, x, y, r)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg r {float}
 	/// @desc
-	/// similar to draw_circle but ensures that a circle of the specified size is drawn regardless of the current transformation matrix.
-	/// the position is still transformed, but not the shape of the point.
+	/// Similar to draw_circle but ensures that a circle of the specified size is drawn regardless of the current transformation matrix.
+	/// The position is still transformed, but not the shape of the point.
 	lib.CreateFunction(tab, "draw_point",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1165,12 +1176,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_rect()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg width
-	/// @arg height
+	/// @func draw_rect(id, x, y, width, height)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "draw_rect",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1196,13 +1207,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_rect_round()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg width
-	/// @arg height
-	/// @arg r
+	/// @func draw_rect_round(id, x, y, width, height, r)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg width {float}
+	/// @arg height {float}
+	/// @arg r {float}
 	lib.CreateFunction(tab, "draw_rect_round",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1230,13 +1241,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_polygon()
-	/// @arg id
-	/// @arg n
-	/// @arg x
-	/// @arg y
-	/// @arg r
-	/// @arg rotation
+	/// @func draw_polygon(id, n, x, y, r, rotation)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg n {int} - The number of sides.
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg r {float}
+	/// @arg rotation {float}
 	lib.CreateFunction(tab, "draw_polygon",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1264,11 +1275,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_string()
-	/// @arg id
-	/// @arg str
-	/// @arg x
-	/// @arg y
+	/// @func draw_string(id, str, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg str {string}
+	/// @arg x {float}
+	/// @arg y {float}
 	lib.CreateFunction(tab, "draw_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1292,13 +1303,15 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_string_anchor()
-	/// @arg id
-	/// @arg str
-	/// @arg x
-	/// @arg y
-	/// @arg ax
-	/// @arg ay
+	/// @func draw_string_anchor(id, str, x, y, ax, ay)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg str {string}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg ax {float}
+	/// @arg ay {float}
+	/// @desc
+	/// The anchor is a point between (0,0) and (1,1), so (0.5,0.5) is centered.
 	lib.CreateFunction(tab, "draw_string_anchor",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1326,17 +1339,19 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_string_wrap()
-	/// @arg id
-	/// @arg str
-	/// @arg x
-	/// @arg y
-	/// @arg ax
-	/// @arg ay
-	/// @arg width
-	/// @arg spacing
-	/// @arg align
-	lib.CreateFunction(tab, "draw_string",
+	/// @func draw_string_wrap(id, str, x, y, ax, ay, width, spacing, align)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg str {string}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg ax {float}
+	/// @arg ay {float}
+	/// @arg width {float}
+	/// @arg spacing {float} - The spacing between each line.
+	/// @arg align {int<context.Align>}
+	/// @desc
+	/// The anchor is a point between (0,0) and (1,1), so (0.5,0.5) is centered.
+	lib.CreateFunction(tab, "draw_string_wrap",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "str"},
@@ -1369,12 +1384,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func fill()
-	/// @arg id
-	/// @arg? preserve
+	/// @func fill(id, preserve?)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg? preserve {bool} - Set in order to keep the current path.
 	/// @desc
-	/// fills the current path with the current color.
-	/// closes open paths.
+	/// Fills the current path with the current color.
+	/// Closes open paths.
 	lib.CreateFunction(tab, "fill",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1396,9 +1411,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func fill_rule()
-	/// @arg id
-	/// @arg rule
+	/// @func fill_rule(id, rule)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg rule {int<context.FillRule>}
 	lib.CreateFunction(tab, "fill_rule",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1416,11 +1431,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func stroke()
-	/// @arg id
-	/// @arg? preserve
+	/// @func stroke(id, preserve?)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg? preserve {bool} - Set in order to keep the current path.
 	/// @desc
-	/// strokes the current path with the current color.
+	/// Strokes the current path with the current color.
 	lib.CreateFunction(tab, "stroke",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1442,10 +1457,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func identity()
-	/// @arg id
+	/// @func identity(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// resets the current transformation matrix to the identity matrix.
+	/// Resets the current transformation matrix to the identity matrix.
 	lib.CreateFunction(tab, "identity",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1462,10 +1477,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func mask_invert()
-	/// @arg id
+	/// @func mask_invert(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// inverts the alpha values of the clipping mask.
+	/// Inverts the alpha values of the clipping mask.
 	lib.CreateFunction(tab, "mask_invert",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1482,10 +1497,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func invert_y()
-	/// @arg id
+	/// @func invert_y(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// flips the y axis so that Y=0 is at the bottom of the image.
+	/// Flips the y axis so that Y=0 is at the bottom of the image.
 	lib.CreateFunction(tab, "invert_y",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1502,10 +1517,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push()
-	/// @arg id
+	/// @func push(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// push the current context state to the stack.
+	/// Push the current context state to the stack.
 	lib.CreateFunction(tab, "push",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1522,10 +1537,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func pop()
-	/// @arg id
+	/// @func pop(id)
+	/// @arg id {int<collection.CONTEXT>}
 	/// @desc
-	/// pop the current context state to the stack.
+	/// Pop the current context state to the stack.
 	lib.CreateFunction(tab, "pop",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1542,11 +1557,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func rotate()
-	/// @arg id
-	/// @arg angle
+	/// @func rotate(id, angle)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg angle {float}
 	/// @desc
-	/// rotates the transformation matrix around the origin
+	/// Rotates the transformation matrix around the origin.
 	lib.CreateFunction(tab, "rotate",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1564,13 +1579,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func rotate_about()
-	/// @arg id
-	/// @arg angle
-	/// @arg x
-	/// @arg y
+	/// @func rotate_about(id, angle, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg angle {float}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// rotates the transformation matrix around the point
+	/// Rotates the transformation matrix around the point.
 	lib.CreateFunction(tab, "rotate_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1594,12 +1609,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func scale()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func scale(id, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// scales the transformation matrix by a factor
+	/// Scales the transformation matrix by a factor.
 	lib.CreateFunction(tab, "scale",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1621,14 +1636,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func scale_about()
-	/// @arg id
-	/// @arg sx
-	/// @arg sy
-	/// @arg x
-	/// @arg y
+	/// @func scale_about(id, sx, sy, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg sx {float}
+	/// @arg sy {float}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// scales the transformation matrix by a factor starting at the point.
+	/// Scales the transformation matrix by a factor (sx,sy) starting at the point (x,y).
 	lib.CreateFunction(tab, "scale_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1654,12 +1669,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color_hex()
-	/// @arg id
-	/// @arg hex
+	/// @func color_hex(id, hex)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg hex {string}
 	/// @desc
-	/// supports hex colors in the follow formats: #RGB #RRGGBB #RRGGBBAA
-	/// the leading # is optional
+	/// Supports hex colors in the follow formats: #RGB #RRGGBB #RRGGBBAA.
+	/// The leading # is optional.
 	lib.CreateFunction(tab, "color_hex",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1677,9 +1692,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color()
-	/// @arg id
-	/// @arg color struct
+	/// @func color(id, color)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1698,13 +1713,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color_rgb()
-	/// @arg id
-	/// @arg r
-	/// @arg g
-	/// @arg b
+	/// @func color_rgb(id, r, g, b)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg r {float}
+	/// @arg g {float}
+	/// @arg b {float}
 	/// @desc
-	/// values between 0 and 1.
+	/// Float values for r,g,b between 0 and 1.
 	lib.CreateFunction(tab, "color_rgb",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1728,13 +1743,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color_rgb255()
-	/// @arg id
-	/// @arg r
-	/// @arg g
-	/// @arg b
+	/// @func color_rgb255(id, r, g, b)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg r {int}
+	/// @arg g {int}
+	/// @arg b {int}
 	/// @desc
-	/// interger values between 0 and 255.
+	/// Interger values for r,g,b between 0 and 255.
 	lib.CreateFunction(tab, "color_rgb255",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1758,14 +1773,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color_rgba()
-	/// @arg id
-	/// @arg r
-	/// @arg g
-	/// @arg b
-	/// @arg a
+	/// @func color_rgba(id, r, g, b, a)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg r {float}
+	/// @arg g {float}
+	/// @arg b {float}
+	/// @arg a {float}
 	/// @desc
-	/// values between 0 and 1.
+	/// Float values for r,g,b,a between 0 and 1.
 	lib.CreateFunction(tab, "color_rgba",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1791,14 +1806,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color_rgba255()
-	/// @arg id
-	/// @arg r
-	/// @arg g
-	/// @arg b
-	/// @arg a
+	/// @func color_rgba255(id, r, g, b, a)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg r {int}
+	/// @arg g {int}
+	/// @arg b {int}
+	/// @arg a {int}
 	/// @desc
-	/// interger values between 0 and 255.
+	/// Interger values for r,g,b,a between 0 and 255.
 	lib.CreateFunction(tab, "color_rgba255",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1824,12 +1839,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func dash_set()
-	/// @arg id
-	/// @arg pattern - [length...]
+	/// @func dash_set(id, pattern)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg pattern {[]float} - Each float value is a dash with a length of the value.
 	/// @desc
-	/// sets the dash length pattern to use.
-	/// call with empty array to disable dashes.
+	/// Sets the dash pattern to use.
+	/// Call with empty array to disable dashes.
 	lib.CreateFunction(tab, "dash_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1852,11 +1867,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func dash_set_offset()
-	/// @arg id
-	/// @arg offset
+	/// @func dash_set_offset(id, offset)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg offset {float}
 	/// @desc
-	/// the initial offset for the dash pattern
+	/// The initial offset for the dash pattern.
 	lib.CreateFunction(tab, "dash_set_offset",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1874,9 +1889,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func line_cap()
-	/// @arg id
-	/// @arg cap
+	/// @func line_cap(id, cap)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg cap {int<context.LineCap>}
 	lib.CreateFunction(tab, "line_cap",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1894,9 +1909,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func line_join()
-	/// @arg id
-	/// @arg join
+	/// @func line_join(id, join)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg join {int<context.LineJoin>}
 	lib.CreateFunction(tab, "line_join",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1914,9 +1929,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func line_width()
-	/// @arg id
-	/// @arg width
+	/// @func line_width(id, width)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg width {float}
 	lib.CreateFunction(tab, "line_width",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1934,10 +1949,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func pixel_set()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func pixel_set(id, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @desc
+	/// Sets a pixel to the current color.
 	lib.CreateFunction(tab, "pixel_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1956,12 +1973,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func shear()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func shear(id, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// updates the current matrix with a shearing angle, at the origin.
+	/// Updates the current matrix with a shearing angle, at the origin.
 	lib.CreateFunction(tab, "shear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1980,14 +1997,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func shear_about()
-	/// @arg id
-	/// @arg sx
-	/// @arg sy
-	/// @arg x
-	/// @arg y
+	/// @func shear_about(id, sx, sy, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg sx {float}
+	/// @arg sy {float}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// updates the current matrix with a shearing angle, at the given point.
+	/// Updates the current matrix with a shearing angle (sx,sy), at the given point (x,y).
 	lib.CreateFunction(tab, "shear_about",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2013,12 +2030,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func translate()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func translate(id, x, y)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg x {float}
+	/// @arg y {float}
 	/// @desc
-	/// updates the current matrix with a translation.
+	/// Updates the current matrix with a translation.
 	lib.CreateFunction(tab, "translate",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2037,11 +2054,11 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func word_wrap()
-	/// @arg id
-	/// @arg str
-	/// @arg width
-	/// @returns []string
+	/// @func word_wrap(id, str, width) -> []string
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg str {string}
+	/// @arg width {float}
+	/// @returns {[]string} - The original string split into line breaks at the set width.
 	/// @blocking
 	lib.CreateFunction(tab, "word_wrap",
 		[]lua.Arg{
@@ -2069,14 +2086,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func matrix_new()
-	/// @arg xx
-	/// @arg yx
-	/// @arg xy
-	/// @arg yy
-	/// @arg x0
-	/// @arg y0
-	/// @returns matrix struct
+	/// @func matrix_new(xx, yx, xy, yy, x0, y0) -> struct<context.Matrix>
+	/// @arg xx {float}
+	/// @arg yx {float}
+	/// @arg xy {float}
+	/// @arg yy {float}
+	/// @arg x0 {float}
+	/// @arg y0 {float}
+	/// @returns {struct<context.Matrix>}
 	lib.CreateFunction(tab, "matrix_new",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "xx"},
@@ -2100,8 +2117,8 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func matrix_identity()
-	/// @returns matrix struct
+	/// @func matrix_identity() -> struct<context.Matrix>
+	/// @returns {struct<context.Matrix>}
 	lib.CreateFunction(tab, "matrix_identity",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2119,9 +2136,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func matrix_rotate()
-	/// @arg angle
-	/// @returns matrix struct
+	/// @func matrix_rotate(angle) -> struct<context.Matrix>
+	/// @arg angle {float}
+	/// @returns {struct<context.Matrix>}
 	lib.CreateFunction(tab, "matrix_rotate",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "angle"},
@@ -2141,10 +2158,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func matrix_scale()
-	/// @arg x
-	/// @arg y
-	/// @returns matrix struct
+	/// @func matrix_scale(x, y) -> struct<context.Matrix>
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @returns {struct<context.Matrix>}
 	lib.CreateFunction(tab, "matrix_scale",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x"},
@@ -2165,10 +2182,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func matrix_shear()
-	/// @arg x
-	/// @arg y
-	/// @returns matrix struct
+	/// @func matrix_shear(x, y) -> struct<context.Matrix>
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @returns {struct<context.Matrix>}
 	lib.CreateFunction(tab, "matrix_shear",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x"},
@@ -2189,10 +2206,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func matrix_translate()
-	/// @arg x
-	/// @arg y
-	/// @returns matrix struct
+	/// @func matrix_translate(x, y) -> struct<context.Matrix>
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @returns {struct<context.Matrix>}
 	lib.CreateFunction(tab, "matrix_translate",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x"},
@@ -2213,16 +2230,16 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func point_cubic_bezier()
-	/// @arg x0
-	/// @arg y0
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
-	/// @arg x3
-	/// @arg y3
-	/// @returns []point
+	/// @func point_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3) -> []struct<context.Point>
+	/// @arg x0 {float}
+	/// @arg y0 {float}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @arg x2 {float}
+	/// @arg y2 {float}
+	/// @arg x3 {float}
+	/// @arg y3 {float}
+	/// @returns {[]struct<context.Point>}
 	lib.CreateFunction(tab, "point_cubic_bezier",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x0"},
@@ -2259,14 +2276,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func point_quadratic_bezier()
-	/// @arg x0
-	/// @arg y0
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
-	/// @returns []point
+	/// @func point_quadratic_bezier(x0, y0, x1, y1, x2, y2) -> []struct<context.Point>
+	/// @arg x0 {float}
+	/// @arg y0 {float}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @arg x2 {float}
+	/// @arg y2 {float}
+	/// @returns {[]struct<context.Point>}
 	lib.CreateFunction(tab, "point_quadratic_bezier",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x0"},
@@ -2301,9 +2318,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pattern_solid()
-	/// @arg color struct
-	/// @returns pattern struct
+	/// @func pattern_solid(color) -> struct<context.PatternSolid>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<context.PatternSolid>}
 	lib.CreateFunction(tab, "pattern_solid",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -2315,10 +2332,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pattern_surface()
-	/// @arg id
-	/// @arg repeat_op
-	/// @returns pattern struct
+	/// @func pattern_surface(id, repeat_op) -> struct<context.PatternSurface>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg repeat_op {int<context.RepeatOp>}
+	/// @returns {struct<context.PatternSurface>}
+	/// @desc
+	/// Images are only grabbed when the pattern is set, not when this is called.
 	lib.CreateFunction(tab, "pattern_surface",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2331,13 +2350,15 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pattern_surface_sync()
-	/// @arg id
-	/// @arg repeat_op
-	/// @returns pattern struct
+	/// @func pattern_surface_sync(id, repeat_op) -> struct<context.PatternSurfaceSync>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg repeat_op {int<context.RepeatOp>}
+	/// @returns {struct<context.PatternSurfaceSync>}
 	/// @desc
-	/// Note: this does not wait for the image to be ready or idle,
-	/// if the image is not loaded it will grab an empy image
+	/// This does not wait for the image to be ready or idle,
+	/// if the image is not loaded it will grab an empy image.
+	/// This also means it is not thread safe, it is unknown what state the image will be in when grabbed.
+	/// Images are also only grabbed when the pattern is set, not when this is called.
 	lib.CreateFunction(tab, "pattern_surface_sync",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2350,9 +2371,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pattern_custom()
-	/// @arg fn (x, y) color struct
-	/// @returns pattern struct
+	/// @func pattern_custom(fn) -> struct<context.PatternCustom>
+	/// @arg fn {function(x int, y int) -> struct<image.Color>}
+	/// @returns {struct<context.PatternCustom>}
 	lib.CreateFunction(tab, "pattern_custom",
 		[]lua.Arg{
 			{Type: lua.FUNC, Name: "fn"},
@@ -2364,12 +2385,12 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func gradient_linear()
-	/// @arg x0
-	/// @arg y0
-	/// @arg x1
-	/// @arg y1
-	/// @returns pattern struct
+	/// @func gradient_linear(x0, y0, x1, y1) -> struct<context.PatternGradientLinear>
+	/// @arg x0 {float}
+	/// @arg y0 {float}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @returns {struct<context.PatternGradientLinear>}
 	lib.CreateFunction(tab, "gradient_linear",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x0"},
@@ -2384,14 +2405,14 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func gradient_radial()
-	/// @arg x0
-	/// @arg y0
-	/// @arg r0
-	/// @arg x1
-	/// @arg y1
-	/// @arg r1
-	/// @returns pattern struct
+	/// @func gradient_radial(x0, y0, r0, x1, y1, r1) -> struct<context.PatternGradientRadial>
+	/// @arg x0 {float}
+	/// @arg y0 {float}
+	/// @arg r0 {float}
+	/// @arg x1 {float}
+	/// @arg y1 {float}
+	/// @arg r1 {float}
+	/// @returns {struct<context.PatternGradientRadial>}
 	lib.CreateFunction(tab, "gradient_radial",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "x0"},
@@ -2408,9 +2429,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func fill_style()
-	/// @arg id
-	/// @arg pattern struct
+	/// @func fill_style(id, pattern)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg pattern {struct<context.Pattern>}
 	lib.CreateFunction(tab, "fill_style",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2431,9 +2452,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func stroke_style()
-	/// @arg id
-	/// @arg pattern struct
+	/// @func stroke_style(id, pattern)
+	/// @arg id {int<collection.CONTEXT>}
+	/// @arg pattern {struct<context.Pattern>}
 	lib.CreateFunction(tab, "stroke_style",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2454,9 +2475,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func font_load()
-	/// @arg path
-	/// @arg points
+	/// @func font_load(path, points)
+	/// @arg path {string}
+	/// @arg points {float}
 	lib.CreateFunction(tab, "font_load",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -2483,7 +2504,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @constants Line Caps
 	/// @const LINECAP_ROUND
 	/// @const LINECAP_BUTT
-	/// @const LINCAP_SQUARE
+	/// @const LINECAP_SQUARE
 	tab.RawSetString("LINECAP_ROUND", golua.LNumber(gg.LineCapRound))
 	tab.RawSetString("LINECAP_BUTT", golua.LNumber(gg.LineCapButt))
 	tab.RawSetString("LINECAP_SQUARE", golua.LNumber(gg.LineCapSquare))
@@ -2511,6 +2532,20 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ALIGN_LEFT", golua.LNumber(gg.AlignLeft))
 	tab.RawSetString("ALIGN_CENTER", golua.LNumber(gg.AlignCenter))
 	tab.RawSetString("ALIGN_RIGHT", golua.LNumber(gg.AlignRight))
+
+	/// @constants Patterns
+	/// @const PATTERN_SOLID
+	/// @const PATTERN_SURFACE
+	/// @const PATTERN_SURFACE_SYNC
+	/// @const PATTERN_GRADIENT_LINEAR
+	/// @const PATTERN_GRADIENT_RADIAL
+	/// @const PATTERN_CUSTOM
+	tab.RawSetString("PATTERN_SOLID", golua.LString(PATTERN_SOLID))
+	tab.RawSetString("PATTERN_SURFACE", golua.LString(PATTERN_SURFACE))
+	tab.RawSetString("PATTERN_SURFACE_SYNC", golua.LString(PATTERN_SURFACE_SYNC))
+	tab.RawSetString("PATTERN_GRADIENT_LINEAR", golua.LString(PATTERN_GRADIENT_LINEAR))
+	tab.RawSetString("PATTERN_GRADIENT_RADIAL", golua.LString(PATTERN_GRADIENT_RADIAL))
+	tab.RawSetString("PATTERN_CUSTOM", golua.LString(PATTERN_CUSTOM))
 }
 
 var fillRules = []gg.FillRule{
@@ -2553,19 +2588,19 @@ const (
 
 func matrixTable(state *golua.LState, xx, yx, xy, yy, x0, y0 float64) *golua.LTable {
 	/// @struct Matrix
-	/// @prop xx
-	/// @prop yx
-	/// @prop xy
-	/// @prop yy
-	/// @prop x0
-	/// @prop y0
-	/// @method multiply(matrix)
-	/// @method rotate(angle)
-	/// @method scale(x, y)
-	/// @method shear(x, y)
-	/// @method translate(x, y)
-	/// @method transform_point(x, y) x, y
-	/// @method transform_vector(x, y) x, y
+	/// @prop xx {float}
+	/// @prop yx {float}
+	/// @prop xy {float}
+	/// @prop yy {float}
+	/// @prop x0 {float}
+	/// @prop y0 {float}
+	/// @method multiply(struct<context.Matrix>) -> self
+	/// @method rotate(angle float) -> self
+	/// @method scale(x float, y float) -> self
+	/// @method shear(x float, y float) -> self
+	/// @method translate(x float, y float) -> self
+	/// @method transform_point(x float, y float) -> float, float
+	/// @method transform_vector(x float, y float) -> float, float
 
 	t := state.NewTable()
 
@@ -2671,7 +2706,7 @@ func matrixBuild(t *golua.LTable) gg.Matrix {
 
 func patternBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.Logger) gg.Pattern {
 	/// @struct Pattern
-	/// @prop type
+	/// @prop type {string<context.Pattern>}
 
 	typ := t.RawGetString("type").(golua.LString)
 
@@ -2696,8 +2731,8 @@ func patternBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.L
 
 func patternSolidTable(state *golua.LState, color *golua.LTable) *golua.LTable {
 	/// @struct PatternSolid
-	/// @prop type
-	/// @prop color
+	/// @prop type {string<context.Pattern>}
+	/// @prop color {struct<image.Color>}
 
 	t := state.NewTable()
 
@@ -2717,9 +2752,9 @@ func patternSolidBuild(t *golua.LTable) gg.Pattern {
 
 func patternSurfaceTable(state *golua.LState, id, repeatOp int) *golua.LTable {
 	/// @struct PatternSurface
-	/// @prop type
-	/// @prop id
-	/// @prop repeatOp
+	/// @prop type {string<context.Pattern>}
+	/// @prop id {int<collection.IMAGE>}
+	/// @prop repeatOp {int<context.RepeatOp>}
 
 	t := state.NewTable()
 
@@ -2750,9 +2785,9 @@ func patternSurfaceBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
 
 func patternSurfaceSyncTable(state *golua.LState, id, repeatOp int) *golua.LTable {
 	/// @struct PatternSurfaceSync
-	/// @prop type
-	/// @prop id
-	/// @prop repeatOp
+	/// @prop type {string<context.Pattern>}
+	/// @prop id {int<collection.IMAGE>}
+	/// @prop repeatOp {int<context.RepeatOp>}
 
 	t := state.NewTable()
 
@@ -2782,12 +2817,12 @@ func patternSurfaceSyncBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
 
 func patternGradientLinearTable(state *golua.LState, x0, y0, x1, y1 float64) *golua.LTable {
 	/// @struct PatternGradientLinear
-	/// @prop type
-	/// @prop x0
-	/// @prop y0
-	/// @prop x1
-	/// @prop y1
-	/// @method color_stop(offset, color)
+	/// @prop type {string<context.Pattern>}
+	/// @prop x0 {float}
+	/// @prop y0 {float}
+	/// @prop x1 {float}
+	/// @prop y1 {float}
+	/// @method color_stop(offset float, struct<image.Color>)
 
 	t := state.NewTable()
 
@@ -2837,14 +2872,14 @@ func patternGradientLinearBuild(t *golua.LTable) gg.Pattern {
 
 func patternGradientRadialTable(state *golua.LState, x0, y0, r0, x1, y1, r1 float64) *golua.LTable {
 	/// @struct PatternGradientRadial
-	/// @prop type
-	/// @prop x0
-	/// @prop y0
-	/// @prop r0
-	/// @prop x1
-	/// @prop y1
-	/// @prop r1
-	/// @method color_stop(offset, color)
+	/// @prop type {string<context.Pattern>}
+	/// @prop x0 {float}
+	/// @prop y0 {float}
+	/// @prop r0 {float}
+	/// @prop x1 {float}
+	/// @prop y1 {float}
+	/// @prop r1 {float}
+	/// @method color_stop(offset float, struct<image.Color>)
 
 	t := state.NewTable()
 
@@ -2915,8 +2950,8 @@ func (p PatternCustom) ColorAt(x, y int) color.Color {
 
 func patternCustomTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
 	/// @struct PatternCustom
-	/// @prop type
-	/// @prop fn(x, y) color struct
+	/// @prop type {string<context.Pattern>}
+	/// @prop fn {function(x int, y int) -> struct<image.Color>}
 
 	t := state.NewTable()
 

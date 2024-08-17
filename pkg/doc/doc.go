@@ -3,6 +3,8 @@ package doc
 const (
 	TAG_EMPTY     = "/// "
 	TAG_EXISTS    = "/// @"
+	TAG_LIB       = "/// @lib "
+	TAG_IMPORT    = "/// @import "
 	TAG_FUNC      = "/// @func "
 	TAG_ARG       = "/// @arg"
 	TAG_ARG_REQ   = "/// @arg "
@@ -18,10 +20,13 @@ const (
 )
 
 type Lib struct {
-	Name string
-	Fns  []Fn
-	Cns  []Const
-	Sts  []Struct
+	File    string
+	Name    string
+	Display string
+	Desc    []string
+	Fns     []Fn
+	Cns     []Const
+	Sts     []Struct
 }
 
 type Arg struct {

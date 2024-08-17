@@ -2,14 +2,34 @@ package doc
 
 import "strings"
 
-func Parse(name string, file []byte) Lib {
-	name = strings.TrimSuffix(name, ".go")
-	docs := Lib{Name: name}
+func Parse(filename string, file []byte) Lib {
+	name := strings.TrimSuffix(filename, ".go")
+	docs := Lib{File: filename, Name: name, Display: name}
 
 	lines := strings.Split(string(file), "\n")
 
 	for i := 0; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
+
+		if strings.HasPrefix(line, TAG_LIB) {
+			docs.Display = strings.TrimPrefix(line, TAG_LIB)
+
+			i++
+			if strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_IMPORT) {
+				docs.Name = strings.TrimPrefix(strings.TrimSpace(lines[i]), TAG_IMPORT)
+				i++
+			}
+
+			if strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_DESC) {
+				i++
+				ln := strings.TrimSpace(lines[i])
+				for strings.HasPrefix(ln, TAG_EMPTY) && !strings.HasPrefix(ln, TAG_EXISTS) {
+					docs.Desc = append(docs.Desc, strings.TrimPrefix(ln, TAG_EMPTY))
+					i++
+					ln = strings.TrimSpace(lines[i])
+				}
+			}
+		}
 
 		if strings.HasPrefix(line, TAG_FUNC) {
 			doc := Fn{Block: false}

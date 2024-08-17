@@ -14,6 +14,11 @@ import (
 
 const LIB_NOISE = "noise"
 
+/// @lib Noise
+/// @import noise
+/// @desc
+/// Library for generating and interacting with noise maps.
+
 func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_NOISE, r, r.State, lg)
 

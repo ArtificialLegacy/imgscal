@@ -20,6 +20,11 @@ import (
 
 const LIB_IO = "io"
 
+/// @lib IO
+/// @import io
+/// @desc
+/// Library for handling io operations with the file system.
+
 func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_IO, r, r.State, lg)
 

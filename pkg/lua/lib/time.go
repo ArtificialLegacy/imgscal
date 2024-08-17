@@ -10,6 +10,11 @@ import (
 
 const LIB_TIME = "time"
 
+/// @lib Time
+/// @import time
+/// @desc
+/// Library for getting basic information about the time.
+
 func RegisterTime(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TIME, r, r.State, lg)
 

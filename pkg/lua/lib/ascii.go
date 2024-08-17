@@ -13,20 +13,25 @@ import (
 
 const LIB_ASCII = "ascii"
 
+/// @lib ASCII
+/// @import ascii
+/// @desc
+/// Convert images into ASCII.
+
 func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_ASCII, r, r.State, lg)
 
-	/// @func to_file()
-	/// @arg image_id
-	/// @arg filepath - directories to file must exist.
-	/// @arg color - boolean, for terminal dislay
-	/// @arg reverse - boolean
+	/// @func to_file(id, path, color?, reverse?)
+	/// @arg id {int<collection.IMAGE>} - Image to convert to ascii.
+	/// @arg path {string} - Directories to file must exist.
+	/// @arg? color {bool} - Enable only for terminal dislay.
+	/// @arg? reverse {bool}
 	lib.CreateFunction(tab, "to_file",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "path"},
-			{Type: lua.BOOL, Name: "color"},
-			{Type: lua.BOOL, Name: "reverse"},
+			{Type: lua.BOOL, Name: "color", Optional: true},
+			{Type: lua.BOOL, Name: "reverse", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -52,21 +57,21 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func to_file_size()
-	/// @arg image_id
-	/// @arg filepath - directories to file must exist.
-	/// @arg width
-	/// @arg height
-	/// @arg color - boolean, for terminal dislay
-	/// @arg reverse - boolean
+	/// @func to_file_size(id, path, width, height, color?, reverse?)
+	/// @arg id {int(collection.IMAGE)} - Image to convert to ascii.
+	/// @arg path {string} - Directories to file must exist.
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? color {bool} - Enable only for terminal dislay.
+	/// @arg? reverse {bool}
 	lib.CreateFunction(tab, "to_file_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "path"},
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
-			{Type: lua.BOOL, Name: "color"},
-			{Type: lua.BOOL, Name: "reverse"},
+			{Type: lua.BOOL, Name: "color", Optional: true},
+			{Type: lua.BOOL, Name: "reverse", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -95,17 +100,17 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 		},
 	)
 
-	/// @func to_string()
-	/// @arg image_id
-	/// @arg color - boolean, for terminal dislay
-	/// @arg reverse - boolean
-	/// @returns the ascii art as a string
+	/// @func to_string(id, color?, reverse?) -> string
+	/// @arg id {int(collection.IMAGE)} - Image to convert to ascii.
+	/// @arg? color {bool} - Enable only for terminal dislay.
+	/// @arg? reverse {bool}
+	/// @returns {string} - The generated ASCII art, rows separated with \n.
 	/// @blocking
 	lib.CreateFunction(tab, "to_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.BOOL, Name: "color"},
-			{Type: lua.BOOL, Name: "reverse"},
+			{Type: lua.BOOL, Name: "color", Optional: true},
+			{Type: lua.BOOL, Name: "reverse", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			str := ""
@@ -127,21 +132,21 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 		},
 	)
 
-	/// @func to_string_size()
-	/// @arg image_id
-	/// @arg width
-	/// @arg height
-	/// @arg color - boolean, for terminal dislay
-	/// @arg reverse - boolean
-	/// @returns the ascii art as a string
+	/// @func to_string_size(id, width, height, color?, reverse?) -> string
+	/// @arg id {int(collection.IMAGE)} - Image to convert to ascii.
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? color {bool} - Enable only for terminal dislay.
+	/// @arg? reverse {bool}
+	/// @returns {string} - The generated ASCII art, rows separated with \n.
 	/// @blocking
 	lib.CreateFunction(tab, "to_string_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
-			{Type: lua.BOOL, Name: "color"},
-			{Type: lua.BOOL, Name: "reverse"},
+			{Type: lua.BOOL, Name: "color", Optional: true},
+			{Type: lua.BOOL, Name: "reverse", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			str := ""

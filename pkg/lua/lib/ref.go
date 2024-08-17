@@ -15,6 +15,12 @@ import (
 
 const LIB_REF = "ref"
 
+/// @lib References
+/// @import ref
+/// @desc
+/// Library for creating and referencing pointers.
+/// This is used when both go and lua need to reference the same mutable data.
+
 func RegisterRef(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_REF, r, r.State, lg)
 

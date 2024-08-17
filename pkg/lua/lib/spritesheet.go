@@ -15,6 +15,12 @@ import (
 
 const LIB_SPRITESHEET = "spritesheet"
 
+/// @lib SpriteSheet
+/// @import spritesheet
+/// @desc
+/// Library to provide support for creating and splitting spritesheets.
+/// Modeled after the 'To Frames' functionality in GameMaker.
+
 func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_SPRITESHEET, r, r.State, lg)
 

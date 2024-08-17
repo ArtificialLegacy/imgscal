@@ -6,6 +6,17 @@ import (
 	golua "github.com/yuin/gopher-lua"
 )
 
+/// @lib ImgScal
+/// @import ~
+/// @desc
+/// Automate image processing programmatically.
+/// Built around concurrency.
+/// Workflows writteng in lua.
+/// Builtin handling for image encodings and color models.
+/// Included ImGui wrapper for building custom GUI tools.
+/// Spritesheet support.
+/// Command-line support, e.g. imgscal resize ./image.png 100 100.
+
 var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_CLI:         RegisterCli,
 	LIB_IMAGE:       RegisterImage,

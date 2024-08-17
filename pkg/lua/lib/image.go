@@ -17,6 +17,12 @@ import (
 
 const LIB_IMAGE = "image"
 
+/// @lib Image
+/// @import image
+/// @desc
+/// Library including the basic tools for handling images.
+/// Also handles colors.
+
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_IMAGE, r, r.State, lg)
 

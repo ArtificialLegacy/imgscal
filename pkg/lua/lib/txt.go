@@ -13,6 +13,11 @@ import (
 
 const LIB_TXT = "txt"
 
+/// @lib Text
+/// @import txt
+/// @desc
+/// Library for reading and writing to '.txt' files.
+
 func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TXT, r, r.State, lg)
 

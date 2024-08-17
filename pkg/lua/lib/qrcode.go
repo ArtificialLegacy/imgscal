@@ -15,6 +15,10 @@ import (
 
 const LIB_QRCODE = "qrcode"
 
+/// @lib QRCode
+/// @import qrcode
+/// Library for creating qrcodes, does not support decoding.
+
 func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_QRCODE, r, r.State, lg)
 

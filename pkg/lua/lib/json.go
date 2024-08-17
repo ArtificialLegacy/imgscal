@@ -13,6 +13,11 @@ import (
 
 const LIB_JSON = "json"
 
+/// @lib JSON
+/// @import json
+/// @desc
+/// Library for parsing and saving arbitrary json data.
+
 func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_JSON, r, r.State, lg)
 

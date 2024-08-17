@@ -13,16 +13,21 @@ import (
 
 const LIB_FILTER = "filter"
 
+/// @lib Filter
+/// @import filter
+/// @desc
+/// Library for applying lists of filters onto images.
+
 func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_FILTER, r, r.State, lg)
 
-	/// @func draw()
-	/// @arg id1
-	/// @arg id2
-	/// @arg []filter
-	/// @arg? disableParallelization
+	/// @func draw(id1, id2, filters, disableParallelization?)
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
 	/// desc
-	/// applies the filters to image1 with the output going into image2.
+	/// Applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
@@ -75,15 +80,15 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_at()
-	/// @arg id1
-	/// @arg id2
-	/// @arg point
-	/// @arg op
-	/// @arg []filter
-	/// @arg? disableParallelization
+	/// @func draw_at(id1, id2, point, op, filters, disableParallelization?)
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @arg point {struct<image.Point>}
+	/// @arg op {int<filter.Operator>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
 	/// desc
-	/// applies the filters to image1 with the output going into image2.
+	/// Applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw_at",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
@@ -139,16 +144,16 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_at_xy()
-	/// @arg id1
-	/// @arg id2
-	/// @arg x
-	/// @arg y
-	/// @arg op
-	/// @arg []filter
-	/// @arg? disableParallelization
+	/// @func draw_at_xy(id1, id2, x, y, op, filters, disableParallelization?)
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg op {int<filter.Operator>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
 	/// desc
-	/// applies the filters to image1 with the output going into image2.
+	/// Applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw_at_xy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
@@ -1026,6 +1031,9 @@ var filters = filterList{
 }
 
 func buildFilterList(state *golua.LState, filterList filterList, t *golua.LTable) *gift.GIFT {
+	/// @struct Filter
+	/// @prop type {string<filter.FilterType>}
+
 	filters := []gift.Filter{}
 
 	for i := range t.Len() {

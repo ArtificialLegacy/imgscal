@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ .Display }} - ImgScal Documentation</title>
+  </head>
+  <body>
+    <header>
+      <h1>{{ .Display }}</h1>
+      {{ if ne .Name "~"}}
+      <p>Import using <code>{{ .Name }}</code>.</p>
+      {{ end }}
+      <p>Generated from source file: <code>{{ .File }}</code>.</p>
+      <p>
+        {{ range .Desc }}{{ . }} {{ end }}
+      </p>
+    </header>
+
+    {{ if .Fns}}
+    <h2>Functions</h2>
+    
+    {{ range .Fns }}
+    <details>
+      <summary>{{ .Fn }}</summary>
+      {{ if .Block }}
+        <blockquote>This function is blocking!</blockquote>
+      {{ end }}
+      <p>
+        {{ range .Desc }}{{ . }} {{ end }}
+      </p>
+
+      {{ if .Args }}
+      <figure>
+        <figcaption>Arguments</figcaption>
+        <ul>
+          {{ range .Args }}
+            {{ if .Opt }}
+              <li><i>{{ .Str }}</i></li>
+            {{ else -}}
+              <li>{{ .Str }}</li>
+            {{ end }}
+          {{ end }}
+        </ul>
+      </figure>
+      {{ end }}
+
+      {{ if .Returns }}
+      <figure>
+        <figcaption>Returns</figcaption>
+        <ul>
+          {{ range .Returns }}
+            <li>{{ . }}</li>
+          {{ end }}
+        </ul>
+      </figure>
+      {{ end }}
+    </details>
+    {{ end }}
+    {{ end }}
+
+    {{ if .Cns }}
+    <h2>Constants</h2>
+
+    {{ range .Cns }}
+    <details>
+      <summary>{{ .Group }}</summary>
+      <ul>
+        {{ range .Consts }}
+          <li>{{ . }}</li>
+        {{ end }}
+      </ul>
+    </details>
+    {{ end }}
+    {{ end }}
+
+    {{ if .Sts }}
+    <h2>Structs</h2>
+
+    {{ range .Sts }}
+    <details>
+      <summary>{{ .Struct }}</summary>
+      <h3></h3>
+      <p>
+        {{ range .Desc }}{{ . }} {{ end }}
+      </p>
+
+      {{ if .Props }}
+      <figure>
+        <figcaption>Properties</figcaption>
+        <ul>
+          {{ range .Props }}
+            <li>{{ . }}</li>
+          {{ end }}
+        </ul>
+      </figure>
+      {{ end }}
+
+      {{ if .Methods }}
+      <figure>
+        <figcaption>Methods</figcaption>
+        <ul>
+          {{ range .Methods }}
+            <li>{{ . }}</li>
+          {{ end }}
+        </ul>
+      </figure>
+      {{ end }}
+    </details>
+    {{ end }}
+    {{ end }}
+  </body>
+</html>
