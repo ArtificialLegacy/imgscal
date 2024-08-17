@@ -78,7 +78,7 @@ type Item[T ItemSelf] struct {
 	cleaned bool
 	collect bool
 
-	mu sync.Mutex
+	mu *sync.Mutex
 
 	currTask *Task[T]
 
@@ -96,6 +96,7 @@ func NewItem[T ItemSelf](lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 		collect:   false,
 		failed:    false,
 		TaskQueue: make(chan *Task[T], TASK_QUEUE_SIZE),
+		mu:        &sync.Mutex{},
 	}
 
 	go i.process(fn)
@@ -271,9 +272,18 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 	return wait
 }
 
-func (c *Collection[T]) TaskCount() (int, bool) {
-	count := 0
+func (c *Collection[T]) TaskGrab() []*sync.Mutex {
+	m := make([]*sync.Mutex, len(c.items))
 
+	for ind, i := range c.items {
+		i.mu.Lock()
+		m[ind] = i.mu
+	}
+
+	return m
+}
+
+func (c *Collection[T]) TaskBusy() bool {
 	errList := []error{}
 	busy := false
 
@@ -281,16 +291,21 @@ func (c *Collection[T]) TaskCount() (int, bool) {
 		if i.Err != nil {
 			errList = append(errList, i.Err)
 		}
-		i.mu.Lock()
-		if i.currTask != nil && !i.failed {
+
+		b := i.mu.TryLock()
+		if !b {
+			busy = true
+			continue
+		}
+
+		if !i.failed && (i.currTask != nil || len(i.TaskQueue) > 0) {
 			busy = true
 		}
-		count += len(i.TaskQueue)
 		i.mu.Unlock()
 	}
 
 	c.Errs = errList
-	return count, busy
+	return busy
 }
 
 func (c *Collection[T]) CollectAll() {

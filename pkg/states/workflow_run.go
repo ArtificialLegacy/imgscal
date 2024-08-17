@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
-	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua/lib"
@@ -15,6 +14,7 @@ import (
 
 func WorkflowRun(sm *statemachine.StateMachine) error {
 	script := sm.PopString()
+	verbose := sm.PopBool()
 	req := []string{}
 	for sm.Peek() {
 		req = append(req, sm.PopString())
@@ -32,6 +32,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		lg = log.NewLoggerBase("execute", sm.Config.LogDirectory, false)
 	}
 
+	if verbose {
+		lg.EnableVerbose()
+	}
+
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := lua.WorkflowRunState(&lg)
 	runner := lua.NewRunner(req, state, &lg, sm.CliMode)
@@ -39,16 +43,16 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			tcCount, tcBusy := runner.TC.TaskCount()
-			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.TC, tcCount, tcBusy), log.LEVEL_WARN)
-			icCount, icBusy := runner.IC.TaskCount()
-			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.IC, icCount, icBusy), log.LEVEL_WARN)
-			fcCount, fcBusy := runner.FC.TaskCount()
-			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.FC, fcCount, fcBusy), log.LEVEL_WARN)
-			ccCount, ccBusy := runner.CC.TaskCount()
-			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.CC, ccCount, ccBusy), log.LEVEL_WARN)
-			qrCount, qrBusy := runner.QR.TaskCount()
-			lg.Append(fmt.Sprintf("collection [%T] left: %d, (busy: %t)", runner.QR, qrCount, qrBusy), log.LEVEL_WARN)
+			tcBusy := runner.TC.TaskBusy()
+			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.TC, tcBusy), log.LEVEL_WARN)
+			icBusy := runner.IC.TaskBusy()
+			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.IC, icBusy), log.LEVEL_WARN)
+			fcBusy := runner.FC.TaskBusy()
+			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.FC, fcBusy), log.LEVEL_WARN)
+			ccBusy := runner.CC.TaskBusy()
+			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.CC, ccBusy), log.LEVEL_WARN)
+			qrBusy := runner.QR.TaskBusy()
+			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.QR, qrBusy), log.LEVEL_WARN)
 
 			lg.Append(fmt.Sprintf("panic recovered: %+v", r), log.LEVEL_ERROR)
 		}
@@ -64,7 +68,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	err := runner.Run(script)
 
-	for checkState(runner.IC) || checkState(runner.TC) || checkState(runner.FC) || checkState(runner.CC) || checkState(runner.QR) {
+	for runner.IC.TaskBusy() || runner.FC.TaskBusy() || runner.FC.TaskBusy() || runner.CC.TaskBusy() || runner.QR.TaskBusy() {
 		time.Sleep(time.Millisecond * 10)
 	}
 
@@ -149,10 +153,4 @@ func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine
 	}
 
 	return errExists
-}
-
-func checkState[T collection.ItemSelf](c *collection.Collection[T]) bool {
-	co, b := c.TaskCount()
-
-	return co > 0 || b
 }

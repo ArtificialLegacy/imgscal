@@ -2,6 +2,7 @@ package test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -44,6 +45,7 @@ func TestCollection(t *testing.T) {
 		t.Errorf("got wrong item after task run, expected=%s got=%s", expected, value)
 	}
 
-	for c, b := c.TaskCount(); b || c > 0; {
+	for c.TaskBusy() {
+		time.Sleep(time.Millisecond * 10)
 	}
 }

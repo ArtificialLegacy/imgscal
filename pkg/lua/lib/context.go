@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"image/color"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
@@ -204,6 +205,69 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 				Fail: func(i *collection.Item[collection.ItemContext]) {
 					imageFinish <- struct{}{}
+				},
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func new_direct()
+	/// @arg id - image id to create a context for
+	/// @returns new context id
+	/// @desc
+	/// creates a new context directly on the image,
+	/// this requires the image to use the RGBA color model
+	/// or it will be converted.
+	lib.CreateFunction(tab, "new_direct",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			imageFinish := make(chan struct{})
+			imageReady := make(chan struct{})
+			var img *image.RGBA
+
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					if rgba, ok := i.Self.Image.(*image.RGBA); ok {
+						img = rgba
+					} else {
+						rgba := imageutil.CopyImage(i.Self.Image, imageutil.MODEL_RGBA)
+						i.Self.Image = rgba
+						img = rgba.(*image.RGBA)
+					}
+					imageReady <- struct{}{}
+					<-imageFinish
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					close(imageReady)
+				},
+			})
+
+			tempName := fmt.Sprintf("context_%d", r.CC.Next())
+
+			chLog := log.NewLogger(tempName, lg)
+			lg.Append(fmt.Sprintf("child log created: %s", tempName), log.LEVEL_INFO)
+
+			id := r.CC.AddItem(&chLog)
+
+			r.CC.Schedule(id, &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					<-imageReady
+
+					i.Self = &collection.ItemContext{
+						Context: gg.NewContextForRGBA(img),
+					}
+
+					imageFinish <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemContext]) {
+					close(imageFinish)
 				},
 			})
 
@@ -1613,6 +1677,27 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func color()
+	/// @arg id
+	/// @arg color struct
+	lib.CreateFunction(tab, "color",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
+					i.Self.Context.SetColor(col)
+				},
+			})
+
+			return 0
+		})
+
 	/// @func color_rgb()
 	/// @arg id
 	/// @arg r
@@ -1952,6 +2037,443 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func word_wrap()
+	/// @arg id
+	/// @arg str
+	/// @arg width
+	/// @returns []string
+	/// @blocking
+	lib.CreateFunction(tab, "word_wrap",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "str"},
+			{Type: lua.FLOAT, Name: "width"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var wrappedStrings []string
+
+			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					wrappedStrings = i.Self.Context.WordWrap(args["str"].(string), args["width"].(float64))
+				},
+			})
+
+			t := state.NewTable()
+			for ind, str := range wrappedStrings {
+				t.RawSetInt(ind+1, golua.LString(str))
+			}
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func matrix_new()
+	/// @arg xx
+	/// @arg yx
+	/// @arg xy
+	/// @arg yy
+	/// @arg x0
+	/// @arg y0
+	/// @returns matrix struct
+	lib.CreateFunction(tab, "matrix_new",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "xx"},
+			{Type: lua.FLOAT, Name: "yx"},
+			{Type: lua.FLOAT, Name: "xy"},
+			{Type: lua.FLOAT, Name: "yy"},
+			{Type: lua.FLOAT, Name: "x0"},
+			{Type: lua.FLOAT, Name: "y0"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := matrixTable(state,
+				args["xx"].(float64),
+				args["yx"].(float64),
+				args["xy"].(float64),
+				args["yy"].(float64),
+				args["x0"].(float64),
+				args["y0"].(float64),
+			)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func matrix_identity()
+	/// @returns matrix struct
+	lib.CreateFunction(tab, "matrix_identity",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			m := gg.Identity()
+			t := matrixTable(state,
+				m.XX,
+				m.YX,
+				m.XY,
+				m.YY,
+				m.X0,
+				m.Y0,
+			)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func matrix_rotate()
+	/// @arg angle
+	/// @returns matrix struct
+	lib.CreateFunction(tab, "matrix_rotate",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "angle"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			m := gg.Rotate(args["angle"].(float64))
+			t := matrixTable(state,
+				m.XX,
+				m.YX,
+				m.XY,
+				m.YY,
+				m.X0,
+				m.Y0,
+			)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func matrix_scale()
+	/// @arg x
+	/// @arg y
+	/// @returns matrix struct
+	lib.CreateFunction(tab, "matrix_scale",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			m := gg.Scale(args["x"].(float64), args["y"].(float64))
+			t := matrixTable(state,
+				m.XX,
+				m.YX,
+				m.XY,
+				m.YY,
+				m.X0,
+				m.Y0,
+			)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func matrix_shear()
+	/// @arg x
+	/// @arg y
+	/// @returns matrix struct
+	lib.CreateFunction(tab, "matrix_shear",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			m := gg.Shear(args["x"].(float64), args["y"].(float64))
+			t := matrixTable(state,
+				m.XX,
+				m.YX,
+				m.XY,
+				m.YY,
+				m.X0,
+				m.Y0,
+			)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func matrix_translate()
+	/// @arg x
+	/// @arg y
+	/// @returns matrix struct
+	lib.CreateFunction(tab, "matrix_translate",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x"},
+			{Type: lua.FLOAT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			m := gg.Translate(args["x"].(float64), args["y"].(float64))
+			t := matrixTable(state,
+				m.XX,
+				m.YX,
+				m.XY,
+				m.YY,
+				m.X0,
+				m.Y0,
+			)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func point_cubic_bezier()
+	/// @arg x0
+	/// @arg y0
+	/// @arg x1
+	/// @arg y1
+	/// @arg x2
+	/// @arg y2
+	/// @arg x3
+	/// @arg y3
+	/// @returns []point
+	lib.CreateFunction(tab, "point_cubic_bezier",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x0"},
+			{Type: lua.FLOAT, Name: "y0"},
+			{Type: lua.FLOAT, Name: "x1"},
+			{Type: lua.FLOAT, Name: "y1"},
+			{Type: lua.FLOAT, Name: "x2"},
+			{Type: lua.FLOAT, Name: "y2"},
+			{Type: lua.FLOAT, Name: "x3"},
+			{Type: lua.FLOAT, Name: "y3"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			points := gg.CubicBezier(
+				args["x0"].(float64),
+				args["y0"].(float64),
+				args["x1"].(float64),
+				args["y1"].(float64),
+				args["x2"].(float64),
+				args["y2"].(float64),
+				args["x3"].(float64),
+				args["y3"].(float64),
+			)
+
+			t := state.NewTable()
+			for ind, p := range points {
+				point := state.NewTable()
+				point.RawSetString("x", golua.LNumber(p.X))
+				point.RawSetString("y", golua.LNumber(p.Y))
+
+				t.RawSetInt(ind+1, point)
+			}
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func point_quadratic_bezier()
+	/// @arg x0
+	/// @arg y0
+	/// @arg x1
+	/// @arg y1
+	/// @arg x2
+	/// @arg y2
+	/// @returns []point
+	lib.CreateFunction(tab, "point_quadratic_bezier",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x0"},
+			{Type: lua.FLOAT, Name: "y0"},
+			{Type: lua.FLOAT, Name: "x1"},
+			{Type: lua.FLOAT, Name: "y1"},
+			{Type: lua.FLOAT, Name: "x2"},
+			{Type: lua.FLOAT, Name: "y2"},
+			{Type: lua.FLOAT, Name: "x3"},
+			{Type: lua.FLOAT, Name: "y3"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			points := gg.QuadraticBezier(
+				args["x0"].(float64),
+				args["y0"].(float64),
+				args["x1"].(float64),
+				args["y1"].(float64),
+				args["x2"].(float64),
+				args["y2"].(float64),
+			)
+
+			t := state.NewTable()
+			for ind, p := range points {
+				point := state.NewTable()
+				point.RawSetString("x", golua.LNumber(p.X))
+				point.RawSetString("y", golua.LNumber(p.Y))
+
+				t.RawSetInt(ind+1, point)
+			}
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func pattern_solid()
+	/// @arg color struct
+	/// @returns pattern struct
+	lib.CreateFunction(tab, "pattern_solid",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := patternSolidTable(state, args["color"].(*golua.LTable))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func pattern_surface()
+	/// @arg id
+	/// @arg repeat_op
+	/// @returns pattern struct
+	lib.CreateFunction(tab, "pattern_surface",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "repeat_op"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := patternSurfaceTable(state, args["id"].(int), args["repeat_op"].(int))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func pattern_surface_sync()
+	/// @arg id
+	/// @arg repeat_op
+	/// @returns pattern struct
+	/// @desc
+	/// Note: this does not wait for the image to be ready or idle,
+	/// if the image is not loaded it will grab an empy image
+	lib.CreateFunction(tab, "pattern_surface_sync",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "repeat_op"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := patternSurfaceSyncTable(state, args["id"].(int), args["repeat_op"].(int))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func pattern_custom()
+	/// @arg fn (x, y) color struct
+	/// @returns pattern struct
+	lib.CreateFunction(tab, "pattern_custom",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := patternCustomTable(state, args["fn"].(*golua.LFunction))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func gradient_linear()
+	/// @arg x0
+	/// @arg y0
+	/// @arg x1
+	/// @arg y1
+	/// @returns pattern struct
+	lib.CreateFunction(tab, "gradient_linear",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x0"},
+			{Type: lua.FLOAT, Name: "y0"},
+			{Type: lua.FLOAT, Name: "x1"},
+			{Type: lua.FLOAT, Name: "y1"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := patternGradientLinearTable(state, args["x0"].(float64), args["y0"].(float64), args["x1"].(float64), args["y1"].(float64))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func gradient_radial()
+	/// @arg x0
+	/// @arg y0
+	/// @arg r0
+	/// @arg x1
+	/// @arg y1
+	/// @arg r1
+	/// @returns pattern struct
+	lib.CreateFunction(tab, "gradient_radial",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "x0"},
+			{Type: lua.FLOAT, Name: "y0"},
+			{Type: lua.FLOAT, Name: "r0"},
+			{Type: lua.FLOAT, Name: "x1"},
+			{Type: lua.FLOAT, Name: "y1"},
+			{Type: lua.FLOAT, Name: "r1"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := patternGradientRadialTable(state, args["x0"].(float64), args["y0"].(float64), args["r0"].(float64), args["x1"].(float64), args["y1"].(float64), args["r1"].(float64))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func fill_style()
+	/// @arg id
+	/// @arg pattern struct
+	lib.CreateFunction(tab, "fill_style",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "pattern"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					pt := args["pattern"].(*golua.LTable)
+					pattern := patternBuild(state, pt, r, lg)
+
+					i.Self.Context.SetFillStyle(pattern)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func stroke_style()
+	/// @arg id
+	/// @arg pattern struct
+	lib.CreateFunction(tab, "stroke_style",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "pattern"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					pt := args["pattern"].(*golua.LTable)
+					pattern := patternBuild(state, pt, r, lg)
+
+					i.Self.Context.SetStrokeStyle(pattern)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func font_load()
+	/// @arg path
+	/// @arg points
+	lib.CreateFunction(tab, "font_load",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.FLOAT, Name: "points"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemContext]) {
+					i.Self.Context.LoadFontFace(args["path"].(string), args["points"].(float64))
+				},
+			})
+
+			return 0
+		})
+
 	/// @constants Fill Rules
 	/// @const FILLRULE_WINDING
 	/// @const FILLRULE_EVENODD
@@ -2007,17 +2529,410 @@ var lineJoins = []gg.LineJoin{
 	gg.LineJoinBevel,
 }
 
-/*
 var repeatOps = []gg.RepeatOp{
 	gg.RepeatBoth,
 	gg.RepeatX,
 	gg.RepeatY,
 	gg.RepeatNone,
 }
-*/
 
 var alignment = []gg.Align{
 	gg.AlignLeft,
 	gg.AlignCenter,
 	gg.AlignRight,
+}
+
+const (
+	PATTERN_SOLID           string = "solid"
+	PATTERN_SURFACE         string = "surface"
+	PATTERN_SURFACE_SYNC    string = "surface_sync"
+	PATTERN_GRADIENT_LINEAR string = "gradient_linear"
+	PATTERN_GRADIENT_RADIAL string = "gradient_radial"
+	PATTERN_CUSTOM          string = "custom"
+)
+
+func matrixTable(state *golua.LState, xx, yx, xy, yy, x0, y0 float64) *golua.LTable {
+	/// @struct Matrix
+	/// @prop xx
+	/// @prop yx
+	/// @prop xy
+	/// @prop yy
+	/// @prop x0
+	/// @prop y0
+	/// @method multiply(matrix)
+	/// @method rotate(angle)
+	/// @method scale(x, y)
+	/// @method shear(x, y)
+	/// @method translate(x, y)
+	/// @method transform_point(x, y) x, y
+	/// @method transform_vector(x, y) x, y
+
+	t := state.NewTable()
+
+	t.RawSetString("xx", golua.LNumber(xx))
+	t.RawSetString("yx", golua.LNumber(yx))
+	t.RawSetString("xy", golua.LNumber(xy))
+	t.RawSetString("yy", golua.LNumber(yy))
+	t.RawSetString("x0", golua.LNumber(x0))
+	t.RawSetString("y0", golua.LNumber(y0))
+
+	tableBuilderFunc(state, t, "multiply", func(state *golua.LState, t *golua.LTable) {
+		mt := state.CheckTable(-1)
+		m := matrixBuild(t)
+		m2 := matrixBuild(mt)
+		nm := m.Multiply(m2)
+		matrixUpdate(t, nm)
+	})
+
+	tableBuilderFunc(state, t, "rotate", func(state *golua.LState, t *golua.LTable) {
+		angle := state.CheckNumber(-1)
+		m := matrixBuild(t)
+		nm := m.Rotate(float64(angle))
+		matrixUpdate(t, nm)
+	})
+
+	tableBuilderFunc(state, t, "scale", func(state *golua.LState, t *golua.LTable) {
+		x := state.CheckNumber(-2)
+		y := state.CheckNumber(-1)
+		m := matrixBuild(t)
+		nm := m.Scale(float64(x), float64(y))
+		matrixUpdate(t, nm)
+	})
+
+	tableBuilderFunc(state, t, "shear", func(state *golua.LState, t *golua.LTable) {
+		x := state.CheckNumber(-2)
+		y := state.CheckNumber(-1)
+		m := matrixBuild(t)
+		nm := m.Shear(float64(x), float64(y))
+		matrixUpdate(t, nm)
+	})
+
+	tableBuilderFunc(state, t, "translate", func(state *golua.LState, t *golua.LTable) {
+		x := state.CheckNumber(-2)
+		y := state.CheckNumber(-1)
+		m := matrixBuild(t)
+		nm := m.Translate(float64(x), float64(y))
+		matrixUpdate(t, nm)
+	})
+
+	t.RawSetString("transform_point", state.NewFunction(func(l *golua.LState) int {
+		t := state.CheckTable(-3)
+		x := state.CheckNumber(-2)
+		y := state.CheckNumber(-1)
+		m := matrixBuild(t)
+		tx, ty := m.TransformPoint(float64(x), float64(y))
+
+		state.Push(golua.LNumber(tx))
+		state.Push(golua.LNumber(ty))
+		return 2
+	}))
+
+	t.RawSetString("transform_vector", state.NewFunction(func(l *golua.LState) int {
+		t := state.CheckTable(-3)
+		x := state.CheckNumber(-2)
+		y := state.CheckNumber(-1)
+		m := matrixBuild(t)
+		tx, ty := m.TransformVector(float64(x), float64(y))
+
+		state.Push(golua.LNumber(tx))
+		state.Push(golua.LNumber(ty))
+		return 2
+	}))
+
+	return t
+}
+
+func matrixUpdate(t *golua.LTable, m gg.Matrix) {
+	t.RawSetString("xx", golua.LNumber(m.XX))
+	t.RawSetString("yx", golua.LNumber(m.YX))
+	t.RawSetString("xy", golua.LNumber(m.XY))
+	t.RawSetString("yy", golua.LNumber(m.YY))
+	t.RawSetString("x0", golua.LNumber(m.X0))
+	t.RawSetString("y0", golua.LNumber(m.Y0))
+}
+
+func matrixBuild(t *golua.LTable) gg.Matrix {
+	xx := float64(t.RawGetString("xx").(golua.LNumber))
+	yx := float64(t.RawGetString("yx").(golua.LNumber))
+	xy := float64(t.RawGetString("xy").(golua.LNumber))
+	yy := float64(t.RawGetString("yy").(golua.LNumber))
+	x0 := float64(t.RawGetString("x0").(golua.LNumber))
+	y0 := float64(t.RawGetString("y0").(golua.LNumber))
+
+	return gg.Matrix{
+		XX: xx,
+		YX: yx,
+		XY: xy,
+		YY: yy,
+		X0: x0,
+		Y0: y0,
+	}
+}
+
+func patternBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.Logger) gg.Pattern {
+	/// @struct Pattern
+	/// @prop type
+
+	typ := t.RawGetString("type").(golua.LString)
+
+	switch string(typ) {
+	case PATTERN_SOLID:
+		return patternSolidBuild(t)
+	case PATTERN_SURFACE:
+		return patternSurfaceBuild(t, r)
+	case PATTERN_SURFACE_SYNC:
+		return patternSurfaceSyncBuild(t, r)
+	case PATTERN_GRADIENT_LINEAR:
+		return patternGradientLinearBuild(t)
+	case PATTERN_GRADIENT_RADIAL:
+		return patternGradientRadialBuild(t)
+	case PATTERN_CUSTOM:
+		return patternCustomBuild(state, t)
+	}
+
+	state.Error(golua.LString(lg.Append(fmt.Sprintf("unknown pattern type: %s", typ), log.LEVEL_ERROR)), 0)
+	return gg.NewSolidPattern(color.RGBA{})
+}
+
+func patternSolidTable(state *golua.LState, color *golua.LTable) *golua.LTable {
+	/// @struct PatternSolid
+	/// @prop type
+	/// @prop color
+
+	t := state.NewTable()
+
+	t.RawSetString("type", golua.LString(PATTERN_SOLID))
+	t.RawSetString("color", color)
+
+	return t
+}
+
+func patternSolidBuild(t *golua.LTable) gg.Pattern {
+	ct := t.RawGetString("color").(*golua.LTable)
+	col := imageutil.ColorTableToRGBAColor(ct)
+
+	p := gg.NewSolidPattern(col)
+	return p
+}
+
+func patternSurfaceTable(state *golua.LState, id, repeatOp int) *golua.LTable {
+	/// @struct PatternSurface
+	/// @prop type
+	/// @prop id
+	/// @prop repeatOp
+
+	t := state.NewTable()
+
+	t.RawSetString("type", golua.LString(PATTERN_SURFACE))
+	t.RawSetString("id", golua.LNumber(id))
+	t.RawSetString("repeatOp", golua.LNumber(repeatOp))
+
+	return t
+}
+
+func patternSurfaceBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
+	id := t.RawGetString("id").(golua.LNumber)
+	repeatOp := t.RawGetString("repeatOp").(golua.LNumber)
+
+	var img image.Image
+
+	<-r.IC.Schedule(int(id), &collection.Task[collection.ItemImage]{
+		Lib:  LIB_CONTEXT,
+		Name: "pattern_surface",
+		Fn: func(i *collection.Item[collection.ItemImage]) {
+			img = i.Self.Image
+		},
+	})
+
+	p := gg.NewSurfacePattern(img, repeatOps[int(repeatOp)])
+	return p
+}
+
+func patternSurfaceSyncTable(state *golua.LState, id, repeatOp int) *golua.LTable {
+	/// @struct PatternSurfaceSync
+	/// @prop type
+	/// @prop id
+	/// @prop repeatOp
+
+	t := state.NewTable()
+
+	t.RawSetString("type", golua.LString(PATTERN_SURFACE_SYNC))
+	t.RawSetString("id", golua.LNumber(id))
+	t.RawSetString("repeatOp", golua.LNumber(repeatOp))
+
+	return t
+}
+
+func patternSurfaceSyncBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
+	id := t.RawGetString("id").(golua.LNumber)
+	repeatOp := t.RawGetString("repeatOp").(golua.LNumber)
+
+	self := r.IC.Item(int(id)).Self
+
+	var img image.Image
+	if self != nil {
+		img = self.Image
+	} else {
+		img = image.NewRGBA(image.Rect(0, 0, 1, 1))
+	}
+
+	p := gg.NewSurfacePattern(img, repeatOps[int(repeatOp)])
+	return p
+}
+
+func patternGradientLinearTable(state *golua.LState, x0, y0, x1, y1 float64) *golua.LTable {
+	/// @struct PatternGradientLinear
+	/// @prop type
+	/// @prop x0
+	/// @prop y0
+	/// @prop x1
+	/// @prop y1
+	/// @method color_stop(offset, color)
+
+	t := state.NewTable()
+
+	t.RawSetString("type", golua.LString(PATTERN_GRADIENT_LINEAR))
+	t.RawSetString("x0", golua.LNumber(x0))
+	t.RawSetString("y0", golua.LNumber(y0))
+	t.RawSetString("x1", golua.LNumber(x1))
+	t.RawSetString("y1", golua.LNumber(y1))
+	t.RawSetString("__colorStops", state.NewTable())
+
+	tableBuilderFunc(state, t, "color_stop", func(state *golua.LState, t *golua.LTable) {
+		offset := state.CheckNumber(-2)
+		col := state.CheckTable(-1)
+
+		stops := t.RawGetString("__colorStops").(*golua.LTable)
+		cs := state.NewTable()
+		cs.RawSetString("offset", golua.LNumber(offset))
+		cs.RawSetString("color", col)
+
+		stops.Append(cs)
+	})
+
+	return t
+}
+
+func patternGradientLinearBuild(t *golua.LTable) gg.Pattern {
+	x0 := t.RawGetString("x0").(golua.LNumber)
+	y0 := t.RawGetString("y0").(golua.LNumber)
+	x1 := t.RawGetString("x1").(golua.LNumber)
+	y1 := t.RawGetString("y1").(golua.LNumber)
+
+	p := gg.NewLinearGradient(float64(x0), float64(y0), float64(x1), float64(y1))
+
+	colorStops := t.RawGetString("__colorStops").(*golua.LTable)
+	for i := range colorStops.Len() {
+		cs := colorStops.RawGetInt(i + 1).(*golua.LTable)
+
+		offset := cs.RawGetString("offset").(golua.LNumber)
+		ct := cs.RawGetString("color").(*golua.LTable)
+
+		col := imageutil.ColorTableToRGBAColor(ct)
+		p.AddColorStop(float64(offset), col)
+	}
+
+	return p
+}
+
+func patternGradientRadialTable(state *golua.LState, x0, y0, r0, x1, y1, r1 float64) *golua.LTable {
+	/// @struct PatternGradientRadial
+	/// @prop type
+	/// @prop x0
+	/// @prop y0
+	/// @prop r0
+	/// @prop x1
+	/// @prop y1
+	/// @prop r1
+	/// @method color_stop(offset, color)
+
+	t := state.NewTable()
+
+	t.RawSetString("type", golua.LString(PATTERN_GRADIENT_RADIAL))
+	t.RawSetString("x0", golua.LNumber(x0))
+	t.RawSetString("y0", golua.LNumber(y0))
+	t.RawSetString("r0", golua.LNumber(r0))
+	t.RawSetString("x1", golua.LNumber(x1))
+	t.RawSetString("y1", golua.LNumber(y1))
+	t.RawSetString("r1", golua.LNumber(r1))
+	t.RawSetString("__colorStops", state.NewTable())
+
+	tableBuilderFunc(state, t, "color_stop", func(state *golua.LState, t *golua.LTable) {
+		offset := state.CheckNumber(-2)
+		col := state.CheckTable(-1)
+
+		stops := t.RawGetString("__colorStops").(*golua.LTable)
+		cs := state.NewTable()
+		cs.RawSetString("offset", golua.LNumber(offset))
+		cs.RawSetString("color", col)
+
+		stops.Append(cs)
+	})
+
+	return t
+}
+
+func patternGradientRadialBuild(t *golua.LTable) gg.Pattern {
+	x0 := t.RawGetString("x0").(golua.LNumber)
+	y0 := t.RawGetString("y0").(golua.LNumber)
+	r0 := t.RawGetString("r0").(golua.LNumber)
+	x1 := t.RawGetString("x1").(golua.LNumber)
+	y1 := t.RawGetString("y1").(golua.LNumber)
+	r1 := t.RawGetString("r1").(golua.LNumber)
+
+	p := gg.NewRadialGradient(float64(x0), float64(y0), float64(r0), float64(x1), float64(y1), float64(r1))
+
+	colorStops := t.RawGetString("__colorStops").(*golua.LTable)
+	for i := range colorStops.Len() {
+		cs := colorStops.RawGetInt(i + 1).(*golua.LTable)
+
+		offset := cs.RawGetString("offset").(golua.LNumber)
+		ct := cs.RawGetString("color").(*golua.LTable)
+
+		col := imageutil.ColorTableToRGBAColor(ct)
+		p.AddColorStop(float64(offset), col)
+	}
+
+	return p
+}
+
+type PatternCustom struct {
+	fn    *golua.LFunction
+	state *golua.LState
+}
+
+func (p PatternCustom) ColorAt(x, y int) color.Color {
+	p.state.Push(p.fn)
+	p.state.Push(golua.LNumber(x))
+	p.state.Push(golua.LNumber(y))
+	p.state.Call(2, 1)
+	ct := p.state.CheckTable(-1)
+	p.state.Pop(1)
+
+	col := imageutil.ColorTableToRGBAColor(ct)
+	return col
+}
+
+func patternCustomTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
+	/// @struct PatternCustom
+	/// @prop type
+	/// @prop fn(x, y) color struct
+
+	t := state.NewTable()
+
+	t.RawSetString("type", golua.LString(PATTERN_CUSTOM))
+	t.RawSetString("fn", fn)
+
+	return t
+}
+
+func patternCustomBuild(state *golua.LState, t *golua.LTable) gg.Pattern {
+	fn := t.RawGetString("fn").(*golua.LFunction)
+
+	p := PatternCustom{
+		fn:    fn,
+		state: state,
+	}
+
+	return p
 }

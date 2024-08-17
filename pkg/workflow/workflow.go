@@ -7,6 +7,7 @@ type Workflow struct {
 	Desc         string
 	Requires     []string
 	CliExclusive bool
+	Verbose      bool
 }
 
 func NewWorkflow() Workflow {
@@ -17,5 +18,6 @@ func NewWorkflow() Workflow {
 		Desc:         "",
 		Requires:     []string{},
 		CliExclusive: false,
+		Verbose:      false,
 	}
 }

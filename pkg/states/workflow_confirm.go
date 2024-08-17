@@ -94,6 +94,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 		for _, s := range wf.Requires {
 			sm.PushString(s)
 		}
+		sm.PushBool(wf.Verbose)
 		sm.PushString(script)
 		sm.SetState(STATE_WORKFLOW_RUN)
 		lg.Append("confirmation answer y", log.LEVEL_INFO)
