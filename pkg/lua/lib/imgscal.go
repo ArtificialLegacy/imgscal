@@ -10,6 +10,7 @@ import (
 /// @import ~
 /// @desc
 /// Automate image processing programmatically.
+/// @section
 /// Built around concurrency.
 /// Workflows writteng in lua.
 /// Builtin handling for image encodings and color models.

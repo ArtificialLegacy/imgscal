@@ -25,6 +25,7 @@ const LIB_GUI = "gui"
 /// @import gui
 /// @desc
 /// Library for creating custom interfaces.
+/// @section
 /// Currently does not work well on windows, so WSL is recommended.
 
 func RegisterGUI(r *lua.Runner, lg *log.Logger) {

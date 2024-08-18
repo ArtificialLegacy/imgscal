@@ -20,8 +20,7 @@ const LIB_IMAGE = "image"
 /// @lib Image
 /// @import image
 /// @desc
-/// Library including the basic tools for handling images.
-/// Also handles colors.
+/// Library including the basic tools for handling images and colors.
 
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_IMAGE, r, r.State, lg)
@@ -373,7 +372,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 	/// @func convert(id, model)
 	/// @arg id {int<collection.IMAGE>}
-	/// @arg model (int<image.ColorModel>)
+	/// @arg model {int<image.ColorModel>}
 	/// @desc
 	/// Replaces the image inplace with a new image with the new model.
 	lib.CreateFunction(tab, "convert",

@@ -5,110 +5,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ .Display }} - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
   </head>
   <body>
     <header>
       <h1>{{ .Display }}</h1>
-      {{ if ne .Name "~"}}
-      <p>Import using <code>{{ .Name }}</code>.</p>
-      {{ end }}
-      <p>Generated from source file: <code>{{ .File }}</code>.</p>
       <p>
         {{ range .Desc }}{{ . }} {{ end }}
       </p>
+      {{ if ne .Name "~"}}
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/{{ .File }}">
+            pkg/lua/lib/{{ .File }}</a></code> 
+        | 
+        Import: <code>{{ .Name }}</code>
+      </p>
+      {{ end }}
     </header>
 
-    {{ if .Fns}}
-    <h2>Functions</h2>
-    
-    {{ range .Fns }}
-    <details>
-      <summary>{{ .Fn }}</summary>
-      {{ if .Block }}
-        <blockquote>This function is blocking!</blockquote>
-      {{ end }}
-      <p>
-        {{ range .Desc }}{{ . }} {{ end }}
-      </p>
-
-      {{ if .Args }}
-      <figure>
-        <figcaption>Arguments</figcaption>
-        <ul>
-          {{ range .Args }}
-            {{ if .Opt }}
-              <li><i>{{ .Str }}</i></li>
-            {{ else -}}
-              <li>{{ .Str }}</li>
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          {{ $curr := .Name }}
+          {{ range .Friends }}
+            {{ if eq .Name  $curr }}
+            <li class="lib-current"><a href="./{{.FileClean }}.html">{{ .Display }}</a></li>
+            {{ else }}
+            <li class="lib"><a href="./{{.FileClean }}.html">{{ .Display }}</a></li>
             {{ end }}
           {{ end }}
         </ul>
-      </figure>
-      {{ end }}
+      </nav>
 
-      {{ if .Returns }}
-      <figure>
-        <figcaption>Returns</figcaption>
-        <ul>
-          {{ range .Returns }}
-            <li>{{ . }}</li>
+      <section class="docs">
+        {{ if .Scs }}
+        <section class="sect">
+          {{ range .Scs }}
+          <p>{{ . }}</p>
           {{ end }}
-        </ul>
-      </figure>
-      {{ end }}
-    </details>
-    {{ end }}
-    {{ end }}
-
-    {{ if .Cns }}
-    <h2>Constants</h2>
-
-    {{ range .Cns }}
-    <details>
-      <summary>{{ .Group }}</summary>
-      <ul>
-        {{ range .Consts }}
-          <li>{{ . }}</li>
+        </section>
         {{ end }}
-      </ul>
-    </details>
-    {{ end }}
-    {{ end }}
 
-    {{ if .Sts }}
-    <h2>Structs</h2>
+        {{ if .Fns }}
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          {{ range .Fns }}
+          <details>
+            <summary>{{ .Name }}</summary>
+            <p><code>{{ .Fn }}</code></p>
+            {{ if .Block }}
+            <blockquote>@blocking</blockquote>
+            {{ end }}
+            {{if .Desc }}
+            <p>
+              {{ range .Desc }}{{ . }} {{ end }}
+            </p>
+            {{ end }}
 
-    {{ range .Sts }}
-    <details>
-      <summary>{{ .Struct }}</summary>
-      <h3></h3>
-      <p>
-        {{ range .Desc }}{{ . }} {{ end }}
-      </p>
+            {{ if .Args }}
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                {{ range .Args }}
+                  {{ if .Opt }}
+                    <li class="arg-opt"><i>{{ .Str }}</i> <code class="type">{{ .Type }}</code> {{ .Desc }}</li>
+                  {{ else -}}
+                    <li class="arg">{{ .Str }} <code class="type">{{ .Type }}</code> {{ .Desc }}</li>
+                  {{ end }}
+                {{ end }}
+              </ul>
+            </figure>
+            {{ end }}
 
-      {{ if .Props }}
-      <figure>
-        <figcaption>Properties</figcaption>
-        <ul>
-          {{ range .Props }}
-            <li>{{ . }}</li>
+            {{ if .Returns }}
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                {{ range .Returns }}
+                  <li class="return"><code class="type">{{ .Type }}</code> {{ .Str }}</li>
+                {{ end }}
+              </ul>
+            </figure>
+            {{ end }}
+          </details>
           {{ end }}
-        </ul>
-      </figure>
-      {{ end }}
+        </section>
+        {{ end }}
 
-      {{ if .Methods }}
-      <figure>
-        <figcaption>Methods</figcaption>
-        <ul>
-          {{ range .Methods }}
-            <li>{{ . }}</li>
+        {{ if .Cns }}
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          {{ range .Cns }}
+          <details>
+            <summary>{{ .Group }}</summary>
+            <hr>
+            <ul class="const-group">
+              {{ range .Consts }}
+                <li class="const"><code>{{ . }}</code></li>
+              {{ end }}
+            </ul>
+          </details>
           {{ end }}
-        </ul>
-      </figure>
-      {{ end }}
-    </details>
-    {{ end }}
-    {{ end }}
+        </section>
+        {{ end }}
+
+        {{ if .Sts }}
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          {{ range .Sts }}
+          <details>
+            <summary>{{ .Struct }}</summary>
+            <p>
+              {{ range .Desc }}{{ . }} {{ end }}
+            </p>
+
+            {{ if .Props }}
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                {{ range .Props }}
+                <li class="prop">{{ .Str }} <code class="type">{{ .Type }}</code> {{ .Desc }} </li>
+                {{ end }}
+              </ul>
+            </figure>
+            {{ end }}
+
+            {{ if .Methods }}
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              {{ range .Methods }}
+              <details class="method">
+                <summary>{{ .Name }}</summary>
+                <p><code>{{ .Type }}</code></p>
+                {{ if .Desc }}
+                <hr>
+                <p>{{ .Desc }}</p>
+                {{ end }}
+              </details>
+              {{ end }}
+            </figure>
+            {{ end }}
+          </details>
+          {{ end }}
+        </section>
+        {{ end }}
+      </section>
+    </main>
   </body>
 </html>

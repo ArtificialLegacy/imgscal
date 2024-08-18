@@ -19,6 +19,7 @@ const LIB_REF = "ref"
 /// @import ref
 /// @desc
 /// Library for creating and referencing pointers.
+/// @section
 /// This is used when both go and lua need to reference the same mutable data.
 
 func RegisterRef(r *lua.Runner, lg *log.Logger) {

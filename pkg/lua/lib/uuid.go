@@ -15,7 +15,6 @@ const LIB_UUID = "uuid"
 /// @import uuid
 /// @desc
 /// Small library for generating UUID strings.
-/// Use when a unique identifier is needed.
 
 func RegisterUUID(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_UUID, r, r.State, lg)

@@ -17,13 +17,14 @@ const LIB_CMD = "cmd"
 /// @lib Command
 /// @import cmd
 /// @desc
-/// Library for parsing command-line arguments when the workflow was called directly from the CLI.
+/// Library for parsing command-line arguments.
+/// @section
 /// Cannot be used when the workflow was called from the workflow selection menu.
 
 func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_CMD, r, r.State, lg)
 
-	/// @func parse() -> bool, string
+	/// @func parse() bool, string
 	/// @returns {bool} - If the results are valid.
 	/// @returns {string} - A string of the error if on occured.
 	lib.CreateFunction(tab, "parse",
@@ -47,7 +48,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func called() -> bool
+	/// @func called() bool
 	/// @returns {bool} - If the workflow was called directly from the command-line.
 	lib.CreateFunction(tab, "called",
 		[]lua.Arg{},
@@ -56,7 +57,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func options() -> struct<cmd.Options>
+	/// @func options() struct<cmd.Options>
 	/// @returns {struct<cmd.Options>}
 	/// @desc
 	/// Creates a table for passing options into arguments.
@@ -64,9 +65,9 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Options
-			/// @method required(bool) -> self
-			/// @method validate(function([]string) -> string) -> self - Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.
-			/// @method default(any, int<cmd.DefaultType>) -> self - The first value should match the default type given.
+			/// @method required(bool) self
+			/// @method validate(function([]string) string) self - Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.
+			/// @method default(any, int<cmd.DefaultType>) self - The first value should match the default type given.
 
 			t := state.NewTable()
 
@@ -96,7 +97,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_flag(short, long, options?) -> int<ref.BOOL>
+	/// @func arg_flag(short, long, options?) int<ref.BOOL>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -124,7 +125,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_flag_count(short, long, options?) -> int<ref.INT>
+	/// @func arg_flag_count(short, long, options?) int<ref.INT>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -152,7 +153,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_string(short, long, options?) -> int<ref.STRING>
+	/// @func arg_string(short, long, options?) int<ref.STRING>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -180,7 +181,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_string_list(short, long, options?) -> int<[]ref.STRING>
+	/// @func arg_string_list(short, long, options?) int<[]ref.STRING>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -208,7 +209,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_string_pos(options?) -> int<ref.STRING>
+	/// @func arg_string_pos(options?) int<ref.STRING>
 	/// @arg options {struct<cmd.Options>}
 	/// @returns {int<ref.STRING>}
 	lib.CreateFunction(tab, "arg_string_pos",
@@ -232,7 +233,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_int(short, long, options?) -> int<ref.INT>
+	/// @func arg_int(short, long, options?) int<ref.INT>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -260,7 +261,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_int_list(short, long, options?) -> int<[]ref.INT>
+	/// @func arg_int_list(short, long, options?) int<[]ref.INT>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -288,7 +289,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_int_pos(options?) -> int<ref.INT>
+	/// @func arg_int_pos(options?) int<ref.INT>
 	/// @arg options {struct<cmd.Options>}
 	/// @returns {int<ref.INT>}
 	lib.CreateFunction(tab, "arg_int_pos",
@@ -312,7 +313,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_float(short, long, options?) -> int<ref.FLOAT>
+	/// @func arg_float(short, long, options?) int<ref.FLOAT>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -340,7 +341,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_float_list(short, long, options?) -> int<[]ref.FLOAT>
+	/// @func arg_float_list(short, long, options?) int<[]ref.FLOAT>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg options {struct<cmd.Options>}
@@ -368,7 +369,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_float_pos(options?) -> int<[]ref.FLOAT>
+	/// @func arg_float_pos(options?) int<[]ref.FLOAT>
 	/// @arg options {struct<cmd.Options>}
 	/// @returns {int<[]ref.FLOAT>}
 	lib.CreateFunction(tab, "arg_float_pos",
@@ -392,7 +393,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_selector(short, long, choices, options?) -> int<ref.STRING>
+	/// @func arg_selector(short, long, choices, options?) int<ref.STRING>
 	/// @arg short {string}
 	/// @arg long {string}
 	/// @arg choices {[]string}
@@ -428,7 +429,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func arg_selector_pos(choices, options?) -> int<ref.STRING>
+	/// @func arg_selector_pos(choices, options?) int<ref.STRING>
 	/// @arg choices {[]string}
 	/// @arg options {struct<cmd.Options>}
 	/// @returns {int<ref.STRING>}
