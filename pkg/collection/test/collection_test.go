@@ -1,8 +1,8 @@
 package test
 
 import (
+	"sync"
 	"testing"
-	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -16,7 +16,8 @@ func (img ItemString) Identifier() collection.CollectionType { return collection
 
 func TestCollection(t *testing.T) {
 	lg := log.NewLoggerEmpty()
-	c := collection.NewCollection[ItemString](&lg)
+	wg := &sync.WaitGroup{}
+	c := collection.NewCollection[ItemString](&lg, wg)
 
 	id := c.AddItem(&lg)
 	value := ""
@@ -45,7 +46,5 @@ func TestCollection(t *testing.T) {
 		t.Errorf("got wrong item after task run, expected=%s got=%s", expected, value)
 	}
 
-	for c.TaskBusy() {
-		time.Sleep(time.Millisecond * 10)
-	}
+	wg.Wait()
 }

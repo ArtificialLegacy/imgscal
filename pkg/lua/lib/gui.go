@@ -30,12 +30,12 @@ const LIB_GUI = "gui"
 func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_GUI, r, r.State, lg)
 
-	/// @func window_master()
-	/// @arg name
-	/// @arg width
-	/// @arg height
-	/// @arg? flags
-	/// @returns id of the window.
+	/// @func window_master(name, width, height, flags?) -> int<collection.CRATE_WINDOW>
+	/// @arg name {string}
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? flags {int<gui.MasterWindowFlags>} - Use 'bit.bitor' or 'bit.bitor_many' to combine flags.
+	/// @returns {int<collection.CRATE_WINDOW>} - The id of the new window.
 	lib.CreateFunction(tab, "window_master",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -51,9 +51,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func window_pos()
-	/// @arg id
-	/// @returns x, y
+	/// @func window_pos(id) -> int, int
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @returns {int} - The x position of the window.
+	/// @returns {int} - The y position of the window.
 	lib.CreateFunction(tab, "window_pos",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -70,10 +71,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func window_set_pos()
-	/// @arg id
-	/// @arg x
-	/// @arg y
+	/// @func window_set_pos(id, x, y)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg x {int}
+	/// @arg y {int}
 	lib.CreateFunction(tab, "window_set_pos",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -90,9 +91,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_size()
-	/// @arg id
-	/// @returns width, height
+	/// @func window_size(id) -> int, int
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @returns {int} - The width of the window.
+	/// @returns {int} - The height of the window.
 	lib.CreateFunction(tab, "window_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -109,10 +111,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func window_set_size()
-	/// @arg id
-	/// @arg width
-	/// @arg height
+	/// @func window_set_size(id, width, height)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg width {int}
+	/// @arg height {int}
 	lib.CreateFunction(tab, "window_set_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -129,12 +131,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_size_limits()
-	/// @arg id
-	/// @arg minw
-	/// @arg minh
-	/// @arg maxw
-	/// @arg maxh
+	/// @func window_set_size_limits(id, minw, minh, maxw, maxh)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg minw {int}
+	/// @arg minh {int}
+	/// @arg maxw {int}
+	/// @arg maxh {int}
 	lib.CreateFunction(tab, "window_set_size_limits",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -153,13 +155,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_bg_color()
-	/// @arg id
-	/// @arg r
-	/// @arg g
-	/// @arg b
-	/// @arg a
-	lib.CreateFunction(tab, "window_set_bg_color",
+	/// @func window_set_bg_color_rgba(id, r, g, b, a)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg r {int}
+	/// @arg g {int}
+	/// @arg b {int}
+	/// @arg a {int}
+	lib.CreateFunction(tab, "window_set_bg_color_rgba",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "r"},
@@ -184,9 +186,36 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_should_close()
-	/// @arg id
-	/// @arg v - bool
+	/// @func window_set_bg_color(id, color)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg color {struct<image.Color>}
+	lib.CreateFunction(tab, "window_set_bg_color",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			w, err := r.CR_WIN.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			r, g, b, a := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+
+			c := color.NRGBA{
+				R: r,
+				G: g,
+				B: b,
+				A: a,
+			}
+
+			w.SetBgColor(c)
+			return 0
+		})
+
+	/// @func window_should_close(id, v)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg v {bool}
 	lib.CreateFunction(tab, "window_should_close",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -202,9 +231,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_icon_imgscal()
-	/// @arg id
-	/// @arg? circled
+	/// @func window_set_icon_imgscal(id, circled?)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg? circled {bool}
 	/// @desc
 	/// Uses the 16x16 and 32x32 imscal application icons for the window icon.
 	/// Note the imgscal icon is light green with a transparent background,
@@ -251,9 +280,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_icon()
-	/// @arg id
-	/// @arg icon_id
+	/// @func window_set_icon(id, img)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg img {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "window_set_icon",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -276,12 +305,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_icon_many()
-	/// @arg id
-	/// @arg icon_ids
+	/// @func window_set_icon_many(id, imgs)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg imgs {[]int<collection.IMAGE>}
 	/// @blocking
 	/// @desc
-	/// setting multiple icons allows it select the closest to the system's desired size.
+	/// Setting multiple icons allows it select the closest to the system's desired size.
 	lib.CreateFunction(tab, "window_set_icon_many",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -318,10 +347,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_clear_icon()
-	/// @arg id
+	/// @func window_clear_icon(id)
+	/// @arg id {int<collection.CRATE_WINDOW>}
 	/// @desc
-	/// resets window icon to default, same as window_set_icon_many(id, {})
+	/// Resets window icon to the default, same as 'window_set_icon_many(id, {})'.
 	lib.CreateFunction(tab, "window_clear_icon",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -336,9 +365,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_fps()
-	/// @arg id
-	/// @arg fps
+	/// @func window_set_fps(id, fps)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg fps {int}
 	lib.CreateFunction(tab, "window_set_fps",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -354,9 +383,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_title()
-	/// @arg id
-	/// @arg title
+	/// @func window_set_title(id, title)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg title {string}
 	lib.CreateFunction(tab, "window_set_title",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -372,9 +401,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_register_keyboard_shortcuts()
-	/// @arg id
-	/// @arg []shortcuts
+	/// @func window_register_keyboard_shortcuts(id, shortcuts)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg shortcuts {[]struct<gui.Shortcut>}
 	lib.CreateFunction(tab, "window_register_keyboard_shortcuts",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -412,9 +441,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_close_callback()
-	/// @arg id
-	/// @arg callback - returns bool
+	/// @func window_set_close_callback(id, callback)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg callback {function() -> bool}
 	lib.CreateFunction(tab, "window_set_close_callback",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -436,9 +465,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_set_drop_callback()
-	/// @arg id
-	/// @arg callback([]string)
+	/// @func window_set_drop_callback(id, callback)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg callback {function([]string)}
 	lib.CreateFunction(tab, "window_set_drop_callback",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -462,9 +491,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_additional_input_handler_callback()
-	/// @arg id
-	/// @arg callback(key, mod, action)
+	/// @func window_additional_input_handler_callback(id, callback)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg callback {function(key int<gui.Key>, mod int<gui.Key>, action int<gui.Action>)}
 	lib.CreateFunction(tab, "window_additional_input_handler_callback",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -487,10 +516,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_close()
-	/// @arg id
+	/// @func window_close(id)
+	/// @arg id {int<collection.CRATE_WINDOW>}
 	/// @desc
-	/// same as window_should_close(id, true)
+	/// Same as 'window_should_close(id, true)'.
 	lib.CreateFunction(tab, "window_close",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -505,9 +534,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_run()
-	/// @arg id
-	/// @arg fn
+	/// @func window_run(id, fn)
+	/// @arg id {int<collection.CRATE_WINDOW>}
+	/// @arg fn {function()}
 	/// @blocking
 	lib.CreateFunction(tab, "window_run",
 		[]lua.Arg{
@@ -528,8 +557,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func window_single()
-	/// @returns window widget
+	/// @func window_single() -> struct<gui.WidgetWindow>
+	/// @returns {struct<gui.WidgetWindow>}
 	lib.CreateFunction(tab, "window_single",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -539,8 +568,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func window_single_with_menu_bar()
-	/// @returns window widget
+	/// @func window_single_with_menu_bar() -> struct<gui.WidgetWindow>
+	/// @returns {struct<gui.WidgetWindow>}
 	lib.CreateFunction(tab, "window_single_with_menu_bar",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -550,9 +579,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func window()
-	/// @arg title
-	/// @returns window widget
+	/// @func window() -> struct<gui.WidgetWindow>
+	/// @arg title {string}
+	/// @returns {struct<gui.WidgetWindow>}
 	lib.CreateFunction(tab, "window",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -564,10 +593,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func layout()
-	/// @arg widgets - []Widgets
+	/// @func layout(widgets)
+	/// @arg widgets {[]struct<gui.Widget>}
 	/// @desc
-	/// Builds a list of widgets in place.
+	/// Builds a list of widgets when called.
 	lib.CreateFunction(tab, "layout",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "widgets", Optional: true},
@@ -580,8 +609,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func popup_open()
-	/// @arg name
+	/// @func popup_open(name)
+	/// @arg name {string}
 	lib.CreateFunction(tab, "popup_open",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -601,8 +630,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func prepare_msg_box()
-	/// @returns widget
+	/// @func prepare_msg_box() -> struct<gui.WidgetMSGBoxPrepare>
+	/// @returns {struct<gui.WidgetMSGBoxPrepare>}
 	lib.CreateFunction(tab, "prepare_msg_box",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -612,9 +641,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func style_var_is_vec2()
-	/// @arg var
-	/// @returns bool
+	/// @func style_var_is_vec2(var) -> bool
+	/// @arg var {int<gui.StyleVarID>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "style_var_is_vec2",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "var"},
@@ -628,9 +657,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func style_var_string()
-	/// @arg var
-	/// @returns string
+	/// @func style_var_string(var) -> string
+	/// @arg var {int<gui.StyleVarID>}
+	/// @returns {string}
 	lib.CreateFunction(tab, "style_var_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "var"},
@@ -644,9 +673,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func style_var_from_string()
-	/// @arg string
-	/// @returns int
+	/// @func style_var_from_string(str) -> int<gui.StyleVarID>
+	/// @arg str {string}
+	/// @returns {int<gui.StyleVarID>}
 	lib.CreateFunction(tab, "style_var_from_string",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "s"},
@@ -659,11 +688,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func shortcut
-	/// @arg key
-	/// @arg mod
-	/// @arg callback
-	/// @returns shortcut table
+	/// @func shortcut(key, mod, callback) -> struct<gui.Shortcut>
+	/// @arg key {gui.Key}
+	/// @arg mod {gui.Key}
+	/// @arg callback {function()}
+	/// @returns {struct<gui.Shortcut>}
 	lib.CreateFunction(tab, "shortcut",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "key"},
@@ -671,10 +700,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FUNC, Name: "callback"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct shortcut
-			/// @prop key
-			/// @prop mod
-			/// @prop callback()
+			/// @struct Shortcut
+			/// @prop key {gui.Key}
+			/// @prop mod {gui.Key}
+			/// @prop callback {function()}
 
 			key := args["key"].(int)
 			mod := args["mod"].(int)
@@ -689,10 +718,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func plot_ticker
-	/// @arg position
-	/// @arg label
-	/// @returns plot ticker
+	/// @func plot_ticker(position, label) -> struct<gui.PlotTicker>
+	/// @arg position {float}
+	/// @arg label {string}
+	/// @returns {struct<gui.PlotTicker>}
 	lib.CreateFunction(tab, "plot_ticker",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "position"},
@@ -710,8 +739,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func css_parse
-	/// @arg path
+	/// @func css_parse(path)
+	/// @arg path {string}
 	lib.CreateFunction(tab, "css_parse",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -739,9 +768,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func calc_text_size()
-	/// @arg text
-	/// @returns width, height
+	/// @func calc_text_size(text) -> float, float
+	/// @arg text {string}
+	/// @returns {float} - Width of the text string.
+	/// @returns {float} - Height of the text string.
 	lib.CreateFunction(tab, "calc_text_size",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -754,9 +784,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func calc_text_size_width()
-	/// @arg text
-	/// @returns width
+	/// @func calc_text_size_width(text) -> float
+	/// @arg text {string}
+	/// @returns {float} - Width of the text string.
 	lib.CreateFunction(tab, "calc_text_size_width",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -768,9 +798,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func calc_text_size_height()
-	/// @arg text
-	/// @returns height
+	/// @func calc_text_size_height(text) -> float
+	/// @arg text {string}
+	/// @returns {float} - Height of the text string.
 	lib.CreateFunction(tab, "calc_text_size_height",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -782,11 +812,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func calc_text_size_v()
-	/// @arg text
-	/// @arg hideAfterDoubleHash
-	/// @arg wrapWidth
-	/// @returns width, height
+	/// @func calc_text_size_v(text, hideAfterDoubleHash, wrapWidth) -> float, float
+	/// @arg text {string}
+	/// @arg hideAfterDoubleHash {bool}
+	/// @arg wrapWidth {float}
+	/// @returns {float} - Width of the text string.
+	/// @returns {float} - Height of the text string.
 	lib.CreateFunction(tab, "calc_text_size_v",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -801,8 +832,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func available_region()
-	/// @returns width, height
+	/// @func available_region() -> float, float
+	/// @returns {float} - Width.
+	/// @returns {float} - Height.
 	lib.CreateFunction(tab, "available_region",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -813,8 +845,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func frame_padding()
-	/// @returns x, y
+	/// @func frame_padding() -> float, float
+	/// @returns {float} - X padding.
+	/// @returns {float} - Y Padding.
 	lib.CreateFunction(tab, "frame_padding",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -825,8 +858,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func item_inner_spacing()
-	/// @returns width, height
+	/// @func item_inner_spacing() -> float, float
+	/// @returns {float} - Width.
+	/// @returns {float} - Height.
 	lib.CreateFunction(tab, "item_inner_spacing",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -837,8 +871,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func item_spacing()
-	/// @returns width, height
+	/// @func item_spacing() -> float, float
+	/// @returns {float} - Width.
+	/// @returns {float} - Height.
 	lib.CreateFunction(tab, "item_spacing",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -849,8 +884,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func mouse_pos_xy()
-	/// @returns x, y
+	/// @func mouse_pos_xy() -> int, int
+	/// @returns {int} - Mouse x position.
+	/// @returns {int} - Mouse y position.
 	lib.CreateFunction(tab, "mouse_pos_xy",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -861,8 +897,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func mouse_pos()
-	/// @returns image.point
+	/// @func mouse_pos() -> struct<image.Point>
+	/// @returns {struct<image.Point>}
 	lib.CreateFunction(tab, "mouse_pos",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -872,8 +908,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func window_padding()
-	/// @returns x, y
+	/// @func window_padding() -> float, float
+	/// @returns {float} X padding.
+	/// @returns {float} Y padding.
 	lib.CreateFunction(tab, "window_padding",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -884,8 +921,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func is_item_active()
-	/// @returns bool
+	/// @func is_item_active() -> bool
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_item_active",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -895,9 +932,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_item_clicked()
-	/// @arg button
-	/// @returns bool
+	/// @func is_item_clicked(button) -> bool
+	/// @arg button {int<gui.MouseButton>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_item_clicked",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "button"},
@@ -909,8 +946,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_item_hovered()
-	/// @returns bool
+	/// @func is_item_hovered() -> bool
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_item_hovered",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -920,9 +957,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_key_down()
-	/// @arg key
-	/// @returns bool
+	/// @func is_key_down(key) -> bool
+	/// @arg key {int<gui.Key>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_key_down",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "key"},
@@ -934,9 +971,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_key_pressed()
-	/// @arg key
-	/// @returns bool
+	/// @func is_key_pressed(key) -> bool
+	/// @arg key {int<gui.Key>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_key_pressed",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "key"},
@@ -948,9 +985,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_key_released()
-	/// @arg key
-	/// @returns bool
+	/// @func is_key_released(key) -> bool
+	/// @arg key {int<gui.Key>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_key_released",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "key"},
@@ -962,9 +999,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_mouse_clicked()
-	/// @arg button
-	/// @returns bool
+	/// @func is_mouse_clicked(button) -> bool
+	/// @arg button {int<gui.MouseButton>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_mouse_clicked",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "button"},
@@ -976,9 +1013,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_mouse_double_clicked()
-	/// @arg button
-	/// @returns bool
+	/// @func is_mouse_double_clicked(button) -> bool
+	/// @arg button {int<gui.MouseButton>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_mouse_double_clicked",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "button"},
@@ -990,9 +1027,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_mouse_down()
-	/// @arg button
-	/// @returns bool
+	/// @func is_mouse_down(button) -> bool
+	/// @arg button {int<gui.MouseButton>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_mouse_down",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "button"},
@@ -1004,9 +1041,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_mouse_released()
-	/// @arg button
-	/// @returns bool
+	/// @func is_mouse_released(button) -> bool
+	/// @arg button {int<gui.MouseButton>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_mouse_released",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "button"},
@@ -1018,8 +1055,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_window_appearing()
-	/// @returns bool
+	/// @func is_window_appearing() -> bool
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_window_appearing",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1029,8 +1066,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_window_collapsed()
-	/// @returns bool
+	/// @func is_window_collapsed() -> bool
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_window_collapsed",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1040,20 +1077,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_window_collapsed()
-	/// @returns bool
-	lib.CreateFunction(tab, "is_window_collapsed",
-		[]lua.Arg{},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			active := g.IsWindowCollapsed()
-
-			state.Push(golua.LBool(active))
-			return 1
-		})
-
-	/// @func is_window_focused()
-	/// @arg flags
-	/// @returns bool
+	/// @func is_window_focused(flags) -> bool
+	/// @arg flags {int<gui.FocusedFlags>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_window_focused",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "flags"},
@@ -1065,9 +1091,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func is_window_hovered()
-	/// @arg flags
-	/// @returns bool
+	/// @func is_window_hovered(flags) -> bool
+	/// @arg flags {int<gui.HoveredFlags>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "is_window_hovered",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "flags"},
@@ -1079,8 +1105,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func open_url()
-	/// @arg url
+	/// @func open_url(url)
+	/// @arg url {string}
 	lib.CreateFunction(tab, "open_url",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "url"},
@@ -1130,8 +1156,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func pop_style_color_v()
-	/// @arg count
+	/// @func pop_style_color_v(count)
+	/// @arg count {int}
 	lib.CreateFunction(tab, "pop_style_color_v",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "count"},
@@ -1141,8 +1167,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func pop_style_v()
-	/// @arg count
+	/// @func pop_style_v(count)
+	/// @arg count {int}
 	lib.CreateFunction(tab, "pop_style_v",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "count"},
@@ -1160,9 +1186,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_button_text_align()
-	/// @arg width
-	/// @arg height
+	/// @func push_button_text_align(width, height)
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "push_button_text_align",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1173,10 +1199,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_clip_rect()
-	/// @arg min
-	/// @arg max
-	/// @rag intersect
+	/// @func push_clip_rect(min, max, intersect)
+	/// @arg min {struct<image.Point>}
+	/// @arg max {strect<image.Point>}
+	/// @arg intersect {bool}
 	lib.CreateFunction(tab, "push_clip_rect",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "min"},
@@ -1190,8 +1216,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_button()
-	/// @arg color
+	/// @func push_color_button(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_button",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1201,8 +1227,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_button_active()
-	/// @arg color
+	/// @func push_color_button_active(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_button_active",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1212,8 +1238,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_button_hovered()
-	/// @arg color
+	/// @func push_color_button_hovered(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_button_hovered",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1223,8 +1249,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_frame_bg()
-	/// @arg color
+	/// @func push_color_frame_bg(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_frame_bg",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1234,8 +1260,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_text()
-	/// @arg color
+	/// @func push_color_text(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_text",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1245,8 +1271,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_text_disabled()
-	/// @arg color
+	/// @func push_color_text_disabled(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_text_disabled",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1256,8 +1282,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_color_window_bg()
-	/// @arg color
+	/// @func push_color_window_bg(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_window_bg",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1267,9 +1293,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_font()
-	/// @arg fontref
-	/// @returns bool
+	/// @func push_font(fontref) -> bool
+	/// @arg fontref {int<ref.FONT>}
+	/// @returns {bool}
 	lib.CreateFunction(tab, "push_font",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "fontref"},
@@ -1288,9 +1314,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func push_frame_padding()
-	/// @arg width
-	/// @arg height
+	/// @func push_frame_padding(width, height)
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "push_frame_padding",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1301,9 +1327,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_item_spacing()
-	/// @arg width
-	/// @arg height
+	/// @func push_item_spacing(width, height)
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "push_item_spacing",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1314,8 +1340,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_item_width()
-	/// @arg width
+	/// @func push_item_width(width)
+	/// @arg width {float}
 	lib.CreateFunction(tab, "push_item_width",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1325,9 +1351,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_selectable_text_align()
-	/// @arg width
-	/// @arg height
+	/// @func push_selectable_text_align(width, height)
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "push_selectable_text_align",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1338,9 +1364,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_style_color()
-	/// @arg id
-	/// @arg color
+	/// @func push_style_color(id, color)
+	/// @arg id {int<gui.StyleColorID>}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_style_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1359,9 +1385,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func push_window_padding()
-	/// @arg width
-	/// @arg height
+	/// @func push_window_padding(width, height)
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "push_window_padding",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1380,9 +1406,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func cursor_pos_set_xy()
-	/// @arg x
-	/// @arg y
+	/// @func cursor_pos_set_xy(x, y)
+	/// @arg x {int}
+	/// @arg y {int}
 	lib.CreateFunction(tab, "cursor_pos_set_xy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "x"},
@@ -1396,8 +1422,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func cursor_pos_set()
-	/// @arg point
+	/// @func cursor_pos_set(point)
+	/// @arg point {struct<image.Point>}
 	lib.CreateFunction(tab, "cursor_pos_set",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "point"},
@@ -1407,9 +1433,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func cursor_screeen_pos_set_xy()
-	/// @arg x
-	/// @arg y
+	/// @func cursor_screeen_pos_set_xy(x, y)
+	/// @arg x {int}
+	/// @arg y {int}
 	lib.CreateFunction(tab, "cursor_screen_pos_set_xy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "x"},
@@ -1423,8 +1449,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func cursor_screen_pos_set()
-	/// @arg point
+	/// @func cursor_screen_pos_set(point)
+	/// @arg point {struct<image.Point>}
 	lib.CreateFunction(tab, "cursor_screen_pos_set",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "point"},
@@ -1450,8 +1476,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func keyboard_focus_here_v()
-	/// @arg i
+	/// @func keyboard_focus_here_v(i)
+	/// @arg i {int} - Widget offset, e.g. -1 is the previous widget.
 	lib.CreateFunction(tab, "keyboard_focus_here_v",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "i"},
@@ -1461,8 +1487,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func mouse_cursor_set()
-	/// @arg cursor
+	/// @func mouse_cursor_set(cursor)
+	/// @arg cursor {int<gui.Cursor>}
 	lib.CreateFunction(tab, "mouse_cursor_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "cursor"},
@@ -1472,9 +1498,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func next_window_pos_set()
-	/// @arg x
-	/// @arg y
+	/// @func next_window_pos_set(x, y)
+	/// @arg x {int}
+	/// @arg y {int}
 	lib.CreateFunction(tab, "next_window_pos_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "x"},
@@ -1485,9 +1511,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func next_window_size_set()
-	/// @arg width
-	/// @arg height
+	/// @func next_window_size_set(width, height)
+	/// @arg width {float}
+	/// @arg height {float}
 	lib.CreateFunction(tab, "next_window_size_set",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1498,10 +1524,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func next_window_size_v_set()
-	/// @arg width
-	/// @arg height
-	/// @arg cond
+	/// @func next_window_size_v_set(width, height, cond)
+	/// @arg width {float}
+	/// @arg height {float}
+	/// @arg cond {int<gui.Condition>}
 	lib.CreateFunction(tab, "next_window_size_v_set",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1521,11 +1547,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func color_to_uint32()
-	/// @arg color
-	/// @returns number representation of color
+	/// @func color_to_uint32(color) -> int
+	/// @arg color {struct<image.Color>}
+	/// @returns {int} - Number representation of a color.
 	/// @desc
-	/// returns the uint32 to lua as a float64
+	/// Returns the uint32 to lua as a float64 (The type lua uses for numbers).
 	lib.CreateFunction(tab, "color_to_uint32",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -1537,9 +1563,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func uint32_to_color()
-	/// @arg ucolor
-	/// @returns color [RGBA]
+	/// @func uint32_to_color(ucolor) -> struct<image.Color>
+	/// @arg ucolor {int}
+	/// @returns {struct<image.Color>} - Will be in the RGBA color type.
 	lib.CreateFunction(tab, "uint32_to_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ucolor"},
@@ -1550,9 +1576,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_label()
-	/// @arg text
-	/// @returns widget
+	/// @func wg_label(text) -> struct<gui.WidgetLabel>
+	/// @arg text {string}
+	/// @returns {struct<gui.WidgetLabel>}
 	lib.CreateFunction(tab, "wg_label",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1564,11 +1590,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_number()
-	/// @arg number
-	/// @returns widget
+	/// @func wg_number(number) -> struct<gui.WidgetLabel>
+	/// @arg number {float}
+	/// @returns {struct<gui.WidgetLabel>}
 	/// @desc
-	/// A float->string wrapper around wg_label
+	/// Converts the number into a string before creating the label widget.
 	lib.CreateFunction(tab, "wg_number",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "number"},
@@ -1580,9 +1606,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button()
-	/// @arg text
-	/// @returns widget
+	/// @func wg_button(text) -> struct<gui.WidgetButton>
+	/// @arg text {string}
+	/// @returns {struct<gui.WidgetButton>}
 	lib.CreateFunction(tab, "wg_button",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1594,10 +1620,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_dummy()
-	/// @arg width
-	/// @arg height
-	/// @returns widget
+	/// @func wg_dummy(width, height) -> struct<gui.WidgetDummy>
+	/// @arg width {float}
+	/// @arg height {float}
+	/// @returns {struct<gui.WidgetDummy>}
 	lib.CreateFunction(tab, "wg_dummy",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "width"},
@@ -1610,8 +1636,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_separator()
-	/// @returns widget
+	/// @func wg_separator() -> struct<gui.WidgetSeparator>
+	/// @returns {struct<gui.WidgetSeparator>}
 	lib.CreateFunction(tab, "wg_separator",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1621,9 +1647,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_bullet_text()
-	/// @arg text
-	/// @returns widget
+	/// @func wg_bullet_text(text) -> struct<gui.WidgetBulletText>
+	/// @arg text {string}
+	/// @returns {struct<gui.WidgetBulletText>}
 	lib.CreateFunction(tab, "wg_bullet_text",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1635,8 +1661,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_bullet()
-	/// @returns widget
+	/// @func wg_bullet() -> struct<gui.WidgetBullet>
+	/// @returns {struct<gui.WidgetBullet>}
 	lib.CreateFunction(tab, "wg_bullet",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1646,10 +1672,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_checkbox()
-	/// @arg text
-	/// @arg boolref
-	/// @returns widget
+	/// @func wg_checkbox(text, boolref) -> struct<gui.WidgetCheckbox>
+	/// @arg text {string}
+	/// @arg boolref {int<ref.BOOL>}
+	/// @returns {struct<gui.WidgetCheckbox>}
 	lib.CreateFunction(tab, "wg_checkbox",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1662,8 +1688,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_child()
-	/// @returns widget
+	/// @func wg_child() -> struct<gui.WidgetChild>
+	/// @returns {struct<gui.WidgetChild>}
 	lib.CreateFunction(tab, "wg_child",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1673,10 +1699,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_color_edit()
-	/// @arg text
-	/// @arg colorref
-	/// @returns widget
+	/// @func wg_color_edit(text, colorref) -> struct<gui.WidgetColorEdit>
+	/// @arg text {string}
+	/// @arg colorref {int<ref.COLOR>}
+	/// @returns {struct<gui.WidgetColorEdit>}
 	lib.CreateFunction(tab, "wg_color_edit",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1689,9 +1715,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_column()
-	/// @arg? widgets - []Widgets
-	/// @returns widget
+	/// @func wg_column(widgets?) -> struct<gui.WidgetColumn>
+	/// @arg? widgets {[]struct<gui.Widget>}
+	/// @returns {struct<gui.WidgetColumn>}
 	lib.CreateFunction(tab, "wg_column",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "widgets", Optional: true},
@@ -1707,9 +1733,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_row()
-	/// @arg? widgets - []Widgets
-	/// @returns widget
+	/// @func wg_row(widgets?) -> struct<gui.WidgetRow>
+	/// @arg? widgets {[]struct<gui.Widget>}
+	/// @returns {struct<gui.WidgetRow>}
 	lib.CreateFunction(tab, "wg_row",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "widgets", Optional: true},
@@ -1725,10 +1751,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_combo_custom()
-	/// @arg text
-	/// @arg preview
-	/// @returns widget
+	/// @func wg_combo_custom(text, preview) -> struct<gui.WidgetComboCustom>
+	/// @arg text {string}
+	/// @arg preview {string}
+	/// @returns {struct<gui.WidgetComboCustom>}
 	lib.CreateFunction(tab, "wg_combo_custom",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1741,12 +1767,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_combo()
-	/// @arg text
-	/// @arg preview
-	/// @arg items - []string
-	/// @arg i32ref
-	/// @returns widget
+	/// @func wg_combo(text, preview, items, i32ref) -> struct<gui.WidgetCombo>
+	/// @arg text {string}
+	/// @arg preview {string}
+	/// @arg items {[]string}
+	/// @arg i32ref {int<ref.INT32>}
+	/// @returns {struct<gui.WidgetCombo>}
 	lib.CreateFunction(tab, "wg_combo",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1765,11 +1791,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_combo_preview()
-	/// @arg text
-	/// @arg items - []string
-	/// @arg i32ref
-	/// @returns widget
+	/// @func wg_combo_preview(text, items, i32ref) -> struct<gui.WidgetCombo>
+	/// @arg text {string}
+	/// @arg items {[]string}
+	/// @arg i32ref {int<ref.INT32>}
+	/// @returns {struct<gui.WidgetCombo>}
 	/// @desc
 	/// Same as wg_combo but sets preview to the selected value in items.
 	lib.CreateFunction(tab, "wg_combo_preview",
@@ -1797,10 +1823,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_condition()
-	/// @arg condition - boolean
-	/// @arg widgetIf
-	/// @arg widgetElse
+	/// @func wg_condition(condition, widgetIf, widgetElse) -> struct<gui.WidgetCondition>
+	/// @arg condition {bool}
+	/// @arg widgetIf {struct<gui.Widget>}
+	/// @arg widgetElse {struct<gui.Widget>}
+	/// @returns {struct<gui.WidgetCondition>}
 	lib.CreateFunction(tab, "wg_condition",
 		[]lua.Arg{
 			{Type: lua.BOOL, Name: "condition"},
@@ -1816,8 +1843,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_context_menu()
-	/// @returns widget
+	/// @func wg_context_menu() -> struct<gui.WidgetContextMenu>
+	/// @returns {struct<gui.WidgetContextMenu>}
 	lib.CreateFunction(tab, "wg_context_menu",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1827,10 +1854,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_date_picker()
-	/// @arg id
-	/// @arg timeref
-	/// @returns widget
+	/// @func wg_date_picker(id, timeref) -> struct<gui.WidgetDatePicker>
+	/// @arg id {string}
+	/// @arg timeref {int<ref.TIME>}
+	/// @returns {struct<gui.WidgetDatePicker>}
 	lib.CreateFunction(tab, "wg_date_picker",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "id"},
@@ -1845,12 +1872,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_drag_int()
-	/// @arg label
-	/// @arg i32ref
-	/// @arg minvalue
-	/// @arg maxvalue
-	/// @returns widget
+	/// @func wg_drag_int(label, i32ref, minvalue, maxvalue) -> struct<gui.WidgetDragInt>
+	/// @arg label {string}
+	/// @arg i32ref {int<ref.INT32>}
+	/// @arg minvalue {int}
+	/// @arg maxvalue {int}
+	/// @returns {struct<gui.WidgetDragInt>}
 	lib.CreateFunction(tab, "wg_drag_int",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -1869,9 +1896,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_input_float()
-	/// @arg f32ref
-	/// @returns widget
+	/// @func wg_input_float(f32ref) -> struct<gui.WidgetInputFloat>
+	/// @arg f32ref {int<ref.FLOAT32>}
+	/// @returns {struct<gui.WidgetInputFloat>}
 	lib.CreateFunction(tab, "wg_input_float",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "f32ref"},
@@ -1884,9 +1911,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_input_int()
-	/// @arg i32ref
-	/// @returns widget
+	/// @func wg_input_int(i32ref) -> struct<gui.WidgetInputInt>
+	/// @arg i32ref {int<ref.INT32>}
+	/// @returns {struct<gui.WidgetInputInt>}
 	lib.CreateFunction(tab, "wg_input_int",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "i32ref"},
@@ -1899,9 +1926,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_input_text()
-	/// @arg strref
-	/// @returns widget
+	/// @func wg_input_text(strref) -> struct<gui.WidgetInputText>
+	/// @arg strref {int<ref.STRING>}
+	/// @returns {struct<gui.WidgetInputText>}
 	lib.CreateFunction(tab, "wg_input_text",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "strref"},
@@ -1914,9 +1941,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_input_text_multiline()
-	/// @arg strref
-	/// @returns widget
+	/// @func wg_input_text_multiline(strref) -> struct<gui.WidgetInputTextMultiline>
+	/// @arg strref {int<ref.STRING>}
+	/// @returns {struct<gui.WidgetInputTextMultiline>}
 	lib.CreateFunction(tab, "wg_input_text_multiline",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "strref"},
@@ -1929,9 +1956,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_progress_bar()
-	/// @arg fraction
-	/// @returns widget
+	/// @func wg_progress_bar(fraction) -> struct<gui.WidgetProgressBar>
+	/// @arg fraction {float}
+	/// @returns {struct<gui.WidgetProgressBar>}
 	lib.CreateFunction(tab, "wg_progress_bar",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "fraction"},
@@ -1944,12 +1971,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_progress_indicator()
-	/// @arg label
-	/// @arg width
-	/// @arg height
-	/// @arg radius
-	/// @returns widget
+	/// @func wg_progress_indicator(label, width, height, radius) -> struct<gui.WidgetProgressIndicator>
+	/// @arg label {string}
+	/// @arg width {float}
+	/// @arg height {float}
+	/// @arg radius {float}
+	/// @returns {struct<gui.WidgetProgressIndicator>}
 	lib.CreateFunction(tab, "wg_progress_indicator",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -1969,8 +1996,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_spacing()
-	/// @returns widget
+	/// @func wg_spacing() -> struct<gui.WidgetSpacing>
+	/// @returns {struct<gui.WidgetSpacing>}
 	lib.CreateFunction(tab, "wg_spacing",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1980,9 +2007,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button_small()
-	/// @arg text
-	/// @returns widget
+	/// @func wg_button_small(text) -> struct<gui.WidgetButtonSmall>
+	/// @arg text {string}
+	/// @returns {struct<gui.WidgetButtonSmall>}
 	lib.CreateFunction(tab, "wg_button_small",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -1994,10 +2021,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button_radio()
-	/// @arg text
-	/// @arg active
-	/// @returns widget
+	/// @func wg_button_radio(text, active) -> struct<gui.WidgetButtonRadio>
+	/// @arg text {string}
+	/// @arg active {bool}
+	/// @returns {struct<gui.WidgetButtonRadio>}
 	lib.CreateFunction(tab, "wg_button_radio",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
@@ -2010,9 +2037,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_image_url()
-	/// @arg url
-	/// @returns widget
+	/// @func wg_image_url(url) -> struct<gui.WidgetImageURL>
+	/// @arg url {string}
+	/// @returns struct<gui.WidgetImageURL>
 	lib.CreateFunction(tab, "wg_image_url",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "url"},
@@ -2024,9 +2051,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_image()
-	/// @arg id
-	/// @returns widget
+	/// @func wg_image(id) -> struct<gui.WidgetImage>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {struct<gui.WidgetImage>}
 	/// @blocking
 	lib.CreateFunction(tab, "wg_image",
 		[]lua.Arg{
@@ -2039,12 +2066,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_image_sync()
-	/// @arg id
-	/// @returns widget
+	/// @func wg_image_sync(id) -> struct<gui.WidgetImage>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {struct<gui.WidgetImage>}
 	/// @desc
 	/// Note: this does not wait for the image to be ready or idle,
-	/// if the image is not loaded it will dislay an empy image
+	/// if the image is not loaded it will dislay an empy image.
 	/// May look weird if the image is also being processed while displayed here.
 	lib.CreateFunction(tab, "wg_image_sync",
 		[]lua.Arg{
@@ -2057,9 +2084,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_list_box()
-	/// @arg items
-	/// @returns widget
+	/// @func wg_list_box(items) -> struct<gui.WidgetListbox>
+	/// @arg items {[]string}
+	/// @returns {struct<gui.WidgetListbox>}
 	lib.CreateFunction(tab, "wg_list_box",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "items"},
@@ -2071,8 +2098,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_list_clipper()
-	/// @returns widget
+	/// @func wg_list_clipper() -> struct<gui.WidgetListClipper>
+	/// @returns {struct<gui.WidgetListClipper>}
 	lib.CreateFunction(tab, "wg_list_clipper",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2082,8 +2109,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_menu_bar_main()
-	/// @returns widget
+	/// @func wg_menu_bar_main() -> struct<gui.WidgetMenuBarMain>
+	/// @returns {struct<gui.WidgetMenuBarMain>}
 	lib.CreateFunction(tab, "wg_menu_bar_main",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2093,8 +2120,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_menu_bar()
-	/// @returns widget
+	/// @func wg_menu_bar() -> struct<gui.WidgetMenuBar>
+	/// @returns {struct<gui.WidgetMenuBar>}
 	lib.CreateFunction(tab, "wg_menu_bar",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2104,9 +2131,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_menu_item()
-	/// @arg label
-	/// @returns widget
+	/// @func wg_menu_item(label) -> struct<gui.WidgetMenuItem>
+	/// @arg label {string}
+	/// @returns {struct<gui.WidgetMenuItem>}
 	lib.CreateFunction(tab, "wg_menu_item",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2118,9 +2145,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_menu()
-	/// @arg label
-	/// @returns widget
+	/// @func wg_menu(label) -> struct<gui.WidgetMenu>
+	/// @arg label {string}
+	/// @returns {struct<gui.WidgetMenu>}
 	lib.CreateFunction(tab, "wg_menu",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2132,9 +2159,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_selectable()
-	/// @arg label
-	/// @returns widget
+	/// @func wg_selectable(label) -> struct<gui.WidgetSelectable>
+	/// @arg label {string}
+	/// @returns {struct<gui.WidgetSelectable>}
 	lib.CreateFunction(tab, "wg_selectable",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2146,11 +2173,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_slider_float()
-	/// @arg f32ref
-	/// @arg min
-	/// @arg max
-	/// @returns widget
+	/// @func wg_slider_float(f32ref, min, max) -> struct<gui.WidgetSliderFloat>
+	/// @arg f32ref {int<ref.FLOAT32>}
+	/// @arg min {float}
+	/// @arg max {float}
+	/// @returns {struct<gui.WidgetSliderFloat>}
 	lib.CreateFunction(tab, "wg_slider_float",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "f32ref"},
@@ -2167,11 +2194,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_slider_int()
-	/// @arg i32ref
-	/// @arg min
-	/// @arg max
-	/// @returns widget
+	/// @func wg_slider_int(i32ref, min, max) -> struct<gui.WidgetSliderInt>
+	/// @arg i32ref {int<ref.INT32>}
+	/// @arg min {int}
+	/// @arg max {int}
+	/// @returns {struct<gui.WidgetSliderInt>}
 	lib.CreateFunction(tab, "wg_slider_int",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "i32ref"},
@@ -2188,11 +2215,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_vslider_int()
-	/// @arg i32ref
-	/// @arg min
-	/// @arg max
-	/// @returns widget
+	/// @func wg_vslider_int(i32ref, min, max) -> struct<gui.WidgetVSliderInt>
+	/// @arg i32ref {int<ref.INT32>}
+	/// @arg min {int}
+	/// @arg max {int}
+	/// @returns {struct<gui.WidgetVSliderInt>}
 	lib.CreateFunction(tab, "wg_vslider_int",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "i32ref"},
@@ -2209,8 +2236,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_tab_bar()
-	/// @returns widget
+	/// @func wg_tab_bar() -> struct<gui.WidgetTabBar>
+	/// @returns {struct<gui.WidgetTabBar>}
 	lib.CreateFunction(tab, "wg_tab_bar",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2220,9 +2247,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_tab_item()
-	/// @arg label
-	/// @returns tab item
+	/// @func wg_tab_item(label) -> struct<gui.TabItem>
+	/// @arg label {string}
+	/// @returns {struct<gui.TabItem>}
 	lib.CreateFunction(tab, "wg_tab_item",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2234,9 +2261,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_tooltip()
-	/// @arg tip
-	/// @returns widget
+	/// @func wg_tooltip(tip) -> struct<gui.WidgetTooltip>
+	/// @arg tip {string}
+	/// @returns {struct<gui.WidgetTooltip>}
 	lib.CreateFunction(tab, "wg_tooltip",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "tip"},
@@ -2248,9 +2275,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_table_column()
-	/// @arg label
-	/// @returns table column
+	/// @func wg_table_column(label) -> struct<gui.TableColumn>
+	/// @arg label {string}
+	/// @returns {struct<gui.TableColumn>}
 	lib.CreateFunction(tab, "wg_table_column",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2262,9 +2289,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_table_row()
-	/// @arg? widgets - []Widgets
-	/// @returns table row
+	/// @func wg_table_row(widgets?) -> struct<gui.TableRow>
+	/// @arg? widgets {[]struct<gui.Widget>}
+	/// @returns {struct<gui.TableRow>}
 	lib.CreateFunction(tab, "wg_table_row",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "widgets", Optional: true},
@@ -2280,8 +2307,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_table()
-	/// @returns widget
+	/// @func wg_table() -> struct<gui.WidgetTable>
+	/// @returns {struct<gui.WidgetTable>}
 	lib.CreateFunction(tab, "wg_table",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2291,9 +2318,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button_arrow()
-	/// @arg dir
-	/// @returns widget
+	/// @func wg_button_arrow(dir) -> {struct<gui.WidgetButtonArrow>}
+	/// @arg dir {int<gui.Direction>}
+	/// @returns {struct<gui.WidgetButtonArrow>}
 	lib.CreateFunction(tab, "wg_button_arrow",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "dir"},
@@ -2305,9 +2332,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_tree_node()
-	/// @arg label
-	/// @returns widget
+	/// @func wg_tree_node(label) -> struct<gui.WidgetTreeNode>
+	/// @arg label {string}
+	/// @returns {struct<gui.WidgetTreeNode>}
 	lib.CreateFunction(tab, "wg_tree_node",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2319,10 +2346,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_tree_table_row()
-	/// @arg label
-	/// @arg? widgets - []Widgets
-	/// @returns tree table row
+	/// @func wg_tree_table_row(label, widgets?) -> struct<gui.TreeTableRow>
+	/// @arg label {string}
+	/// @arg? widgets {[]struct<gui.Widget>}
+	/// @returns {struct<gui.TreeTableRow>}
 	lib.CreateFunction(tab, "wg_tree_table_row",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
@@ -2339,8 +2366,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_tree_table()
-	/// @returns widget
+	/// @func wg_tree_table() -> struct<gui.WidgetTreeTable>
+	/// @returns {struct<gui.WidgetTreeTable>}
 	lib.CreateFunction(tab, "wg_tree_table",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2350,9 +2377,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_popup_modal()
-	/// @arg name
-	/// @returns widget
+	/// @func wg_popup_modal(name) -> struct<gui.WidgetPopupModal>
+	/// @arg name {string}
+	/// @returns {struct<gui.WidgetPopupModal>}
 	lib.CreateFunction(tab, "wg_popup_modal",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -2364,9 +2391,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func wg_popup()
-	/// @arg name
-	/// @returns widget
+	/// @func wg_popup(name) -> struct<gui.WidgetPopup>
+	/// @arg name {string}
+	/// @returns {struct<gui.WidgetPopup>}
 	lib.CreateFunction(tab, "wg_popup",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -2378,12 +2405,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_layout_split()
-	/// @arg direction
-	/// @arg f32ref
-	/// @arg layout1 - []Widgets
-	/// @arg layout2 - []Widgets
-	/// @returns widget
+	/// @func wg_layout_split(direction, f32ref, layout1, layout2) -> struct<gui.WidgetLayoutSplit>
+	/// @arg direction {int<gui.Direction>}
+	/// @arg f32ref {int<ref.FLOAT32>}
+	/// @arg layout1 {[]struct<gui.Widget>}
+	/// @arg layout2 {[]struct<gui.Widget>}
+	/// @returns {struct<gui.WidgetLayoutSplit>}
 	lib.CreateFunction(tab, "wg_layout_split",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "direction"},
@@ -2400,10 +2427,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_splitter()
-	/// @arg direction
-	/// @arg f32ref
-	/// @returns widget
+	/// @func wg_splitter(direction, f32ref) -> struct<gui.WidgetSplitter>
+	/// @arg direction {int<gui.Direction>}
+	/// @arg f32ref {int<ref.FLOAT32>}
+	/// @returns {struct<gui.WidgetSplitter>}
 	lib.CreateFunction(tab, "wg_splitter",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "direction"},
@@ -2416,10 +2443,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_stack()
-	/// @arg visible
-	/// @arg widgets
-	/// @returns widget
+	/// @func wg_stack(visible, widgets) -> struct<gui.WidgetStack>
+	/// @arg visible {int} - The index in widgets that is visible.
+	/// @arg widgets {[]struct<gui.Widget>}
+	/// @returns {struct<gui.WidgetStack>}
 	lib.CreateFunction(tab, "wg_stack",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "visible"},
@@ -2432,9 +2459,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_align()
-	/// @arg at
-	/// @returns widget
+	/// @func wg_align(at) -> struct<gui.WidgetAlign>
+	/// @arg at {int<gui.Alignment>}
+	/// @returns {struct<gui.WidgetAlign>}
 	lib.CreateFunction(tab, "wg_align",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "at"},
@@ -2446,12 +2473,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_msg_box()
-	/// @arg title
-	/// @arg content
-	/// @returns msg box widget
+	/// @func wg_msg_box(title, content) -> struct<gui.WidgetMSGBox>
+	/// @arg title {string}
+	/// @arg content {string}
+	/// @returns {struct<gui.WidgetMSGBox>}
 	/// @desc
-	/// prepare_msg_box() must be called once a loop when using a msg box.
+	/// There must be a call to 'prepare_msg_box()' once a loop when using a msg box.
 	lib.CreateFunction(tab, "wg_msg_box",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2464,8 +2491,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button_invisible()
-	/// @returns widget
+	/// @func wg_button_invisible() -> struct<gui.WidgetButtonInvisible>
+	/// @returns {struct<gui.WidgetButtonInvisible>}
 	lib.CreateFunction(tab, "wg_button_invisible",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2475,9 +2502,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button_image()
-	/// @arg id
-	/// @returns widget
+	/// @func wg_button_image(id) -> struct<gui.WidgetButtonImage>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {struct<gui.WidgetButtonImage>}
 	lib.CreateFunction(tab, "wg_button_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -2489,12 +2516,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_button_image_sync()
-	/// @arg id
-	/// @returns widget
+	/// @func wg_button_image_sync(id) -> struct<gui.WidgetButtonImage>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {struct<gui.WidgetButtonImage>}
 	/// @desc
 	/// Note: this does not wait for the image to be ready or idle,
-	/// if the image is not loaded it will dislay an empy image
+	/// if the image is not loaded it will dislay an empy image.
 	/// May look weird if the image is also being processed while displayed here.
 	lib.CreateFunction(tab, "wg_button_image_sync",
 		[]lua.Arg{
@@ -2507,8 +2534,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_style()
-	/// @returns widget
+	/// @func wg_style() -> struct<gui.WidgetStyle>
+	/// @returns {struct<gui.WidgetStyle>}
 	lib.CreateFunction(tab, "wg_style",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2518,9 +2545,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_custom()
-	/// @arg builder
-	/// @returns widget
+	/// @func wg_custom(builder) -> struct<gui.WidgetCustom>
+	/// @arg builder {function()}
+	/// @returns {struct<gui.WidgetCustom>}
 	lib.CreateFunction(tab, "wg_custom",
 		[]lua.Arg{
 			{Type: lua.FUNC, Name: "builder"},
@@ -2532,8 +2559,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_event()
-	/// @returns widget
+	/// @func wg_event() -> struct<gui.WidgetEvent>
+	/// @returns {struct<gui.WidgetEvent>}
 	lib.CreateFunction(tab, "wg_event",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2543,9 +2570,23 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_plot()
-	/// @arg title
-	/// @returns widget
+	/// @func wg_css_tag(tag) -> struct<gui.WidgetCSSTag>
+	/// @arg tag {string}
+	/// @returns {struct<gui.WidgetCSSTag>}
+	lib.CreateFunction(tab, "wg_css_tag",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "tag"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := cssTagTable(state, args["tag"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_plot(title) -> struct<gui.WidgetPlot>
+	/// @arg title {string}
+	/// @returns {struct<gui.WidgetPlot>}
 	lib.CreateFunction(tab, "wg_plot",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2557,10 +2598,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_bar_h()
-	/// @arg title
-	/// @arg data
-	/// @returns plot widget
+	/// @func pt_bar_h(title, data) -> struct<gui.PlotBarH>
+	/// @arg title {string}
+	/// @arg data {[]float}
+	/// @returns {struct<gui.PlotBarH>}
 	lib.CreateFunction(tab, "pt_bar_h",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2573,10 +2614,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_bar()
-	/// @arg title
-	/// @arg data
-	/// @returns plot widget
+	/// @func pt_bar(title, data) -> struct<gui.PlotBar>
+	/// @arg title {string}
+	/// @arg data {[]float}
+	/// @returns {struct<gui.PlotBar>}
 	lib.CreateFunction(tab, "pt_bar",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2589,10 +2630,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_line()
-	/// @arg title
-	/// @arg data
-	/// @returns plot widget
+	/// @func pt_line(title, data) -> struct<gui.PlotLine>
+	/// @arg title {string}
+	/// @arg data {[]float}
+	/// @returns {struct<gui.PlotLine>}
 	lib.CreateFunction(tab, "pt_line",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2605,11 +2646,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_line_xy()
-	/// @arg title
-	/// @arg xdata
-	/// @arg ydata
-	/// @returns plot widget
+	/// @func pt_line_xy(title, xdata, ydata) -> struct<gui.PlotLineXY>
+	/// @arg title {string}
+	/// @arg xdata {[]float}
+	/// @arg ydata {[]float}
+	/// @returns {struct<gui.PlotLineXY>}
 	lib.CreateFunction(tab, "pt_line_xy",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2623,13 +2664,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_pie_chart()
-	/// @arg labels
-	/// @arg data
-	/// @arg x
-	/// @arg y
-	/// @arg radius
-	/// @returns plot widget
+	/// @func pt_pie_chart(labels, data, x, y, radius) -> struct<gui.PlotPieChart>
+	/// @arg labels {[]string}
+	/// @arg data {[]float}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg radius {float}
+	/// @returns {struct<gui.PlotPieChart>}
 	lib.CreateFunction(tab, "pt_pie_chart",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "labels"},
@@ -2650,10 +2691,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_scatter()
-	/// @arg title
-	/// @arg data
-	/// @returns plot widget
+	/// @func pt_scatter(title, data) -> struct<gui.PlotScatter>
+	/// @arg title {string}
+	/// @arg data {[]float}
+	/// @returns {struct<gui.PlotScatter>}
 	lib.CreateFunction(tab, "pt_scatter",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2666,11 +2707,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_scatter_xy()
-	/// @arg title
-	/// @arg xdata
-	/// @arg ydata
-	/// @returns plot widget
+	/// @func pt_scatter_xy(title, xdata, ydata) -> struct<gui.PlotScatterXY>
+	/// @arg title {string}
+	/// @arg xdata {[]float}
+	/// @arg ydata {[]float}
+	/// @returns {struct<gui.PlotScatterXY>}
 	lib.CreateFunction(tab, "pt_scatter_xy",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
@@ -2684,9 +2725,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pt_custom()
-	/// @arg builder
-	/// @returns plot widget
+	/// @func pt_custom(builder) -> struct<gui.PlotCustom>
+	/// @arg builder {function()}
+	/// @returns {struct<gui.PlotCustom>}
 	lib.CreateFunction(tab, "pt_custom",
 		[]lua.Arg{
 			{Type: lua.FUNC, Name: "builder"},
@@ -2698,22 +2739,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wg_css_tag()
-	/// @arg tag
-	/// @returns widget
-	lib.CreateFunction(tab, "wg_css_tag",
-		[]lua.Arg{
-			{Type: lua.STRING, Name: "tag"},
-		},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := cssTagTable(state, args["tag"].(string))
-
-			state.Push(t)
-			return 1
-		})
-
-	/// @func cursor_screen_pos_xy()
-	/// @returns x, y
+	/// @func cursor_screen_pos_xy() -> int, int
+	/// @returns {int} - Cursor x position.
+	/// @returns {int} - Cursor y position.
 	lib.CreateFunction(tab, "cursor_screen_pos_xy",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2724,8 +2752,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func cursor_screen_pos()
-	/// @returns image point
+	/// @func cursor_screen_pos() -> struct<image.Point>
+	/// @returns {struct<image.Point>}
 	lib.CreateFunction(tab, "cursor_screen_pos",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2735,8 +2763,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func cursor_pos_xy()
-	/// @returns x, y
+	/// @func cursor_pos_xy() -> int, int
+	/// @returns {int} - Cursor x position.
+	/// @returns {int} - Cursor y position.
 	lib.CreateFunction(tab, "cursor_pos_xy",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2747,8 +2776,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func cursor_pos()
-	/// @returns image point
+	/// @func cursor_pos() -> struct<image.Point>
+	/// @returns {struct<image.Point>}
 	lib.CreateFunction(tab, "cursor_pos",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2758,14 +2787,14 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func canvas_bezier_cubic()
-	/// @arg pos0
-	/// @arg cp0
-	/// @arg cp1
-	/// @arg pos1
-	/// @arg color
-	/// @arg thickness
-	/// @arg segments
+	/// @func canvas_bezier_cubic(pos0, cp0, cp1, pos1, color, thickness, segments)
+	/// @arg pos0 {struct<image.Point>}
+	/// @arg cp0 {struct<image.Point>}
+	/// @arg cp1 {struct<image.Point>}
+	/// @arg pos1 {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg thickness {float}
+	/// @arg segments {int}
 	lib.CreateFunction(tab, "canvas_bezier_cubic",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "pos0"},
@@ -2791,12 +2820,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_circle()
-	/// @arg center
-	/// @arg radius
-	/// @arg color
-	/// @arg segments
-	/// @arg thickness
+	/// @func canvas_circle(center, radius, color, segments, thickness)
+	/// @arg center {struct<image.Point>}
+	/// @arg radius {float}
+	/// @arg color {struct<image.Color>}
+	/// @arg segments {int}
+	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_circle",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "center"},
@@ -2818,10 +2847,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_circle_filled()
-	/// @arg center
-	/// @arg radius
-	/// @arg color
+	/// @func canvas_circle_filled(center, radius, color)
+	/// @arg center {struct<image.Point>}
+	/// @arg radius {float}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_circle_filled",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "center"},
@@ -2839,11 +2868,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_line()
-	/// @arg p1
-	/// @arg p2
-	/// @arg color
-	/// @arg thickness
+	/// @func canvas_line(p1, b2, color, thickness)
+	/// @arg p1 {struct<image.Point>}
+	/// @arg p2 {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_line",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -2863,13 +2892,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_quad()
-	/// @arg p1
-	/// @arg p2
-	/// @arg p3
-	/// @arg p4
-	/// @arg color
-	/// @arg thickness
+	/// @func canvas_quad(p1, p2, p3, p4, color, thickness)
+	/// @arg p1 {struct<image.Point>}
+	/// @arg p2 {struct<image.Point>}
+	/// @arg p3 {struct<image.Point>}
+	/// @arg p4 {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_quad",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -2893,12 +2922,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_quad_filled()
-	/// @arg p1
-	/// @arg p2
-	/// @arg p3
-	/// @arg p4
-	/// @arg color
+	/// @func canvas_quad_filled(p1, p2, p3, p4, color)
+	/// @arg p1 {struct<image.Point>}
+	/// @arg p2 {struct<image.Point>}
+	/// @arg p3 {struct<image.Point>}
+	/// @arg p4 {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_quad_filled",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -2920,13 +2949,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_rect()
-	/// @arg min
-	/// @arg max
-	/// @arg color
-	/// @arg rounding
-	/// @arg flags
-	/// @arg thickness
+	/// @func canvas_rect(min, max, color, rounding, flags, thickness)
+	/// @arg min {struct<image.Point>}
+	/// @arg max {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg rounding {float}
+	/// @arg flags {int<gui.DrawFlags>}
+	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_rect",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "min"},
@@ -2950,12 +2979,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_rect_filled()
-	/// @arg min
-	/// @arg max
-	/// @arg color
-	/// @arg rounding
-	/// @arg flags
+	/// @func canvas_rect_filled(min, max, color, rounding, flags)
+	/// @arg min {struct<image.Point>}
+	/// @arg max {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg rounding {float}
+	/// @arg flags {int<gui.DrawFlags>}
 	lib.CreateFunction(tab, "canvas_rect_filled",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "min"},
@@ -2977,10 +3006,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_text()
-	/// @arg pos
-	/// @arg color
-	/// @arg text
+	/// @func canvas_text(pos, color, text)
+	/// @arg pos {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg text {string}
 	lib.CreateFunction(tab, "canvas_text",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "pos"},
@@ -2998,12 +3027,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_triangle()
-	/// @arg p1
-	/// @arg p2
-	/// @arg p3
-	/// @arg color
-	/// @arg thickness
+	/// @func canvas_triangle(p1, p2, p3, color, thickness)
+	/// @arg p1 {struct<image.Point>}
+	/// @arg p2 {struct<image.Point>}
+	/// @arg p3 {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
+	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_triangle",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -3025,11 +3054,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_triangle_filled()
-	/// @arg p1
-	/// @arg p2
-	/// @arg p3
-	/// @arg color
+	/// @func canvas_triangle_filled(p1, p2, p3, color)
+	/// @arg p1 {struct<image.Point>}
+	/// @arg p2 {struct<image.Point>}
+	/// @arg p3 {struct<image.Point>}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_triangle_filled",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -3049,12 +3078,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_path_arc_to()
-	/// @arg center
-	/// @arg radius
-	/// @arg min
-	/// @arg max
-	/// @arg segments
+	/// @func canvas_path_arc_to(center, radius, min, max, segments)
+	/// @arg center {struct<image.Point>}
+	/// @arg radius {float}
+	/// @arg min {float}
+	/// @arg max {float}
+	/// @arg segments {int}
 	lib.CreateFunction(tab, "canvas_path_arc_to",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "center"},
@@ -3076,12 +3105,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_path_arc_to_fast()
-	/// @arg center
-	/// @arg radius
-	/// @arg min
-	/// @arg max
-	/// @arg segments
+	/// @func canvas_path_arc_to_fast(center, radius, min, max, segments)
+	/// @arg center {struct<image.Point>}
+	/// @arg radius {float}
+	/// @arg min {int}
+	/// @arg max {int}
 	lib.CreateFunction(tab, "canvas_path_arc_to_fast",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "center"},
@@ -3101,11 +3129,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_path_bezier_cubic_to()
-	/// @arg p1
-	/// @arg p2
-	/// @arg p3
-	/// @arg segments
+	/// @func canvas_path_bezier_cubic_to(p1, p2, p3, segments)
+	/// @arg p1 {struct<image.Point>}
+	/// @arg p2 {struct<image.Point>}
+	/// @arg p3 {struct<image.Point>}
+	/// @arg segments {int}
 	lib.CreateFunction(tab, "canvas_path_bezier_cubic_to",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -3134,8 +3162,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_fill_convex()
-	/// @arg color
+	/// @func canvas_fill_convex(color)
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_path_fill_convex",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -3149,9 +3177,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_path_line_to()
-	/// @arg p1
-	/// @arg segments
+	/// @func canvas_path_line_to(p1, segments)
+	/// @arg p1 {struct<image.Point>}
 	lib.CreateFunction(tab, "canvas_path_line_to",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -3165,9 +3192,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_path_line_to_merge_duplicate()
-	/// @arg p1
-	/// @arg segments
+	/// @func canvas_path_line_to_merge_duplicate(p1)
+	/// @arg p1 {struct<image.Point>}
 	lib.CreateFunction(tab, "canvas_path_line_to_merge_duplicate",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "p1"},
@@ -3181,10 +3207,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func canvas_path_stroke()
-	/// @arg color
-	/// @arg flags
-	/// @arg thickness
+	/// @func canvas_path_stroke(color, flags, thickness)
+	/// @arg color {struct<image.Color>}
+	/// @arg flags {int<gui.DrawFlags>}
+	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_path_stroke",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -3202,12 +3228,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func fontatlas_add_font()
-	/// @arg name
-	/// @arg size
-	/// @returns fontref, ok
+	/// @func fontatlas_add_font(name, size) -> int<ref.FONT>, bool
+	/// @arg name {string}
+	/// @arg size {float}
+	/// @returns {int<ref.FONT>}
+	/// @returns {bool}
 	/// @desc
-	/// fontref will be nil if ok is false
+	/// The returned font ref will be nil if ok is false.
 	lib.CreateFunction(tab, "fontatlas_add_font",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -3232,8 +3259,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func fontatlas_default_font_strings()
-	/// @returns []string
+	/// @func fontatlas_default_font_strings() -> []string
+	/// @returns {[]string}
 	lib.CreateFunction(tab, "fontatlas_default_font_strings",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -3249,12 +3276,12 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func fontatlas_default_fonts()
-	/// @returns []fontref
+	/// @func fontatlas_default_fonts() -> []int<ref.FONT>
+	/// @returns {[]int<ref.FONT>}
 	/// @desc
 	/// Take note that this creates an array of refs,
-	/// refs are only cleared at the end of a workflow,
-	/// or with ref.del / ref.del_many
+	/// refs are only cleared when the workflow ends,
+	/// or manually with 'ref.del' or 'ref.del_many'.
 	lib.CreateFunction(tab, "fontatlas_default_fonts",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -3273,9 +3300,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func fontatlas_register_string()
-	/// @arg str
-	/// @returns str
+	/// @func fontatlas_register_string(str) -> string
+	/// @arg str {string}
+	/// @returns {string}
 	lib.CreateFunction(tab, "fontatlas_register_string",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "str"},
@@ -3288,9 +3315,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func fontatlas_register_string_ref()
-	/// @arg stringref
-	/// @returns stringref
+	/// @func fontatlas_register_string_ref(stringref) -> int<ref.STRING>
+	/// @arg stringref {int<ref.STRING>}
+	/// @returns {int<ref.STRING>}
 	lib.CreateFunction(tab, "fontatlas_register_string_ref",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "stringref"},
@@ -3310,9 +3337,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func fontatlas_register_string_many()
-	/// @arg []str
-	/// @returns []str
+	/// @func fontatlas_register_string_many(str) -> []string
+	/// @arg str {[]string}
+	/// @returns {[]string}
 	lib.CreateFunction(tab, "fontatlas_register_string_many",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "str"},
@@ -3333,9 +3360,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func fontatlas_set_default_font()
-	/// @arg name
-	/// @arg size
+	/// @func fontatlas_set_default_font(name, size)
+	/// @arg name {string}
+	/// @arg size {float}
 	lib.CreateFunction(tab, "fontatlas_set_default_font",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -3347,8 +3374,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func fontatlas_set_default_font_size()
-	/// @arg size
+	/// @func fontatlas_set_default_font_size(size)
+	/// @arg size {float}
 	lib.CreateFunction(tab, "fontatlas_set_default_font_size",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "size"},
@@ -3359,10 +3386,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func font_set_size()
-	/// @arg fontref
-	/// @arg size
-	/// @returns fontref
+	/// @func font_set_size(fontref, size) -> int<ref.FONT>
+	/// @arg fontref {int<ref.FONT>}
+	/// @arg size {float}
+	/// @returns {int<ref.FLOAT>}
 	lib.CreateFunction(tab, "font_set_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "fontref"},
@@ -3382,9 +3409,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func font_string()
-	/// @arg fontref
-	/// @returns string
+	/// @func font_string(fontref) -> string
+	/// @arg fontref {int<ref.FONT>}
+	/// @returns {string}
 	lib.CreateFunction(tab, "font_string",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "fontref"},
@@ -4622,9 +4649,157 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ACTION_RELEASE", golua.LNumber(ACTION_RELEASE))
 	tab.RawSetString("ACTION_PRESS", golua.LNumber(ACTION_PRESS))
 	tab.RawSetString("ACTION_REPEAT", golua.LNumber(ACTION_REPEAT))
+
+	/// @constants Widget Types
+	/// @const WIDGET_LABEL
+	/// @const WIDGET_BUTTON
+	/// @const WIDGET_DUMMY
+	/// @const WIDGET_SEPARATOR
+	/// @const WIDGET_BULLET_TEXT
+	/// @const WIDGET_BULLET
+	/// @const WIDGET_CHECKBOX
+	/// @const WIDGET_CHILD
+	/// @const WIDGET_COLOR_EDIT
+	/// @const WIDGET_COLUMN
+	/// @const WIDGET_ROW
+	/// @const WIDGET_COMBO_CUSTOM
+	/// @const WIDGET_COMBO
+	/// @const WIDGET_CONDITION
+	/// @const WIDGET_CONTEXT_MENU
+	/// @const WIDGET_DATE_PICKER
+	/// @const WIDGET_DRAG_INT
+	/// @const WIDGET_INPUT_FLOAT
+	/// @const WIDGET_INPUT_INT
+	/// @const WIDGET_INPUT_TEXT
+	/// @const WIDGET_INPUT_TEXT_MULTILINE
+	/// @const WIDGET_PROGRESS_BAR
+	/// @const WIDGET_PROGRESS_INDICATOR
+	/// @const WIDGET_SPACING
+	/// @const WIDGET_BUTTON_SMALL
+	/// @const WIDGET_BUTTON_RADIO
+	/// @const WIDGET_IMAGE_URL
+	/// @const WIDGET_IMAGE
+	/// @const WIDGET_LIST_BOX
+	/// @const WIDGET_LIST_CLIPPER
+	/// @const WIDGET_MENU_BAR_MAIN
+	/// @const WIDGET_MENU_BAR
+	/// @const WIDGET_MENU_ITEM
+	/// @const WIDGET_MENU
+	/// @const WIDGET_SELECTABLE
+	/// @const WIDGET_SLIDER_FLOAT
+	/// @const WIDGET_SLIDER_INT
+	/// @const WIDGET_VSLIDER_INT
+	/// @const WIDGET_TAB_BAR
+	/// @const WIDGET_TAB_ITEM
+	/// @const WIDGET_TOOLTIP
+	/// @const WIDGET_TABLE_COLUMN
+	/// @const WIDGET_TABLE_ROW
+	/// @const WIDGET_TABLE
+	/// @const WIDGET_BUTTON_ARROW
+	/// @const WIDGET_TREE_NODE
+	/// @const WIDGET_TREE_TABLE_ROW
+	/// @const WIDGET_TREE_TABLE
+	/// @const WIDGET_WINDOW_SINGLE
+	/// @const WIDGET_POPUP_MODAL
+	/// @const WIDGET_POPUP
+	/// @const WIDGET_LAYOUT_SPLIT
+	/// @const WIDGET_SPLITTER
+	/// @const WIDGET_STACK
+	/// @const WIDGET_ALIGN
+	/// @const WIDGET_MSG_BOX
+	/// @const WIDGET_MSG_BOX_PREPARE
+	/// @const WIDGET_BUTTON_INVISIBLE
+	/// @const WIDGET_BUTTON_IMAGE
+	/// @const WIDGET_STYLE
+	/// @const WIDGET_CUSTOM
+	/// @const WIDGET_EVENT_HANDLER
+	/// @const WIDGET_PLOT
+	/// @const WIDGET_CSS_TAG
+	tab.RawSetString("WIDGET_LABEL", golua.LString(WIDGET_LABEL))
+	tab.RawSetString("WIDGET_BUTTON", golua.LString(WIDGET_BUTTON))
+	tab.RawSetString("WIDGET_DUMMY", golua.LString(WIDGET_DUMMY))
+	tab.RawSetString("WIDGET_SEPARATOR", golua.LString(WIDGET_SEPARATOR))
+	tab.RawSetString("WIDGET_BULLET_TEXT", golua.LString(WIDGET_BULLET_TEXT))
+	tab.RawSetString("WIDGET_BULLET", golua.LString(WIDGET_BULLET))
+	tab.RawSetString("WIDGET_CHECKBOX", golua.LString(WIDGET_CHECKBOX))
+	tab.RawSetString("WIDGET_CHILD", golua.LString(WIDGET_CHILD))
+	tab.RawSetString("WIDGET_COLOR_EDIT", golua.LString(WIDGET_COLOR_EDIT))
+	tab.RawSetString("WIDGET_COLUMN", golua.LString(WIDGET_COLUMN))
+	tab.RawSetString("WIDGET_ROW", golua.LString(WIDGET_ROW))
+	tab.RawSetString("WIDGET_COMBO_CUSTOM", golua.LString(WIDGET_COMBO_CUSTOM))
+	tab.RawSetString("WIDGET_COMBO", golua.LString(WIDGET_COMBO))
+	tab.RawSetString("WIDGET_CONDITION", golua.LString(WIDGET_CONDITION))
+	tab.RawSetString("WIDGET_CONTEXT_MENU", golua.LString(WIDGET_CONTEXT_MENU))
+	tab.RawSetString("WIDGET_DATE_PICKER", golua.LString(WIDGET_DATE_PICKER))
+	tab.RawSetString("WIDGET_DRAG_INT", golua.LString(WIDGET_DRAG_INT))
+	tab.RawSetString("WIDGET_INPUT_FLOAT", golua.LString(WIDGET_INPUT_FLOAT))
+	tab.RawSetString("WIDGET_INPUT_INT", golua.LString(WIDGET_INPUT_INT))
+	tab.RawSetString("WIDGET_INPUT_TEXT", golua.LString(WIDGET_INPUT_TEXT))
+	tab.RawSetString("WIDGET_INPUT_TEXT_MULTILINE", golua.LString(WIDGET_INPUT_MULTILINE_TEXT))
+	tab.RawSetString("WIDGET_PROGRESS_BAR", golua.LString(WIDGET_PROGRESS_BAR))
+	tab.RawSetString("WIDGET_PROGRESS_INDICATOR", golua.LString(WIDGET_PROGRESS_INDICATOR))
+	tab.RawSetString("WIDGET_SPACING", golua.LString(WIDGET_SPACING))
+	tab.RawSetString("WIDGET_BUTTON_SMALL", golua.LString(WIDGET_BUTTON_SMALL))
+	tab.RawSetString("WIDGET_BUTTON_RADIO", golua.LString(WIDGET_BUTTON_RADIO))
+	tab.RawSetString("WIDGET_IMAGE_URL", golua.LString(WIDGET_IMAGE_URL))
+	tab.RawSetString("WIDGET_IMAGE", golua.LString(WIDGET_IMAGE))
+	tab.RawSetString("WIDGET_LIST_BOX", golua.LString(WIDGET_LIST_BOX))
+	tab.RawSetString("WIDGET_LIST_CLIPPER", golua.LString(WIDGET_LIST_CLIPPER))
+	tab.RawSetString("WIDGET_MENU_BAR_MAIN", golua.LString(WIDGET_MENU_BAR_MAIN))
+	tab.RawSetString("WIDGET_MENU_BAR", golua.LString(WIDGET_MENU_BAR))
+	tab.RawSetString("WIDGET_MENU_ITEM", golua.LString(WIDGET_MENU_ITEM))
+	tab.RawSetString("WIDGET_MENU", golua.LString(WIDGET_MENU))
+	tab.RawSetString("WIDGET_SELECTABLE", golua.LString(WIDGET_SELECTABLE))
+	tab.RawSetString("WIDGET_SLIDER_FLOAT", golua.LString(WIDGET_SLIDER_FLOAT))
+	tab.RawSetString("WIDGET_SLIDER_INT", golua.LString(WIDGET_SLIDER_INT))
+	tab.RawSetString("WIDGET_VSLIDER_INT", golua.LString(WIDGET_VSLIDER_INT))
+	tab.RawSetString("WIDGET_TAB_BAR", golua.LString(WIDGET_TAB_BAR))
+	tab.RawSetString("WIDGET_TAB_ITEM", golua.LString(WIDGET_TAB_ITEM))
+	tab.RawSetString("WIDGET_TOOLTIP", golua.LString(WIDGET_TOOLTIP))
+	tab.RawSetString("WIDGET_TABLE_COLUMN", golua.LString(WIDGET_TABLE_COLUMN))
+	tab.RawSetString("WIDGET_TABLE_ROW", golua.LString(WIDGET_TABLE_ROW))
+	tab.RawSetString("WIDGET_TABLE", golua.LString(WIDGET_TABLE))
+	tab.RawSetString("WIDGET_BUTTON_ARROW", golua.LString(WIDGET_BUTTON_ARROW))
+	tab.RawSetString("WIDGET_TREE_NODE", golua.LString(WIDGET_TREE_NODE))
+	tab.RawSetString("WIDGET_TREE_TABLE_ROW", golua.LString(WIDGET_TREE_TABLE_ROW))
+	tab.RawSetString("WIDGET_TREE_TABLE", golua.LString(WIDGET_TREE_TABLE))
+	tab.RawSetString("WIDGET_WINDOW_SINGLE", golua.LString(WIDGET_WINDOW_SINGLE))
+	tab.RawSetString("WIDGET_POPUP_MODAL", golua.LString(WIDGET_POPUP_MODAL))
+	tab.RawSetString("WIDGET_POPUP", golua.LString(WIDGET_POPUP))
+	tab.RawSetString("WIDGET_LAYOUT_SPLIT", golua.LString(WIDGET_LAYOUT_SPLIT))
+	tab.RawSetString("WIDGET_SPLITTER", golua.LString(WIDGET_SPLITTER))
+	tab.RawSetString("WIDGET_STACK", golua.LString(WIDGET_STACK))
+	tab.RawSetString("WIDGET_ALIGN", golua.LString(WIDGET_ALIGN))
+	tab.RawSetString("WIDGET_MSG_BOX", golua.LString(WIDGET_MSG_BOX))
+	tab.RawSetString("WIDGET_MSG_BOX_PREPARE", golua.LString(WIDGET_MSG_BOX_PREPARE))
+	tab.RawSetString("WIDGET_BUTTON_INVISIBLE", golua.LString(WIDGET_BUTTON_INVISIBLE))
+	tab.RawSetString("WIDGET_BUTTON_IMAGE", golua.LString(WIDGET_BUTTON_IMAGE))
+	tab.RawSetString("WIDGET_STYLE", golua.LString(WIDGET_STYLE))
+	tab.RawSetString("WIDGET_CUSTOM", golua.LString(WIDGET_CUSTOM))
+	tab.RawSetString("WIDGET_EVENT_HANDLER", golua.LString(WIDGET_EVENT_HANDLER))
+	tab.RawSetString("WIDGET_PLOT", golua.LString(WIDGET_PLOT))
+	tab.RawSetString("WIDGET_CSS_TAG", golua.LString(WIDGET_CSS_TAG))
+
+	/// @constants Plot Types
+	/// @const PLOT_BAR_H
+	/// @const PLOT_BAR
+	/// @const PLOT_LINE
+	/// @const PLOT_LINE_XY
+	/// @const PLOT_PIE_CHART
+	/// @const PLOT_SCATTER
+	/// @const PLOT_SCATTER_XY
+	/// @const PLOT_CUSTOM
+	tab.RawSetString("PLOT_BAR_H", golua.LString(PLOT_BAR_H))
+	tab.RawSetString("PLOT_BAR", golua.LString(PLOT_BAR))
+	tab.RawSetString("PLOT_LINE", golua.LString(PLOT_LINE))
+	tab.RawSetString("PLOT_LINE_XY", golua.LString(PLOT_LINE_XY))
+	tab.RawSetString("PLOT_PIE_CHART", golua.LString(PLOT_PIE_CHART))
+	tab.RawSetString("PLOT_SCATTER", golua.LString(PLOT_SCATTER))
+	tab.RawSetString("PLOT_SCATTER_XY", golua.LString(PLOT_SCATTER_XY))
+	tab.RawSetString("PLOT_CUSTOM", golua.LString(PLOT_CUSTOM))
+
 }
 
-// -- flags
 const (
 	FLAGCOMBO_NONE            int = 0b0000_0000
 	FLAGCOMBO_POPUPALIGNLEFT  int = 0b0000_0001
@@ -5460,6 +5635,9 @@ func init() {
 }
 
 func parseWidgets(widgetTable map[string]any, state *golua.LState, lg *log.Logger) []*golua.LTable {
+	/// @struct Widget
+	/// @prop type {string<gui.WidgetType>}
+
 	wts := []*golua.LTable{}
 
 	for i := range len(widgetTable) {
@@ -5504,11 +5682,11 @@ func layoutBuild(r *lua.Runner, state *golua.LState, widgets []*golua.LTable, lg
 }
 
 func labelTable(state *golua.LState, text string) *golua.LTable {
-	/// @struct wg_label
-	/// @prop type
-	/// @prop label
+	/// @struct WidgetLabel
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
 	/// @method wrapped(bool)
-	/// @method font(fontref)
+	/// @method font(int<ref.FONT>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LABEL))
@@ -5553,12 +5731,12 @@ func labelBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func buttonTable(state *golua.LState, text string) *golua.LTable {
-	/// @struct wg_button
-	/// @prop type
-	/// @prop label
+	/// @struct WidgetButton
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
 	/// @method disabled(bool)
-	/// @method size(width, height)
-	/// @method on_click(callback)
+	/// @method size(width float, height float)
+	/// @method on_click(callback function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON))
@@ -5614,10 +5792,10 @@ func buttonBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 }
 
 func dummyTable(state *golua.LState, width, height float64) *golua.LTable {
-	/// @struct wg_dummy
-	/// @prop type
-	/// @prop width
-	/// @prop height
+	/// @struct WidgetDummy
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop width {float}
+	/// @prop height {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_DUMMY))
@@ -5636,8 +5814,8 @@ func dummyBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func separatorTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_separator
-	/// @prop type
+	/// @struct WidgetSeparator
+	/// @prop type {string<gui.WidgetType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SEPARATOR))
@@ -5652,9 +5830,9 @@ func separatorBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 }
 
 func bulletTextTable(state *golua.LState, text string) *golua.LTable {
-	/// @struct wg_bullet_text
-	/// @prop type
-	/// @prop text
+	/// @struct WidgetBulletText
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop text {string}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BULLET_TEXT))
@@ -5670,8 +5848,8 @@ func bulletTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func bulletTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_bullet
-	/// @prop type
+	/// @struct WidgetBullet
+	/// @prop type {string<gui.WidgetType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BULLET))
@@ -5686,11 +5864,11 @@ func bulletBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 }
 
 func checkboxTable(state *golua.LState, text string, boolref int) *golua.LTable {
-	/// @struct wg_checkbox
-	/// @prop type
-	/// @prop text
-	/// @prop boolref
-	/// @method on_change(callback(bool, boolref))
+	/// @struct WidgetCheckbox
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop text {string}
+	/// @prop boolref {int<ref.BOOL>}
+	/// @method on_change(callback(bool, int<ref.BOOL>))
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CHECKBOX))
@@ -5731,12 +5909,12 @@ func checkboxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func childTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_child
-	/// @prop type
+	/// @struct WidgetChild
+	/// @prop type {string<gui.WidgetType>}
 	/// @method border(bool)
-	/// @method size(width, height)
-	/// @method layout([]widgets)
-	/// @method flags(flags)
+	/// @method size(width float, height float)
+	/// @method layout(widgets []struct<gui.Widget>)
+	/// @method flags(flags int<gui.WindowFlags>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CHILD))
@@ -5799,13 +5977,13 @@ func childBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func colorEditTable(state *golua.LState, text string, colorref int) *golua.LTable {
-	/// @struct wg_color_edit
-	/// @prop type
-	/// @prop label
-	/// @prop colorref
-	/// @method size(width)
-	/// @method on_change(callback(color, colorref))
-	/// @method flags(flags)
+	/// @struct WidgetColorEdit
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @prop colorref {int<ref.COLOR>}
+	/// @method size(width float)
+	/// @method on_change(callback(color struct<image.Color>, int<ref.COLOR>))
+	/// @method flags(flags int<gui.ColorEditFlags>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COLOR_EDIT))
@@ -5870,9 +6048,9 @@ func colorEditBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 }
 
 func columnTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
-	/// @struct wg_column
-	/// @prop type
-	/// @prop widgets
+	/// @struct WidgetColumn
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop widgets {[]struct<gui.Widget>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COLUMN))
@@ -5895,9 +6073,9 @@ func columnBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 }
 
 func rowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
-	/// @struct wg_row
-	/// @prop type
-	/// @prop widgets
+	/// @struct WidgetRow
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop widgets {[]struct<gui.Widget>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_ROW))
@@ -5920,13 +6098,13 @@ func rowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTabl
 }
 
 func comboCustomTable(state *golua.LState, text, preview string) *golua.LTable {
-	/// @struct wg_combo_custom
-	/// @prop type
-	/// @prop text
-	/// @prop preview
-	/// @method size(width)
-	/// @method layout([]widgets)
-	/// @method flags(flags)
+	/// @struct WidgetComboCustom
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop text {string}
+	/// @prop preview {string}
+	/// @method size(width float)
+	/// @method layout([]struct<gui.Widget>)
+	/// @method flags(flags int<gui.ComboFlags>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COMBO_CUSTOM))
@@ -5978,15 +6156,15 @@ func comboCustomBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func comboTable(state *golua.LState, text, preview string, items golua.LValue, i32Ref int) *golua.LTable {
-	/// @struct wg_combo
-	/// @prop type
-	/// @prop text
-	/// @prop preview
-	/// @prop items
-	/// @prop i32ref
-	/// @method size(width)
-	/// @method on_change(callback(int, i32ref))
-	/// @method flags(flags)
+	/// @struct WidgetCombo
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop text {string}
+	/// @prop preview {string}
+	/// @prop items {[]string}
+	/// @prop i32ref {int<ref.INT32>}
+	/// @method size(width float)
+	/// @method on_change(callback(int, int<ref.INT32>))
+	/// @method flags(flags int<gui.ComboFlags)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COMBO))
@@ -6060,11 +6238,11 @@ func comboBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func conditionTable(state *golua.LState, condition bool, layoutIf, layoutElse golua.LValue) *golua.LTable {
-	/// @struct wg_condition
-	/// @prop type
-	/// @prop condition
-	/// @prop layoutIf
-	/// @prop layoutElse
+	/// @struct WidgetCondition
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop condition {bool}
+	/// @prop layoutIf {struct<gui.Widget>}
+	/// @prop layoutElse {struct<gui.Widget>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CONDITION))
@@ -6089,10 +6267,10 @@ func conditionBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 }
 
 func contextMenuTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_context_menu
-	/// @prop type
-	/// @method mouse_button(button)
-	/// @method layout([]widgets)
+	/// @struct WidgetContextMenu
+	/// @prop type {string<gui.WidgetType>}
+	/// @method mouse_button(button int<gui.MouseButton>)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CONTEXT_MENU))
@@ -6129,15 +6307,15 @@ func contextMenuBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func datePickerTable(state *golua.LState, id string, timeref int) *golua.LTable {
-	/// @struct wg_date_picker
-	/// @prop type
-	/// @prop id
-	/// @prop timeref
-	/// @method on_change(callback(time, timeref))
-	/// @method format(format)
-	/// @method size(width)
-	/// @method start_of_week(day)
-	/// @method translation(label, value)
+	/// @struct WidgetDatePicker
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop id {string}
+	/// @prop timeref {int<ref.TIME>}
+	/// @method on_change(callback(string, int<ref.TIME>))
+	/// @method format(format string)
+	/// @method size(width float)
+	/// @method start_of_week(day int<time.Weekday>)
+	/// @method translation(label string<gui.DatePickerLabel>, value string)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_DATE_PICKER))
@@ -6233,14 +6411,14 @@ func datePickerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func dragIntTable(state *golua.LState, text string, i32Ref, minValue, maxValue int) *golua.LTable {
-	/// @struct wg_drag_int
-	/// @prop type
-	/// @prop text
-	/// @prop i32ref
-	/// @prop minvalue
-	/// @prop maxvalue
-	/// @method speed(speed)
-	/// @method format(format)
+	/// @struct WidgetDragInt
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop text {string}
+	/// @prop i32ref {int<ref.INT32>}
+	/// @prop minvalue {int}
+	/// @prop maxvalue {int}
+	/// @method speed(speed float)
+	/// @method format(format string)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_DRAG_INT))
@@ -6292,16 +6470,16 @@ func dragIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func inputFloatTable(state *golua.LState, floatref int) *golua.LTable {
-	/// @struct wg_input_float
-	/// @prop type
-	/// @prop f32ref
-	/// @method size(width)
-	/// @method on_change(callback(float, f32ref))
-	/// @method format(format)
-	/// @method flags(flags)
-	/// @method label(label)
-	/// @method step_size(stepsize)
-	/// @method step_size_fast(stepsize)
+	/// @struct WidgetInputFloat
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop f32ref {int<ref.FLOAT32>}
+	/// @method size(width float)
+	/// @method on_change(callback(float, int<ref.FLOAT32>))
+	/// @method format(format string)
+	/// @method flags(flags int<gui.InputFlags>)
+	/// @method label(label string)
+	/// @method step_size(stepsize float)
+	/// @method step_size_fast(stepsize float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_FLOAT))
@@ -6406,15 +6584,15 @@ func inputFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func inputIntTable(state *golua.LState, intref int) *golua.LTable {
-	/// @struct wg_input_int
-	/// @prop type
-	/// @prop i32ref
-	/// @method size(width)
-	/// @method on_change(callback(int, i32ref))
-	/// @method flags(flags)
-	/// @method label(label)
-	/// @method step_size(stepsize)
-	/// @method step_size_fast(stepsize)
+	/// @struct WidgetInputInt
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop i32ref {int<ref.INT32>}
+	/// @method size(width float)
+	/// @method on_change(callback(int, int<ref.INT32>))
+	/// @method flags(flags int<gui.InputFlags>)
+	/// @method label(label string)
+	/// @method step_size(stepsize int)
+	/// @method step_size_fast(stepsize int)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_INT))
@@ -6508,15 +6686,15 @@ func inputIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func inputTextTable(state *golua.LState, strref int) *golua.LTable {
-	/// @struct wg_input_text
-	/// @prop type
-	/// @prop strref
-	/// @method size(width)
-	/// @method flags(flags)
-	/// @method label(label)
+	/// @struct WidgetInputText
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop strref {int<ref.STRING>}
+	/// @method size(width float)
+	/// @method flags(flags int<gui.InputFlags>)
+	/// @method label(label strings)
 	/// @method autocomplete([]string)
-	/// @method callback(callback(string, strref))
-	/// @method hint(hint)
+	/// @method callback(callback(string, int<ref.STRING>))
+	/// @method hint(hint string)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_TEXT))
@@ -6634,14 +6812,14 @@ func inputTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 }
 
 func inputMultilineTextTable(state *golua.LState, strref int) *golua.LTable {
-	/// @struct wg_input_multiline_text
-	/// @prop type
-	/// @prop strref
-	/// @method size(width, height)
-	/// @method on_change(callback(string, strref))
-	/// @method flags(flags)
-	/// @method label(label)
-	/// @method callback(callback(string, strref))
+	/// @struct WidgetInputTextMultiline
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop strref {int<ref.STRING>}
+	/// @method size(width float, height float)
+	/// @method on_change(callback(string, int<ref.STRING>))
+	/// @method flags(flags int<gui.InputFlags>)
+	/// @method label(label string)
+	/// @method callback(callback(string, int<ref.STRING>))
 	/// @method autoscroll_to_bottom(bool)
 
 	t := state.NewTable()
@@ -6746,11 +6924,11 @@ func inputMultilineTextBuild(r *lua.Runner, lg *log.Logger, state *golua.LState,
 }
 
 func progressBarTable(state *golua.LState, fraction float64) *golua.LTable {
-	/// @struct wg_progress_bar
-	/// @prop type
-	/// @prop fraction
-	/// @method overlay(label)
-	/// @method size(width, height)
+	/// @struct WidgetProgressBar
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop fraction {float}
+	/// @method overlay(label string)
+	/// @method size(width float, height float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_PROGRESS_BAR))
@@ -6793,12 +6971,12 @@ func progressBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func progressIndicatorTable(state *golua.LState, label string, width, height, radius float64) *golua.LTable {
-	/// @struct wg_progress_indicator
-	/// @prop type
-	/// @prop label
-	/// @prop width
-	/// @prop height
-	/// @prop radius
+	/// @struct WidgetProgressIndicator
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @prop width {float}
+	/// @prop height {float}
+	/// @prop radius {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_PROGRESS_INDICATOR))
@@ -6821,8 +6999,8 @@ func progressIndicatorBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, 
 }
 
 func spacingTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_spacing
-	/// @prop type
+	/// @struct WidgetSpacing
+	/// @prop type {string<gui.WidgetType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SPACING))
@@ -6837,10 +7015,10 @@ func spacingBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func buttonSmallTable(state *golua.LState, text string) *golua.LTable {
-	/// @struct wg_button_small
-	/// @prop type
-	/// @prop label
-	/// @method on_click(callback())
+	/// @struct WidgetButtonSmall
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method on_click(callback function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_SMALL))
@@ -6871,11 +7049,11 @@ func buttonSmallBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func buttonRadioTable(state *golua.LState, text string, active bool) *golua.LTable {
-	/// @struct wg_button_radio
-	/// @prop type
-	/// @prop label
-	/// @prop active
-	/// @method on_change(callback())
+	/// @struct WidgetButtonRadio
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @prop active {bool}
+	/// @method on_change(function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_RADIO))
@@ -6908,16 +7086,16 @@ func buttonRadioBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func imageUrlTable(state *golua.LState, url string) *golua.LTable {
-	/// @struct wg_image_url
-	/// @prop type
-	/// @prop url
-	/// @method on_click(callback())
-	/// @method size(width, height)
-	/// @method timeout(timeout)
-	/// @method layout_for_failure([]widgets)
-	/// @method layout_for_loading([]widgets)
-	/// @method on_failure(callback())
-	/// @method on_ready(callback())
+	/// @struct WidgetImageURL
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop url {string}
+	/// @method on_click(function())
+	/// @method size(width float, height float)
+	/// @method timeout(timeout int)
+	/// @method layout_for_failure([]struct<gui.Widget>)
+	/// @method layout_for_loading([]struct<gui.Widget>)
+	/// @method on_failure(function())
+	/// @method on_ready(function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_IMAGE_URL))
@@ -7025,12 +7203,12 @@ func imageUrlBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func imageTable(state *golua.LState, image int, sync bool) *golua.LTable {
-	/// @struct wg_image
-	/// @prop type
-	/// @prop image
-	/// @prop sync
-	/// @method on_click(callback())
-	/// @method size(width, height)
+	/// @struct WidgetImage
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop image {int<collection.IMAGE>}
+	/// @prop sync {bool}
+	/// @method on_click(function())
+	/// @method size(width float, height float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_IMAGE))
@@ -7101,16 +7279,16 @@ func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func listBoxTable(state *golua.LState, items golua.LValue) *golua.LTable {
-	/// @struct wg_list_box
-	/// @prop type
-	/// @prop items
-	/// @method on_change(callback(index))
+	/// @struct WidgetListBox
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop items {[]string}
+	/// @method on_change(function(int))
 	/// @method border(bool)
-	/// @method context_menu([]widgets)
-	/// @method on_double_click(callback(index))
-	/// @method on_menu(callback(index, menu))
-	/// @method selected_index(index)
-	/// @method size(width, height)
+	/// @method context_menu([]struct<gui.Widget>)
+	/// @method on_double_click(function(int))
+	/// @method on_menu(callback(int, string))
+	/// @method selected_index(int)
+	/// @method size(width float, height float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LIST_BOX))
@@ -7221,9 +7399,9 @@ func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func listClipperTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_list_clipper
-	/// @prop type
-	/// @method layout([]widgets)
+	/// @struct WidgetListClipper
+	/// @prop type {string<gui.WidgetType>}
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LIST_CLIPPER))
@@ -7249,9 +7427,9 @@ func listClipperBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func mainMenuBarTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_main_menu_bar
-	/// @prop type
-	/// @method layout([]widgets)
+	/// @struct WidgetMainMenuBar
+	/// @prop type {string<gui.WidgetType>}
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU_BAR_MAIN))
@@ -7277,9 +7455,9 @@ func mainMenuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func menuBarTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_menu_bar
-	/// @prop type
-	/// @method layout([]widgets)
+	/// @struct WidgetMenuBar
+	/// @prop type {string<gui.WidgetType>}
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU_BAR))
@@ -7305,11 +7483,11 @@ func menuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func menuItemTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_menu_item
-	/// @prop type
-	/// @prop label
+	/// @struct WidgetMenuItem
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
 	/// @method enabled(bool)
-	/// @method on_click(callback())
+	/// @method on_click(function())
 	/// @method selected(bool)
 	/// @method shortcut(string)
 
@@ -7375,11 +7553,11 @@ func menuItemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func menuTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_menu
-	/// @prop type
-	/// @prop label
+	/// @struct WidgetMenu
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
 	/// @method enabled(bool)
-	/// @method layout([]widgets)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU))
@@ -7418,14 +7596,14 @@ func menuBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTab
 }
 
 func selectableTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_selectable
-	/// @prop type
-	/// @prop label
-	/// @method on_click(callback())
-	/// @method on_double_click(callback())
+	/// @struct WidgetSelectable
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method on_click(function())
+	/// @method on_double_click(function())
 	/// @method selected(bool)
-	/// @method size(width, height)
-	/// @method flags(flags)
+	/// @method size(width float, height float)
+	/// @method flags(flags int<gui.SelectableFlags>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SELECTABLE))
@@ -7507,15 +7685,15 @@ func selectableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func sliderFloatTable(state *golua.LState, f32ref int, min, max float64) *golua.LTable {
-	/// @struct wg_slider_float
-	/// @prop type
-	/// @prop f32ref
-	/// @prop min
-	/// @prop max
-	/// @method on_change(callback(value, f32ref))
+	/// @struct WidgetSliderFloat
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop f32ref {int<ref.FLOAT32>}
+	/// @prop min {float}
+	/// @prop max {float}
+	/// @method on_change(function(float, int<ref.FLOAT32>))
 	/// @method label(string)
 	/// @method format(string)
-	/// @method size(width)
+	/// @method size(width float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SLIDER_FLOAT))
@@ -7590,15 +7768,15 @@ func sliderFloatBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func sliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTable {
-	/// @struct wg_slider_int
-	/// @prop type
-	/// @prop i32ref
-	/// @prop min
-	/// @prop max
-	/// @method on_change(callback(value, i32ref))
+	/// @struct WidgetSliderInt
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop i32ref {int<ref.INT32>}
+	/// @prop min {int}
+	/// @prop max {int}
+	/// @method on_change(function(int, int<ref.INT32>))
 	/// @method label(string)
 	/// @method format(string)
-	/// @method size(width)
+	/// @method size(width float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SLIDER_INT))
@@ -7673,16 +7851,16 @@ func sliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 }
 
 func vsliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTable {
-	/// @struct wg_vslider_int
-	/// @prop type
-	/// @prop i32ref
-	/// @prop min
-	/// @prop max
-	/// @method on_change(callback(value, i32ref))
+	/// @struct WidgetVSliderInt
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop i32ref {int<ref.INT32>}
+	/// @prop min {int}
+	/// @prop max {int}
+	/// @method on_change(function(int, int<ref.INT32>))
 	/// @method label(string)
 	/// @method format(string)
-	/// @method size(width, height)
-	/// @method flags(flags)
+	/// @method size(width float, height float)
+	/// @method flags(flags int<gui.SliderFlags>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_VSLIDER_INT))
@@ -7772,10 +7950,10 @@ func vsliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func tabbarTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_tab_bar
-	/// @prop type
-	/// @method flags(flags)
-	/// @method tab_items([]wg_tab_item)
+	/// @struct WidgetTabBar
+	/// @prop type {string<gui.WidgetType>}
+	/// @method flags(flags int<gui.TabBarFlags>)
+	/// @method tab_items([]struct<gui.TabItem>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TAB_BAR))
@@ -7818,12 +7996,12 @@ func tabbarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 }
 
 func tabitemTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_tab_item
-	/// @prop type
-	/// @prop label
-	/// @method flags(flags)
+	/// @struct TabItem
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method flags(flags int<gui.TabItemFlags>)
 	/// @method is_open(bool)
-	/// @method layout([]widgets)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TAB_ITEM))
@@ -7877,10 +8055,10 @@ func tabitemBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func tooltipTable(state *golua.LState, tip string) *golua.LTable {
-	/// @struct wg_tooltip
-	/// @prop type
-	/// @prop tip
-	/// @method layout([]widgets)
+	/// @struct WidgetTooltip
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop tip {string}
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TOOLTIP))
@@ -7908,13 +8086,13 @@ func tooltipBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func tableColumnTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_table_column
-	/// @prop type
-	/// @prop label
-	/// @method flags(flags)
-	/// @method inner_width_or_weight(width)
+	/// @struct TableColumn
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method flags(flags int<gui.TableColumnFlags>)
+	/// @method inner_width_or_weight(width float)
 	/// @desc
-	/// only used in table widget columns
+	/// Only used in table widget columns.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TABLE_COLUMN))
@@ -7953,14 +8131,14 @@ func tableColumnBuild(t *golua.LTable) *g.TableColumnWidget {
 }
 
 func tableRowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
-	/// @struct wg_table_row
-	/// @prop type
-	/// @prop widgets
-	/// @method flags(flags)
-	/// @method bg_color(color)
-	/// @method min_height(height)
+	/// @struct TableRow
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop widgets {[]struct<gui.Widget>}
+	/// @method flags(flags int<gui.TableRowFlags>)
+	/// @method bg_color(color struct<image.Color>)
+	/// @method min_height(height float)
 	/// @desc
-	/// only used in table widget rows
+	/// Only used in table widget rows.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TABLE_ROW))
@@ -8017,15 +8195,15 @@ func tableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func tableTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_table
-	/// @prop type
-	/// @method flags(flags)
+	/// @struct WidgetTable
+	/// @prop type {string<gui.WidgetType>}
+	/// @method flags(flags int<gui.TableFlags>)
 	/// @method fast_mode(bool)
-	/// @method size(width, height)
-	/// @method columns([]wg_table_column)
-	/// @method rows([]wg_table_row)
-	/// @method inner_width(width)
-	/// @method freeze(col, row) - can be called multiple times
+	/// @method size(width float, height float)
+	/// @method columns([]struct<gui.TableColumn>)
+	/// @method rows([]struct<gui.TableRow>)
+	/// @method inner_width(width float)
+	/// @method freeze(col int, row int) - Can be called multiple times.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TABLE))
@@ -8143,10 +8321,10 @@ func tableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func buttonArrowTable(state *golua.LState, dir int) *golua.LTable {
-	/// @struct wg_button_arrow
-	/// @prop type
-	/// @prop dir
-	/// @method on_click(callback)
+	/// @struct WidgetButtonArrow
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop dir {int<gui.Direction>}
+	/// @method on_click(function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_ARROW))
@@ -8177,11 +8355,11 @@ func buttonArrowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func treeNodeTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_tree_node
-	/// @prop type
-	/// @prop label
-	/// @method flags(flags)
-	/// @method layout([]widgets)
+	/// @struct WidgetTreeNode
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method flags(flags int<gui.TreeNodeFlags>)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TREE_NODE))
@@ -8220,14 +8398,14 @@ func treeNodeBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func treeTableRowTable(state *golua.LState, label string, widgets golua.LValue) *golua.LTable {
-	/// @struct wg_tree_table_row
-	/// @prop type
-	/// @prop label
-	/// @prop widgets
-	/// @method flags(flags)
-	/// @method children([]wg_tree_table_row)
+	/// @struct TreeTableRow
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @prop widgets {[]struct<gui.Widget>}
+	/// @method flags(flags int<gui.TreeNodeFlags>)
+	/// @method children([]struct<gui.TreeTableRow>)
 	/// @desc
-	/// only used in tree table widget rows
+	/// Only used in tree table widget rows.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TREE_TABLE_ROW))
@@ -8279,13 +8457,13 @@ func treeTableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 }
 
 func treeTableTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_tree_table
-	/// @prop type
-	/// @method flags(flags)
-	/// @method size(width, height)
-	/// @method columns([]wg_table_column)
-	/// @method rows([]wg_tree_table_row)
-	/// @method freeze(col, row) - can be called multiple times
+	/// @struct WidgetTreeTable
+	/// @prop type {string<gui.WidgetType>}
+	/// @method flags(flags int<gui.TableFlags>)
+	/// @method size(width float, height float)
+	/// @method columns([]TableColumn)
+	/// @method rows([]TreeTableRow)
+	/// @method freeze(col int, row int) - Can be called multiple times.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TREE_TABLE))
@@ -8381,19 +8559,19 @@ func treeTableBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 }
 
 func windowTable(r *lua.Runner, lg *log.Logger, state *golua.LState, single bool, menubar bool, label string) *golua.LTable {
-	/// @struct wg_window
-	/// @prop type
-	/// @prop single
-	/// @prop menubar
-	/// @prop label
-	/// @method flags(flags)
-	/// @method size(width, height)
-	/// @method pos(x, y)
+	/// @struct WidgetWindow
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop single {bool}
+	/// @prop menubar {bool}
+	/// @prop label {string}
+	/// @method flags(flags int<gui.WindowFlags>)
+	/// @method size(width float, height float)
+	/// @method pos(x float, y float)
 	/// @method is_open(bool)
 	/// @method bring_to_front()
-	/// @method ready(callback(state_window))
-	/// @method register_keyboard_shortcuts([]shortcut)
-	/// @method layout([]widgets)
+	/// @method ready(function(struct<gui.StateWindow>))
+	/// @method register_keyboard_shortcuts([]struct<gui.Shortcut>)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_WINDOW_SINGLE))
@@ -8507,10 +8685,10 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 		w.IsOpen(ref.Value.(*bool))
 	}
 
-	/// @struct state_window
-	/// @method current_position() x, y
-	/// @method current_size() width, height
-	/// @method has_focus() bool
+	/// @struct StateWindow
+	/// @method current_position() -> float, float
+	/// @method current_size() -> float, float
+	/// @method has_focus() -> bool
 	ready := t.RawGetString("__ready")
 	if ready.Type() == golua.LTFunction {
 		fnt := state.NewTable()
@@ -8578,12 +8756,12 @@ func windowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 }
 
 func popupModalTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_popup_modal
-	/// @prop type
-	/// @prop label
-	/// @method flags(flags)
+	/// @struct WidgetPopupModel
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method flags(flags int<gui.WindowFlags>)
 	/// @method is_open(bool)
-	/// @method layout([]widgets)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_POPUP_MODAL))
@@ -8637,11 +8815,11 @@ func popupModalBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func popupTable(state *golua.LState, label string) *golua.LTable {
-	/// @struct wg_popup
-	/// @prop type
-	/// @prop label
-	/// @method flags(flags)
-	/// @method layout([]widgets)
+	/// @struct WidgetPopup
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop label {string}
+	/// @method flags(flags int<gui.WindowFlags>)
+	/// @method layout([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_POPUP))
@@ -8680,12 +8858,12 @@ func popupBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func splitLayoutTable(state *golua.LState, direction, floatref int, layout1 golua.LValue, layout2 golua.LValue) *golua.LTable {
-	/// @struct wg_split_layout
-	/// @prop type
-	/// @prop direction
-	/// @prop floatref
-	/// @prop layout1
-	/// @prop layout2
+	/// @struct WidgetSplitLayout
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop direction {int<gui.Direction>}
+	/// @prop floatref {int<ref.FLOAT32>}
+	/// @prop layout1 {[]struct<gui.Widget>}
+	/// @prop layout2 {[]struct<gui.Widget>}
 	/// @method border(bool)
 
 	t := state.NewTable()
@@ -8737,11 +8915,11 @@ func splitLayoutBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func splitterTable(state *golua.LState, direction, floatref int) *golua.LTable {
-	/// @struct wg_splitter
-	/// @prop type
-	/// @prop direction
-	/// @prop floatref
-	/// @method size(width, height)
+	/// @struct WidgetSplitter
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop direction {int<gui.Direction>}
+	/// @prop floatref {int<ref.FLOAT32>}
+	/// @method size(width float, height float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SPLITTER))
@@ -8782,10 +8960,10 @@ func splitterBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func stackTable(state *golua.LState, visible int, widgets golua.LValue) *golua.LTable {
-	/// @struct wg_stack
-	/// @prop type
-	/// @prop visible
-	/// @prop widgets
+	/// @struct WidgetStack
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop visible {int}
+	/// @prop widgets {[]struct<gui.Widget>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_STACK))
@@ -8810,10 +8988,10 @@ func stackBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func alignTable(state *golua.LState, at int) *golua.LTable {
-	/// @struct wg_align
-	/// @prop type
-	/// @prop at
-	/// @method to([]widgets)
+	/// @struct WidgetAlign
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop at {int<gui.Alignment>}
+	/// @method to([]struct<gui.Widget>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_ALIGN))
@@ -8841,12 +9019,12 @@ func alignBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func msgBoxTable(state *golua.LState, title, content string) *golua.LTable {
-	/// @struct wg_msg_box
-	/// @prop type
-	/// @prop title
-	/// @prop content
-	/// @method buttons(int)
-	/// @method result_callback(callback(bool))
+	/// @struct WidgetMSGBox
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop title {string}
+	/// @prop content {string}
+	/// @method buttons(int<gui.MSGBoxButtons>)
+	/// @method result_callback(function(bool))
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MSG_BOX))
@@ -8895,10 +9073,10 @@ func msgBoxBuild(state *golua.LState, t *golua.LTable) *g.MsgboxWidget {
 }
 
 func msgBoxPrepareTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_msg_box_prepare
-	/// @prop type
+	/// @struct WidgetMSGBoxPrepare
+	/// @prop type {string<gui.WidgetType>}
 	/// @desc
-	/// this is used internally with gui.prepare_msg_box()
+	/// This is used internally with gui.prepare_msg_box().
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MSG_BOX_PREPARE))
@@ -8911,10 +9089,10 @@ func msgBoxPrepareBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *g
 }
 
 func buttonInvisibleTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_button_invisible
-	/// @prop type
-	/// @method size(width, height)
-	/// @method on_click(callback())
+	/// @struct WidgetButtonInvisible
+	/// @prop type {string<gui.WidgetType>}
+	/// @method size(width float, height float)
+	/// @method on_click(function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_INVISIBLE))
@@ -8958,16 +9136,16 @@ func buttonInvisibleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t 
 }
 
 func buttonImageTable(state *golua.LState, id int, sync bool) *golua.LTable {
-	/// @struct wg_button_image
-	/// @prop type
-	/// @prop id
-	/// @prop sync
-	/// @method size(width, height)
-	/// @method on_click(callback())
-	/// @method bg_color(color)
-	/// @method tint_color(color)
-	/// @method frame_padding(padding)
-	/// @method uv(uv0 point, uv1 point)
+	/// @struct WidgetButtonImage
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop id {int<collection.IMAGE>}
+	/// @prop sync {bool}
+	/// @method size(width float, height float)
+	/// @method on_click(function())
+	/// @method bg_color(struct<image.Color>)
+	/// @method tint_color(struct<image.Color>)
+	/// @method frame_padding(padding float)
+	/// @method uv(uv0 struct<image.Point>, uv1 struct<image.Point>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_IMAGE))
@@ -9091,15 +9269,15 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func styleTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_style
-	/// @prop type
+	/// @struct WidgetStyle
+	/// @prop type {string<gui.WidgetType>}
 	/// @method set_disabled(bool)
-	/// @method to([]widgets)
+	/// @method to([]struct<gui.Widget>)
 	/// @method set_font_size(float)
-	/// @method set_color(colorid, color)
-	/// @method set_style(styleid, width, height)
-	/// @method set_style_float(styleid, float)
-	/// @method font(fontref)
+	/// @method set_color(int<gui.StyleColorID>, struct<image.Color>)
+	/// @method set_style(int<gui.StyleVarID>, width float, height float)
+	/// @method set_style_float(int<gui.StyleVarID>, float)
+	/// @method font(int<ref.FONT>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_STYLE))
@@ -9232,9 +9410,9 @@ func styleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 }
 
 func customTable(state *golua.LState, builder *golua.LFunction) *golua.LTable {
-	/// @struct wg_custom
-	/// @prop type
-	/// @prop builder
+	/// @struct WidgetCustom
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop builder {function()}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CUSTOM))
@@ -9255,19 +9433,19 @@ func customBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 }
 
 func eventHandlerTable(state *golua.LState) *golua.LTable {
-	/// @struct wg_event_handler
-	/// @prop type
-	/// @method on_activate(callback())
-	/// @method on_active(callback())
-	/// @method on_deactivate(callback())
-	/// @method on_hover(callback())
-	/// @method on_click(key, callback())
-	/// @method on_dclick(key, callback())
-	/// @method on_key_down(key, callback())
-	/// @method on_key_pressed(key, callback())
-	/// @method on_key_released(key, callback())
-	/// @method on_mouse_down(key, callback())
-	/// @method on_mouse_released(key, callback())
+	/// @struct WidgetEvent
+	/// @prop type {string<gui.WidgetType>}
+	/// @method on_activate(function())
+	/// @method on_active(function())
+	/// @method on_deactivate(function())
+	/// @method on_hover(function())
+	/// @method on_click(int<gui.MouseButton>, function())
+	/// @method on_dclick(int<gui.MouseButton>, function())
+	/// @method on_key_down(int<gui.Key>, function())
+	/// @method on_key_pressed(int<gui.Key>, function())
+	/// @method on_key_released(int<gui.Key>, function())
+	/// @method on_mouse_down(int<gui.MouseButton>, function())
+	/// @method on_mouse_released(int<gui.MouseButton>, function())
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_EVENT_HANDLER))
@@ -9505,20 +9683,51 @@ func eventHandlerBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 	return e
 }
 
+func cssTagTable(state *golua.LState, tag string) *golua.LTable {
+	/// @struct WidgetCSSTag
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop tag {string}
+	/// @method to([]struct<gui.Widget>)
+
+	t := state.NewTable()
+	t.RawSetString("type", golua.LString(WIDGET_CSS_TAG))
+	t.RawSetString("tag", golua.LString(tag))
+	t.RawSetString("__widgets", golua.LNil)
+
+	tableBuilderFunc(state, t, "to", func(state *golua.LState, t *golua.LTable) {
+		lt := state.CheckTable(-1)
+		t.RawSetString("__widgets", lt)
+	})
+
+	return t
+}
+
+func cssTagBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	tag := t.RawGetString("tag").(golua.LString)
+	c := g.CSSTag(string(tag))
+
+	layout := t.RawGetString("__widgets")
+	if layout.Type() == golua.LTTable {
+		c.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
+	}
+
+	return c
+}
+
 func plotTable(state *golua.LState, title string) *golua.LTable {
-	/// @struct wg_plot
-	/// @prop type
-	/// @prop title
-	/// @method axis_limits(xmin, xmax, ymin, ymax, cond)
-	/// @method flags(flags)
-	/// @method set_xaxis_label(axis, label)
-	/// @method set_yaxis_label(axis, label)
-	/// @method size(width, height)
-	/// @method x_axeflags(flags)
-	/// @method xticks(ticks, default)
-	/// @method y_axeflags(flags1, flags2, flags3)
-	/// @method yticks(ticks)
-	/// @method plots([]plots)
+	/// @struct WidgetPlot
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop title {string}
+	/// @method axis_limits(xmin float, xmax float, ymin float, ymax float, cond int<gui.Condition>)
+	/// @method flags(flags int<gui.PlotFlags>)
+	/// @method set_xaxis_label(axis int<gui.PlotXAxis>, label string)
+	/// @method set_yaxis_label(axis int<gui.PlotYAxis>, label string)
+	/// @method size(width float, height float)
+	/// @method x_axeflags(flags int<gui.PlotAxisFlags>)
+	/// @method xticks(ticks []struct<gui.PlotTicker>, default bool)
+	/// @method y_axeflags(flags1 int<gui.PlotAxisFlags>, flags2 int<gui.PlotAxisFlags>, flags3 int<gui.PlotAxisFlags>)
+	/// @method yticks(ticks []struct<gui.PlotTicker>)
+	/// @method plots([]struct<gui.Plot>)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_PLOT))
@@ -9632,6 +9841,9 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 }
 
 func plotBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	/// @struct Plot
+	/// @prop type {string<gui.PlotType>}
+
 	title := t.RawGetString("title").(golua.LString)
 	p := g.Plot(string(title))
 
@@ -9740,9 +9952,9 @@ func plotBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTab
 }
 
 func plotTickerBuild(t *golua.LTable) g.PlotTicker {
-	/// @struct plot_ticker
-	/// @prop position
-	/// @prop label
+	/// @struct PlotTicker
+	/// @prop position {float}
+	/// @prop label {string}
 
 	position := t.RawGetString("position").(golua.LNumber)
 	label := t.RawGetString("label").(golua.LString)
@@ -9754,13 +9966,13 @@ func plotTickerBuild(t *golua.LTable) g.PlotTicker {
 }
 
 func plotBarHTable(state *golua.LState, title string, data golua.LValue) *golua.LTable {
-	/// @struct pt_bar_h
-	/// @prop type
-	/// @prop title
-	/// @prop data
-	/// @method height(height)
-	/// @method offset(offset)
-	/// @method shift(shift)
+	/// @struct PlotBarH
+	/// @prop type {string<gui.PlotType>}
+	/// @prop title {string}
+	/// @prop data {[]float}
+	/// @method height(height float)
+	/// @method offset(offset float)
+	/// @method shift(shift float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_BAR_H))
@@ -9819,13 +10031,13 @@ func plotBarHBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func plotBarTable(state *golua.LState, title string, data golua.LValue) *golua.LTable {
-	/// @struct pt_bar
-	/// @prop type
-	/// @prop title
-	/// @prop data
-	/// @method width(width)
-	/// @method offset(offset)
-	/// @method shift(shift)
+	/// @struct PlotBar
+	/// @prop type {string<gui.PlotType>}
+	/// @prop title {string}
+	/// @prop data {[]float}
+	/// @method width(width float)
+	/// @method offset(offset float)
+	/// @method shift(shift float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_BAR))
@@ -9884,14 +10096,14 @@ func plotBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func plotLineTable(state *golua.LState, title string, data golua.LValue) *golua.LTable {
-	/// @struct pt_line
-	/// @prop type
-	/// @prop title
-	/// @prop data
-	/// @method set_plot_y_axis(axis)
-	/// @method offset(offset)
-	/// @method x0(x0)
-	/// @method xscale(xscale)
+	/// @struct PlotLine
+	/// @prop type {string<gui.PlotType>}
+	/// @prop title {string}
+	/// @prop data {[]float}
+	/// @method set_plot_y_axis(axis int<gui.PlotYAxis>)
+	/// @method offset(offset float)
+	/// @method x0(x0 float)
+	/// @method xscale(xscale float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_LINE))
@@ -9961,13 +10173,13 @@ func plotLineBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 }
 
 func plotLineXYTable(state *golua.LState, title string, xdata, ydata golua.LValue) *golua.LTable {
-	/// @struct pt_line_xy
-	/// @prop type
-	/// @prop title
-	/// @prop xdata
-	/// @prop ydata
-	/// @method set_plot_y_axis(axis)
-	/// @method offset(offset)
+	/// @struct PlotLineXY
+	/// @prop type {string<gui.PlotType>}
+	/// @prop title {string}
+	/// @prop xdata {[]float}
+	/// @prop ydata {[]float}
+	/// @method set_plot_y_axis(axis int<gui.PlotYAxis>)
+	/// @method offset(offset float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_LINE_XY))
@@ -10023,15 +10235,15 @@ func plotLineXYBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 }
 
 func plotPieTable(state *golua.LState, labels golua.LValue, data golua.LValue, x, y, radius float64) *golua.LTable {
-	/// @struct pt_pie
-	/// @prop type
-	/// @prop labels
-	/// @prop data
-	/// @prop x
-	/// @prop y
-	/// @prop radius
-	/// @method angle0(angle0)
-	/// @method label_format(format)
+	/// @struct PlotPieChart
+	/// @prop type {string<gui.PlotType>}
+	/// @prop labels {[]string}
+	/// @prop data {[]float}
+	/// @prop x {float}
+	/// @prop y {float}
+	/// @prop radius {float}
+	/// @method angle0(angle0 float)
+	/// @method label_format(format string)
 	/// @method normalize(bool)
 
 	t := state.NewTable()
@@ -10103,13 +10315,13 @@ func plotPieBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 }
 
 func plotScatterTable(state *golua.LState, title string, data golua.LValue) *golua.LTable {
-	/// @struct pt_scatter
-	/// @prop type
-	/// @prop title
-	/// @prop data
-	/// @method offset(offset)
-	/// @method x0(x0)
-	/// @method xscale(xscale)
+	/// @struct PlotScatter
+	/// @prop type {string<gui.PlotType>}
+	/// @prop title {string}
+	/// @prop data {[]float}
+	/// @method offset(offset float)
+	/// @method x0(x0 float)
+	/// @method xscale(xscale float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_SCATTER))
@@ -10168,12 +10380,12 @@ func plotScatterBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 }
 
 func plotScatterXYTable(state *golua.LState, title string, xdata, ydata golua.LValue) *golua.LTable {
-	/// @struct pt_scatter_xy
-	/// @prop type
-	/// @prop title
-	/// @prop xdata
-	/// @prop ydata
-	/// @method offset(offset)
+	/// @struct PlotScatterXY
+	/// @prop type {string<gui.PlotType>}
+	/// @prop title {string}
+	/// @prop xdata {[]float}
+	/// @prop ydata {[]float}
+	/// @method offset(offset float)
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_SCATTER_XY))
@@ -10218,9 +10430,9 @@ func plotScatterXYBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *g
 }
 
 func plotCustomTable(state *golua.LState, builder *golua.LFunction) *golua.LTable {
-	/// @struct pt_custom
-	/// @prop type
-	/// @prop builder
+	/// @struct PlotCustom
+	/// @prop type {string<gui.PlotType>}
+	/// @prop builder {function()}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_CUSTOM))
@@ -10236,37 +10448,6 @@ func plotCustomBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 		state.Push(builder)
 		state.Call(0, 0)
 	})
-
-	return c
-}
-
-func cssTagTable(state *golua.LState, tag string) *golua.LTable {
-	/// @struct wg_css_tag
-	/// @prop type
-	/// @prop tag
-	/// @method to([]widgets)
-
-	t := state.NewTable()
-	t.RawSetString("type", golua.LString(WIDGET_CSS_TAG))
-	t.RawSetString("tag", golua.LString(tag))
-	t.RawSetString("__widgets", golua.LNil)
-
-	tableBuilderFunc(state, t, "to", func(state *golua.LState, t *golua.LTable) {
-		lt := state.CheckTable(-1)
-		t.RawSetString("__widgets", lt)
-	})
-
-	return t
-}
-
-func cssTagBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	tag := t.RawGetString("tag").(golua.LString)
-	c := g.CSSTag(string(tag))
-
-	layout := t.RawGetString("__widgets")
-	if layout.Type() == golua.LTTable {
-		c.To(layoutBuild(r, state, parseWidgets(parseTable(layout.(*golua.LTable)), state, lg), lg)...)
-	}
 
 	return c
 }

@@ -1,6 +1,9 @@
 package doc
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 func Parse(filename string, file []byte) Lib {
 	name := strings.TrimSuffix(filename, ".go")
@@ -30,6 +33,8 @@ func Parse(filename string, file []byte) Lib {
 				}
 			}
 		}
+
+		line = strings.TrimSpace(lines[i])
 
 		if strings.HasPrefix(line, TAG_FUNC) {
 			doc := Fn{Block: false}
@@ -109,6 +114,8 @@ func Parse(filename string, file []byte) Lib {
 			}
 
 			docs.Sts = append(docs.Sts, doc)
+		} else if strings.HasPrefix(line, TAG_EXISTS) || strings.HasPrefix(line, TAG_EMPTY) {
+			fmt.Printf("Unknown doc tag: %s in %s\n", line, filename)
 		}
 
 	}
