@@ -28,10 +28,10 @@ const LIB_IO = "io"
 func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_IO, r, r.State, lg)
 
-	/// @func load_image()
-	/// @arg path - the path to grab the image from
-	/// @arg? model - used only to specify default of unsupported color models
-	/// @returns int - the image id
+	/// @func load_image(path, model?) -> int<collection.IMAGE>
+	/// @arg path {string} - The path to grab the image from.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "load_image",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -83,10 +83,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func load_embedded()
-	/// @arg embedded
-	/// @arg? model - used only to specify default of unsupported color models
-	/// @returns int - the image id
+	/// @func load_embedded(embedded, model?) -> int<collection.IMAGE>
+	/// @arg embedded {int<io.Embedded>}
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default of unsupported color models.
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "load_embedded",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "embedded"},
@@ -153,9 +153,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func out()
-	/// @arg image_id - the image id to encode and save to file.
-	/// @arg path - the directory path to save the file to.
+	/// @func out(id, path)
+	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
+	/// @arg path {string} - The directory path to save the file to.
 	lib.CreateFunction(tab, "out",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -188,9 +188,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func dir()
-	/// @arg path
-	/// @returns array containing all file paths in directory.
+	/// @func dir(path) -> []string
+	/// @arg path {string}
+	/// @returns {[]string} - Array containing all file paths in the directory.
 	lib.CreateFunction(tab, "dir",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -224,9 +224,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func dir_img()
-	/// @arg path - the directory path to scan for images.
-	/// @returns array containing strings of each valid image in the directory.
+	/// @func dir_img(path) -> []string
+	/// @arg path {string} - The directory path to scan for images.
+	/// @returns {[]string} - Array containing paths to each valid image in the directory.
 	lib.CreateFunction(tab, "dir_img",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -236,9 +236,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func dir_txt()
-	/// @arg path - the directory path to scan for txt.
-	/// @returns array containing strings of each valid txt in the directory.
+	/// @func dir_txt(path) -> []string
+	/// @arg path {string} - The directory path to scan for txt.
+	/// @returns {[]string} - Array containing paths to each valid txt in the directory.
 	lib.CreateFunction(tab, "dir_txt",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -248,9 +248,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func dir_json()
-	/// @arg path - the directory path to scan for json.
-	/// @returns array containing strings of each valid json in the directory.
+	/// @func dir_json(path) -> []string
+	/// @arg path {string} - The directory path to scan for json.
+	/// @returns {[]string} - Array containing paths to each valid json in the directory.
 	lib.CreateFunction(tab, "dir_json",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -260,9 +260,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func dir_dir()
-	/// @arg path - the directory path to scan for directories.
-	/// @returns array containing strings of each valid dir in the directory.
+	/// @func dir_dir(path) -> []string
+	/// @arg path {string} - The directory path to scan for directories.
+	/// @returns {[]string} - Array containing paths to each valid dir in the directory.
 	lib.CreateFunction(tab, "dir_dir",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -272,10 +272,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func dir_filter()
-	/// @arg path - the directory path to scan
-	/// @arg filter - array of file paths to include
-	/// @returns array containing all files that match the filter
+	/// @func dir_filter(path, filter) -> []string
+	/// @arg path {string} - The directory path to scan.
+	/// @arg filter {[]string} - Array of file extensions to include.
+	/// @returns {[]string} - Array containing paths to all files that match the filter.
 	lib.CreateFunction(tab, "dir_filter",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -291,9 +291,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func mkdir()
-	/// @arg path
-	/// @arg? all - if to create all directories going to the given path
+	/// @func mkdir(path, all?)
+	/// @arg path {string}
+	/// @arg? all {bool} - If to create all directories going to the given path.
 	lib.CreateFunction(tab, "mkdir",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -308,9 +308,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func path_join()
-	/// @arg []string
-	/// @returns path
+	/// @func path_join(paths) -> string
+	/// @arg paths {[]string}
+	/// @returns {string}
 	lib.CreateFunction(tab, "path_join",
 		[]lua.Arg{
 			lua.ArgArray("paths", lua.ArrayType{Type: lua.STRING}, false),
@@ -329,10 +329,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func wd()
-	/// @returns string
+	/// @func wd() -> string
+	/// @returns {string}
 	/// @desc
-	/// returns the dir of the currently running workflow
+	/// Returns the dir of the currently running workflow.
 	lib.CreateFunction(tab, "wd",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -340,10 +340,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func default_output()
-	/// @returns string
+	/// @func default_output() -> string
+	/// @returns {string}
 	/// @desc
-	/// returns the default output directory specified in the config file.
+	/// Returns the default output directory specified in the config file.
 	lib.CreateFunction(tab, "default_output",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -351,11 +351,11 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func base()
-	/// @arg pth
-	/// @returns string
+	/// @func base(pth) -> string
+	/// @arg pth {string}
+	/// @returns {string}
 	/// @desc
-	/// returns the name of the file only, without the extension or trailing path
+	/// Returns the name of the file only, without the extension or trailing path.
 	lib.CreateFunction(tab, "base",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "pth"},
@@ -369,11 +369,11 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func path_to()
-	/// @arg pth
-	/// @returns string
+	/// @func path_to(pth) -> string
+	/// @arg pth {string}
+	/// @returns {string}
 	/// @desc
-	/// returns the path to a file
+	/// Returns the path to a file.
 	lib.CreateFunction(tab, "path_to",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "pth"},
@@ -386,11 +386,11 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func ext()
-	/// @arg pth
-	/// @returns string
+	/// @func ext(pth) -> string
+	/// @arg pth {string}
+	/// @returns {string}
 	/// @desc
-	/// returns the ext of the file only
+	/// Returns the ext of the file only.
 	lib.CreateFunction(tab, "ext",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "pth"},

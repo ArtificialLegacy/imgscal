@@ -18,19 +18,30 @@ const LIB_STD = "std"
 func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_STD, r, r.State, lg)
 
-	/// @func log()
-	/// @arg msg - the message to display in the log
+	/// @func log(msg)
+	/// @arg msg {string} - The message to display in the log.
 	lib.CreateFunction(tab, "log",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "msg"},
+			{Type: lua.STRING, Name: "msg"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			lg.Append(fmt.Sprintf("lua log: %s", args["msg"]), log.LEVEL_INFO)
 			return 0
 		})
 
-	/// @func warn()
-	/// @arg msg - the message to display as a warning in the log
+	/// @func log_value(value)
+	/// @arg value {any} - The value to display in the log.
+	lib.CreateFunction(tab, "log_value",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "value"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			lg.Append(fmt.Sprintf("lua log: %+v", args["value"]), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func warn(msg)
+	/// @arg msg {string} - The message to display as a warning in the log.
 	lib.CreateFunction(tab, "warn",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
@@ -40,8 +51,10 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func panic()
-	/// @arg msg - the message to display in the error
+	/// @func panic(msg)
+	/// @arg msg {string} - The message to display in the error.
+	/// @desc
+	/// This results in a lua panic.
 	lib.CreateFunction(tab, "panic",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
@@ -51,10 +64,10 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func fmt()
-	/// @arg str
-	/// @arg []values
-	/// @returns string
+	/// @func fmt(str, values) -> string
+	/// @arg str {string}
+	/// @arg values {[]any} - The value in each index should be compatible with the Go fmt string provided.
+	/// @returns {string}
 	lib.CreateFunction(tab, "fmt",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "str"},

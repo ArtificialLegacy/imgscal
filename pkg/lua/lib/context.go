@@ -2951,7 +2951,7 @@ func (p PatternCustom) ColorAt(x, y int) color.Color {
 func patternCustomTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
 	/// @struct PatternCustom
 	/// @prop type {string<context.Pattern>}
-	/// @prop fn {function(x int, y int) -> struct<image.Color>}
+	/// @prop fn {function(x int, y int) -> struct<image.ColorRGBA>}
 
 	t := state.NewTable()
 

@@ -1563,9 +1563,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func uint32_to_color(ucolor) -> struct<image.Color>
+	/// @func uint32_to_color(ucolor) -> struct<image.ColorRGBA>
 	/// @arg ucolor {int}
-	/// @returns {struct<image.Color>} - Will be in the RGBA color type.
+	/// @returns {struct<image.ColorRGBA>}
 	lib.CreateFunction(tab, "uint32_to_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ucolor"},

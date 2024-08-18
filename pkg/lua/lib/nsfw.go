@@ -18,9 +18,9 @@ const LIB_NSFW = "nsfw"
 func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_NSFW, r, r.State, lg)
 
-	/// @func skin()
-	/// @arg image_id - the image to check for nudity using skin content.
-	/// @returns boolean - if the skin content detector is over a threshold.
+	/// @func skin(id) -> bool
+	/// @arg id {int<collection.IMAGE>} - The image to check for nudity using skin content.
+	/// @returns {bool} - If the skin content detector is over a threshold.
 	/// @blocking
 	/// @desc
 	/// Not very accurate, but does not require an AI model.

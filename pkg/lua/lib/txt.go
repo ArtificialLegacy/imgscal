@@ -21,15 +21,15 @@ const LIB_TXT = "txt"
 func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TXT, r, r.State, lg)
 
-	/// @func file_open()
-	/// @arg path - the directory path to the file
-	/// @arg file - the name of the file
-	/// @arg? flag - int, defaults to O_CREATE.
-	/// @returns id - id of the opened file
+	/// @func file_open(path, file, flag?) -> int<collection.FILE>
+	/// @arg path {string} - The directory path to the file.
+	/// @arg file {string} - The name of the file.
+	/// @arg? flag {int<txt.FileFlags>} - Defaults to 'txt.CREATE'.
+	/// @returns {int<collection.FILE>}
 	/// @desc
 	/// Will create the file if it does not exist,
 	/// but will not create non-existant directories.
-	/// Use bitwise OR to combine flags.
+	/// Use 'bit.bitor' or 'bit.bitor_many' to combine flags.
 	lib.CreateFunction(tab, "file_open",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -75,9 +75,9 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func write()
-	/// @arg id - id of the file to write to
-	/// @arg txt - string of text to write
+	/// @func write(id, txt)
+	/// @arg id {int<collection.FILE>}
+	/// @arg txt {string}
 	lib.CreateFunction(tab, "write",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -97,19 +97,19 @@ func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @constants File open flags
-	/// @const O_CREATE
-	/// @const O_TRUNC
-	/// @const O_EXCL
-	/// @const O_APPEND
-	/// @const O_RDWR
-	/// @const O_RDONLY
-	/// @const O_WRONLY
-	tab.RawSetString("O_CREATE", golua.LNumber(os.O_CREATE))
-	tab.RawSetString("O_TRUNC", golua.LNumber(os.O_TRUNC))
-	tab.RawSetString("O_EXCL", golua.LNumber(os.O_EXCL))
-	tab.RawSetString("O_APPEND", golua.LNumber(os.O_APPEND))
-	tab.RawSetString("O_RDWR", golua.LNumber(os.O_RDWR))
-	tab.RawSetString("O_RDONLY", golua.LNumber(os.O_RDONLY))
-	tab.RawSetString("O_WRONLY", golua.LNumber(os.O_WRONLY))
+	/// @constants File Flags
+	/// @const CREATE
+	/// @const TRUNC
+	/// @const EXCL
+	/// @const APPEND
+	/// @const RDWR
+	/// @const RDONLY
+	/// @const WRONLY
+	tab.RawSetString("CREATE", golua.LNumber(os.O_CREATE))
+	tab.RawSetString("TRUNC", golua.LNumber(os.O_TRUNC))
+	tab.RawSetString("EXCL", golua.LNumber(os.O_EXCL))
+	tab.RawSetString("APPEND", golua.LNumber(os.O_APPEND))
+	tab.RawSetString("RDWR", golua.LNumber(os.O_RDWR))
+	tab.RawSetString("RDONLY", golua.LNumber(os.O_RDONLY))
+	tab.RawSetString("WRONLY", golua.LNumber(os.O_WRONLY))
 }

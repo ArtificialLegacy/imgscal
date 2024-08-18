@@ -26,13 +26,13 @@ const LIB_IMAGE = "image"
 func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_IMAGE, r, r.State, lg)
 
-	/// @func new()
-	/// @arg name
-	/// @arg encoding
-	/// @arg width
-	/// @arg height
-	/// @arg? model
-	/// @returns id
+	/// @func new(name, encoding, width, height, model?) -> int<collection.IMAGE>
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? model {int<image.ColorModel>}
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "new",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -68,9 +68,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func name()
-	/// @arg image_id - the id of the image to rename.
-	/// @arg new_name - the new name to use for the image, not including the file extension.
+	/// @func name(id, name)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg name {string} - The new name to use for the image, not including the file extension.
 	lib.CreateFunction(tab, "name",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -87,9 +87,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func name_ext()
-	/// @arg image_id - the id of the image to rename.
-	/// @arg options - a table containing each rename step. [name, prefix, suffix]
+	/// @func name_ext(id, options)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg options {struct<image.ImageNameOptions>}
 	lib.CreateFunction(tab, "name_ext",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -97,10 +97,14 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.STRING, Name: "name", Optional: true},
 				{Type: lua.STRING, Name: "prefix", Optional: true},
 				{Type: lua.STRING, Name: "suffix", Optional: true},
-				{Type: lua.STRING, Name: "ext", Optional: true},
 			}},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ImageNameOptions
+			/// @prop name {string}
+			/// @prop prefix {string}
+			/// @prop suffix {string}
+
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
@@ -125,9 +129,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func encoding()
-	/// @arg id
-	/// @arg encoding
+	/// @func encoding(id, encoding)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg encoding {int<image.Encoding>}
 	lib.CreateFunction(tab, "encoding",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -144,9 +148,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func model()
-	/// @arg id
-	/// @returns model
+	/// @func model(id) -> int<image.ColorModel>
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {int<image.ColorModel>}
 	/// @blocking
 	lib.CreateFunction(tab, "model",
 		[]lua.Arg{
@@ -166,10 +170,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func size()
-	/// @arg image_id - the id of the image to get the size from.
-	/// @returns width
-	/// @returns height
+	/// @func size(id) -> int, int
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {int} - Image width.
+	/// @returns {int} - Image height.
 	/// @blocking
 	lib.CreateFunction(tab, "size",
 		[]lua.Arg{
@@ -194,14 +198,14 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func crop()
-	/// @arg id
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
+	/// @func crop(id, x1, y1, x2, y2)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg x1 {int}
+	/// @arg y1 {int}
+	/// @arg x2 {int}
+	/// @arg y2 {int}
 	/// @desc
-	/// overwrites the img
+	/// Overwrites the image.
 	lib.CreateFunction(tab, "crop",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -234,15 +238,15 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func subimg()
-	/// @arg id
-	/// @arg name
-	/// @arg x1
-	/// @arg y1
-	/// @arg x2
-	/// @arg y2
-	/// @arg? copy
-	/// @returns new_id
+	/// @func subimg(id, name, x1, y1, x2, y2, copy?) -> int<collection.IMAGE>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg name {string} - Name for the new image.
+	/// @arg x1 {int}
+	/// @arg y1 {int}
+	/// @arg x2 {int}
+	/// @arg y2 {int}
+	/// @arg? copy {bool}
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "subimg",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -305,11 +309,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func copy()
-	/// @arg id
-	/// @arg name
-	/// @arg model - use -1 to maintain color model
-	/// @returns new_id
+	/// @func copy(id, name, model) -> int<collection.IMAGE>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg name {string}
+	/// @arg model {int<image.ColorModel>} - Use -1 to maintain the color model.
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "copy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -367,11 +371,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func convert()
-	/// @arg id
-	/// @arg model
+	/// @func convert(id, model)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg model (int<image.ColorModel>)
 	/// @desc
-	/// replaces the image inplace with a new image with the new model
+	/// Replaces the image inplace with a new image with the new model.
 	lib.CreateFunction(tab, "convert",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -391,10 +395,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func refresh()
-	/// @arg id
+	/// @func refresh(id)
+	/// @arg id {int<collection.IMAGE>}
 	/// @desc
-	/// shortcut for redrawing the image to guarantee the bounds of the image start at (0,0)
+	/// Shortcut for redrawing the image to guarantee the bounds of the image start at (0,0).
+	/// This is sometimes needed as thirdparty libraries don't always account for non-zero min bounds.
 	lib.CreateFunction(tab, "refresh",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -411,10 +416,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func clear()
-	/// @arg id
+	/// @func clear(id)
+	/// @arg id {int<collection.IMAGE>}
 	/// @desc
-	/// Resets all pixels to 0,0,0,0
+	/// Resets all pixels to 0,0,0,0.
 	lib.CreateFunction(tab, "clear",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -433,11 +438,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func pixel()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @returns color struct [RGBA]
+	/// @func pixel(id, x, y) -> struct<image.ColorRGBA>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @returns {struct<image.ColorRGBA>}
 	/// @blocking
 	lib.CreateFunction(tab, "pixel",
 		[]lua.Arg{
@@ -465,11 +470,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pixel_set()
-	/// @arg id
-	/// @arg x
-	/// @arg y
-	/// @arg color struct
+	/// @func pixel_set(id, x, y, color)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "pixel_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -501,19 +506,19 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func point()
-	/// @arg? x
-	/// @arg? y
-	/// @returns {x, y}
+	/// @func point(x?, y?) -> struct<image.Point>
+	/// @arg? x {int}
+	/// @arg? y {int}
+	/// @returns {struct<image.Point>}
 	lib.CreateFunction(tab, "point",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "x", Optional: true},
 			{Type: lua.INT, Name: "y", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct point
-			/// @prop x
-			/// @prop y
+			/// @struct Point
+			/// @prop x {int}
+			/// @prop y {int}
 
 			t := state.NewTable()
 			state.SetTable(t, golua.LString("x"), golua.LNumber(args["x"].(int)))
@@ -523,9 +528,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_hex_to_rgba()
-	/// @arg hex
-	/// @returns color struct [RGBA]
+	/// @func color_hex_to_rgba(hex) -> struct<image.ColorRGBA>
+	/// @arg hex {string} - Accepts the formats RGBA, RGB, RRGGBBAA, RRGGBB, and an optional prefix of either # or 0x.
+	/// @returns {struct<image.ColorRGBA>}
 	lib.CreateFunction(tab, "color_hex_to_rgba",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "hex"},
@@ -601,11 +606,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_hex()
-	/// @arg color struct
-	/// @arg? prefix - should be "", "#" or "0x"
-	/// @arg? lowercase - set to true to use lowercase letters in the hex string
-	/// @returns hex string
+	/// @func color_to_hex(color, prefix?, lowercase?) -> string
+	/// @arg color {struct<image.Color>}
+	/// @arg? prefix {string} - Should be "", "#" or "0x".
+	/// @arg? lowercase {bool} - Set to true to use lowercase letters in the hex string.
+	/// @returns {string}
 	lib.CreateFunction(tab, "color_to_hex",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -626,13 +631,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_rgb()
-	/// @arg r
-	/// @arg g
-	/// @arg b
-	/// @returns color struct [RGBA]
+	/// @func color_rgb(r, g, b) -> struct<image.ColorRGBA>
+	/// @arg r {int}
+	/// @arg g {int}
+	/// @arg b {int}
+	/// @returns {struct<image.ColorRGBA>}
 	/// @desc
-	/// alpha channel is set to 255.
+	/// Alpha channel is set to 255.
 	lib.CreateFunction(tab, "color_rgb",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "r"},
@@ -641,29 +646,29 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Color
-			/// @prop type
+			/// @prop type {string<image.ColorType>}
 			/// @desc
 			/// Color structs are automatically converted into the needed type.
 			/// Do mind that some functions may return a different type than what was passed into it.
 
-			/// @struct Color [RGBA]
-			/// @prop type
-			/// @prop red
-			/// @prop green
-			/// @prop blue
-			/// @prop alpha
+			/// @struct ColorRGBA
+			/// @prop type {string<image.ColorType>}
+			/// @prop red {int}
+			/// @prop green {int}
+			/// @prop blue {int}
+			/// @prop alpha {int}
 
 			t := imageutil.RGBAToColorTable(state, args["r"].(int), args["g"].(int), args["b"].(int), 255)
 			state.Push(t)
 			return 1
 		})
 
-	/// @func color_rgba()
-	/// @arg r
-	/// @arg g
-	/// @arg b
-	/// @arg a
-	/// @returns color struct [RGBA]
+	/// @func color_rgba(r, g, b, a) -> struct<image.ColorRGBA>
+	/// @arg r {int}
+	/// @arg g {int}
+	/// @arg b {int}
+	/// @arg a {int}
+	/// @returns struct<image.ColorRGBA>
 	lib.CreateFunction(tab, "color_rgba",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "r"},
@@ -677,30 +682,30 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_gray()
-	/// @arg v
-	/// @returns color struct [GRAYA]
+	/// @func color_gray(v) -> struct<image.ColorGRAYA>
+	/// @arg v {int}
+	/// @returns struct<image.ColorGRAYA>
 	/// @desc
-	/// alpha channel is set to 255.
+	/// Alpha channel is set to 255.
 	lib.CreateFunction(tab, "color_gray",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "v"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct Color [GRAYA]
-			/// @prop type
-			/// @prop gray
-			/// @prop alpha
+			/// @struct ColorGRAYA
+			/// @prop type {string<image.ColorType>}
+			/// @prop gray {int}
+			/// @prop alpha {int}
 
 			t := imageutil.GrayAToColorTable(state, args["v"].(int), 255)
 			state.Push(t)
 			return 1
 		})
 
-	/// @func color_graya()
-	/// @arg v
-	/// @arg a
-	/// @returns color struct [GRAYA]
+	/// @func color_graya(v, a) -> struct<image.ColorGRAYA>
+	/// @arg v {int}
+	/// @arg a {int}
+	/// @returns {struct<image.ColorGRAYA>}
 	lib.CreateFunction(tab, "color_graya",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "v"},
@@ -712,13 +717,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_hsv()
-	/// @arg h
-	/// @arg s
-	/// @arg v
-	/// @returns color struct [HSVA]
+	/// @func color_hsv(h, s, v) -> struct<image.ColorHSVA>
+	/// @arg h {int}
+	/// @arg s {int}
+	/// @arg v {int}
+	/// @returns struct<image.ColorHSVA>
 	/// @desc
-	/// alpha channel is set to 255.
+	/// Alpha channel is set to 255.
 	lib.CreateFunction(tab, "color_hsv",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "h"},
@@ -726,24 +731,24 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "v"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct Color [HSVA]
-			/// @prop type
-			/// @prop hue
-			/// @prop sat
-			/// @prop value
-			/// @prop alpha
+			/// @struct ColorHSVA
+			/// @prop type {string<image.ColorType>}
+			/// @prop hue {int}
+			/// @prop sat {int}
+			/// @prop value {int}
+			/// @prop alpha {int}
 
 			t := imageutil.HSVAToColorTable(state, args["h"].(float64), args["s"].(float64), args["v"].(float64), 255)
 			state.Push(t)
 			return 1
 		})
 
-	/// @func color_hsva()
-	/// @arg h
-	/// @arg s
-	/// @arg v
-	/// @arg a
-	/// @returns color struct [HSVA]
+	/// @func color_hsva(h, s, v, a) -> struct<image.ColorHSVA>
+	/// @arg h {int}
+	/// @arg s {int}
+	/// @arg v {int}
+	/// @arg a {int}
+	/// @returns struct<image.ColorHSVA>
 	lib.CreateFunction(tab, "color_hsva",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "h"},
@@ -757,13 +762,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_hsl()
-	/// @arg h
-	/// @arg s
-	/// @arg l
-	/// @returns color struct [HSLA]
+	/// @func color_hsl(h, s, l) -> struct<image.ColorHSLA>
+	/// @arg h {int}
+	/// @arg s {int}
+	/// @arg l {int}
+	/// @returns struct<image.ColorHSLA>
 	/// @desc
-	/// alpha channel is set to 255.
+	/// Alpha channel is set to 255.
 	lib.CreateFunction(tab, "color_hsl",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "h"},
@@ -771,24 +776,24 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "l"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct Color [HSLA]
-			/// @prop type
-			/// @prop hue
-			/// @prop light
-			/// @prop value
-			/// @prop alpha
+			/// @struct ColorHSLA
+			/// @prop type {string<image.ColorType>}
+			/// @prop hue {int}
+			/// @prop light {int}
+			/// @prop value {int}
+			/// @prop alpha {int}
 
 			t := imageutil.HSLAToColorTable(state, args["h"].(float64), args["s"].(float64), args["l"].(float64), 255)
 			state.Push(t)
 			return 1
 		})
 
-	/// @func color_hsla()
-	/// @arg h
-	/// @arg s
-	/// @arg l
-	/// @arg a
-	/// @returns color struct [HSLA]
+	/// @func color_hsla(h, s, l, a) -> struct<image.ColorHSLA>
+	/// @arg h {int}
+	/// @arg s {int}
+	/// @arg l {int}
+	/// @arg a {int}
+	/// @returns struct<image.ColorHSLA>
 	lib.CreateFunction(tab, "color_hsla",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "h"},
@@ -802,11 +807,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_rgb()
-	/// @arg color struct
-	/// @returns color struct [RGBA]
+	/// @func color_to_rgb(color) -> struct<image.ColorRGBA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorRGBA>}
 	/// @desc
-	/// alpha is maintained
+	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_rgb",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -818,11 +823,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_hsv()
-	/// @arg color struct
-	/// @returns color struct [HSVA]
+	/// @func color_to_hsv(color) -> struct<image.ColorHSVA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorHSVA>}
 	/// @desc
-	/// alpha is maintained
+	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_hsv",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -834,11 +839,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_hsl()
-	/// @arg color struct
-	/// @returns color struct [HSLA]
+	/// @func color_to_hsl(color) -> struct<image.ColorHSLA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorHSLA>}
 	/// @desc
-	/// alpha is maintained
+	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_hsl",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -850,11 +855,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_gray()
-	/// @arg color struct
-	/// @returns color struct [GRAYA]
+	/// @func color_to_gray(color) -> struct<image.ColorGRAYA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorGRAYA>}
 	/// @desc
-	/// alpha is maintained
+	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_gray",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -866,11 +871,11 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_gray_average()
-	/// @arg color struct
-	/// @returns color struct [GRAYA]
+	/// @func color_to_gray_average(color) -> struct<image.ColorGRAYA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorGRAYA>}
 	/// @desc
-	/// alpha is maintained
+	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_gray_average",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -884,14 +889,14 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_gray_weight()
-	/// @arg color struct
-	/// @arg rWeight
-	/// @arg gWeight
-	/// @arg bWeight
-	/// @returns color struct [GRAYA]
+	/// @func color_to_gray_weight(color, rWeight, gWeight, bWeight) -> struct<image.ColorGRAYA>
+	/// @arg color {struct<image.Color>}
+	/// @arg rWeight {int}
+	/// @arg gWeight {int}
+	/// @arg bWeight {int}
+	/// @returns {struct<image.ColorGRAYA>}
 	/// @desc
-	/// alpha is maintained
+	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_gray_weight",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "color"},
@@ -912,10 +917,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func convert_color()
-	/// @arg model
-	/// @arg color struct
-	/// @returns color struct [RGBA]
+	/// @func convert_color(model, color) -> struct<image.ColorRGBA>
+	/// @arg model {int<image.ColorModel>}
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorRGBA>}
 	lib.CreateFunction(tab, "convert_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "model"},
@@ -937,13 +942,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func draw()
-	/// @arg id
-	/// @arg id - to draw onto the base image
-	/// @arg x
-	/// @arg y
-	/// @arg? width
-	/// @arg? height
+	/// @func draw(id, src, x, y, width?, height?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg? width {int}
+	/// @arg? height {int}
 	lib.CreateFunction(tab, "draw",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1000,10 +1005,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func map()
-	/// @arg id
-	/// @arg fn - takes in x, y , {red, green, blue, alpha} and returns a new {red, green, blue, alpha}
-	/// @arg? invert - reverses the looping order from columns to rows
+	/// @func map(id, fn, invert?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg fn {function(x int, y int, color struct<image.ColorRGBA>) -> struct<image.ColorRGBA>}
+	/// @arg? invert {bool} - Reverses the looping order from columns to rows.
 	lib.CreateFunction(tab, "map",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -1073,9 +1078,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func ext_to_encoding()
-	/// @arg ext
-	/// @returns encoding
+	/// @func ext_to_encoding(ext) -> int<image.Encoding>
+	/// @arg ext {string}
+	/// @returns {int<image.Encoding>}
 	lib.CreateFunction(tab, "ext_to_encoding",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "ext"},
@@ -1087,9 +1092,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func path_to_encoding()
-	/// @arg pth
-	/// @returns encoding
+	/// @func path_to_encoding(pth) -> int<image.Encoding>
+	/// @arg pth {string}
+	/// @returns {int<image.Encoding>}
 	/// @desc
 	/// First gets the ext from the path.
 	lib.CreateFunction(tab, "path_to_encoding",
@@ -1104,9 +1109,9 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func encoding_to_ext()
-	/// @arg encoding
-	/// @returns ext
+	/// @func encoding_to_ext(encoding) -> string
+	/// @arg encoding {int<image.Encoding>}
+	/// @returns {string}
 	lib.CreateFunction(tab, "encoding_to_ext",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "encoding"},
