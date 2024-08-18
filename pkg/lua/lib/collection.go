@@ -12,12 +12,20 @@ import (
 
 const LIB_COLLECTION = "collection"
 
+/// @lib Collection
+/// @import collection
+/// @desc
+/// Utility library for manually interacting with ImgScal's concurrency system.
+
 func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_COLLECTION, r, r.State, lg)
 
-	/// @func task()
-	/// @arg name
-	/// @returns id
+	/// @func task(name) -> int<collection.TASK>
+	/// @arg name {string}
+	/// @returns int<collection.TASK>
+	/// @desc
+	/// This creates an item in the task collection.
+	/// This is a generic collection for any concurrency needs.
 	lib.CreateFunction(tab, "task",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
@@ -45,10 +53,10 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func schedule()
-	/// @arg type - collection type
-	/// @arg id
-	/// @arg func
+	/// @func schedule(type, id, func)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg func {function()}
 	/// @desc
 	/// Schedules a lua func to be called from the queue.
 	lib.CreateFunction(tab, "schedule",
@@ -106,9 +114,9 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func wait()
-	/// @arg type - collection type
-	/// @arg id - id of item in the collection
+	/// @func wait(type, id)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
 	/// @blocking
 	lib.CreateFunction(tab, "wait",
 		[]lua.Arg{
@@ -152,8 +160,8 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func wait_all()
-	/// @arg type - collection type
+	/// @func wait_all(type)
+	/// @arg type {int<collection.Type>}
 	/// @blocking
 	lib.CreateFunction(tab, "wait_all",
 		[]lua.Arg{
@@ -200,6 +208,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// @blocking
 	/// @desc
 	/// This waits for all items across all collections to sync.
+	/// Realistically, shouldn't be used.
 	lib.CreateFunction(tab, "wait_extensive",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -246,12 +255,12 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func collect()
-	/// @arg type - collection type
-	/// @arg id - id of item to collect early
+	/// @func collect(type, id)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
 	/// @desc
-	/// items are collected automatically at the end of execution,
-	/// but if this can be used to collect early on workflows that create many items.
+	/// Items are collected automatically at the end of execution,
+	/// but this can be used to collect early in workflows that create a large amount of items.
 	/// This is important for collections that open files, as they are only closed when collected.
 	lib.CreateFunction(tab, "collect",
 		[]lua.Arg{
@@ -274,10 +283,10 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func log()
-	/// @arg type - collection type
-	/// @arg id - id of the item to log to
-	/// @arg msg
+	/// @func log(type, id, msg)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg msg {string}
 	lib.CreateFunction(tab, "log",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "type"},
@@ -331,10 +340,10 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func warn()
-	/// @arg type - collection type
-	/// @arg id - id of the item to log to
-	/// @arg msg
+	/// @func warn(type, id, msg)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg msg {string}
 	lib.CreateFunction(tab, "warn",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "type"},
@@ -388,10 +397,10 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func panic()
-	/// @arg type - collection type
-	/// @arg id - id of the item to panic
-	/// @arg msg
+	/// @func panic(type, id, msg)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg msg {string}
 	/// @blocking
 	lib.CreateFunction(tab, "panic",
 		[]lua.Arg{

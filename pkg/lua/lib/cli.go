@@ -11,11 +11,16 @@ import (
 
 const LIB_CLI = "cli"
 
+/// @lib CLI
+/// @import cli
+/// @desc
+/// Library for interacting with the command-line.
+
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_CLI, r, r.State, lg)
 
-	/// @func print()
-	/// @arg msg - the message to print to the console.
+	/// @func print(msg)
+	/// @arg msg {string} - The message to print to the console.
 	/// @desc
 	/// This is also including in the log similar to std.log.
 	lib.CreateFunction(tab, "print",
@@ -28,9 +33,23 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func question()
-	/// @arg question - the message to be displayed.
-	/// @returns string - the answer given by the user
+	/// @func print_value(value)
+	/// @arg value {any} - The value to print to the console.
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "print",
+		[]lua.Arg{
+			{Type: lua.ANY, Name: "value"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fmt.Printf("%+v\n", args["value"])
+			lg.Append(fmt.Sprintf("lua msg printed: %s", args["value"]), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func question(question) -> string
+	/// @arg question {string} - The message to be displayed.
+	/// @returns {string} - The answer given by the user.
 	lib.CreateFunction(tab, "question",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "question"},
@@ -45,10 +64,10 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func question_ext()
-	/// @arg question - the message to be displayed.
-	/// @arg options - the options to use for processing the answer. [normalize, accepts, fallback]
-	/// @returns string - the answer given by the user
+	/// @func question_ext(question, options) -> string
+	/// @arg question {string} - The message to be displayed.
+	/// @arg options {struct<cli.Options>} - Options used for processing the response.
+	/// @returns {string} - The answer given by the user.
 	lib.CreateFunction(tab, "question_ext",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "question"},
@@ -59,6 +78,11 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			}},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct Options
+			/// @prop normalize {bool} - Set to lowercase the recieved answer.
+			/// @prop accepts {[]string} - List of accepted responses.
+			/// @prop fallback {string} - A default response to return when the one entered by the user is not in 'accepts'.
+
 			acc := args["options"].(map[string]any)["accepts"]
 			accepts := []string{}
 			if str, ok := acc.([]string); ok {
@@ -80,10 +104,10 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func confirm()
-	/// @arg msg
+	/// @func confirm(msg)
+	/// @arg msg {string} - The message to be displayed.
 	/// @desc
-	/// waits for enter to be pressed before continuing.
+	/// Waits for the user to press enter before continuing.
 	lib.CreateFunction(tab, "confirm",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
@@ -93,10 +117,10 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func select()
-	/// @arg msg
-	/// @arg options - array of strings
-	/// @returns index of selected option, or 0.
+	/// @func select(msg, options) -> int
+	/// @arg msg {string} - The message to be displayed.
+	/// @arg options {[]string} - List of options for the user to select from.
+	/// @returns {int} - The index of selected option, or 0 if none were picked.
 	lib.CreateFunction(tab, "select",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
@@ -122,9 +146,9 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_256()
-	/// @arg code
-	/// @returns color control code
+	/// @func color_256(code) -> string
+	/// @arg code {int}
+	/// @returns {string} - The color control code.
 	lib.CreateFunction(tab, "color_256",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "code"},
@@ -135,9 +159,9 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_bg_256()
-	/// @arg code
-	/// @returns color control code
+	/// @func color_bg_256(code) -> string
+	/// @arg code {int}
+	/// @returns {string} - The color control code.
 	lib.CreateFunction(tab, "color_bg_256",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "code"},

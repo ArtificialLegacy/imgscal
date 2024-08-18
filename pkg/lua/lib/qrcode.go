@@ -3,7 +3,6 @@ package lib
 import (
 	"fmt"
 	"image"
-	"image/color"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
@@ -15,13 +14,18 @@ import (
 
 const LIB_QRCODE = "qrcode"
 
+/// @lib QRCode
+/// @import qrcode
+/// @desc
+/// Library for creating qrcodes, does not support decoding.
+
 func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_QRCODE, r, r.State, lg)
 
-	/// @func new()
-	/// @arg content
-	/// @arg recovery
-	/// @returns id
+	/// @func new(content, recovery) -> int<collection.QRCODE>
+	/// @arg content {string}
+	/// @arg recovery {int<qrcode.Recovery>}
+	/// @returns {int<collection.QRCODE>}
 	lib.CreateFunction(tab, "new",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "content"},
@@ -52,12 +56,12 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func to_image()
-	/// @arg id
-	/// @arg name
-	/// @arg size - positive sets a fixed size, negative sets a scaled size
-	/// @arg encoding
-	/// @returns image id
+	/// @func to_image(id, name, size, encoding) -> int<collection.IMAGE>
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg name {string} - Name for the image created.
+	/// @arg size {int} - Positive sets a fixed size, negative sets a scaled size.
+	/// @arg encoding {int<image.Encoding>}
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "to_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -105,10 +109,10 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func to_string()
-	/// @arg id
-	/// @arg inverse
-	/// @returns string
+	/// @func to_string(id, inverse) -> string
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg inverse {bool}
+	/// @returns {string}
 	/// @blocking
 	lib.CreateFunction(tab, "to_string",
 		[]lua.Arg{
@@ -130,10 +134,10 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func to_small_string()
-	/// @arg id
-	/// @arg inverse
-	/// @returns string
+	/// @func to_small_string(id, inverse) -> string
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg inverse {bool}
+	/// @returns {string}
 	/// @blocking
 	lib.CreateFunction(tab, "to_small_string",
 		[]lua.Arg{
@@ -155,71 +159,51 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_set_foreground()
-	/// @arg id
-	/// @arg color {red, green, blue, alpha}
+	/// @func color_set_foreground(id, color)
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "color_set_foreground",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "red"},
-				{Type: lua.INT, Name: "green"},
-				{Type: lua.INT, Name: "blue"},
-				{Type: lua.INT, Name: "alpha"},
-			}},
+			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
-					colors := args["color"].(map[string]any)
-					col := color.RGBA{
-						R: uint8(colors["red"].(int)),
-						G: uint8(colors["green"].(int)),
-						B: uint8(colors["blue"].(int)),
-						A: uint8(colors["alpha"].(int)),
-					}
+					colors := args["color"].(*golua.LTable)
+					col := imageutil.ColorTableToRGBAColor(colors)
 					i.Self.QR.ForegroundColor = col
 				},
 			})
 			return 0
 		})
 
-	/// @func color_set_background()
-	/// @arg id
-	/// @arg color {red, green, blue, alpha}
+	/// @func color_set_background(id, color)
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "color_set_background",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.TABLE, Name: "color", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "red"},
-				{Type: lua.INT, Name: "green"},
-				{Type: lua.INT, Name: "blue"},
-				{Type: lua.INT, Name: "alpha"},
-			}},
+			{Type: lua.ANY, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
-					colors := args["color"].(map[string]any)
-					col := color.RGBA{
-						R: uint8(colors["red"].(int)),
-						G: uint8(colors["green"].(int)),
-						B: uint8(colors["blue"].(int)),
-						A: uint8(colors["alpha"].(int)),
-					}
+					colors := args["color"].(*golua.LTable)
+					col := imageutil.ColorTableToRGBAColor(colors)
 					i.Self.QR.BackgroundColor = col
 				},
 			})
 			return 0
 		})
 
-	/// @func color_foreground()
-	/// @arg id
-	/// @returns {red, green, blue, alpha}
+	/// @func color_foreground(id) -> struct<image.ColorRGBA>
+	/// @arg id {int<collection.QRCODE>}
+	/// @returns {struct<image.ColorRGBA>}
 	/// @blocking
 	lib.CreateFunction(tab, "color_foreground",
 		[]lua.Arg{
@@ -239,18 +223,14 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			t := state.NewTable()
-			state.SetField(t, "red", golua.LNumber(re))
-			state.SetField(t, "green", golua.LNumber(gr))
-			state.SetField(t, "blue", golua.LNumber(bl))
-			state.SetField(t, "alpha", golua.LNumber(al))
+			t := imageutil.RGBAToColorTable(state, int(re), int(gr), int(bl), int(al))
 			state.Push(t)
 			return 1
 		})
 
-	/// @func color_background()
-	/// @arg id
-	/// @returns {red, green, blue, alpha}
+	/// @func color_background(id) -> struct<image.ColorRGBA>
+	/// @arg id {int<collection.QRCODE>}
+	/// @returns {struct<image.ColorRGBA>}
 	/// @blocking
 	lib.CreateFunction(tab, "color_background",
 		[]lua.Arg{
@@ -279,9 +259,9 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func border()
-	/// @arg id
-	/// @returns bool
+	/// @func border(id) -> bool
+	/// @arg id {int<collection.QRCODE>}
+	/// @returns {bool}
 	/// @blocking
 	lib.CreateFunction(tab, "border",
 		[]lua.Arg{
@@ -302,9 +282,9 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func recovery_level()
-	/// @arg id
-	/// @returns int
+	/// @func recovery_level(id) -> int<qrcode.Recovery>
+	/// @arg id {int<collection.QRCODE>}
+	/// @returns {int<qrcode.Recovery>}
 	/// @blocking
 	lib.CreateFunction(tab, "recovery_level",
 		[]lua.Arg{
@@ -325,9 +305,9 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func version()
-	/// @arg id
-	/// @returns int
+	/// @func version(id) -> int
+	/// @arg id {int<collection.QRCODE>}
+	/// @returns {int}
 	/// @blocking
 	lib.CreateFunction(tab, "version",
 		[]lua.Arg{
@@ -348,9 +328,9 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func border_set()
-	/// @arg id
-	/// @arg? border
+	/// @func border_set(id, border?)
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg? border {bool}
 	lib.CreateFunction(tab, "border_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -367,9 +347,9 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func content_set()
-	/// @arg id
-	/// @arg content
+	/// @func content_set(id, content)
+	/// @arg id {int<collection.QRCODE>}
+	/// @arg content {string}
 	lib.CreateFunction(tab, "content_set",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -386,9 +366,9 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func content()
-	/// @arg id
-	/// @returns string
+	/// @func content(id) -> string
+	/// @arg id {int<collection.QRCODE>}
+	/// @returns {string}
 	/// @blocking
 	lib.CreateFunction(tab, "content",
 		[]lua.Arg{

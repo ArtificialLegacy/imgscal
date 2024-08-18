@@ -74,11 +74,10 @@ func (qr ItemTask) Identifier() CollectionType { return TYPE_TASK }
 type Item[T ItemSelf] struct {
 	Self *T
 	Lg   *log.Logger
+	wg   *sync.WaitGroup
 
 	cleaned bool
 	collect bool
-
-	mu *sync.Mutex
 
 	currTask *Task[T]
 
@@ -88,7 +87,7 @@ type Item[T ItemSelf] struct {
 	TaskQueue chan *Task[T]
 }
 
-func NewItem[T ItemSelf](lg *log.Logger, fn func(i *Item[T])) *Item[T] {
+func NewItem[T ItemSelf](lg *log.Logger, wg *sync.WaitGroup, fn func(i *Item[T])) *Item[T] {
 	i := &Item[T]{
 		Self:      nil,
 		Lg:        lg,
@@ -96,7 +95,7 @@ func NewItem[T ItemSelf](lg *log.Logger, fn func(i *Item[T])) *Item[T] {
 		collect:   false,
 		failed:    false,
 		TaskQueue: make(chan *Task[T], TASK_QUEUE_SIZE),
-		mu:        &sync.Mutex{},
+		wg:        wg,
 	}
 
 	go i.process(fn)
@@ -115,12 +114,14 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 			i.cleaned = true
 			i.Err = fmt.Errorf("%+v", p)
 			if i.currTask != nil {
+				i.wg.Done()
 				if i.currTask.Fail != nil {
 					i.currTask.Fail(i)
 				}
 			}
 			for c := 0; len(i.TaskQueue) > 0; c++ {
 				task := <-i.TaskQueue
+				i.wg.Done()
 				if task.Fail != nil {
 					task.Fail(i)
 				}
@@ -134,13 +135,12 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 			continue
 		}
 
-		i.mu.Lock()
 		i.currTask = <-i.TaskQueue
 		i.Lg.Append(fmt.Sprintf("%s.%s task called", i.currTask.Lib, i.currTask.Name), log.LEVEL_VERBOSE)
 		i.currTask.Fn(i)
 		i.Lg.Append(fmt.Sprintf("%s.%s task finished", i.currTask.Lib, i.currTask.Name), log.LEVEL_VERBOSE)
 		i.currTask = nil
-		i.mu.Unlock()
+		i.wg.Done()
 
 		if i.cleaned {
 			i.Lg.Append(fmt.Sprintf("item [%T] cleaned", i.Self), log.LEVEL_INFO)
@@ -161,16 +161,19 @@ type Collection[T ItemSelf] struct {
 	items []*Item[T]
 	lg    *log.Logger
 
+	wg *sync.WaitGroup
+
 	Errs []error
 
 	onCollect func(i *Item[T])
 }
 
-func NewCollection[T ItemSelf](lg *log.Logger) *Collection[T] {
+func NewCollection[T ItemSelf](lg *log.Logger, wg *sync.WaitGroup) *Collection[T] {
 	return &Collection[T]{
 		items: []*Item[T]{},
 		lg:    lg,
 		Errs:  []error{},
+		wg:    wg,
 	}
 }
 
@@ -180,7 +183,7 @@ func (c *Collection[T]) OnCollect(fn func(i *Item[T])) *Collection[T] {
 }
 
 func (c *Collection[T]) AddItem(lg *log.Logger) int {
-	item := NewItem(lg, c.onCollect)
+	item := NewItem(lg, c.wg, c.onCollect)
 	id := len(c.items)
 
 	c.items = append(c.items, item)
@@ -235,6 +238,7 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	}
 
 	item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_VERBOSE)
+	c.wg.Add(1)
 	item.TaskQueue <- task
 
 	return wait
@@ -261,6 +265,7 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 			},
 		}
 
+		c.wg.Add(1)
 		i.TaskQueue <- task
 	}
 
@@ -270,42 +275,6 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 	}()
 
 	return wait
-}
-
-func (c *Collection[T]) TaskGrab() []*sync.Mutex {
-	m := make([]*sync.Mutex, len(c.items))
-
-	for ind, i := range c.items {
-		i.mu.Lock()
-		m[ind] = i.mu
-	}
-
-	return m
-}
-
-func (c *Collection[T]) TaskBusy() bool {
-	errList := []error{}
-	busy := false
-
-	for _, i := range c.items {
-		if i.Err != nil {
-			errList = append(errList, i.Err)
-		}
-
-		b := i.mu.TryLock()
-		if !b {
-			busy = true
-			continue
-		}
-
-		if !i.failed && (i.currTask != nil || len(i.TaskQueue) > 0) {
-			busy = true
-		}
-		i.mu.Unlock()
-	}
-
-	c.Errs = errList
-	return busy
 }
 
 func (c *Collection[T]) CollectAll() {

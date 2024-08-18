@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"path"
 
@@ -34,17 +35,39 @@ func main() {
 	}
 
 	for _, lib := range docs {
-		if len(lib.Fns) == 0 && len(lib.Cns) == 0 {
-			continue
-		}
-
-		outFile, err := os.OpenFile(path.Join("./docs", lib.Name+".md"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+		tmpl, err := template.New("doc.html").ParseFiles("./pkg/doc/doc.html")
 		if err != nil {
-			panic(fmt.Sprintf("failed to open file to save docs: %s (%s)", path.Join("./docs", lib.Name+".md"), err))
+			panic(fmt.Sprintf("failed to create tmpl: %s", err))
 		}
-		defer outFile.Close()
 
-		doc.Format(outFile, lib)
+		var f *os.File
+		fname := lib.FileClean + ".html"
+		f, err = os.OpenFile(path.Join(DOC_DIR, fname), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, friend := range docs {
+			lib.Friends = append(lib.Friends, &friend)
+		}
+
+		err = tmpl.Execute(f, lib)
+		if err != nil {
+			panic(err)
+		}
+		err = f.Close()
+		if err != nil {
+			panic(err)
+		}
 	}
 
+	css, err := os.ReadFile("./pkg/doc/style.css")
+	if err != nil {
+		panic(fmt.Sprintf("failed to read style.css: %s", err))
+	}
+
+	err = os.WriteFile(path.Join(DOC_DIR, "style.css"), css, 0o666)
+	if err != nil {
+		panic(fmt.Sprintf("failed to save style.css: %s", err))
+	}
 }

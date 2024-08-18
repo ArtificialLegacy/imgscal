@@ -15,18 +15,25 @@ import (
 
 const LIB_SPRITESHEET = "spritesheet"
 
+/// @lib SpriteSheet
+/// @import spritesheet
+/// @desc
+/// Library to provide support for creating and splitting spritesheets.
+/// @section
+/// Modeled after the 'To Frames' functionality in GameMaker.
+
 func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_SPRITESHEET, r, r.State, lg)
 
-	/// @func sheet()
-	/// @arg count
-	/// @arg width
-	/// @arg height
-	/// @arg perRow
-	/// @arg? offsets - {hpixel, vpixel, hcell, vcell, index}
-	/// @arg? hsep
-	/// @arg? vsep
-	/// @returns spritesheet struct
+	/// @func sheet(count, width, height, perRow, offsets?, hsep?, vsep?) -> struct<spritesheet.Spritesheet>
+	/// @arg count {int}
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg perRow {int}
+	/// @arg? offsets {struct<spritesheet.Offset>}
+	/// @arg? hsep {int}
+	/// @arg? vsep {int}
+	/// @returns {struct<spritesheet.Spritesheet>}
 	lib.CreateFunction(tab, "sheet",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "count"},
@@ -44,14 +51,14 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "vsep", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct spritesheet
-			/// @prop count
-			/// @prop width
-			/// @prop height
-			/// @prop perRow
-			/// @prop offsets - {hpixel, vpixel, hcell, vcell, index}
-			/// @prop hsep
-			/// @prop vsep
+			/// @struct Spritesheet
+			/// @prop count {int}
+			/// @prop width {int}
+			/// @prop height {int}
+			/// @prop perRow {int}
+			/// @prop offsets {struct<spritesheet.Offset>}
+			/// @prop hsep {int}
+			/// @prop vsep {int}
 
 			t := state.NewTable()
 
@@ -76,13 +83,13 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func offset()
-	/// @arg hpixel
-	/// @arg vpixel
-	/// @arg hcell
-	/// @arg vcell
-	/// @arg index
-	/// @returns offset struct
+	/// @func offset(hpixel, vpixel, hcell, vcell, index) -> struct<spritesheet.Offset>
+	/// @arg hpixel {int}
+	/// @arg vpixel {int}
+	/// @arg hcell {int}
+	/// @arg vcell {int}
+	/// @arg index {int}
+	/// @returns {struct<spritesheet.Offset>}
 	lib.CreateFunction(tab, "offset",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "hpixel"},
@@ -92,12 +99,12 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "index"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct offset
-			/// @prop hpixel
-			/// @prop vpixel
-			/// @prop hcell
-			/// @prop vcell
-			/// @prop index
+			/// @struct Offset
+			/// @prop hpixel {int}
+			/// @prop vpixel {int}
+			/// @prop hcell {int}
+			/// @prop vcell {int}
+			/// @prop index {int}
 
 			t := state.NewTable()
 
@@ -111,10 +118,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func offset_pixel()
-	/// @arg hpixel
-	/// @arg vpixel
-	/// @returns offset struct
+	/// @func offset_pixel(hpixel, vpixel) -> struct<spritesheet.Offset>
+	/// @arg hpixel {int}
+	/// @arg vpixel {int}
+	/// @returns {struct<spritesheet.Offset>}
 	lib.CreateFunction(tab, "offset_pixel",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "hpixel"},
@@ -133,10 +140,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func offset_cell()
-	/// @arg hcell
-	/// @arg vcell
-	/// @returns offset struct
+	/// @func offset_cell(hcell, vcell) -> struct<spritesheet.Offset>
+	/// @arg hcell {int}
+	/// @arg vcell {int}
+	/// @returns {struct<spritesheet.Offset>}
 	lib.CreateFunction(tab, "offset_cell",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "hcell"},
@@ -155,9 +162,9 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func offset_index()
-	/// @arg index
-	/// @returns offset struct
+	/// @func offset_index(index) -> struct<spritesheet.Offset>
+	/// @arg index {int}
+	/// @returns {struct<spritesheet.Offset>}
 	lib.CreateFunction(tab, "offset_index",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "index"},
@@ -175,12 +182,12 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func to_frames()
-	/// @arg id
-	/// @arg name - will be prefixed with the img index as `I_name`
-	/// @arg spritesheet
-	/// @arg? nocopy
-	/// @returns array of new images
+	/// @func to_frames(id, name, spritesheet, nocopy?) -> []int<collection.IMAGE>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg name {string} - Will be prefixed using the frame index as '%d_name'.
+	/// @arg spritesheet {struct<spritesheet.Spritesheet>}
+	/// @arg? nocopy {bool}
+	/// @returns {[]int<collection.IMAGE>}
 	lib.CreateFunction(tab, "to_frames",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -276,13 +283,13 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func from_frames()
-	/// @arg ids - array of image ids
-	/// @arg name
-	/// @arg model
-	/// @arg encoding
-	/// @arg spritesheet
-	/// @returns new image
+	/// @func from_frames(ids, name, model, encoding, spritesheet) -> int<collection.IMAGE>
+	/// @arg ids {[]int<collection.IMAGE>}
+	/// @arg name {string}
+	/// @arg model {int<image.ColorModel>}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg spritesheet {struct<spritesheet.Spritesheet>}
+	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "from_frames",
 		[]lua.Arg{
 			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
@@ -380,15 +387,15 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func extract()
-	/// @arg id - source spritesheet
-	/// @arg name
-	/// @arg spritesheet_in
-	/// @arg spritesheet_out
-	/// @returns new image
+	/// @func extract(id, name, spritesheet_in, spritesheet_out) -> int<collection.IMAGE>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg name {string}
+	/// @arg spritesheet_in {struct<spritesheet.Spritesheet>} - The spritesheet related to the source image.
+	/// @arg spritesheet_out {struct<spritesheet.Spritesheet>} - The spritesheet related to the returned image.
+	/// @returns {int<collection.IMAGE>}
 	/// @desc
-	/// note it is more efficient to exclude frames using index and count from spritesheet_in
-	/// than from spritesheet_out.
+	/// Note it is more efficient to exclude frames using index and count
+	/// from spritesheet_in than from spritesheet_out. This prevents them from being sub-imaged completely.
 	lib.CreateFunction(tab, "extract",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},

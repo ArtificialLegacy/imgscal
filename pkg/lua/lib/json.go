@@ -13,12 +13,17 @@ import (
 
 const LIB_JSON = "json"
 
+/// @lib JSON
+/// @import json
+/// @desc
+/// Library for parsing and saving arbitrary json data.
+
 func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_JSON, r, r.State, lg)
 
-	/// @func parse()
-	/// @arg path
-	/// @returns table representing json file parsed
+	/// @func parse(path) -> table<any>
+	/// @arg path {string}
+	/// @returns {table<any>} - Table representing the json file parsed.
 	lib.CreateFunction(tab, "parse",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -50,10 +55,10 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func save()
-	/// @arg value - table to convert to json
-	/// @arg path
-	/// @arg compact - defaults to false, use to remove indent and new lines
+	/// @func save(value, path, compact?)
+	/// @arg value {table<any>} - Table to convert to json.
+	/// @arg path {string}
+	/// @arg? compact {bool} - Defaults to false, use to remove indent and new lines.
 	lib.CreateFunction(tab, "save",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "value"},
@@ -89,10 +94,10 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func string()
-	/// @arg value - table to convert to json
-	/// @arg compact - defaults to false, use to remove indent and new lines
-	/// @returns json string version of the table
+	/// @func string(value, compact?) -> string
+	/// @arg value {table<any>} - Table to convert to json.
+	/// @arg? compact {bool} - Defaults to false, use to remove indent and new lines.
+	/// @returns {string}
 	lib.CreateFunction(tab, "string",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "value"},

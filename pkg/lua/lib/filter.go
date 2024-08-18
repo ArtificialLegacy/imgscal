@@ -13,16 +13,21 @@ import (
 
 const LIB_FILTER = "filter"
 
+/// @lib Filter
+/// @import filter
+/// @desc
+/// Library for applying lists of filters onto images.
+
 func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_FILTER, r, r.State, lg)
 
-	/// @func draw()
-	/// @arg id1
-	/// @arg id2
-	/// @arg []filter
-	/// @arg? disableParallelization
-	/// desc
-	/// applies the filters to image1 with the output going into image2.
+	/// @func draw(id1, id2, filters, disableParallelization?)
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
+	/// @desc
+	/// Applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
@@ -75,15 +80,15 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_at()
-	/// @arg id1
-	/// @arg id2
-	/// @arg point
-	/// @arg op
-	/// @arg []filter
-	/// @arg? disableParallelization
-	/// desc
-	/// applies the filters to image1 with the output going into image2.
+	/// @func draw_at(id1, id2, point, op, filters, disableParallelization?)
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @arg point {struct<image.Point>}
+	/// @arg op {int<filter.Operator>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
+	/// @desc
+	/// Applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw_at",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
@@ -139,16 +144,16 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func draw_at_xy()
-	/// @arg id1
-	/// @arg id2
-	/// @arg x
-	/// @arg y
-	/// @arg op
-	/// @arg []filter
-	/// @arg? disableParallelization
-	/// desc
-	/// applies the filters to image1 with the output going into image2.
+	/// @func draw_at_xy(id1, id2, x, y, op, filters, disableParallelization?)
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg op {int<filter.Operator>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
+	/// @desc
+	/// Applies the filters to image1 with the output going into image2.
 	lib.CreateFunction(tab, "draw_at_xy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
@@ -208,16 +213,16 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func bounds()
-	/// @arg id
-	/// @arg []filter
-	/// @arg? disableParallelization
-	/// @returns x1
-	/// @returns y1
-	/// @returns x2
-	/// @returns y2
+	/// @func bounds(id, filters, disableParallelization?) -> int, int, int, int
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
+	/// @returns {int} - X position of the top left corner of the images bounds after the filters are applied.
+	/// @returns {int} - Y position of the top left corner of the images bounds after the filters are applied.
+	/// @returns {int} - X position of the bottom right corner of the images bounds after the filters are applied.
+	/// @returns {int} - Y position of the bottom right corner of the images bounds after the filters are applied.
 	/// @blocking
-	/// desc
+	/// @desc
 	/// Gets the resulting bounds of the image after the filters are applied.
 	lib.CreateFunction(tab, "bounds",
 		[]lua.Arg{
@@ -247,14 +252,14 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 4
 		})
 
-	/// @func bounds_size()
-	/// @arg id
-	/// @arg []filter
-	/// @arg? disableParallelization
-	/// @returns width
-	/// @returns height
+	/// @func bounds_size(id, filters, disableParallelization?) -> int, int
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg filters {[]struct<filter.Filter>}
+	/// @arg? disableParallelization {bool}
+	/// @returns {int} - Width of the image after the filters are applied.
+	/// @returns {int} - Height of the image after the filters are applied.
 	/// @blocking
-	/// desc
+	/// @desc
 	/// Gets the resulting size of the image after the filters are applied.
 	lib.CreateFunction(tab, "bounds_size",
 		[]lua.Arg{
@@ -281,9 +286,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
-	/// @func brightness()
-	/// @arg percent - between -100 and 100.
-	/// @returns filter
+	/// @func brightness(percent) -> struct<filter.FilterBrightness>
+	/// @arg percent {float} - Percent value between -100 and 100.
+	/// @returns {struct<filter.FilterBrightness>}
 	lib.CreateFunction(tab, "brightness",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "percent"},
@@ -295,11 +300,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_balance()
-	/// @arg percentRed - between -100 and 500.
-	/// @arg percentGreen - between -100 and 500.
-	/// @arg percentBlue - between -100 and 500.
-	/// @returns filter
+	/// @func color_balance(percentRed, percentGreen, percentBlue) -> struct<filter.FilterColorBalance>
+	/// @arg percentRed {float} - Percent values between -100 and 500.
+	/// @arg percentGreen {float} - Percent values between -100 and 500.
+	/// @arg percentBlue {float} - Percent values between -100 and 500.
+	/// @returns {struct<filter.FilterColorBalance>}
 	lib.CreateFunction(tab, "color_balance",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "percentRed"},
@@ -313,11 +318,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func colorize()
-	/// @arg hue - between 0 and 360.
-	/// @arg saturation - between 0 and 100.
-	/// @arg percent - between 0 and 100.
-	/// @returns filter
+	/// @func colorize(hue, saturation, percent) -> struct<filter.FilterColorize>
+	/// @arg hue {float} - Hue value between 0 and 360.
+	/// @arg saturation {float} - Saturation value between 0 and 100.
+	/// @arg percent {float} - Percent value between 0 and 100.
+	/// @returns {struct<filter.FilterColorize>}
 	lib.CreateFunction(tab, "colorize",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "hue"},
@@ -331,8 +336,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func colorspace_linear_to_srgb()
-	/// @returns filter
+	/// @func colorspace_linear_to_srgb() -> struct<filter.FilterColorspaceLinearToSRGB>
+	/// @returns {struct<filter.FilterColorspaceLinearToSRGB>}
 	lib.CreateFunction(tab, "colorspace_linear_to_srgb",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -342,8 +347,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func colorspace_srgb_to_linear()
-	/// @returns filter
+	/// @func colorspace_srgb_to_linear() -> struct<filter.FilterColorspaceSRGBToLinear>
+	/// @returns {struct<filter.FilterColorspaceSRGBToLinear>}
 	lib.CreateFunction(tab, "colorspace_srgb_to_linear",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -353,9 +358,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func contrast()
-	/// @arg percent - between -100 and 100.
-	/// @returns filter
+	/// @func contrast(percent) -> struct<filter.FilterContrast>
+	/// @arg percent {float} - Percent values between -100 and 100.
+	/// @returns {struct<filter.FilterContrast>}
 	lib.CreateFunction(tab, "contrast",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "percent"},
@@ -367,13 +372,13 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func convolution()
-	/// @arg kernel - must be len of an odd square, eg 3x3=9 or 5x5=25
-	/// @arg normalize
-	/// @arg alpha
-	/// @arg abs
-	/// @arg delta
-	/// @returns filter
+	/// @func convolution(kernel, normalize, alpha, abs, delta) -> struct<filter.FilterConvolution>
+	/// @arg kernel {[]float} - Must have a length of an odd square, e.g. 3x3=9 or 5x5=25.
+	/// @arg normalize {bool}
+	/// @arg alpha {bool}
+	/// @arg abs {bool}
+	/// @arg delta {float}
+	/// @returns {struct<filter.FilterConvolution>}
 	lib.CreateFunction(tab, "convolution",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "kernel"},
@@ -395,10 +400,10 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func crop()
-	/// @arg min
-	/// @arg max
-	/// @returns filter
+	/// @func crop(min, max) -> struct<filter.FilterCrop>
+	/// @arg min {struct<image.Point>} - Top left corner of new image.
+	/// @arg max {struct<image.Point>} - Bottom right corner of new image.
+	/// @returns {struct<filter.FilterCrop>}
 	lib.CreateFunction(tab, "crop",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "min"},
@@ -414,12 +419,12 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func crop_xy()
-	/// @arg xmin
-	/// @arg ymin
-	/// @arg xmax
-	/// @arg ymax
-	/// @returns filter
+	/// @func crop_xy(xmin, ymin, xmax, ymax) -> struct<filter.FilterCrop>
+	/// @arg xmin {int} - X position of the top left corner.
+	/// @arg ymin {int} - Y position of the top left corner.
+	/// @arg xmax {int} - X position of the bottom right corner.
+	/// @arg ymax {int} - Y position of the bottom right corner.
+	/// @returns {struct<filter.FilterCrop>}
 	lib.CreateFunction(tab, "crop_xy",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "xmin"},
@@ -439,11 +444,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func crop_to_size()
-	/// @arg width
-	/// @arg height
-	/// @arg anchor
-	/// @returns filter
+	/// @func crop_to_size(width, height, anchor) -> struct<filter.FilterCropToSize>
+	/// @arg width {int} - Width of the new image.
+	/// @arg height {int} - Height of the new image.
+	/// @arg anchor {int<filter.Anchor>}
+	/// @returns {struct<filter.FilterCropToSize>}
 	lib.CreateFunction(tab, "crop_to_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
@@ -461,8 +466,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func flip_horizontal()
-	/// @returns filter
+	/// @func flip_horizontal() -> struct<filter.FilterFlipHorizontal>
+	/// @returns {struct<filter.FilterFlipHorizontal>}
 	lib.CreateFunction(tab, "flip_horizontal",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -472,8 +477,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func flip_vertical()
-	/// @returns filter
+	/// @func flip_vertical() -> struct<filter.FilterFlipVertical>
+	/// @returns {struct<filter.FilterFlipVertical>}
 	lib.CreateFunction(tab, "flip_vertical",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -483,9 +488,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func gamma()
-	/// @arg gamma
-	/// @returns filter
+	/// @func gamma(gamma) -> struct<filter.FilterGamma>
+	/// @arg gamma {float} - Must be positive, a value of 1 maintains the image.
+	/// @returns {struct<filter.FilterGamma>}
 	lib.CreateFunction(tab, "gamma",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "gamma"},
@@ -497,9 +502,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func gaussian_blur()
-	/// @arg sigma
-	/// @returns filter
+	/// @func gaussian_blur(sigma) -> struct<filter.FilterGaussianBlur>
+	/// @arg sigma {float} - Radius of blur is ~3*sigma.
+	/// @returns {struct<filter.FilterGaussianBlur>}
 	lib.CreateFunction(tab, "gaussian_blur",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "sigma"},
@@ -511,8 +516,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func grayscale()
-	/// @returns filter
+	/// @func grayscale() -> struct<filter.FilterGreyscale>
+	/// @returns {struct<filter.FilterGreyscale>}
 	lib.CreateFunction(tab, "grayscale",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -522,8 +527,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func invert()
-	/// @returns filter
+	/// @func invert() -> struct<filter.FilterInvert>
+	/// @returns {struct<filter.FilterInvert>}
 	lib.CreateFunction(tab, "invert",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -533,11 +538,13 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func rotate()
-	/// @arg angle
-	/// @arg bgcolor
-	/// @arg interpolation
-	/// @returns filter
+	/// @func rotate(angle, bgcolor, interpolation) -> struct<filter.FilterRotate>
+	/// @arg angle {float} - Angle value in degrees.
+	/// @arg bgcolor {struct<image.Color>}
+	/// @arg interpolation {int<filter.Interpolation>}
+	/// @returns {struct<filter.FilterRotate>}
+	/// @desc
+	/// When doing rotations on multiples of 90 degrees, it is best to use the rotate filters for 90, 180, and 270.
 	lib.CreateFunction(tab, "rotate",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "angle"},
@@ -555,30 +562,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func rotate_180()
-	/// @returns filter
-	lib.CreateFunction(tab, "rotate_180",
-		[]lua.Arg{},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := rotate180Table(state)
-
-			state.Push(t)
-			return 1
-		})
-
-	/// @func rotate_270()
-	/// @returns filter
-	lib.CreateFunction(tab, "rotate_270",
-		[]lua.Arg{},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := rotate270Table(state)
-
-			state.Push(t)
-			return 1
-		})
-
-	/// @func rotate_90()
-	/// @returns filter
+	/// @func rotate_90() -> struct<filter.FilterRotate90>
+	/// @returns {struct<filter.FilterRotate90>}
 	lib.CreateFunction(tab, "rotate_90",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -588,9 +573,31 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func hue()
-	/// @arg shift -180 to 180
-	/// @returns filter
+	/// @func rotate_180() -> struct<filter.FilterRotate180>
+	/// @returns {struct<filter.FilterRotate180>}
+	lib.CreateFunction(tab, "rotate_180",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rotate180Table(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func rotate_270() -> struct<filter.FilterRotate270>
+	/// @returns {struct<filter.FilterRotate270>}
+	lib.CreateFunction(tab, "rotate_270",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rotate270Table(state)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func hue(shift) -> struct<filter.FilterHue>
+	/// @arg shift {float} - Shift value between -180 and 180.
+	/// @returns {struct<filter.FilterHue>}
 	lib.CreateFunction(tab, "hue",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "shift"},
@@ -602,9 +609,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func saturation()
-	/// @arg percent -100 to 500
-	/// @returns filter
+	/// @func saturation(percent) -> struct<filter.FilterSaturation>
+	/// @arg percent {float} - Percent value between -100 and 500.
+	/// @returns {struct<filter.FilterSaturation>}
 	lib.CreateFunction(tab, "saturation",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "percent"},
@@ -616,9 +623,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func sepia()
-	/// @arg percent 0 to 100
-	/// @returns filter
+	/// @func sepia(percent) -> struct<filter.FilterSepia>
+	/// @arg percent {float} - Percent value between 0 and 100.
+	/// @returns {struct<filter.FilterSepia>}
 	lib.CreateFunction(tab, "sepia",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "percent"},
@@ -630,9 +637,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func pixelate()
-	/// @arg size
-	/// @returns filter
+	/// @func pixelate(size) -> struct<filter.FilterPixelate>
+	/// @arg size {int}
+	/// @returns {struct<filter.FilterPixelate>}
 	lib.CreateFunction(tab, "pixelate",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "size"},
@@ -644,9 +651,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func threshold()
-	/// @arg percent 0 to 100
-	/// @returns filter
+	/// @func threshold(percent) -> struct<filter.FilterThreshold>
+	/// @arg percent {float} - Percent value between 0 and 100.
+	/// @returns {struct<filter.FilterThreshold>}
 	lib.CreateFunction(tab, "threshold",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "percent"},
@@ -658,8 +665,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func transpose()
-	/// @returns filter
+	/// @func transpose() -> struct<filter.FilterTranspose>
+	/// @returns {struct<filter.FilterTranspose>}
 	lib.CreateFunction(tab, "transpose",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -669,8 +676,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func transverse()
-	/// @returns filter
+	/// @func transverse() -> struct<filter.FilterTransverse>
+	/// @returns {struct<filter.FilterTranverse>}
 	lib.CreateFunction(tab, "transverse",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -680,8 +687,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func sobel()
-	/// @returns filter
+	/// @func sobel() -> struct<filter.FilterSobel>
+	/// @returns {struct<filter.FilterSobel>}
 	lib.CreateFunction(tab, "sobel",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -691,10 +698,10 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func maximum()
-	/// @arg ksize - must be odd int, e.g. 3, 5, 7
-	/// @arg disk
-	/// @returns filter
+	/// @func maximum(ksize, disk) -> struct<filter.FilterMaximum>
+	/// @arg ksize {int} - Must be odd int, e.g. 3, 5, 7.
+	/// @arg disk {bool} - If the kernel used should be disk shaped instead of a square.
+	/// @returns {struct<filter.FilterMaximum>}
 	lib.CreateFunction(tab, "maximum",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ksize"},
@@ -707,10 +714,10 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func mean()
-	/// @arg ksize - must be odd int, e.g. 3, 5, 7
-	/// @arg disk
-	/// @returns filter
+	/// @func mean(ksize, disk) -> struct<filter.FilterMean>
+	/// @arg ksize {int} - Must be odd int, e.g. 3, 5, 7.
+	/// @arg disk {bool} - If the kernel used should be disk shaped instead of a square.
+	/// @returns {struct<filter.FilterMean>}
 	lib.CreateFunction(tab, "mean",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ksize"},
@@ -723,10 +730,10 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func median()
-	/// @arg ksize - must be odd int, e.g. 3, 5, 7
-	/// @arg disk
-	/// @returns filter
+	/// @func median(ksize, disk) -> struct<filter.FilterMedian>
+	/// @arg ksize {int} - Must be odd int, e.g. 3, 5, 7.
+	/// @arg disk {bool} - If the kernel used should be disk shaped instead of a square.
+	/// @returns {struct<filter.FilterMedian>}
 	lib.CreateFunction(tab, "median",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ksize"},
@@ -739,10 +746,10 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func minimum()
-	/// @arg ksize - must be odd int, e.g. 3, 5, 7
-	/// @arg disk
-	/// @returns filter
+	/// @func minimum(ksize, disk) -> struct<filter.FilterMinimum>
+	/// @arg ksize {int} - Must be odd int, e.g. 3, 5, 7.
+	/// @arg disk {bool} - If the kernel used should be disk shaped instead of a square.
+	/// @returns {struct<filter.FilterMinimum>}
 	lib.CreateFunction(tab, "minimum",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "ksize"},
@@ -755,10 +762,12 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func sigmoid()
-	/// @arg midpoint 0 to 1
-	/// @arg factor
-	/// @returns filter
+	/// @func sigmoid(midpoint, factor) -> struct<filter.FilterSigmoid>
+	/// @arg midpoint {float} - Value between 0 and 1.
+	/// @arg factor {float}
+	/// @returns {struct<filter.FilterSigmoid>}
+	/// @desc
+	/// Adjusts the contrast of the image, but on a curve instead of linearly.
 	lib.CreateFunction(tab, "sigmoid",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "midpoint"},
@@ -771,11 +780,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func unsharp_mask()
-	/// @arg sigma
-	/// @arg amount
-	/// @arg threshold
-	/// @returns filter
+	/// @func unsharp_mask(sigma, amount, threshold) -> struct<filter.FilterUnsharpMask>
+	/// @arg sigma {float} - Radius is ~3*sigma.
+	/// @arg amount {float} - Typically between 0.5 and 1.5.
+	/// @arg threshold {float} - Minimum brightness change to sharpen, typically between 0 and 0.05.
+	/// @returns struct<filter.FilterUnsharpMask>
 	lib.CreateFunction(tab, "unsharp_mask",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "sigma"},
@@ -789,11 +798,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func resize()
-	/// @arg width
-	/// @arg height
-	/// @arg resampling
-	/// @returns filter
+	/// @func resize(width, height, resampling) -> struct<filter.FilterResize>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg resampling {int<filter.Resampling>}
+	/// @returns {struct<filter.FilterResize>}
 	lib.CreateFunction(tab, "resize",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
@@ -807,12 +816,12 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func resize_to_fill()
-	/// @arg width
-	/// @arg height
-	/// @arg resampling
-	/// @arg anchor
-	/// @returns filter
+	/// @func resize_to_fill(width, height, resampling, anchor) -> struct<filter.FilterResizeToFill>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg resampling {int<filter.Resampling>}
+	/// @arg anchor {int<filter.Anchor>}
+	/// @returns {struct<filter.FilterResizeToFill>}
 	lib.CreateFunction(tab, "resize_to_fill",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
@@ -827,11 +836,11 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func resize_to_fit()
-	/// @arg width
-	/// @arg height
-	/// @arg resampling
-	/// @returns filter
+	/// @func resize_to_fit(width, height, resampling) -> struct<filter.FilterResizeToFit>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg resampling {int<filter.Resampling>}
+	/// @returns {struct<filter.FilterResizeToFit>}
 	lib.CreateFunction(tab, "resize_to_fit",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
@@ -845,9 +854,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_func()
-	/// @arg fn - function(r,g,b,a) r,g,b,a
-	/// @returns filter
+	/// @func color_func(fn) -> struct<filter.FilterColorFunc>
+	/// @arg fn {function(r float, g float, b float, a float) -> float, float, float, float}
+	/// @returns struct<filter.FilterColorFunc>
 	/// @desc
 	/// Color values are floats between 0 and 1.
 	lib.CreateFunction(tab, "color_func",
@@ -861,12 +870,14 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_func_unsafe()
-	/// @arg fn - function(r,g,b,a) r,g,b,a
-	/// @returns filter
+	/// @func color_func_unsafe(fn) -> struct<filter.FilterColorFuncUnsafe>
+	/// @arg fn {function(r float, g float, b float, a float) -> float, float, float, float}
+	/// @returns {struct<filter.FilterColorFuncUnsafe>}
 	/// @desc
 	/// Color values are floats between 0 and 1.
-	/// Note parallelization must be disabled for this to work.
+	/// Note parallelization must be disabled when drawing for this to work.
+	/// This has the benefit of not requiring new lua threads on each function call,
+	/// but this means it is not thread safe.
 	lib.CreateFunction(tab, "color_func_unsafe",
 		[]lua.Arg{
 			{Type: lua.FUNC, Name: "fn"},
@@ -923,6 +934,84 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("RESAMPLING_LANCZOS", golua.LNumber(RESAMPLING_LANCZOS))
 	tab.RawSetString("RESAMPLING_LINEAR", golua.LNumber(RESAMPLING_LINEAR))
 	tab.RawSetString("RESAMPLING_NEARESTNEIGHBOR", golua.LNumber(RESAMPLING_NEARESTNEIGHBOR))
+
+	/// @constants Filter Types
+	/// @const FILTER_BRIGHTNESS
+	/// @const FILTER_COLOR_BALANCE
+	/// @const FILTER_COLORIZE
+	/// @const FILTER_COLORSPACE_LINEAR_TO_SRGB
+	/// @const FILTER_COLORSPACE_SRGB_TO_LINEAR
+	/// @const FILTER_CONTRAST
+	/// @const FILTER_CONVOLUTION
+	/// @const FILTER_CROP
+	/// @const FILTER_CROP_TO_SIZE
+	/// @const FILTER_FLIP_HORIZONTAL
+	/// @const FILTER_FLIP_VERTICAL
+	/// @const FILTER_GAMMA
+	/// @const FILTER_GAUSSIAN_BLUR
+	/// @const FILTER_GRAYSCALE
+	/// @const FILTER_INVERT
+	/// @const FILTER_ROTATE
+	/// @const FILTER_ROTATE90
+	/// @const FILTER_ROTATE180
+	/// @const FILTER_ROTATE270
+	/// @const FILTER_HUE
+	/// @const FILTER_SATURATION
+	/// @const FILTER_SEPIA
+	/// @const FILTER_THRESHOLD
+	/// @const FILTER_PIXELATE
+	/// @const FILTER_SOBEL
+	/// @const FILTER_TRANSPOSE
+	/// @const FILTER_TRANSVERSE
+	/// @const FILTER_MAXIMUM
+	/// @const FILTER_MEAN
+	/// @const FILTER_MEDIAN
+	/// @const FILTER_MINIMUM
+	/// @const FILTER_SIGMOID
+	/// @const FILTER_UNSHARP_MASK
+	/// @const FILTER_RESIZE
+	/// @const FILTER_RESIZE_TO_FILL
+	/// @const FILTER_RESIZE_TO_FIT
+	/// @const FILTER_COLOR_FUNC
+	/// @const FILTER_COLOR_FUNC_UNSAFE
+	tab.RawSetString("FILTER_BRIGHTNESS", golua.LString(FILTER_BRIGHTNESS))
+	tab.RawSetString("FILTER_COLOR_BALANCE", golua.LString(FILTER_COLOR_BALANCE))
+	tab.RawSetString("FILTER_COLORIZE", golua.LString(FILTER_COLORIZE))
+	tab.RawSetString("FILTER_COLORSPACE_LINEAR_TO_SRGB", golua.LString(FILTER_COLORSPACE_LINEAR_TO_SRGB))
+	tab.RawSetString("FILTER_COLORSPACE_SRGB_TO_LINEAR", golua.LString(FILTER_COLORSPACE_SRGB_TO_LINEAR))
+	tab.RawSetString("FILTER_CONTRAST", golua.LString(FILTER_CONTRAST))
+	tab.RawSetString("FILTER_CONVOLUTION", golua.LString(FILTER_CONVOLUTION))
+	tab.RawSetString("FILTER_CROP", golua.LString(FILTER_CROP))
+	tab.RawSetString("FILTER_CROP_TO_SIZE", golua.LString(FILTER_CROP_TO_SIZE))
+	tab.RawSetString("FILTER_FLIP_HORIZONTAL", golua.LString(FILTER_FLIP_HORIZONTAL))
+	tab.RawSetString("FILTER_FLIP_VERTICAL", golua.LString(FILTER_FLIP_VERTICAL))
+	tab.RawSetString("FILTER_GAMMA", golua.LString(FILTER_GAMMA))
+	tab.RawSetString("FILTER_GAUSSIAN_BLUR", golua.LString(FILTER_GAUSSIAN_BLUR))
+	tab.RawSetString("FILTER_GRAYSCALE", golua.LString(FILTER_GRAYSCALE))
+	tab.RawSetString("FILTER_INVERT", golua.LString(FILTER_INVERT))
+	tab.RawSetString("FILTER_ROTATE", golua.LString(FILTER_ROTATE))
+	tab.RawSetString("FILTER_ROTATE90 ", golua.LString(FILTER_ROTATE90))
+	tab.RawSetString("FILTER_ROTATE180 ", golua.LString(FILTER_ROTATE180))
+	tab.RawSetString("FILTER_ROTATE270 ", golua.LString(FILTER_ROTATE270))
+	tab.RawSetString("FILTER_HUE", golua.LString(FILTER_HUE))
+	tab.RawSetString("FILTER_SATURATION", golua.LString(FILTER_SATURATION))
+	tab.RawSetString("FILTER_SEPIA", golua.LString(FILTER_SEPIA))
+	tab.RawSetString("FILTER_THRESHOLD", golua.LString(FILTER_THRESHOLD))
+	tab.RawSetString("FILTER_PIXELATE", golua.LString(FILTER_PIXELATE))
+	tab.RawSetString("FILTER_SOBEL", golua.LString(FILTER_SOBEL))
+	tab.RawSetString("FILTER_TRANSPOSE", golua.LString(FILTER_TRANSPOSE))
+	tab.RawSetString("FILTER_TRANSVERSE", golua.LString(FILTER_TRANSVERSE))
+	tab.RawSetString("FILTER_MAXIMUM", golua.LString(FILTER_MAXIMUM))
+	tab.RawSetString("FILTER_MEAN", golua.LString(FILTER_MEAN))
+	tab.RawSetString("FILTER_MEDIAN", golua.LString(FILTER_MEDIAN))
+	tab.RawSetString("FILTER_MINIMUM", golua.LString(FILTER_MINIMUM))
+	tab.RawSetString("FILTER_SIGMOID", golua.LString(FILTER_SIGMOID))
+	tab.RawSetString("FILTER_UNSHARP_MASK", golua.LString(FILTER_UNSHARP_MASK))
+	tab.RawSetString("FILTER_RESIZE", golua.LString(FILTER_RESIZE))
+	tab.RawSetString("FILTER_RESIZE_TO_FILL", golua.LString(FILTER_RESIZE_TO_FILL))
+	tab.RawSetString("FILTER_RESIZE_TO_FIT", golua.LString(FILTER_RESIZE_TO_FIT))
+	tab.RawSetString("FILTER_COLOR_FUNC", golua.LString(FILTER_COLOR_FUNC))
+	tab.RawSetString("FILTER_COLOR_FUNC_UNSAFE", golua.LString(FILTER_COLOR_FUNC_UNSAFE))
 }
 
 var samplers = []gift.Resampling{
@@ -958,9 +1047,9 @@ const (
 	FILTER_GRAYSCALE                 = "grayscale"
 	FILTER_INVERT                    = "invert"
 	FILTER_ROTATE                    = "rotate"
+	FILTER_ROTATE90                  = "rotate_90"
 	FILTER_ROTATE180                 = "rotate_180"
 	FILTER_ROTATE270                 = "rotate_270"
-	FILTER_ROTATE90                  = "rotate_90"
 	FILTER_HUE                       = "hue"
 	FILTER_SATURATION                = "saturation"
 	FILTER_SEPIA                     = "sepia"
@@ -1026,6 +1115,9 @@ var filters = filterList{
 }
 
 func buildFilterList(state *golua.LState, filterList filterList, t *golua.LTable) *gift.GIFT {
+	/// @struct Filter
+	/// @prop type {string<filter.FilterType>}
+
 	filters := []gift.Filter{}
 
 	for i := range t.Len() {
@@ -1040,9 +1132,9 @@ func buildFilterList(state *golua.LState, filterList filterList, t *golua.LTable
 }
 
 func brightnessTable(state *golua.LState, percent float64) *golua.LTable {
-	/// @struct flt_brightness
-	/// @prop type
-	/// @prop percent
+	/// @struct FilterBrightness
+	/// @prop type {string<filter.FilterType>}
+	/// @prop percent {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_BRIGHTNESS))
@@ -1059,11 +1151,11 @@ func brightnessBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func colorBalanceTable(state *golua.LState, percentRed, percentGreen, percentBlue float64) *golua.LTable {
-	/// @struct flt_color_balance
-	/// @prop type
-	/// @prop percentRed
-	/// @prop percentGreen
-	/// @prop percentBlue
+	/// @struct FilterColorBalance
+	/// @prop type {string<filter.FilterType>}
+	/// @prop percentRed {float}
+	/// @prop percentGreen {float}
+	/// @prop percentBlue {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_COLOR_BALANCE))
@@ -1084,11 +1176,11 @@ func colorBalanceBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func colorizeTable(state *golua.LState, hue, saturation, percent float64) *golua.LTable {
-	/// @struct flt_colorize
-	/// @prop type
-	/// @prop hue
-	/// @prop saturation
-	/// @prop percent
+	/// @struct FilterColorize
+	/// @prop type {string<filter.FilterType>}
+	/// @prop hue {float}
+	/// @prop saturation {float}
+	/// @prop percent {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_COLORIZE))
@@ -1109,8 +1201,8 @@ func colorizeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func colorspaceLinearSRGBTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_colorspace_linear_to_srgb
-	/// @prop type
+	/// @struct FilterColorspaceLinearToSRGB
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_COLORSPACE_LINEAR_TO_SRGB))
@@ -1124,8 +1216,8 @@ func colorspaceLinearSRGBBuild(state *golua.LState, t *golua.LTable) gift.Filter
 }
 
 func colorspaceSRGBLinearTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_colorspace_srgb_to_linear
-	/// @prop type
+	/// @struct FilterColorspaceSRGBToLinear
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_COLORSPACE_SRGB_TO_LINEAR))
@@ -1139,9 +1231,9 @@ func colorspaceSRGBLinearBuild(state *golua.LState, t *golua.LTable) gift.Filter
 }
 
 func contrastTable(state *golua.LState, percent float64) *golua.LTable {
-	/// @struct flt_contrast
-	/// @prop type
-	/// @prop percent
+	/// @struct FilterContrast
+	/// @prop type {string<filter.FilterType>}
+	/// @prop percent {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_CONTRAST))
@@ -1158,13 +1250,13 @@ func contrastBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func convolutionTable(state *golua.LState, kernel golua.LValue, normalize, alpha, abs bool, delta float64) *golua.LTable {
-	/// @struct flt_convolution
-	/// @prop type
-	/// @prop kernel
-	/// @prop normalize
-	/// @prop alpha
-	/// @prop abs
-	/// @prop delta
+	/// @struct FilterConvolution
+	/// @prop type {string<filter.FilterType>}
+	/// @prop kernel {[]float}
+	/// @prop normalize {bool}
+	/// @prop alpha {bool}
+	/// @prop abs {bool}
+	/// @prop delta {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_CONVOLUTION))
@@ -1195,12 +1287,12 @@ func convolutionBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func cropTable(state *golua.LState, xmin, ymin, xmax, ymax int) *golua.LTable {
-	/// @struct flt_crop
-	/// @prop type
-	/// @prop xmin
-	/// @prop ymin
-	/// @prop xmax
-	/// @prop ymax
+	/// @struct FilterCrop
+	/// @prop type {string<filter.FilterType>}
+	/// @prop xmin {int}
+	/// @prop ymin {int}
+	/// @prop xmax {int}
+	/// @prop ymax {int}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_CROP))
@@ -1223,11 +1315,11 @@ func cropBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func cropToSizeTable(state *golua.LState, width, height, anchor int) *golua.LTable {
-	/// @struct flt_crop_to_size
-	/// @prop type
-	/// @prop width
-	/// @prop height
-	/// @prop anchor
+	/// @struct FilterCropToSize
+	/// @prop type {string<filter.FilterType>}
+	/// @prop width {int}
+	/// @prop height {int}
+	/// @prop anchor {int<filter.Anchor>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_CROP_TO_SIZE))
@@ -1248,8 +1340,8 @@ func cropToSizeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func flipHorizontalTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_flip_horizontal
-	/// @prop type
+	/// @struct FilterFlipHorizontal
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_FLIP_HORIZONTAL))
@@ -1263,8 +1355,8 @@ func flipHorizontalBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func flipVerticalTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_flip_vertical
-	/// @prop type
+	/// @struct FilterFlipVertical
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_FLIP_VERTICAL))
@@ -1278,9 +1370,9 @@ func flipVerticalBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func gammaTable(state *golua.LState, gamma float64) *golua.LTable {
-	/// @struct flt_gamma
-	/// @prop type
-	/// @prop gamma
+	/// @struct FilterGamma
+	/// @prop type {string<filter.FilterType>}
+	/// @prop gamma {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_GAMMA))
@@ -1297,9 +1389,9 @@ func gammaBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func gaussianBlurTable(state *golua.LState, sigma float64) *golua.LTable {
-	/// @struct flt_gaussian_blur
-	/// @prop type
-	/// @prop sigma
+	/// @struct FilterGaussianBlur
+	/// @prop type {string<filter.FilterType>}
+	/// @prop sigma {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_GAUSSIAN_BLUR))
@@ -1316,8 +1408,8 @@ func gaussianBlurBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func grayscaleTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_grayscale
-	/// @prop type
+	/// @struct FilterGrayscale
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_GRAYSCALE))
@@ -1331,8 +1423,8 @@ func grayscaleBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func invertTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_invert
-	/// @prop type
+	/// @struct FilterInvert
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_INVERT))
@@ -1346,11 +1438,11 @@ func invertBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func rotateTable(state *golua.LState, angle float64, bgcolor golua.LValue, interpolation int) *golua.LTable {
-	/// @struct flt_rotate
-	/// @prop type
-	/// @prop angle
-	/// @prop bgcolor
-	/// @prop interpolation
+	/// @struct FilterRotate
+	/// @prop type {string<filter.FilterType>}
+	/// @prop angle {float}
+	/// @prop bgcolor {struct<image.Color>}
+	/// @prop interpolation {int<filter.Interpolation>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_ROTATE))
@@ -1372,9 +1464,24 @@ func rotateBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 	return f
 }
 
+func rotate90Table(state *golua.LState) *golua.LTable {
+	/// @struct FilterRotate90
+	/// @prop type {string<filter.FilterType>}
+
+	t := state.NewTable()
+	t.RawSetString("type", golua.LString(FILTER_ROTATE90))
+
+	return t
+}
+
+func rotate90Build(state *golua.LState, t *golua.LTable) gift.Filter {
+	f := gift.Rotate90()
+	return f
+}
+
 func rotate180Table(state *golua.LState) *golua.LTable {
-	/// @struct flt_rotate_180
-	/// @prop type
+	/// @struct FilterRotate180
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_ROTATE180))
@@ -1388,8 +1495,8 @@ func rotate180Build(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func rotate270Table(state *golua.LState) *golua.LTable {
-	/// @struct flt_rotate_270
-	/// @prop type
+	/// @struct FilterRotate270
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_ROTATE270))
@@ -1402,25 +1509,10 @@ func rotate270Build(state *golua.LState, t *golua.LTable) gift.Filter {
 	return f
 }
 
-func rotate90Table(state *golua.LState) *golua.LTable {
-	/// @struct flt_rotate_90
-	/// @prop type
-
-	t := state.NewTable()
-	t.RawSetString("type", golua.LString(FILTER_ROTATE90))
-
-	return t
-}
-
-func rotate90Build(state *golua.LState, t *golua.LTable) gift.Filter {
-	f := gift.Rotate90()
-	return f
-}
-
 func hueTable(state *golua.LState, shift float64) *golua.LTable {
-	/// @struct flt_hue
-	/// @prop type
-	/// @prop shift
+	/// @struct FilterHue
+	/// @prop type {string<filter.FilterType>}
+	/// @prop shift {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_HUE))
@@ -1437,9 +1529,9 @@ func hueBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func saturationTable(state *golua.LState, percent float64) *golua.LTable {
-	/// @struct flt_saturation
-	/// @prop type
-	/// @prop percent
+	/// @struct FilterSaturation
+	/// @prop type {string<filter.FilterType>}
+	/// @prop percent {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_SATURATION))
@@ -1456,9 +1548,9 @@ func saturationBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func sepiaTable(state *golua.LState, percent float64) *golua.LTable {
-	/// @struct flt_sepia
-	/// @prop type
-	/// @prop percent
+	/// @struct FilterSepia
+	/// @prop type {string<filter.FilterType>}
+	/// @prop percent {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_SEPIA))
@@ -1475,9 +1567,9 @@ func sepiaBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func thresholdTable(state *golua.LState, percent float64) *golua.LTable {
-	/// @struct flt_threshold
-	/// @prop type
-	/// @prop percent
+	/// @struct FilterThreshold
+	/// @prop type {string<filter.FilterType>}
+	/// @prop percent {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_THRESHOLD))
@@ -1494,9 +1586,9 @@ func thresholdBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func pixelateTable(state *golua.LState, size int) *golua.LTable {
-	/// @struct flt_pixelate
-	/// @prop type
-	/// @prop size
+	/// @struct FilterPixelate
+	/// @prop type {string<filter.FilterType>}
+	/// @prop size {int}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_PIXELATE))
@@ -1513,8 +1605,8 @@ func pixelateBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func transposeTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_transpose
-	/// @prop type
+	/// @struct FilterTranspose
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_TRANSPOSE))
@@ -1528,8 +1620,8 @@ func transposeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func transverseTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_transverse
-	/// @prop type
+	/// @struct FilterTransverse
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_TRANSVERSE))
@@ -1543,8 +1635,8 @@ func transverseBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func sobelTable(state *golua.LState) *golua.LTable {
-	/// @struct flt_sobel
-	/// @prop type
+	/// @struct FilterSobel
+	/// @prop type {string<filter.FilterType>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_SOBEL))
@@ -1558,10 +1650,10 @@ func sobelBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func maximumTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
-	/// @struct flt_maximum
-	/// @prop type
-	/// @prop ksize
-	/// @prop disk
+	/// @struct FilterMaximum
+	/// @prop type {string<filter.FilterType>}
+	/// @prop ksize {int}
+	/// @prop disk {bool}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_MAXIMUM))
@@ -1580,10 +1672,10 @@ func maximumBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func meanTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
-	/// @struct flt_mean
-	/// @prop type
-	/// @prop ksize
-	/// @prop disk
+	/// @struct FilterMean
+	/// @prop type {string<filter.FilterType>}
+	/// @prop ksize {int}
+	/// @prop disk {bool}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_MEAN))
@@ -1602,10 +1694,10 @@ func meanBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func medianTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
-	/// @struct flt_median
-	/// @prop type
-	/// @prop ksize
-	/// @prop disk
+	/// @struct FilterMedian
+	/// @prop type {string<filter.FilterType>}
+	/// @prop ksize {int}
+	/// @prop disk {bool}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_MEDIAN))
@@ -1624,10 +1716,10 @@ func medianBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func minimumTable(state *golua.LState, ksize int, disk bool) *golua.LTable {
-	/// @struct flt_minimum
-	/// @prop type
-	/// @prop ksize
-	/// @prop disk
+	/// @struct FilterMinimum
+	/// @prop type {string<filter.FilterType>}
+	/// @prop ksize {int}
+	/// @prop disk {bool}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_MINIMUM))
@@ -1646,10 +1738,10 @@ func minimumBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func sigmoidTable(state *golua.LState, midpoint, factor float64) *golua.LTable {
-	/// @struct flt_sigmoid
-	/// @prop type
-	/// @prop midpoint
-	/// @prop factor
+	/// @struct FilterSigmoid
+	/// @prop type {string<filter.FilterType>}
+	/// @prop midpoint {float}
+	/// @prop factor {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_SIGMOID))
@@ -1668,11 +1760,11 @@ func sigmoidBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func unsharpMaskTable(state *golua.LState, sigma, amount, threshold float64) *golua.LTable {
-	/// @struct flt_unsharp_mask
-	/// @prop type
-	/// @prop sigma
-	/// @prop amount
-	/// @prop threshold
+	/// @struct FilterUnsharpMask
+	/// @prop type {string<filter.FilterType>}
+	/// @prop sigma {float}
+	/// @prop amount {float}
+	/// @prop threshold {float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_UNSHARP_MASK))
@@ -1693,11 +1785,11 @@ func unsharpMaskBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func resizeTable(state *golua.LState, width, height, resampling int) *golua.LTable {
-	/// @struct flt_resize
-	/// @prop type
-	/// @prop width
-	/// @prop height
-	/// @prop resampling
+	/// @struct FilterResize
+	/// @prop type {string<filter.FilterType>}
+	/// @prop width {int}
+	/// @prop height {int}
+	/// @prop resampling {int<filter.Resampling>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_RESIZE))
@@ -1719,12 +1811,12 @@ func resizeBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func resizeToFillTable(state *golua.LState, width, height, resampling, anchor int) *golua.LTable {
-	/// @struct flt_resize_to_fill
-	/// @prop type
-	/// @prop width
-	/// @prop height
-	/// @prop resampling
-	/// @prop anchor
+	/// @struct FilterResizeToFill
+	/// @prop type {string<filter.FilterType>}
+	/// @prop width {int}
+	/// @prop height {int}
+	/// @prop resampling {int<filter.Resampling>}
+	/// @prop anchor {int<filter.Anchor>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_RESIZE_TO_FILL))
@@ -1748,11 +1840,11 @@ func resizeToFillBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func resizeToFitTable(state *golua.LState, width, height, resampling int) *golua.LTable {
-	/// @struct flt_resize_to_fit
-	/// @prop type
-	/// @prop width
-	/// @prop height
-	/// @prop resampling
+	/// @struct FilterResizeToFit
+	/// @prop type {string<filter.FilterType>}
+	/// @prop width {int}
+	/// @prop height {int}
+	/// @prop resampling {int<filter.Resampling>}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_RESIZE_TO_FIT))
@@ -1774,9 +1866,9 @@ func resizeToFitBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func colorFuncTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
-	/// @struct flt_color_func
-	/// @prop type
-	/// @prop fn
+	/// @struct FilterColorFunc
+	/// @prop type {string<filter.FilterType>}
+	/// @prop fn {function(r float, g float, b float, a float) -> float, float, float, float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_COLOR_FUNC))
@@ -1808,9 +1900,9 @@ func colorFuncBuild(state *golua.LState, t *golua.LTable) gift.Filter {
 }
 
 func colorFuncUnsafeTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
-	/// @struct flt_color_func_unsafe
-	/// @prop type
-	/// @prop fn
+	/// @struct FilterColorFuncUnsafe
+	/// @prop type {string<filter.FilterType>}
+	/// @prop fn {function(r float, g float, b float, a float) -> float, float, float, float}
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(FILTER_COLOR_FUNC_UNSAFE))

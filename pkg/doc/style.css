@@ -1,0 +1,190 @@
+
+:root {
+    --background: #282A36;
+    --current-line: #44475A;
+    --foreground: #F8F8F2;
+    --comment: #6272A4;
+    --cyan: #8BE9FD;
+    --green: #50FA7B;
+    --orange: #FFB86C;
+    --pink: #FF79C6;
+    --purple: #BD93F9;
+    --red: #FF5555;
+    --yellow: #F1FA8C;
+
+    --hover: #6272A499;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+
+    padding: 0px;
+    margin: 0px;
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+}
+
+nav {
+    display: inline-block;
+    width: 20%;
+    min-width: 150px;
+}
+
+nav > h2 {
+    text-align: center;
+    padding-top: 10px;
+}
+
+section.docs {
+    display: inline-block;
+    flex-grow: 1;
+    padding: 0;
+}
+
+header {
+    display: block;
+
+    text-align: center;
+
+    margin: 0;
+    padding: 10px;
+
+    background-color: var(--current-line);
+    box-shadow: 0px 5px 10px black;
+}
+
+h1 {
+    text-align: center;
+}
+
+section {
+    padding: 10px;
+}
+
+section.sect {
+    background-color: var(--current-line);
+
+    margin: 20px;
+
+    border-radius: 5px;
+    box-shadow: 5px 5px 10px black;
+
+    line-height: 1.5;
+}
+
+details {
+    margin-bottom: 10px;
+
+    background-color: var(--current-line);
+
+    padding: 10px;
+    border-radius: 5px;
+
+    box-shadow: 2px 2px 5px black;
+}
+
+details:hover {
+    box-shadow: 5px 5px 5px black;
+}
+
+summary {
+    font-size: larger;
+}
+
+code {
+    background-color: var(--background);
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--cyan);
+}
+
+code.type {
+    color: var(--purple);
+}
+
+li > code {
+    font-size: larger;
+    color: var(--yellow);
+}
+
+blockquote {
+    background-color: var(--background);
+    color: var(--red);
+
+    margin-left: 0;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px black;
+}
+
+figure {
+    margin-left: 0;
+}
+
+ul {
+    list-style-type: disc;
+}
+
+ul.const-group {
+    padding-left: 20px;
+}
+
+li.arg, li.arg-opt, li.return, li.prop, li.method {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+li.arg-opt {
+    list-style-type: circle;
+}
+
+li.const {
+    line-height: 2;
+}
+
+details.method {
+    margin-bottom: 2px;
+    padding: 10px;
+    box-shadow: none;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+ul.libs {
+    list-style: none;
+    padding-left: 0px;
+}
+
+li.lib, li.lib-current {
+    line-height: 2;
+    font-size: larger;
+}
+
+li.lib > a, li.lib-current > a {
+    padding-left: 40px;
+    width: 100%;
+    display: inline-block;
+}
+
+li.lib > a:hover, li.lib-current > a:hover {
+    text-decoration: none;
+}
+
+li.lib:hover, li.lib-current:hover {
+    background-color: var(--hover);
+}
+
+li.lib-current {
+    color: var(--green);
+}

@@ -11,11 +11,16 @@ import (
 
 const LIB_UUID = "uuid"
 
+/// @lib UUID
+/// @import uuid
+/// @desc
+/// Small library for generating UUID strings.
+
 func RegisterUUID(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_UUID, r, r.State, lg)
 
-	/// @func string()
-	/// @returns string - the generated uuid.
+	/// @func string() -> string
+	/// @returns {string} - The generated uuid.
 	lib.CreateFunction(tab, "string", []lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			uuid := uuid.NewString()

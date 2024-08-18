@@ -2,7 +2,6 @@ package states
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -43,17 +42,6 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			tcBusy := runner.TC.TaskBusy()
-			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.TC, tcBusy), log.LEVEL_WARN)
-			icBusy := runner.IC.TaskBusy()
-			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.IC, icBusy), log.LEVEL_WARN)
-			fcBusy := runner.FC.TaskBusy()
-			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.FC, fcBusy), log.LEVEL_WARN)
-			ccBusy := runner.CC.TaskBusy()
-			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.CC, ccBusy), log.LEVEL_WARN)
-			qrBusy := runner.QR.TaskBusy()
-			lg.Append(fmt.Sprintf("collection [%T] left, (busy: %t)", runner.QR, qrBusy), log.LEVEL_WARN)
-
 			lg.Append(fmt.Sprintf("panic recovered: %+v", r), log.LEVEL_ERROR)
 		}
 
@@ -68,9 +56,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	err := runner.Run(script)
 
-	for runner.IC.TaskBusy() || runner.FC.TaskBusy() || runner.FC.TaskBusy() || runner.CC.TaskBusy() || runner.QR.TaskBusy() {
-		time.Sleep(time.Millisecond * 10)
-	}
+	runner.Wg.Wait()
 
 	lg.Append("All collections empty, exiting", log.LEVEL_SYSTEM)
 

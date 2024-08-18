@@ -5,6 +5,7 @@ import (
 	"math"
 	"path"
 	"strconv"
+	"sync"
 
 	"github.com/AllenDang/giu"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -19,6 +20,8 @@ type Runner struct {
 	Plugins []string
 	Dir     string
 	Output  string
+
+	Wg *sync.WaitGroup
 
 	CMDParser *argparse.Parser
 	CLIMode   bool
@@ -36,25 +39,28 @@ type Runner struct {
 }
 
 func NewRunner(plugins []string, state *lua.LState, lg *log.Logger, cliMode bool) Runner {
+	wg := &sync.WaitGroup{}
 	return Runner{
 		State:   state,
 		lg:      lg,
 		Plugins: plugins,
 
+		Wg: wg,
+
 		CMDParser: argparse.NewParser("imgscal", ""),
 		CLIMode:   cliMode,
 
 		// -- collections
-		IC: collection.NewCollection[collection.ItemImage](lg),
-		FC: collection.NewCollection[collection.ItemFile](lg).OnCollect(
+		IC: collection.NewCollection[collection.ItemImage](lg, wg),
+		FC: collection.NewCollection[collection.ItemFile](lg, wg).OnCollect(
 			func(i *collection.Item[collection.ItemFile]) {
 				if i.Self != nil {
 					i.Self.File.Close()
 				}
 			}),
-		CC: collection.NewCollection[collection.ItemContext](lg),
-		QR: collection.NewCollection[collection.ItemQR](lg),
-		TC: collection.NewCollection[collection.ItemTask](lg),
+		CC: collection.NewCollection[collection.ItemContext](lg, wg),
+		QR: collection.NewCollection[collection.ItemQR](lg, wg),
+		TC: collection.NewCollection[collection.ItemTask](lg, wg),
 
 		// -- crates
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),

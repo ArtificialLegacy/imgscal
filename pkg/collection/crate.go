@@ -37,10 +37,10 @@ func (c *Crate[T]) CleanAll() {
 }
 
 func (c *Crate[T]) Clean(index int) {
-
 	if c.clean != nil {
 		c.clean(c.Items[index])
 	}
+
 	c.Items[index] = nil
 }
 

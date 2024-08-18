@@ -14,26 +14,31 @@ import (
 
 const LIB_NOISE = "noise"
 
+/// @lib Noise
+/// @import noise
+/// @desc
+/// Library for generating and interacting with noise maps.
+
 func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_NOISE, r, r.State, lg)
 
-	/// @func simplex_image_new()
-	/// @arg seed
-	/// @arg coef
-	/// @arg normalize - use 0,1 instead of -1,1
-	/// @arg name
-	/// @arg encoding
-	/// @arg width
-	/// @arg height
-	/// @arg? model
-	/// @arg? disableColor
-	/// @arg? disableAlpha
-	/// @returns id
+	/// @func simplex_image_new(seed, coef, normalize, name, encoding, width, model?, disableColor?, disableAlpha?) -> int<collection.IMAGE>
+	/// @arg seed {int}
+	/// @arg coef {float}
+	/// @arg normalize {bool} - Use noise values between (0,1) instead of (-1,1).
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? model {int<image.ColorModel>}
+	/// @arg? disableColor {bool} - Don't set r,g,b values using noise.
+	/// @arg? disableAlpha {bool} - Don't set alpha values using noise.
+	/// @returns {int<collection.IMAGE>}
 	/// @desc
 	/// Creates a new image, setting each pixel of the image to
 	/// the simplex_2d result of the x,y pos multiplied by coef.
-	/// if color is disabled, r,g,b values are set to 255
-	/// if alpha is disabled, alpha is set to 255
+	/// If color is disabled, r,g,b values are set to 255.
+	/// If alpha is disabled, alpha is set to 255.
 	lib.CreateFunction(tab, "simplex_image_new",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "seed"},
@@ -112,20 +117,20 @@ func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func simplex_image_map()
-	/// @arg seed
-	/// @arg coef
-	/// @arg id
-	/// @arg normalize - use 0,1 instead of -1,1
-	/// @arg? disableColor
-	/// @arg? disableAlpha
-	/// @arg? keep
+	/// @func simplex_image_map(seed, coef, id, normalize, disableColor?, disableAlpha?, keep?)
+	/// @arg seed {int}
+	/// @arg coef {float}
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg normalize {bool} - Use noise values between (0,1) instead of (-1,1).
+	/// @arg? disableColor {bool} - Don't set r,g,b values using noise.
+	/// @arg? disableAlpha {bool} - Don't set alpha values using noise.
+	/// @arg? keep {bool} - Maintain color or alpha channels if they're disabled.
 	/// @desc
 	/// Loops over the pixels of an image, setting each pixel of the image to
 	/// the simplex_2d result of the x,y pos multiplied by coef.
-	/// if color is disabled, r,g,b values are set to 255
-	/// if alpha is disabled, alpha is set to 255
-	/// if keep is set, the disabled values will be kept in the image, useful for only changing the alpha channel of an image.
+	/// If color is disabled, r,g,b values are set to 255.
+	/// If alpha is disabled, alpha is set to 255.
+	/// If keep is set, the disabled values will be kept in the image, useful for only changing the alpha channel of an image.
 	lib.CreateFunction(tab, "simplex_image_map",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "seed"},
@@ -197,18 +202,18 @@ func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func simplex_2d()
-	/// @arg seed
-	/// @arg x
-	/// @arg y
-	/// @arg normalize - use 0,1 instead of -1,1
-	/// @returns val
+	/// @func simplex_2d(seed, x, y, normalize?) - float
+	/// @arg seed {int}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg? normalize {bool} - Use noise values between (0,1) instead of (-1,1).
+	/// @returns {float}
 	lib.CreateFunction(tab, "simplex_2d",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "seed"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
-			{Type: lua.BOOL, Name: "normalize"},
+			{Type: lua.BOOL, Name: "normalize", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var noise opensimplex.Noise
@@ -224,20 +229,20 @@ func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func simplex_3d()
-	/// @arg seed
-	/// @arg x
-	/// @arg y
-	/// @arg z
-	/// @arg normalize - use 0,1 instead of -1,1
-	/// @returns val
+	/// @func simplex_3d(seed, x, y, z, normalize?) -> float
+	/// @arg seed {int}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg z {float}
+	/// @arg? normalize {bool} - Use noise values between (0,1) instead of (-1,1).
+	/// @returns {float}
 	lib.CreateFunction(tab, "simplex_3d",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "seed"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 			{Type: lua.FLOAT, Name: "z"},
-			{Type: lua.BOOL, Name: "normalize"},
+			{Type: lua.BOOL, Name: "normalize", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var noise opensimplex.Noise
@@ -253,14 +258,14 @@ func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func simplex_4d()
-	/// @arg seed
-	/// @arg x
-	/// @arg y
-	/// @arg z
-	/// @arg w
-	/// @arg normalize - use 0,1 instead of -1,1
-	/// @returns val
+	/// @func simplex_4d(seed, x, y, z, w, normalize?) -> float
+	/// @arg seed {int}
+	/// @arg x {float}
+	/// @arg y {float}
+	/// @arg z {float}
+	/// @arg w {float}
+	/// @arg? normalize {bool} - Use noise values between (0,1) instead of (-1,1).
+	/// @returns {float}
 	lib.CreateFunction(tab, "simplex_4d",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "seed"},
@@ -268,7 +273,7 @@ func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 			{Type: lua.FLOAT, Name: "z"},
 			{Type: lua.FLOAT, Name: "w"},
-			{Type: lua.BOOL, Name: "normalize"},
+			{Type: lua.BOOL, Name: "normalize", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var noise opensimplex.Noise

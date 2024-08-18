@@ -10,11 +10,16 @@ import (
 
 const LIB_TIME = "time"
 
+/// @lib Time
+/// @import time
+/// @desc
+/// Library for getting basic information about the time.
+
 func RegisterTime(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TIME, r, r.State, lg)
 
-	/// @func now_ms()
-	/// @returns current time in ms
+	/// @func now_ms() -> int
+	/// @returns {int} - The current time in ms.
 	lib.CreateFunction(tab, "now_ms", []lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := time.Now().UnixNano() / int64(time.Millisecond)
@@ -23,8 +28,8 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func now_mc()
-	/// @returns current time in mc
+	/// @func now_mc() -> int
+	/// @returns {int} - The current time in mc.
 	lib.CreateFunction(tab, "now_mc", []lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := time.Now().UnixNano() / int64(time.Microsecond)
@@ -33,8 +38,8 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func now_date()
-	/// @returns current date in MM-DD-YEAR format
+	/// @func now_date() -> string
+	/// @returns {string} - The current date in MM-DD-YEAR format.
 	lib.CreateFunction(tab, "now_date", []lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := time.Now().Local().Format("01-02-2006")
@@ -43,8 +48,8 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func now_timestamp()
-	/// @returns current time in the default format
+	/// @func now_timestamp() -> string
+	/// @returns {string} - The current time in the default format.
 	lib.CreateFunction(tab, "now_timestamp", []lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := time.Now().Local().String()
@@ -53,9 +58,9 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	// @func now_format()
-	/// @arg format - go layout string
-	/// @returns current time in given format
+	/// @func now_format(format) -> string
+	/// @arg format {string} - Go time format string.
+	/// @returns {string} - The current time in given format.
 	lib.CreateFunction(tab, "now_format",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "format"},
