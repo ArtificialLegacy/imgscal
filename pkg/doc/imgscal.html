@@ -134,10 +134,11 @@
     <span class="yellow">"disable_logs"</span>: <span class="cyan">false</span>,
     <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>
 }</pre>
+        <p>The config file is located at <code><span class="green">%CONFIG%/imgscal/config.json</span></code>.</p>
         <p>
             <code class="field">%CONFIG%</code> is retrieved from <a href="https://pkg.go.dev/os#UserConfigDir"><code>os.UserConfigDir()</code></a>
             and 
-            <code class="field">%HOME%</code> from <a href="https://pkg.go.dev/os#UserHomeDir"></a><code>os.UserHomeDir()</code>.
+            <code class="field">%HOME%</code> from <a href="https://pkg.go.dev/os#UserHomeDir"><code>os.UserHomeDir()</code></a>.
         </p>
 
         <hr>
@@ -202,7 +203,7 @@
             <figcaption>Log Prefixes</figcaption>
             <hr>
 
-            <p>These are prepended at the start of each log line, use to filter for specific events.</p>
+            <p>These are prepended at the start of each log line, use them to filter for specific events.</p>
 
             <ul>
                 <li><code class="field"># SYSTEM</code></li>

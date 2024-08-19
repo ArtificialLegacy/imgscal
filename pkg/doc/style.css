@@ -150,7 +150,7 @@ span.red {
     color: var(--red);
 }
 
-li > code {
+li.const > code {
     font-size: larger;
     color: var(--yellow);
 }
