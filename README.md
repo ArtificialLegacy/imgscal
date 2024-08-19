@@ -10,7 +10,7 @@ Automate image processing programmatically.
 * Spritesheet support.
 * Command-line support, e.g. `imgscal resize ./image.png 100 100`.
 
-## Documentation [Live](https://artificiallegacy.github.io/imgscal/)
+## Documentation - [Live](https://artificiallegacy.github.io/imgscal/)
 
 Run `make doc` to generate the lua api documentation to `./docs/`.
 
