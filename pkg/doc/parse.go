@@ -37,14 +37,16 @@ func Parse(filename string, file []byte) Lib {
 				}
 			}
 
-			if strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_SECTION) {
+			for strings.HasPrefix(strings.TrimSpace(lines[i]), TAG_SECTION) {
 				i++
+				sec := []string{}
 				ln := strings.TrimSpace(lines[i])
 				for strings.HasPrefix(ln, TAG_EMPTY) && !strings.HasPrefix(ln, TAG_EXISTS) {
-					docs.Scs = append(docs.Scs, strings.TrimPrefix(ln, TAG_EMPTY))
+					sec = append(sec, strings.TrimPrefix(ln, TAG_EMPTY))
 					i++
 					ln = strings.TrimSpace(lines[i])
 				}
+				docs.Scs = append(docs.Scs, sec)
 			}
 		}
 

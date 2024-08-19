@@ -1,0 +1,216 @@
+<section>
+    <h2>Documentation Information</h2>
+    <hr>
+
+    <details class="imgscal">
+        <summary>Type Information</summary>
+        <hr>
+
+        <p>
+            When viewing the API documentation type inforamation will appear as: <code class="type">int</code>.
+            Types that begin with <code class="type">[]</code> specify that it is a lua table with integer indexes starting at 1.
+            While lua does not have an <code class="type">int</code> type, the documentation uses it to specify when a number value must be whole.
+        </p>
+        <br>
+
+        <p>
+            Sometimes a type may include two different types such as: <code class="type">int&lt;collection.IMAGE&gt;</code>.
+            <ul>
+                <li>
+                    <code class="type">int</code> is the type that exists within lua.
+                </li>
+                <li>
+                    <code class="type">collection.IMAGE</code> is the constraint on that type.
+                </li>
+            </ul>
+            Here the value must be an <code class="type">int</code> and
+            be a valid id from <code class="type">collection.IMAGE</code>.
+        </p>
+        <br>
+
+        <p>
+            There is also an additional special type called <code class="type">struct</code>,
+            this refers to a lua table with a specified structure. The constraint on these
+            shows where that structure is defined in the documentation. 
+            E.g. <code class="type">struct&lt;gui.Widget&gt;</code> is a struct named Widget defined
+            in the gui library.
+        </p>
+    </details>
+
+    <details class="imgscal">
+        <summary>Workflow Setup</summary>
+
+        <figure>
+            <figcaption>The <code>config</code> function.</figcaption>
+            <hr>
+            <p>This is called during the confirmation stage of the workflow.</p>
+<pre><span class="pink">config</span>({
+    <span class="yellow">name</span>=<span class="green">""</span>,
+    <span class="yellow">version</span>=<span class="green">""</span>,
+    <span class="yellow">author</span>=<span class="green">""</span>,
+    <span class="yellow">requires</span>={
+        <span class="green">""</span>,
+    },
+    <span class="yellow">desc</span>=<span class="green">""</span>,
+    <span class="yellow">cli_exclusive</span>=<span class="cyan">false</span>,
+    <span class="yellow">verbose_logging</span>=<span class="cyan">false</span>,
+})</pre>
+        
+            <ul>
+                <li>
+                    <code class="field">name</code> 
+                    - This defines the display name shown in the confirmation menu.
+                </li>
+                <li>
+                    <code class="field">version</code> 
+                    - Should be consistent and incrementing, though currently no functional use.
+                </li>
+                <li>
+                    <code class="field">author</code>
+                    - Displayed in the confirmation menu.
+                </li>
+                <li>
+                    <code class="field">requires</code>
+                    - This is a table of string values, this determines what built-in libraries are
+                    loaded when the workflow is run. 
+                    <ul>
+                        <li>
+                            Find the string to use for a specific library from the documentation header next to <q>Import:</q>.
+                        </li>
+                        <li>
+                            e.g., <q>Import: <code class="import">image</code></q>.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <code class="field">desc</code>
+                    - A brief description of the workflow that will be displayed in the confirmation menu.
+                </li>
+                <li class="opt-config">
+                    <code class="field">cli_exclusive</code>
+                    - When this is set to true, the workflow can only be run as a command-line argument when calling the ImgScal executable.
+                    <ul>
+                        <li class="opt-config">
+                            Setting this is optional, defaults to false when not set.
+                        </li>
+                        <li class="opt-config">
+                            Attempting to run it from the workflow menu will fail.
+                        </li>
+                    </ul>
+                </li>
+                <li  class="opt-config">
+                    <code class="field">verbose_logging</code>
+                    - Enables additional log calls when the workflow is running.
+                    <ul>
+                        <li class="opt-config">
+                            Setting this is optional, defaults to false when not set.
+                        </li>
+                        <li class="opt-config">
+                            This includes library function calls and task scheduling for concurrent operations.
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </figure>
+
+        <figure>
+            <figcaption>The <code>main</code> function.</figcaption>
+            <hr>
+            <p>This is called during the execution stage of the workflow.</p>
+<pre><span class="pink">main</span>(<span class="pink">function</span>()
+
+<span class="pink">end</span>)</pre>
+        </figure>
+    </details>
+
+    <details class="imgscal">
+        <summary>Config File</summary>
+
+<pre>{
+    <span class="yellow">"config_version"</span>: <span class="green">""</span>,
+    <span class="yellow">"workflow_directory"</span>: <span class="green">"%HOME%/imgscal/workflow"</span>,
+    <span class="yellow">"output_directory"</span>: <span class="green">"%HOME%/imgscal/output"</span>,
+    <span class="yellow">"log_directory"</span>: <span class="green">"%HOME%/imgscal/log"</span>,
+    <span class="yellow">"disable_logs"</span>: <span class="cyan">false</span>,
+    <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>
+}</pre>
+        <p>
+            <code class="field">%CONFIG%</code> is retrieved from <a href="https://pkg.go.dev/os#UserConfigDir"><code>os.UserConfigDir()</code></a>
+            and 
+            <code class="field">%HOME%</code> from <a href="https://pkg.go.dev/os#UserHomeDir"></a><code>os.UserHomeDir()</code>.
+        </p>
+
+        <hr>
+
+        <ul class="imgscal">
+            <li>
+                <code class="field">config_version</code>
+                - This is set based on a constant when created,
+                currently unused but should not be changed.
+                Will be used for compatibility if ever needed.
+            </li>
+            <li>
+                <code class="field">workflow_directory</code>
+                - This is the directory the program uses for finding and running workflows.
+            </li>
+            <li>
+                <code class="field">output_directory</code>
+                - This is a directory that can be used by workflows for outputting files.
+                <ul>
+                    <li>
+                        Workflows can get this directory with <code class="import">io.default_output()</code>, though user provided paths and
+                        relative paths should take precedent when outputting.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <code class="field">log_directory</code>
+                - This is the directory used to save log files from both the confirmation and execution stages of workflows.
+                <ul>
+                    <li>
+                        The most recently generated log also gets saved as <code class="field">@latest.txt</code>.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <code class="field">disable_logs</code>
+                - When this is set to true, it will disable all log output to files.
+            </li>
+            <li>
+                <code class="field">always_confirm</code>
+                - When this is set to true, the confirmation menu will be skipped before running a workflow.
+            </li>
+        </ul>
+    </details>
+
+    <details class="imgscal">
+        <summary>Log Files</summary>
+
+        <p>
+            There is an entrypoint at <code class="import">./cmd/log</code> that can be called 
+            to print the log file <code class="field">@latest.txt</code> if it exists. 
+            <code class="import">make log</code> is a shortcut for calling this.
+        </p>
+        <hr>
+
+        <p>The output of this can then be piped into other commads:</p>
+<pre><span class="pink">make</span> log <span class="red">|</span> grep <span class="green">'! ERROR'</span>
+<span class="pink">make</span> log <span class="red">|</span> kate -i
+<span class="pink">make</span> log <span class="red">&gt;</span> latest.txt</pre>
+
+        <figure>
+            <figcaption>Log Prefixes</figcaption>
+            <hr>
+
+            <p>These are prepended at the start of each log line, use to filter for specific events.</p>
+
+            <ul>
+                <li><code class="field"># SYSTEM</code></li>
+                <li><code class="field"># INFO</code></li>
+                <li><code class="field">? WARN</code></li>
+                <li><code class="field">! ERROR</code></li>
+                <li><code class="field">!! IMPORTANT</code></li>
+            </ul>
+        </figure>
+    </details>
+</section>

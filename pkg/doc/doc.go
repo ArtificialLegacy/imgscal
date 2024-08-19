@@ -1,5 +1,7 @@
 package doc
 
+import "html/template"
+
 const (
 	TAG_EMPTY     = "/// "
 	TAG_EXISTS    = "/// @"
@@ -28,10 +30,11 @@ type Lib struct {
 	Display   string
 	Desc      []string
 	Fns       []Fn
-	Scs       []string
+	Scs       [][]string
 	Cns       []Const
 	Sts       []Struct
 	Friends   []*Lib
+	Insert    template.HTML
 }
 
 type Arg struct {

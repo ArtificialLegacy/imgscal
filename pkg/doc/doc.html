@@ -43,11 +43,17 @@
 
       <section class="docs">
         {{ if .Scs }}
+        {{ range .Scs }}
         <section class="sect">
-          {{ range .Scs }}
+          {{ range . }}
           <p>{{ . }}</p>
           {{ end }}
         </section>
+        {{ end }}
+        {{ end }}
+
+        {{ if .Insert }}
+        {{ .Insert }}
         {{ end }}
 
         {{ if .Fns }}

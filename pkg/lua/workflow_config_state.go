@@ -36,6 +36,11 @@ func WorkflowConfigState(wf *workflow.Workflow, lg *log.Logger) *lua.LState {
 				wf.CliExclusive = bool(cliExclusive.(lua.LBool))
 			}
 
+			verbose := t.RawGetString("verbose_logging")
+			if verbose.Type() == lua.LTBool {
+				wf.Verbose = bool(verbose.(lua.LBool))
+			}
+
 			requires.ForEach(func(l1, l2 lua.LValue) {
 				wf.Requires = append(wf.Requires, strings.Clone(string(l2.(lua.LString))))
 			})

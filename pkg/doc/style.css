@@ -39,6 +39,10 @@ nav > h2 {
     padding-top: 10px;
 }
 
+details > p {
+    max-width: 750px;
+}
+
 section.docs {
     display: inline-block;
     flex-grow: 1;
@@ -91,11 +95,27 @@ details:hover {
     box-shadow: 5px 5px 5px black;
 }
 
+details.imgscal {
+    line-height: 1.8;
+}
+
+ul.imgscal {
+    line-height: 2;
+}
+
+details.imgscal > p {
+    margin: 0;
+}
+
+details.imgscal > br {
+    line-height: 1;
+}
+
 summary {
     font-size: larger;
 }
 
-code {
+code, code.import {
     background-color: var(--background);
     padding: 5px;
     border-radius: 5px;
@@ -106,9 +126,50 @@ code.type {
     color: var(--purple);
 }
 
+figcaption > code {
+    color: var(--pink);
+}
+
+span.pink {
+    color: var(--pink);
+}
+
+span.cyan {
+    color: var(--cyan);
+}
+
+span.yellow {
+    color: var(--yellow);
+}
+
+span.green {
+    color: var(--green);
+}
+
+span.red {
+    color: var(--red);
+}
+
 li > code {
     font-size: larger;
     color: var(--yellow);
+}
+
+code.field {
+    color: var(--yellow);
+    font-size: medium;
+}
+
+li.opt-config {
+    list-style-type: circle;
+}
+
+pre {
+    background-color: var(--background);
+    padding: 15px;
+    margin-left: 40px;
+    margin-right: 20px;
+    border-radius: 10px;
 }
 
 blockquote {

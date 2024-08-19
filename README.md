@@ -10,7 +10,7 @@ Automate image processing programmatically.
 * Spritesheet support.
 * Command-line support, e.g. `imgscal resize ./image.png 100 100`.
 
-## Documentation [Live](https://artificiallegacy.github.io/imgscal/)
+## Documentation - [Live](https://artificiallegacy.github.io/imgscal/)
 
 Run `make doc` to generate the lua api documentation to `./docs/`.
 
@@ -46,7 +46,7 @@ Demo workflow that creates an interface to apply filters to an image.
 ## Build
 
 * Requires
-  * Go
+  * Go >= 1.22.6
   * Makefile
   * A C compiler (mingw, TDM-GCC or g++)
 
@@ -67,47 +67,6 @@ make log | grep '! ERROR'
 make log | kate -i
 make log > latest.txt
 ```
-
-### Log Prefixes
-
-* `# SYSTEM`
-* `# INFO`
-* `? WARN`
-* `! ERROR`
-* `!! IMPORTANT` - Reserved for debug logs during development.
-
-## Config
-
-The default config file:
-
-> Located at `%CONFIG%/imgscal/config.json`
-
-```json
-{
-    "config_version": "0.1.0",
-    "workflow_directory": "%HOME%/imgscal/workflow",
-    "output_directory": "%HOME%/imgscal/output",
-    "log_directory": "%HOME%/imgscal/log",
-    "disable_logs": false,
-    "always_confirm": false
-}
-```
-
-> `%CONFIG%` is retrieved from [`os.UserConfigDir()`](https://pkg.go.dev/os#UserConfigDir) and `%HOME%` from [`os.UserHomeDir()`](https://pkg.go.dev/os#UserHomeDir).
-
-### Config Fields
-
-* `config_version` is set based on a constant when created,
-currently unused but should not be changed.
-Will be used for compatibility if ever needed.
-* `workflow_directory` is the directory the program uses for finding and running workflows.
-* `output_directory` is a directory that can be used by workflows for outputting files.
-  * Workflows can get this directory with `io.default_output()`, though user provided paths and
-relative paths should take precedent when outputting.
-* `log_directory` is the directory used to save log files from both the config and run states for workflows.
-  * The most recently generated log also gets saved as `@latest.txt`.
-* `disable_logs` when set to true turns off all log output to files.
-* `always_confirm` when set to true skips the confirmation screen before running a workflow.
 
 ## Known Issues
 

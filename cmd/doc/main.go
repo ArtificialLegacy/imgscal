@@ -47,6 +47,16 @@ func main() {
 			panic(err)
 		}
 
+		if lib.FileClean == "index" {
+			b, err := os.ReadFile("./pkg/doc/imgscal.html")
+			if err != nil {
+				panic(err)
+			}
+
+			s := string(b[:])
+			lib.Insert = template.HTML(s)
+		}
+
 		for _, friend := range docs {
 			lib.Friends = append(lib.Friends, &friend)
 		}
