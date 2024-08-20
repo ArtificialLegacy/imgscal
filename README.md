@@ -31,13 +31,13 @@ make dev
 > This requires ImgScal to have been run at least **once**,
 > as the config file and workflow directory must exist.
 
-### GUI/Noise - [Source](/examples/example_noise.lua)
+### GUI/Noise - [Source](/examples/gui/example_noise.lua)
 
 Demo workflow that creates an interface with controls to generate noise maps.
 
 ![noise example](assets/demos/example_noise.png)
 
-### GUI/Filter - [Source](/examples/example_filter.lua)
+### GUI/Filter - [Source](/examples/gui/example_filter.lua)
 
 Demo workflow that creates an interface to apply filters to an image.
 
@@ -58,7 +58,7 @@ make build-linux
 
 ## Logs
 
-There is an entrypoint at `./cmd/log` that can be called to print the log file `@latest.txt` if it exists. `make log` is a shortcut for calling this.
+There is an entry point at `./cmd/log` that can be called to print the log file `@latest.txt` if it exists. `make log` is a shortcut for calling this.
 
 > This can also be used to pipe the output.
 

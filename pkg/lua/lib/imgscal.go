@@ -44,3 +44,16 @@ func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func
 		return 1
 	}))
 }
+
+/// @struct WorkflowInit
+/// @prop is_cli {bool}
+/// @method debug() - Open the lua debug library to the workflow.
+/// @method verbose() - Enable verbose logging when running the workflow.
+/// @method import([]string) - Array containing the import names for built-in libraries.
+
+/// @struct WorkflowInfo
+/// @prop is_cli {bool}
+/// @prop name {string}
+/// @prop author {string}
+/// @prop version {string}
+/// @prop desc {string}

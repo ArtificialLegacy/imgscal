@@ -10,16 +10,18 @@ import (
 	"github.com/AllenDang/giu"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
+	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	"github.com/akamensky/argparse"
 	lua "github.com/yuin/gopher-lua"
 )
 
 type Runner struct {
-	State   *lua.LState
-	lg      *log.Logger
-	Plugins []string
-	Dir     string
-	Output  string
+	State  *lua.LState
+	lg     *log.Logger
+	Dir    string
+	Output string
+
+	Failed string
 
 	Wg *sync.WaitGroup
 
@@ -38,12 +40,11 @@ type Runner struct {
 	CR_REF *collection.Crate[collection.RefItem[any]]
 }
 
-func NewRunner(plugins []string, state *lua.LState, lg *log.Logger, cliMode bool) Runner {
+func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 	wg := &sync.WaitGroup{}
 	return Runner{
-		State:   state,
-		lg:      lg,
-		Plugins: plugins,
+		State: state,
+		lg:    lg,
 
 		Wg: wg,
 
@@ -68,20 +69,116 @@ func NewRunner(plugins []string, state *lua.LState, lg *log.Logger, cliMode bool
 	}
 }
 
-func (r *Runner) Run(file string) error {
+func (r *Runner) Run(file string, plugins PluginMap) error {
 	defer func() {
 		if p := recover(); p != nil {
 			r.lg.Append("recovered from panic during lua runtime.", log.LEVEL_ERROR)
+			r.Failed = fmt.Sprintf("%s", p)
+		}
+	}()
+
+	r.Dir = path.Dir(file)
+
+	pkg := r.State.GetField(r.State.Get(lua.EnvironIndex), "package")
+	r.State.SetField(pkg, "path", lua.LString(r.Dir+"/?.lua"))
+
+	lua.OpenBase(r.State)
+	lua.OpenMath(r.State)
+	lua.OpenString(r.State)
+	lua.OpenTable(r.State)
+
+	err := r.State.DoFile(file)
+	if err != nil {
+		return err
+	}
+
+	initFunc := r.State.GetGlobal("init")
+	if initFunc.Type() != lua.LTFunction {
+		return fmt.Errorf("failed to run init function, it is not a function: %s", initFunc.Type())
+	}
+	r.State.Push(initFunc)
+	r.State.Push(r.WorkflowInit(file, r.lg, plugins))
+	r.State.Call(1, 0)
+
+	mainFunc := r.State.GetGlobal("main")
+	if mainFunc.Type() != lua.LTFunction {
+		return fmt.Errorf("failed to run main function, it is not a function: %s", mainFunc.Type())
+	}
+	r.State.Push(mainFunc)
+	r.State.Call(0, 0)
+
+	return nil
+}
+
+func (r *Runner) Help(file string, wf *workflow.Workflow) (string, error) {
+	defer func() {
+		if p := recover(); p != nil {
+			r.lg.Append("recovered from panic during lua runtime.", log.LEVEL_ERROR)
+			r.Failed = fmt.Sprintf("%s", p)
 		}
 	}()
 
 	r.Dir = path.Dir(file)
 	err := r.State.DoFile(file)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	helpFunc := r.State.GetGlobal("help")
+	if helpFunc.Type() != lua.LTFunction {
+		return "", fmt.Errorf("failed to run help function, it is not a function: %s", helpFunc.Type())
+	}
+	r.State.Push(helpFunc)
+	r.State.Push(r.WorkflowInfo(file, wf, r.lg))
+	r.State.Call(1, 1)
+	str := r.State.CheckString(-1)
+	r.State.Pop(1)
+
+	return str, nil
+}
+
+func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *lua.LTable {
+	t := r.State.NewTable()
+
+	t.RawSetString("is_cli", lua.LBool(r.CLIMode))
+
+	t.RawSetString("debug", r.State.NewFunction(func(l *lua.LState) int {
+		lua.OpenDebug(r.State)
+		return 0
+	}))
+
+	t.RawSetString("verbose", r.State.NewFunction(func(l *lua.LState) int {
+		r.lg.EnableVerbose()
+		return 0
+	}))
+
+	t.RawSetString("import", r.State.NewFunction(func(l *lua.LState) int {
+		pt := l.CheckTable(-1)
+		reqs := []string{}
+
+		pt.ForEach(func(l1, l2 lua.LValue) {
+			reqs = append(reqs, string(l2.(lua.LString)))
+		})
+
+		LoadPlugins(name, r, lg, plugins, reqs, r.State)
+
+		return 0
+	}))
+
+	return t
+}
+
+func (r *Runner) WorkflowInfo(name string, wf *workflow.Workflow, lg *log.Logger) *lua.LTable {
+	t := r.State.NewTable()
+
+	t.RawSetString("is_cli", lua.LBool(r.CLIMode))
+
+	t.RawSetString("name", lua.LString(wf.Name))
+	t.RawSetString("author", lua.LString(wf.Author))
+	t.RawSetString("version", lua.LString(wf.Version))
+	t.RawSetString("desc", lua.LString(wf.Desc))
+
+	return t
 }
 
 type Lib struct {
@@ -306,7 +403,9 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 	}))
 }
 
-func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins map[string]func(r *Runner, lg *log.Logger), reqs []string, state *lua.LState) {
+type PluginMap map[string]func(r *Runner, lg *log.Logger)
+
+func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins PluginMap, reqs []string, state *lua.LState) {
 	for _, req := range reqs {
 		builtin, ok := plugins[req]
 		if !ok {

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 
@@ -49,17 +50,47 @@ func main() {
 		panic(fmt.Sprintf("failed to read examples directory! (%s)", err))
 	}
 
-	for _, fs := range fs {
-		b, err := os.ReadFile(path.Join(wd, "examples", fs.Name()))
-		if err != nil {
-			panic(fmt.Sprintf("failed to read example workflow: %s! (%s)", fs.Name(), err))
-		}
-
-		err = os.WriteFile(path.Join(cfg.WorkflowDirectory, "examples", fs.Name()), b, 0o666)
-		if err != nil {
-			panic(fmt.Sprintf("failed to write example workflow: %s! (%s)", fs.Name(), err))
-		}
+	err = copyExamples(fs, wd, "", cfg)
+	if err != nil {
+		panic(err)
 	}
 
 	fmt.Printf("Installed example workflows to: %s.\n", path.Join(cfg.WorkflowDirectory, "examples"))
+}
+
+func copyExamples(fs []fs.DirEntry, wd, prefix string, cfg *config.Config) error {
+	for _, fs := range fs {
+		if fs.IsDir() {
+			ifs, err := os.ReadDir(path.Join(wd, "examples", prefix, fs.Name()))
+			if err != nil {
+				return err
+			}
+			err = copyExamples(ifs, wd, prefix+fs.Name(), cfg)
+			if err != nil {
+				return err
+			}
+
+			continue
+		}
+
+		pth := path.Join("examples", prefix, fs.Name())
+		b, err := os.ReadFile(path.Join(wd, pth))
+		if err != nil {
+			panic(fmt.Sprintf("failed to read example workflow: %s! (%s)", pth, err))
+		}
+
+		if prefix != "" {
+			err := os.MkdirAll(path.Join(cfg.WorkflowDirectory, "examples", prefix), 0o777)
+			if err != nil {
+				panic(fmt.Sprintf("failed to make directories for example workflow: %s! (%s)", pth, err))
+			}
+		}
+
+		err = os.WriteFile(path.Join(cfg.WorkflowDirectory, pth), b, 0o666)
+		if err != nil {
+			panic(fmt.Sprintf("failed to write example workflow: %s! (%s)", pth, err))
+		}
+	}
+
+	return nil
 }

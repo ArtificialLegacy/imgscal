@@ -11,7 +11,7 @@ import (
 func setupLib() *lua.Lib {
 	state := golua.NewState()
 	lg := log.NewLoggerEmpty()
-	r := lua.NewRunner([]string{}, state, &lg, false)
+	r := lua.NewRunner(state, &lg, false)
 	lib, _ := lua.NewLib("testing", &r, state, &lg)
 
 	return lib

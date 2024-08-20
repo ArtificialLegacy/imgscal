@@ -7,11 +7,23 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 )
 
-func WorkflowFailRun(sm *statemachine.StateMachine) error {
+type WorkflowFailData struct {
+	Name  string
+	Error error
+}
+
+func WorkflowFailEnter(sm *statemachine.StateMachine, data WorkflowFailData) {
+	sm.SetState(STATE_WORKFLOW_FAIL)
+	sm.Data = data
+}
+
+func WorkflowFail(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
-	script := sm.PopString()
-	err := sm.PopString()
+	data := sm.Data.(WorkflowFailData)
+	sm.Data = nil
+	script := data.Name
+	err := data.Error
 
 	fmt.Printf("\n%s\n\n", err)
 

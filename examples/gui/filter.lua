@@ -1,8 +1,6 @@
-config({
-    name="Example Filters",
-    version="1.0.0",
-    author="Blub",
-    requires={
+
+function init(workflow)
+    workflow.import({
         "gui",
         "image",
         "ref",
@@ -11,132 +9,7 @@ config({
         "std",
         "bit",
         "filter",
-    },
-
-    desc="GUI example for showcasing different filters"
-})
-
---[[
-    Helper functions for creating the sliders.
-    These use a dummy widget that gurantees the width of the label+dummy is 100 pixels,
-    this is for visuals to make sure the sliders are vertically aligned.
-
-    It also adds an arrow button widget that resets the slider's ref to a default value.
---]]
-function wg_slider_float(str, rf, min, max, dflt)
-    return gui.wg_row({
-        gui.wg_label(str),
-        gui.wg_dummy(
-            100-gui.calc_text_size_width(str),
-            1
-        ),
-        gui.wg_slider_float(rf, min, max)
-            :size(325),
-        gui.wg_button_arrow(gui.DIR_LEFT)
-            :on_click(function()
-                ref.set(rf, dflt)
-            end)
     })
-end
-
-function wg_slider_int(str, rf, min, max, dflt)
-    return gui.wg_row({
-        gui.wg_label(str),
-        gui.wg_dummy(
-            100-gui.calc_text_size_width(str),
-            1
-        ),
-        gui.wg_slider_int(rf, min, max)
-            :size(325),
-        gui.wg_button_arrow(gui.DIR_LEFT)
-            :on_click(function()
-                ref.set(rf, dflt)
-            end)
-    })
-end
-
-function wg_filter(name, widgets)
-    return gui.wg_tree_node(name)
-        :flags(bit.bitor_many({
-            gui.FLAGTREENODE_FRAMED,
-            gui.FLAGTREENODE_NOTREEPUSHONOPEN,
-        }))
-        :layout(widgets)
-end
-
-function wg_ksize(rf)
-    return gui.wg_row({
-        gui.wg_label("Kernel Size:"),
-        gui.wg_button_radio("3", ref.get(rf) == 3)
-            :on_change(function()
-                ref.set(rf, 3)
-            end),
-        gui.wg_button_radio("5", ref.get(rf) == 5)
-            :on_change(function()
-                ref.set(rf, 5)
-            end),
-        gui.wg_button_radio("7", ref.get(rf) == 7)
-            :on_change(function()
-                ref.set(rf, 7)
-            end),
-        gui.wg_button_radio("9", ref.get(rf) == 9)
-            :on_change(function()
-                ref.set(rf, 9)
-            end),
-    })
-end
-
-function wg_cf_channel(name, opref, vref, fref)
-    return gui.wg_row({
-        gui.wg_label(name),
-        gui.wg_dummy(
-            50-gui.calc_text_size_width(name),
-            1
-        ),
-        gui.wg_combo_preview("Op", operations, opref)
-            :size(125),
-        gui.wg_slider_float(vref, -1, 1)
-            :size(125)
-            :format("%.2f"),
-        gui.wg_combo_preview("From", channelValue, fref)
-            :size(75),
-        gui.wg_button_arrow(gui.DIR_LEFT)
-            :on_click(function()
-                ref.set(vref, 0)
-            end),
-    })
-end
-
-function channelOp(op, v1, v2)
-    if op == 0 then
-        return v1
-    elseif op == 1 then
-        return v2
-    elseif op == 2 then
-        return v1 + v2
-    elseif op == 3 then
-        return v1 - v2
-    elseif op == 4 then
-        return v2 - v1
-    elseif op == 5 then
-        return v1 * v2
-    end
-end
-
-function channelGet(from, v, r, g, b, a)
-    if from == 0 then
-        return v
-    elseif from == 1 then
-        return r
-    elseif from == 2 then
-        return g
-    elseif from == 3 then
-        return b
-    elseif from == 4 then
-        return a
-    elseif from == 5 then
-        return math.random()
-    end
 end
 
 convolutionFilters = {
@@ -208,7 +81,9 @@ channelValue = {
     "Random",
 }
 
-main(function ()
+function main()
+    local widget = require("widget")
+
     local win = gui.window_master("Filter Example", 512, 512, bit.bitor_many({
         FLAGWINDOW_NORESIZE,
     }))
@@ -651,34 +526,34 @@ main(function ()
             }),
             wg_filter("Basic Filters", {
                 gui.wg_checkbox("Brightness Enabled", brightnessEnabled),
-                wg_slider_float("Percentage:", brightnessPercent, -100, 100, 0),
+                widget.slider_float("Percentage:", brightnessPercent, -100, 100, 0),
                 gui.wg_separator(),
                 gui.wg_checkbox("Contrast Enabled", contrastEnabled),
-                wg_slider_float("Percentage:", contrastPercent, -100, 100, 0),
+                widget.slider_float("Percentage:", contrastPercent, -100, 100, 0),
                 gui.wg_separator(),
                 gui.wg_checkbox("Gamma Enabled", gammaEnabled),
-                wg_slider_float("Gamma:", gammaPercent, 0, 2, 1),
+                widget.slider_float("Gamma:", gammaPercent, 0, 2, 1),
                 gui.wg_separator(),
                 gui.wg_checkbox("Hue Enabled", hueEnabled),
-                wg_slider_float("Shift:", huePercent, -180, 180, 0),
+                widget.slider_float("Shift:", huePercent, -180, 180, 0),
                 gui.wg_separator(),
                 gui.wg_checkbox("Saturation Enabled", saturationEnabled),
-                wg_slider_float("Saturation:", saturationPercent, -100, 500, 0),
+                widget.slider_float("Saturation:", saturationPercent, -100, 500, 0),
                 gui.wg_separator(),
                 gui.wg_checkbox("Sepia Enabled", sepiaEnabled),
-                wg_slider_float("Percentage:", sepiaPercent, 0, 100, 0),
+                widget.slider_float("Percentage:", sepiaPercent, 0, 100, 0),
             }),
             wg_filter("Color Balance", {
                 gui.wg_checkbox("Enabled", colorBalanceEnabled),
-                wg_slider_float("Red Percent:", colorBalancePercentR, -100, 500, 0),
-                wg_slider_float("Green Percent:", colorBalancePercentG, -100, 500, 0),
-                wg_slider_float("Blue Percent:", colorBalancePercentB, -100, 500, 0),
+                widget.slider_float("Red Percent:", colorBalancePercentR, -100, 500, 0),
+                widget.slider_float("Green Percent:", colorBalancePercentG, -100, 500, 0),
+                widget.slider_float("Blue Percent:", colorBalancePercentB, -100, 500, 0),
             }),
             wg_filter("Colorize", {
                 gui.wg_checkbox("Enabled", colorizeEnabled),
-                wg_slider_float("Hue:", colorizeHue, 0, 360, 0),
-                wg_slider_float("Saturation:", colorizeSaturation, 0, 100, 0),
-                wg_slider_float("Percent:", colorizePercent, 0, 100, 0),
+                widget.slider_float("Hue:", colorizeHue, 0, 360, 0),
+                widget.slider_float("Saturation:", colorizeSaturation, 0, 100, 0),
+                widget.slider_float("Percent:", colorizePercent, 0, 100, 0),
             }),
             wg_filter("Convolution Filter", {
                 gui.wg_tab_bar():tab_items({
@@ -693,7 +568,7 @@ main(function ()
                             gui.wg_checkbox("Alpha", convolutionAlpha),
                             gui.wg_checkbox("ABS", convolutionABS),
                         }),
-                        wg_slider_float("Delta:", convolutionDelta, -2, 2, 0),
+                        widget.slider_float("Delta:", convolutionDelta, -2, 2, 0),
                     }),
                     gui.wg_tab_item("Custom"):layout({
                         gui.wg_checkbox("Enable Custom Kernel", convolutionCustom),
@@ -702,7 +577,7 @@ main(function ()
                             gui.wg_checkbox("Alpha", convolutionAlpha),
                             gui.wg_checkbox("ABS", convolutionABS),
                         }),
-                        wg_slider_float("Delta:", convolutionDelta, -2, 2, 0),
+                        widget.slider_float("Delta:", convolutionDelta, -2, 2, 0),
                         gui.wg_button("Reset Kernel")
                             :on_click(function()
                                 ref.set(convolution0x0, 0)
@@ -822,8 +697,8 @@ main(function ()
                                     ref.set(cropEnabled, false)
                                 end
                             end),
-                        wg_slider_int("Width:", cropwidth, 1, 200, 200),
-                        wg_slider_int("Height:", cropheight, 1, 200, 200),
+                        widget.slider_int("Width:", cropwidth, 1, 200, 200),
+                        widget.slider_int("Height:", cropheight, 1, 200, 200),
                         gui.wg_combo_preview("Anchor", cropAnchors, cropanchor),
                     }),
                 }),
@@ -848,8 +723,8 @@ main(function ()
                             ref.set(resizeType, 3)
                         end),
                 }),
-                wg_slider_int("Width:", resizeWidth, 1, 200, 200),
-                wg_slider_int("Height:", resizeHeight, 1, 200, 200),
+                widget.slider_int("Width:", resizeWidth, 1, 200, 200),
+                widget.slider_int("Height:", resizeHeight, 1, 200, 200),
                 gui.wg_combo_preview("Resampling", resampling, resizeSampling),
                 gui.wg_combo_preview("Anchor (For Fill)", cropAnchors, resizeAnchor),
             }),
@@ -892,21 +767,21 @@ main(function ()
                     interpolation,
                     rotInterp
                 ),
-                wg_slider_float("Angle:", rotAngle, 0, 360, 0),
+                widget.slider_float("Angle:", rotAngle, 0, 360, 0),
             }),
             wg_filter("Advanced Filters", {
                 gui.wg_checkbox("Gaussian Blur Enabled", gaussEnabled),
-                wg_slider_float("Sigma:", gaussSigma, 0.1, 5, 1),
+                widget.slider_float("Sigma:", gaussSigma, 0.1, 5, 1),
 
                 gui.wg_separator(),
                 
                 gui.wg_checkbox("Pixelate Enabled", pixelateEnabled),
-                wg_slider_int("Size:", pixelateSize, 0, 15, 0),
+                widget.slider_int("Size:", pixelateSize, 0, 15, 0),
                 
                 gui.wg_separator(),
                 
                 gui.wg_checkbox("Threshold Enabled", thresholdEnabled),
-                wg_slider_float("Percentage:", thresholdPercent, 0, 100, 50),
+                widget.slider_float("Percentage:", thresholdPercent, 0, 100, 50),
                 
                 gui.wg_separator(),
                 
@@ -925,15 +800,15 @@ main(function ()
                 gui.wg_separator(),
                 
                 gui.wg_checkbox("Sigmoid Enabled", sigmoidEnabled),
-                wg_slider_float("Midpoint:", sigmoidMid, 0, 1, 0.5),
-                wg_slider_float("Factor:", sigmoidFactor, -10, 10, 0),
+                widget.slider_float("Midpoint:", sigmoidMid, 0, 1, 0.5),
+                widget.slider_float("Factor:", sigmoidFactor, -10, 10, 0),
 
                 gui.wg_separator(),
 
                 gui.wg_checkbox("Unsharp Mask Enabled", unsharpEnabled),
-                wg_slider_float("Sigma:", unsharpSigma, 1, 5, 1),
-                wg_slider_float("Amount:", unsharpAmount, 0.5, 1.5, 1),
-                wg_slider_float("Threshold:", unsharpThreshold, 0, 0.05, 0),
+                widget.slider_float("Sigma:", unsharpSigma, 1, 5, 1),
+                widget.slider_float("Amount:", unsharpAmount, 0.5, 1.5, 1),
+                widget.slider_float("Threshold:", unsharpThreshold, 0, 0.05, 0),
             }),
             wg_filter("Color Function", {
                 gui.wg_checkbox("Color Function Enabled", colorFuncEnabled),
@@ -944,4 +819,88 @@ main(function ()
             }),
         })
     end)
-end)
+end
+
+function wg_filter(name, widgets)
+    return gui.wg_tree_node(name)
+        :flags(bit.bitor_many({
+            gui.FLAGTREENODE_FRAMED,
+            gui.FLAGTREENODE_NOTREEPUSHONOPEN,
+        }))
+        :layout(widgets)
+end
+
+function wg_ksize(rf)
+    return gui.wg_row({
+        gui.wg_label("Kernel Size:"),
+        gui.wg_button_radio("3", ref.get(rf) == 3)
+            :on_change(function()
+                ref.set(rf, 3)
+            end),
+        gui.wg_button_radio("5", ref.get(rf) == 5)
+            :on_change(function()
+                ref.set(rf, 5)
+            end),
+        gui.wg_button_radio("7", ref.get(rf) == 7)
+            :on_change(function()
+                ref.set(rf, 7)
+            end),
+        gui.wg_button_radio("9", ref.get(rf) == 9)
+            :on_change(function()
+                ref.set(rf, 9)
+            end),
+    })
+end
+
+function wg_cf_channel(name, opref, vref, fref)
+    return gui.wg_row({
+        gui.wg_label(name),
+        gui.wg_dummy(
+            50-gui.calc_text_size_width(name),
+            1
+        ),
+        gui.wg_combo_preview("Op", operations, opref)
+            :size(125),
+        gui.wg_slider_float(vref, -1, 1)
+            :size(125)
+            :format("%.2f"),
+        gui.wg_combo_preview("From", channelValue, fref)
+            :size(75),
+        gui.wg_button_arrow(gui.DIR_LEFT)
+            :on_click(function()
+                ref.set(vref, 0)
+            end),
+    })
+end
+
+function channelOp(op, v1, v2)
+    if op == 0 then
+        return v1
+    elseif op == 1 then
+        return v2
+    elseif op == 2 then
+        return v1 + v2
+    elseif op == 3 then
+        return v1 - v2
+    elseif op == 4 then
+        return v2 - v1
+    elseif op == 5 then
+        return v1 * v2
+    end
+end
+
+function channelGet(from, v, r, g, b, a)
+    if from == 0 then
+        return v
+    elseif from == 1 then
+        return r
+    elseif from == 2 then
+        return g
+    elseif from == 3 then
+        return b
+    elseif from == 4 then
+        return a
+    elseif from == 5 then
+        return math.random()
+    end
+end
