@@ -41,85 +41,173 @@
         <summary>Workflow Setup</summary>
 
         <figure>
-            <figcaption>The <code>config</code> function.</figcaption>
+            <figcaption>The <code><span class="white">workflow.json</span></code> file.</figcaption>
             <hr>
-            <p>This is called during the confirmation stage of the workflow.</p>
-<pre><span class="pink">config</span>({
-    <span class="yellow">name</span>=<span class="green">""</span>,
-    <span class="yellow">version</span>=<span class="green">""</span>,
-    <span class="yellow">author</span>=<span class="green">""</span>,
-    <span class="yellow">requires</span>={
+            <p>
+                This is where a workflow is defined,
+                generally each <code><span class="white">workflow.json</span></code> should have it's own directory.
+            </p>
+<pre>
+{
+    <span class="yellow">"name"</span>: <span class="green">""</span>,
+    <span class="yellow">"author"</span>: <span class="green">""</span>,
+    <span class="yellow">"version"</span>: <span class="green">""</span>,
+
+    <span class="yellow">"desc"</span>: <span class="green">""</span>,
+    <span class="yellow">"desc_long"</span>: [
         <span class="green">""</span>,
+        <span class="green">""</span>
+    ],
+
+    <span class="yellow">"workflows"</span>: {
+        <span class="yellow">"*"</span>: <span class="green">"?.lua"</span>,
+        <span class="yellow">"other"</span>: <span class="green">"?.lua"</span>
     },
-    <span class="yellow">desc</span>=<span class="green">""</span>,
-    <span class="yellow">cli_exclusive</span>=<span class="cyan">false</span>,
-    <span class="yellow">verbose_logging</span>=<span class="cyan">false</span>,
-})</pre>
-        
+
+    <span class="yellow">"cli_workflows"</span>: {
+        <span class="yellow">"*"</span>: <span class="green">"?.lua"</span>
+    }
+}
+</pre>
             <ul>
                 <li>
-                    <code class="field">name</code> 
-                    - This defines the display name shown in the confirmation menu.
+                    <code class="field">name</code>
+                    - This is the name of the workflow, it should not include spaces.
+                    Using all lowercase should also be preferred.
                 </li>
                 <li>
-                    <code class="field">version</code> 
-                    - Should be consistent and incrementing, though currently no functional use.
+                    <code class="field">desc_long</code>
+                    - This can be used when the description is long that it becomes awkward to write on a single line,
+                    once parsed it will be appended to <code class="field">desc</code> 
+                    with each string being joined with a space.
                 </li>
                 <li>
-                    <code class="field">author</code>
-                    - Displayed in the confirmation menu.
+                    <code class="field">workflows</code>
+                    - This is where entry points can be defined for the workflow selection menu.
                 </li>
                 <li>
-                    <code class="field">requires</code>
-                    - This is a table of string values, this determines what built-in libraries are
-                    loaded when the workflow is run. 
-                    <ul>
-                        <li>
-                            Find the string to use for a specific library from the documentation header next to <q>Import:</q>.
-                        </li>
-                        <li>
-                            e.g., <q>Import: <code class="import">image</code></q>.
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <code class="field">desc</code>
-                    - A brief description of the workflow that will be displayed in the confirmation menu.
-                </li>
-                <li class="opt-config">
-                    <code class="field">cli_exclusive</code>
-                    - When this is set to true, the workflow can only be run as a command-line argument when calling the ImgScal executable.
-                    <ul>
-                        <li class="opt-config">
-                            Setting this is optional, defaults to false when not set.
-                        </li>
-                        <li class="opt-config">
-                            Attempting to run it from the workflow menu will fail.
-                        </li>
-                    </ul>
-                </li>
-                <li  class="opt-config">
-                    <code class="field">verbose_logging</code>
-                    - Enables additional log calls when the workflow is running.
-                    <ul>
-                        <li class="opt-config">
-                            Setting this is optional, defaults to false when not set.
-                        </li>
-                        <li class="opt-config">
-                            This includes library function calls and task scheduling for concurrent operations.
-                        </li>
-                    </ul>
+                    <code class="field">cli_workflows</code>
+                    - This is where entry points can be defined for directly calling from the command-line.
                 </li>
             </ul>
+
+            <hr>
+
+            <p>An entry point is mapped in the following ways:</p>
+            <ul>
+                <li>
+                    When an entry point is named using <code><span class="yellow">"*"</span></code>,
+                    it maps to the name defined above in the <code><span class="white">workflow.json</span></code> file.
+                </li>
+                <li>
+                    When an entry point is named using any other string,
+                    it is prefixed with the name of the workflow, a slash, and the entry point name.
+                </li>
+            </ul>
+
+            <p>
+                This means that in a workflow named <code><span class="yellow">"example"</span></code> with the entry points
+                <code><span class="yellow">"*"</span></code> and <code><span class="yellow">"second"</span></code> defined, 
+                <code>example</code> and <code>example/second</code> will be available.
+            </p>
+
+            <p>
+                Entry points are lua source files that include the functions defined below.
+            </p>
+        </figure>
+
+        <figure>
+            <figcaption>The <code>init</code> function.</figcaption>
+            <hr>
+            <p>This is the first function called after the file is loaded when running the workflow.</p>
+<pre>
+<span class="pink">function</span> <span class="purple">init</span>(workflow)
+
+<span class="pink">end</span>
+</pre>
+        
+            <p>
+                Here the <code><span class="white">workflow</span></code> argument is of type <code class="type">struct&lt;imgscal.WorkflowInit&gt;</code>.
+            </p>
+            <p>
+                This is where built-in libraries must be imported, for example the init function from the resize entry point:
+            </p>
+<pre>
+<span class="pink">function</span> <span class="purple">init</span>(workflow)
+    workflow.<span class="purple">import</span>({
+        <span class="green">"cli"</span>,
+        <span class="green">"filter"</span>,
+        <span class="green">"io"</span>,
+        <span class="green">"image"</span>,
+    })
+<span class="pink">end</span>
+</pre>
         </figure>
 
         <figure>
             <figcaption>The <code>main</code> function.</figcaption>
             <hr>
-            <p>This is called during the execution stage of the workflow.</p>
-<pre><span class="pink">main</span>(<span class="pink">function</span>()
+            <p>
+                This is called after the <code><span class="purple">init</span></code> function is finished.
+                This is where the actual workflow code should begin, as built-in libraries are not available
+                as globals until they are imported in the <code><span class="purple">init</span></code> function.
+            </p>
+<pre>
+<span class="pink">function</span> <span class="purple">main</span>()
 
-<span class="pink">end</span>)</pre>
+<span class="pink">end</span></pre>
+            <p>
+                When importing other lua files as modules, the <code><span class="purple">require</span></code> function should also be called here.
+            </p>
+        </figure>
+
+        <figure>
+            <figcaption>The <code>help</code> function.</figcaption>
+            <hr>
+            <p>
+                This is an optional function used when calling the help command for the workflow.
+                This can only be used in entry points that are added to <code class="field">"cli_workflows"</code> in <code><span class="white">workflow.json</span></code>.
+            </p>
+
+<pre>
+<span class="pink">function</span> <span class="purple">help</span>(info)
+    <span class="pink">return</span> <span class="green">""</span>
+<span class="pink">end</span>
+</pre>
+            <p>
+                Here the <code><span class="white">info</span></code> argument is of type <code class="type">struct&lt;imgscal.WorkflowInfo&gt;</code>.
+            </p>
+            <p>
+                This function must also return a <code class="type">string</code>,
+                this will be what the help command displays to the console.
+            </p>
+        </figure>
+
+        <figure>
+            <figcaption>Lua Modules</figcaption>
+            <hr>
+
+            <p>
+                Lua files that are not entry points can be loaded as modules within the <code><span class="purple">main</span></code> function.
+                The lua path for module loading is defined to the working directory of the entry point.
+            </p>
+<pre>
+example/
+├── entrypoint.lua
+├── mymodule.lua
+└── workflow.json
+</pre>
+         <p>
+            In this example, <code><span class="white">entrypoint.lua</span></code> can load <code><span class="white">mymodule.lua</span></code> as a module with following code:<br>
+            <code><span class="white"><span class="pink">local</span> mymodule = <span class="purple">require</span>(<span class="green">"mymodule"</span>)</span></code>
+         </p>
+         <p>
+            Inside of <code><span class="white">mymodule.lua</span></code> there should be a table returned from the global scope.
+         </p>
+         <p>
+            The gui example contains a module <code><span class="white">widget.lua</span></code> that is loaded by both
+            <code><span class="white">filter.lua</span></code> and <code><span class="white">noise.lua</span></code>.
+        </p>
         </figure>
     </details>
 
@@ -213,5 +301,20 @@
                 <li><code class="field">!! IMPORTANT</code></li>
             </ul>
         </figure>
+    </details>
+
+    <details class="imgscal">
+        <summary>The Help Command</summary>
+
+        <p>
+            This can be called with <code><span class="white">imgscal help &lt;workflow&gt;</span></code>.
+        </p>
+        <hr>
+
+        <p>
+            The name <code><span class="green">"help"</span></code> is reserved for this command, CLI entry points cannot be mapped to this name.
+            Additionally, only CLI entry points can be called with this, and entry points missing the <code><span class="purple">help</span></code>
+            function will panic.
+        </p>
     </details>
 </section>

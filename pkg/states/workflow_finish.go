@@ -7,10 +7,14 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 )
 
-func WorkflowFinish(sm *statemachine.StateMachine) error {
-	//cli.Clear()
+func WorkflowFinishEnter(sm *statemachine.StateMachine, script string) {
+	sm.SetState(STATE_WORKFLOW_FINISH)
+	sm.Data = script
+}
 
-	script := sm.PopString()
+func WorkflowFinish(sm *statemachine.StateMachine) error {
+	script := sm.Data.(string)
+	sm.Data = nil
 
 	fmt.Printf("\n\n")
 

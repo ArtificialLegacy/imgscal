@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/config"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 	"github.com/ArtificialLegacy/imgscal/pkg/states"
@@ -21,10 +22,11 @@ func main() {
 	sm.AddState(states.STATE_UTILITIES, states.Utilities)
 	sm.AddState(states.STATE_WORKFLOW_LIST, states.WorkflowList)
 	sm.AddState(states.STATE_WORKFLOW_CONFIRM, states.WorkflowConfirm)
-	sm.AddState(states.STATE_WORKFLOW_FAIL_LOAD, states.WorkflowFailLoad)
 	sm.AddState(states.STATE_WORKFLOW_RUN, states.WorkflowRun)
-	sm.AddState(states.STATE_WORKFLOW_FAIL_RUN, states.WorkflowFailRun)
+	sm.AddState(states.STATE_WORKFLOW_FAIL, states.WorkflowFail)
 	sm.AddState(states.STATE_WORKFLOW_FINISH, states.WorkflowFinish)
+	sm.AddState(states.STATE_WORKFLOW_HELP, states.WorkflowHelp)
+	sm.AddState(states.STATE_WORKFLOW_CMD, states.WorkflowCMD)
 
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
@@ -89,13 +91,18 @@ func main() {
 
 	if len(os.Args) > 1 {
 		pth := os.Args[1]
-		if path.Ext(pth) != ".lua" {
-			pth += ".lua"
-		}
-
 		sm.CliMode = true
-		sm.PushString(path.Join("workflows/", pth))
-		sm.SetState(states.STATE_WORKFLOW_CONFIRM)
+
+		if pth == "help" {
+			if len(os.Args) > 2 {
+				states.WorkflowHelpEnter(sm, os.Args[2])
+			} else {
+				fmt.Printf("%s'help' requires a workflow name to be specified!%s\n\n", cli.COLOR_RED, cli.COLOR_RESET)
+				os.Exit(1)
+			}
+		} else {
+			states.WorkflowCMDEnter(sm, os.Args[1])
+		}
 	}
 
 	for {

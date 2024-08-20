@@ -39,7 +39,7 @@ nav > h2 {
     padding-top: 10px;
 }
 
-details > p {
+details > p, figure > p, li {
     max-width: 750px;
 }
 
@@ -127,11 +127,15 @@ code.type {
 }
 
 figcaption > code {
-    color: var(--pink);
+    color: var(--purple);
 }
 
 span.pink {
     color: var(--pink);
+}
+
+span.purple {
+    color: var(--purple);
 }
 
 span.cyan {
@@ -148,6 +152,10 @@ span.green {
 
 span.red {
     color: var(--red);
+}
+
+span.white {
+    color: var(--foreground);
 }
 
 li.const > code {

@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -37,7 +38,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @arg value {any} - The value to print to the console.
 	/// @desc
 	/// This is also including in the log similar to std.log.
-	lib.CreateFunction(tab, "print",
+	lib.CreateFunction(tab, "print_value",
 		[]lua.Arg{
 			{Type: lua.ANY, Name: "value"},
 		},
@@ -128,8 +129,9 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			opts := []string{}
-			for _, v := range args["options"].(map[string]any) {
-				opts = append(opts, v.(string))
+			options := args["options"].(map[string]any)
+			for i := range len(options) {
+				opts = append(opts, options[strconv.Itoa(i+1)].(string))
 			}
 
 			ind, err := cli.SelectMenu(

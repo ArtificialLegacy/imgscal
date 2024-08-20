@@ -2,6 +2,7 @@ package states
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -11,13 +12,14 @@ import (
 	golua "github.com/yuin/gopher-lua"
 )
 
+func WorkflowRunEnter(sm *statemachine.StateMachine, script string) {
+	sm.SetState(STATE_WORKFLOW_RUN)
+	sm.Data = script
+}
+
 func WorkflowRun(sm *statemachine.StateMachine) error {
-	script := sm.PopString()
-	verbose := sm.PopBool()
-	req := []string{}
-	for sm.Peek() {
-		req = append(req, sm.PopString())
-	}
+	pth := sm.Data.(string)
+	sm.Data = nil
 
 	if !sm.CliMode {
 		cli.Clear()
@@ -31,13 +33,9 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		lg = log.NewLoggerBase("execute", sm.Config.LogDirectory, false)
 	}
 
-	if verbose {
-		lg.EnableVerbose()
-	}
-
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
-	state := lua.WorkflowRunState(&lg)
-	runner := lua.NewRunner(req, state, &lg, sm.CliMode)
+	state := golua.NewState()
+	runner := lua.NewRunner(state, &lg, sm.CliMode)
 	runner.Output = sm.Config.OutputDirectory
 
 	defer func() {
@@ -48,14 +46,9 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		lg.Close()
 	}()
 
-	golua.OpenBase(state)
-	golua.OpenMath(state)
-	golua.OpenString(state)
-	golua.OpenTable(state)
-	lua.LoadPlugins("main", &runner, &lg, lib.Builtins, req, state)
+	luaPth := path.Join(sm.Config.WorkflowDirectory, pth)
 
-	err := runner.Run(script)
-
+	err := runner.Run(luaPth, lib.Builtins)
 	runner.Wg.Wait()
 
 	lg.Append("All collections empty, exiting", log.LEVEL_SYSTEM)
@@ -69,6 +62,24 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	runner.CC.CollectAll()
 	runner.QR.CollectAll()
 
+	if runner.Failed != "" {
+		lg.Append(fmt.Sprintf("error occured while running script: %s", runner.Failed), log.LEVEL_ERROR)
+
+		if sm.CliMode {
+			fmt.Printf("error occured while running script: %s\n", runner.Failed)
+
+			sm.SetState(STATE_EXIT)
+			return nil
+		}
+
+		WorkflowFailEnter(sm, WorkflowFailData{
+			Name:  pth,
+			Error: fmt.Errorf(runner.Failed),
+		})
+
+		return nil
+	}
+
 	if err != nil {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", err), log.LEVEL_ERROR)
 
@@ -79,29 +90,31 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			return nil
 		}
 
-		sm.PushString(err.Error())
-		sm.PushString(script)
-		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+		WorkflowFailEnter(sm, WorkflowFailData{
+			Name:  pth,
+			Error: err,
+		})
 
 		return nil
 	}
 
-	ert := collErr(runner.TC.Errs, "TC", script, &lg, sm)
-	eri := collErr(runner.IC.Errs, "IC", script, &lg, sm)
-	erf := collErr(runner.FC.Errs, "FC", script, &lg, sm)
-	erc := collErr(runner.CC.Errs, "CC", script, &lg, sm)
-	erq := collErr(runner.QR.Errs, "QR", script, &lg, sm)
+	ert := collErr(runner.TC.Errs, "TC", pth, &lg, sm)
+	eri := collErr(runner.IC.Errs, "IC", pth, &lg, sm)
+	erf := collErr(runner.FC.Errs, "FC", pth, &lg, sm)
+	erc := collErr(runner.CC.Errs, "CC", pth, &lg, sm)
+	erq := collErr(runner.QR.Errs, "QR", pth, &lg, sm)
 	if ert || eri || erf || erc || erq {
 		if sm.CliMode {
 			sm.SetState(STATE_EXIT)
 			return fmt.Errorf("error running script")
 		}
 
-		sm.PushString("error occurred within collection")
-		sm.PushString(script)
-		sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+		WorkflowFailEnter(sm, WorkflowFailData{
+			Name:  pth,
+			Error: fmt.Errorf("error occurred within collection"),
+		})
 
-		return fmt.Errorf("error running script")
+		return nil
 	}
 
 	lg.Append("workflow finished", log.LEVEL_INFO)
@@ -111,9 +124,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		return nil
 	}
 
-	sm.PushString(script)
-	sm.SetState(STATE_WORKFLOW_FINISH)
-
+	WorkflowFinishEnter(sm, pth)
 	return nil
 }
 
@@ -129,9 +140,10 @@ func collErr(errs []error, name, script string, lg *log.Logger, sm *statemachine
 
 				sm.SetState(STATE_EXIT)
 			} else {
-				sm.PushString(err.Error())
-				sm.PushString(script)
-				sm.SetState(STATE_WORKFLOW_FAIL_RUN)
+				WorkflowFailEnter(sm, WorkflowFailData{
+					Name:  script,
+					Error: err,
+				})
 			}
 
 			errExists = true

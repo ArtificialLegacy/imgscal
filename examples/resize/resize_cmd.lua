@@ -1,8 +1,17 @@
-config({
-    name="Resize",
-    version="1.0.0",
-    author="Blub",
-    requires={
+
+function help(info)
+    return [[
+Usage:
+ >  resize <inputPath> <width> <height> [-o=outputPath] [-r=resampling]
+    * If output is omitted, it will append 'resized_' to the inputted file name.
+    * If resampling is omitted, it will default to 'box'.
+        * Valid resampling values are: ['box', 'cubic', 'lanczos', 'linear', 'nn'].
+        * 'nn' is shorthand for nearest neighbor.
+    ]]
+end
+
+function init(workflow)
+    workflow.import({
         "cmd",
         "ref",
         "cli",
@@ -10,22 +19,10 @@ config({
         "io",
         "image",
         "std",
-    },
-    cli_exclusive=true,
+    })
+end
 
-    desc="Resize an image from the command line.",
-})
-
---[[
-    Usage:
-    resize <inputImage> <width> <height> [-o=outputImage{resized_..inputImage}] [-r=[box, cubic, lanczos, linear, nn]{box}]
-
-    if -o is excluded, the output file will be the same as the input, but with the string "resized_" appended to the beginning.
-    if -r is excluded, it will default to using box resampling.
-    accepted -r values are box, cubic, lanczos, linear, and nn (nearest neighbor).
---]]
-
-main(function ()
+function main()
     local inRef = cmd.arg_string_pos()
     local widthRef = cmd.arg_int_pos()
     local heightRef = cmd.arg_int_pos()
@@ -83,4 +80,4 @@ main(function ()
     })
 
     io.out(outImg, io.path_to(outPath))
-end)
+end

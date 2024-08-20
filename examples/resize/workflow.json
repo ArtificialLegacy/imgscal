@@ -1,0 +1,15 @@
+{
+    "name": "resize",
+    "author": "Blub",
+    "version": "1.0.0",
+
+    "desc": "Resize an image.",
+
+    "workflows": {
+        "*": "resize.lua"
+    },
+
+    "cli_workflows": {
+        "*": "resize_cmd.lua"
+    }
+}
