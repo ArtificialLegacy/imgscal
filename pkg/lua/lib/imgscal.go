@@ -33,6 +33,7 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_FILTER:      RegisterFilter,
 	LIB_CMD:         RegisterCmd,
 	LIB_TEMPLATE:    RegisterTemplate,
+	LIB_GAMEMAKER:   RegisterGamemaker,
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {

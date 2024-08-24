@@ -18,8 +18,6 @@ func WorkflowFailEnter(sm *statemachine.StateMachine, data WorkflowFailData) {
 }
 
 func WorkflowFail(sm *statemachine.StateMachine) error {
-	cli.Clear()
-
 	data := sm.Data.(WorkflowFailData)
 	sm.Data = nil
 	script := data.Name

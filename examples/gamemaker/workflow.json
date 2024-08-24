@@ -1,0 +1,11 @@
+{
+    "name": "gamemaker",
+    "author": "Blub",
+    "version": "1.0.0",
+
+    "desc": "Example for importing assets to a Gamemaker project.",
+
+    "workflows": {
+        "*": "gamemaker.lua"
+    }
+}

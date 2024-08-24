@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	"github.com/AllenDang/giu"
+
+	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
@@ -38,6 +40,7 @@ type Runner struct {
 	// -- crates
 	CR_WIN *collection.Crate[giu.MasterWindow]
 	CR_REF *collection.Crate[collection.RefItem[any]]
+	CR_GMP *collection.Crate[yyp.Project]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -66,6 +69,7 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		// -- crates
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),
 		CR_REF: collection.NewCrate[collection.RefItem[any]](),
+		CR_GMP: collection.NewCrate[yyp.Project](),
 	}
 }
 
