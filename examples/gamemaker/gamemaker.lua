@@ -5,10 +5,16 @@ function init(workflow)
         "io",
         "image",
         "context",
+        "cli",
     })
 end
 
 dir = "/home/joseph/dev/gm-proj-tool-testing"
+
+code = [[
+function test() {
+    show_debug_message("Hello World!");
+}]]
 
 function main()
     local proj = gamemaker.project_load(dir)
@@ -52,12 +58,16 @@ function main()
     local note = gamemaker.note("txtImgscal", "This is a note.", gamemaker.project_as_parent(proj))
         :tags({"test 1", "test 2", "test 3"})
 
-    local script = gamemaker.script("scrImgScal", [[
-function test() {
-    show_debug_message("Hello World!");    
-}
-    ]], gamemaker.project_as_parent(proj))
+    local script = gamemaker.script("scrImgScal", code, gamemaker.project_as_parent(proj))
         :tags({"test 1", "test 2", "test 3"})
+
+    gamemaker.folder_add(proj, "Folder 1")
+    local _, folderpath = gamemaker.folder_add(proj, "Folder 2", "", {"test 1", "test 2", "test 3"})
+    gamemaker.folder_add(proj, "Folder 3", folderpath)
+
+    local folder = gamemaker.folder_get(proj, "Folder 1")
+    cli.print(folderpath)
+    gamemaker.folder_delete(proj, folderpath)
     
     gamemaker.sprite_save(proj, sprite)
     gamemaker.note_save(proj, note)

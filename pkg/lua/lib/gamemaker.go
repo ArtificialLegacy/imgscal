@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"strconv"
 	"sync"
 
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
@@ -56,6 +57,108 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			err = proj.DataSave()
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to save project data: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func folder_add(id, name, folderpath) -> struct<gamemaker.ResourceNode>, string
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the folder asset.
+	/// @arg? folderpath {string} - Parent path for the folder asset, use an empty string for the root folder.
+	/// @arg? tags {[]string} - List of tags to assign to the folder.
+	/// @returns {struct<gamemaker.ResourceNode>}
+	/// @returns {string} - Path to the folder asset.
+	lib.CreateFunction(tab, "folder_add",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "path", Optional: true},
+			lua.ArgArray("tags", lua.ArrayType{Type: lua.STRING}, true),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			folderpath := args["path"].(string)
+
+			folder := yyp.NewFolder(name, folderpath)
+
+			tags := args["tags"].(map[string]any)
+			if tags != nil {
+				tagList := make([]string, len(tags))
+				for i := range len(tags) {
+					tagList[i] = tags[strconv.Itoa(i+1)].(string)
+				}
+				folder.Resource.Tags = tagList
+			}
+
+			err = proj.FolderSave(folder)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to save folder: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			node := folder.AsParent()
+			t := resourceNodeTable(state, node.Name, node.Path)
+
+			newPath := folder.FolderPath()
+
+			state.Push(t)
+			state.Push(golua.LString(newPath))
+			return 2
+		})
+
+	/// @func folder_get(id, folderpath) -> struct<gamemaker.ResourceNode>
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg folderpath {string} - Path to the folder asset.
+	/// @returns {struct<gamemaker.ResourceNode>}
+	lib.CreateFunction(tab, "folder_get",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			folderpath := args["path"].(string)
+
+			folder, err := proj.FolderLoad(folderpath)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to load folder: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			node := folder.AsParent()
+			t := resourceNodeTable(state, node.Name, node.Path)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func folder_delete(id, folderpath)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg folderpath {string} - Path to the folder asset.
+	lib.CreateFunction(tab, "folder_delete",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			folderpath := args["path"].(string)
+
+			err = proj.FolderDelete(folderpath)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to delete folder: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
 			return 0
@@ -116,6 +219,29 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func sprite_delete(id, name)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the sprite asset.
+	lib.CreateFunction(tab, "sprite_delete",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			err = proj.SpriteDelete(name)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to delete sprite: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
 	/// @func note(name, text, parent) -> struct<gamemaker.Note>
 	/// @arg name {string} - Name of the note asset.
 	/// @arg text {string}
@@ -158,6 +284,29 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func note_delete(id, name)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the note asset.
+	lib.CreateFunction(tab, "note_delete",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			err = proj.NoteDelete(name)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to delete note: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
 	/// @func script(name, code, parent) -> struct<gamemaker.Script>
 	/// @arg name {string} - Name of the script asset.
 	/// @arg code {string}
@@ -195,6 +344,29 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			err = proj.ImportResource(script)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to import script: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func script_delete(id, name)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the script asset.
+	lib.CreateFunction(tab, "script_delete",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			err = proj.ScriptDelete(name)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to delete script: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
 			return 0
