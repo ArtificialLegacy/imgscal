@@ -48,7 +48,11 @@ function main()
             :add({img1, img2})
             :add({img1, img2})
             :back()
+
+    local note = gamemaker.note("txtImgscal", "This is a note.", gamemaker.project_as_parent(proj))
+        :tags({"test 1", "test 2", "test 3"})
     
     gamemaker.sprite_save(proj, sprite)
+    gamemaker.note_save(proj, note)
     gamemaker.project_save(proj)
 end

@@ -61,10 +61,12 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func sprite(name, width, height) -> struct<gamemaker.Sprite>
+	/// @func sprite(name, width, height, parent, texgroup) -> struct<gamemaker.Sprite>
 	/// @arg name {string} - Name of the sprite asset.
 	/// @arg width {int}
 	/// @arg height {int}
+	/// @arg parent {struct<gamemaker.ResourceNode>}
+	/// @arg texgroup {struct<gamemaker.ResourceNode>}
 	/// @returns {struct<gamemaker.Sprite>}
 	lib.CreateFunction(tab, "sprite",
 		[]lua.Arg{
@@ -109,6 +111,48 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			err = proj.ImportResource(sprite)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to import sprite: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func note(name, text, parent) -> struct<gamemaker.Note>
+	/// @arg name {string} - Name of the note asset.
+	/// @arg text {string}
+	/// @arg parent {struct<gamemaker.ResourceNode>}
+	/// @returns {struct<gamemaker.Note>}
+	lib.CreateFunction(tab, "note",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "text"},
+			{Type: lua.ANY, Name: "parent"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := noteTable(state, args["name"].(string), args["text"].(string), args["parent"].(*golua.LTable))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func note_save(id, note)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg note {struct<gamemaker.Note>}
+	lib.CreateFunction(tab, "note_save",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "note"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			note := noteBuild(args["note"].(*golua.LTable))
+
+			err = proj.ImportResource(note)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to import note: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
 			return 0
@@ -817,4 +861,46 @@ func frameBuild(t *golua.LTable) []int {
 	}
 
 	return frameImgs
+}
+
+func noteTable(state *golua.LState, name, text string, parent golua.LValue) *golua.LTable {
+	/// @struct Note
+	/// @prop name {string}
+	/// @prop text {string}
+	/// @prop parent {struct<gamemaker.ResourceNode>}
+	/// @method tags([]string) -> self
+
+	t := state.NewTable()
+	t.RawSetString("name", golua.LString(name))
+	t.RawSetString("text", golua.LString(text))
+	t.RawSetString("parent", parent)
+
+	t.RawSetString("__tags", golua.LNil)
+
+	tableBuilderFunc(state, t, "tags", func(state *golua.LState, t *golua.LTable) {
+		st := state.CheckTable(-1)
+		t.RawSetString("__tags", st)
+	})
+
+	return t
+}
+
+func noteBuild(t *golua.LTable) *yyp.Note {
+	name := string(t.RawGetString("name").(golua.LString))
+	text := string(t.RawGetString("text").(golua.LString))
+	parent := resourceNodeBuild(t.RawGetString("parent").(*golua.LTable))
+
+	note := yyp.NewNote(name, text, parent)
+
+	tags := t.RawGetString("__tags")
+	if tags.Type() == golua.LTTable {
+		tgs := tags.(*golua.LTable)
+		tagList := make([]string, tgs.Len())
+		for i := range tgs.Len() {
+			tagList[i] = string(tgs.RawGetInt(i + 1).(golua.LString))
+		}
+		note.Resource.Tags = tagList
+	}
+
+	return note
 }
