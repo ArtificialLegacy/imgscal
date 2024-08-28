@@ -51,8 +51,16 @@ function main()
 
     local note = gamemaker.note("txtImgscal", "This is a note.", gamemaker.project_as_parent(proj))
         :tags({"test 1", "test 2", "test 3"})
+
+    local script = gamemaker.script("scrImgScal", [[
+function test() {
+    show_debug_message("Hello World!");    
+}
+    ]], gamemaker.project_as_parent(proj))
+        :tags({"test 1", "test 2", "test 3"})
     
     gamemaker.sprite_save(proj, sprite)
     gamemaker.note_save(proj, note)
+    gamemaker.script_save(proj, script)
     gamemaker.project_save(proj)
 end

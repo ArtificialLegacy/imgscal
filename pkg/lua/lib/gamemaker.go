@@ -158,6 +158,48 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func script(name, code, parent) -> struct<gamemaker.Script>
+	/// @arg name {string} - Name of the script asset.
+	/// @arg code {string}
+	/// @arg parent {struct<gamemaker.ResourceNode>}
+	/// @returns {struct<gamemaker.Script>}
+	lib.CreateFunction(tab, "script",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "code"},
+			{Type: lua.ANY, Name: "parent"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := scriptTable(state, args["name"].(string), args["code"].(string), args["parent"].(*golua.LTable))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func script_save(id, script)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg script {struct<gamemaker.Script>}
+	lib.CreateFunction(tab, "script_save",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "script"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			script := scriptBuild(args["script"].(*golua.LTable))
+
+			err = proj.ImportResource(script)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to import script: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
 	/// @func project_as_parent(id) -> struct<gamemaker.ResourceNode>
 	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
 	/// @returns {struct<gamemaker.ResourceNode>}
@@ -903,4 +945,46 @@ func noteBuild(t *golua.LTable) *yyp.Note {
 	}
 
 	return note
+}
+
+func scriptTable(state *golua.LState, name, code string, parent golua.LValue) *golua.LTable {
+	/// @struct Script
+	/// @prop name {string}
+	/// @prop code {string}
+	/// @prop parent {struct<gamemaker.ResourceNode>}
+	/// @method tags([]string) -> self
+
+	t := state.NewTable()
+	t.RawSetString("name", golua.LString(name))
+	t.RawSetString("code", golua.LString(code))
+	t.RawSetString("parent", parent)
+
+	t.RawSetString("__tags", golua.LNil)
+
+	tableBuilderFunc(state, t, "tags", func(state *golua.LState, t *golua.LTable) {
+		st := state.CheckTable(-1)
+		t.RawSetString("__tags", st)
+	})
+
+	return t
+}
+
+func scriptBuild(t *golua.LTable) *yyp.Script {
+	name := string(t.RawGetString("name").(golua.LString))
+	code := string(t.RawGetString("code").(golua.LString))
+	parent := resourceNodeBuild(t.RawGetString("parent").(*golua.LTable))
+
+	script := yyp.NewScript(name, code, parent)
+
+	tags := t.RawGetString("__tags")
+	if tags.Type() == golua.LTTable {
+		tgs := tags.(*golua.LTable)
+		tagList := make([]string, tgs.Len())
+		for i := range tgs.Len() {
+			tagList[i] = string(tgs.RawGetInt(i + 1).(golua.LString))
+		}
+		script.Resource.Tags = tagList
+	}
+
+	return script
 }
