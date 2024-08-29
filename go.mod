@@ -7,7 +7,7 @@ toolchain go1.22.6
 require (
 	github.com/AllenDang/cimgui-go v0.0.0-20240805083726-719fbcdaf7fa
 	github.com/AllenDang/giu v0.8.1
-	github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829132610-0a19467b3b31
+	github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829134708-c2d3b7d2d275
 	github.com/akamensky/argparse v1.4.0
 	github.com/crazy3lf/colorconv v1.2.0
 	github.com/disintegration/gift v1.2.1

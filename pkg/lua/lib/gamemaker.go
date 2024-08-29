@@ -164,6 +164,28 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func folder_exists(id, folderpath) -> bool
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg folderpath {string} - Path to the folder asset.
+	/// @returns {bool}
+	lib.CreateFunction(tab, "folder_exists",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			folderpath := args["path"].(string)
+			exists := proj.FolderExists(folderpath)
+
+			state.Push(golua.LBool(exists))
+			return 1
+		})
+
 	/// @func sprite(name, width, height, parent, texgroup) -> struct<gamemaker.Sprite>
 	/// @arg name {string} - Name of the sprite asset.
 	/// @arg width {int}
@@ -240,6 +262,28 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			}
 
 			return 0
+		})
+
+	/// @func sprite_exists(id, name) -> bool
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the sprite asset.
+	/// @returns {bool}
+	lib.CreateFunction(tab, "sprite_exists",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			exists := proj.SpriteExists(name)
+
+			state.Push(golua.LBool(exists))
+			return 1
 		})
 
 	/// @func sprite_load(id, name, encoding) -> struct<gamemaker.Sprite>
@@ -422,6 +466,28 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func note_exists(id, name) -> bool
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the note asset.
+	/// @returns {bool}
+	lib.CreateFunction(tab, "note_exists",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			exists := proj.NoteExists(name)
+
+			state.Push(golua.LBool(exists))
+			return 1
+		})
+
 	/// @func note_load(id, name) -> struct<gamemaker.Note>
 	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
 	/// @arg name {string} - Name of the note asset.
@@ -522,6 +588,28 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			}
 
 			return 0
+		})
+
+	/// @func script_exists(id, name) -> bool
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg name {string} - Name of the script asset.
+	/// @returns {bool}
+	lib.CreateFunction(tab, "script_exists",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			name := args["name"].(string)
+			exists := proj.ScriptExists(name)
+
+			state.Push(golua.LBool(exists))
+			return 1
 		})
 
 	/// @func script_load(id, name) -> struct<gamemaker.Script>
