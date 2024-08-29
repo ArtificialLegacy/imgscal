@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"path"
+	"runtime/debug"
 	"strconv"
 	"sync"
 
@@ -76,7 +77,8 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 func (r *Runner) Run(file string, plugins PluginMap) error {
 	defer func() {
 		if p := recover(); p != nil {
-			r.lg.Append("recovered from panic during lua runtime.", log.LEVEL_ERROR)
+			r.lg.Append("recovered from panic during lua runtime", log.LEVEL_ERROR)
+			r.lg.Append(string(debug.Stack()), log.LEVEL_ERROR)
 			r.Failed = fmt.Sprintf("%s", p)
 		}
 	}()

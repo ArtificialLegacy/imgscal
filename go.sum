@@ -22,6 +22,10 @@ github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240828115324-a7aab771f17e h1:8
 github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240828115324-a7aab771f17e/go.mod h1:x8nZ6DrugBlS+FtIcEOlKJoCE276V08tKSZMM2BfXXA=
 github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240828134339-b1e37cab43df h1:qVQtM9zULWZHYmsU8O7RQ3TIjeK1ajjObVeL8y4qk3I=
 github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240828134339-b1e37cab43df/go.mod h1:x8nZ6DrugBlS+FtIcEOlKJoCE276V08tKSZMM2BfXXA=
+github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829124313-a3f5e556c874 h1:zS4aZ+7KmkRoohxnuFyLegn2Cf0j4WildKuaJ+SDjMw=
+github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829124313-a3f5e556c874/go.mod h1:x8nZ6DrugBlS+FtIcEOlKJoCE276V08tKSZMM2BfXXA=
+github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829132610-0a19467b3b31 h1:15MDE/aXrdo/w1kXcEOLhbLdRHFMoaJ20nEOcQtrLU4=
+github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829132610-0a19467b3b31/go.mod h1:x8nZ6DrugBlS+FtIcEOlKJoCE276V08tKSZMM2BfXXA=
 github.com/akamensky/argparse v1.4.0 h1:YGzvsTqCvbEZhL8zZu2AiA5nq805NZh75JNj4ajn1xc=
 github.com/akamensky/argparse v1.4.0/go.mod h1:S5kwC7IuDcEr5VeXtGPRVZ5o/FdhcMlQz4IZQuw64xA=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 h1:WWB576BN5zNSZc/M9d/10pqEx5VHNhaQ/yOVAkmj5Yo=

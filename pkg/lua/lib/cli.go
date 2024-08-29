@@ -34,6 +34,31 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func print_number(number)
+	/// @arg number {float64} - The number to print to the console.
+	/// @arg? trunc {bool}
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "print_number",
+		[]lua.Arg{
+			{Type: lua.FLOAT, Name: "number"},
+			{Type: lua.BOOL, Name: "trunc", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			num := args["number"].(float64)
+
+			var msg string
+			if args["trunc"].(bool) {
+				msg = fmt.Sprintf("%d", int(num))
+			} else {
+				msg = fmt.Sprintf("%f", num)
+			}
+
+			fmt.Println(msg)
+			lg.Append(fmt.Sprintf("lua msg printed: %s", msg), log.LEVEL_INFO)
+			return 0
+		})
+
 	/// @func print_value(value)
 	/// @arg value {any} - The value to print to the console.
 	/// @desc
