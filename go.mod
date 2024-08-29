@@ -1,10 +1,13 @@
 module github.com/ArtificialLegacy/imgscal
 
-go 1.22
+go 1.22.4
+
+toolchain go1.22.6
 
 require (
 	github.com/AllenDang/cimgui-go v0.0.0-20240805083726-719fbcdaf7fa
 	github.com/AllenDang/giu v0.8.1
+	github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829175936-7ea472aea965
 	github.com/akamensky/argparse v1.4.0
 	github.com/crazy3lf/colorconv v1.2.0
 	github.com/disintegration/gift v1.2.1
@@ -29,6 +32,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a // indirect
 	github.com/wayneashleyberry/terminal-dimensions v1.1.0 // indirect
 	golang.design/x/hotkey v0.4.1 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect

@@ -109,9 +109,8 @@ func NewLoggerEmpty() Logger {
 	return lg
 }
 
-func (l Logger) EnableVerbose() Logger {
+func (l *Logger) EnableVerbose() {
 	l.verbose = true
-	return l
 }
 
 func (l *Logger) Append(str string, level LogLevel) string {

@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"math"
 	"path"
+	"runtime/debug"
 	"strconv"
 	"sync"
 
 	"github.com/AllenDang/giu"
+
+	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
@@ -38,6 +41,7 @@ type Runner struct {
 	// -- crates
 	CR_WIN *collection.Crate[giu.MasterWindow]
 	CR_REF *collection.Crate[collection.RefItem[any]]
+	CR_GMP *collection.Crate[yyp.Project]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -66,13 +70,15 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		// -- crates
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),
 		CR_REF: collection.NewCrate[collection.RefItem[any]](),
+		CR_GMP: collection.NewCrate[yyp.Project](),
 	}
 }
 
 func (r *Runner) Run(file string, plugins PluginMap) error {
 	defer func() {
 		if p := recover(); p != nil {
-			r.lg.Append("recovered from panic during lua runtime.", log.LEVEL_ERROR)
+			r.lg.Append("recovered from panic during lua runtime", log.LEVEL_ERROR)
+			r.lg.Append(string(debug.Stack()), log.LEVEL_ERROR)
 			r.Failed = fmt.Sprintf("%s", p)
 		}
 	}()

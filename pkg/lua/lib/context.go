@@ -159,7 +159,9 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
 					c := gg.NewContext(args["width"].(int), args["height"].(int))
-					i.Self.Context = c
+					i.Self = &collection.ItemContext{
+						Context: c,
+					}
 					i.Lg.Append("new context created", log.LEVEL_INFO)
 				},
 			})
