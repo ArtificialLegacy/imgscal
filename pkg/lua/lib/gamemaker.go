@@ -1,8 +1,10 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"image"
+	"os"
 	"strconv"
 	"sync"
 
@@ -649,6 +651,131 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func datafile_from_file(name, filepath, frompath) -> struct<gamemaker.DataFile>
+	/// @arg name {string} - Name of the script asset.
+	/// @arg filepath {string}
+	/// @arg frompath {string} - File path to read file from. Note that this file is not read until the resource is saved.
+	/// @returns {struct<gamemaker.DataFile>}
+	lib.CreateFunction(tab, "datafile_from_file",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "filepath"},
+			{Type: lua.STRING, Name: "frompath"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := datafileTable(state, args["name"].(string), args["filepath"].(string), golua.LString(args["frompath"].(string)), DATAFILE_FILE)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func datafile_from_string(name, filepath, data) -> struct<gamemaker.DataFile>
+	/// @arg name {string} - Name of the script asset.
+	/// @arg filepath {string}
+	/// @arg data {string}
+	/// @returns {struct<gamemaker.DataFile>}
+	lib.CreateFunction(tab, "datafile_from_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "filepath"},
+			{Type: lua.STRING, Name: "data"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := datafileTable(state, args["name"].(string), args["filepath"].(string), golua.LString(args["data"].(string)), DATAFILE_STRING)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func datafile_from_image(name, filepath, id) -> struct<gamemaker.DataFile>
+	/// @arg name {string} - Name of the script asset.
+	/// @arg filepath {string}
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {struct<gamemaker.DataFile>}
+	lib.CreateFunction(tab, "datafile_from_image",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "filepath"},
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := datafileTable(state, args["name"].(string), args["filepath"].(string), golua.LNumber(args["id"].(int)), DATAFILE_IMAGE)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func datafile_save(id, datafile)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg datafile {struct<gamemaker.DataFile>}
+	lib.CreateFunction(tab, "datafile_save",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.ANY, Name: "datafile"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			datafile := datafileBuild(state, args["datafile"].(*golua.LTable), r, lg)
+
+			err = proj.IncludedFileSave(datafile)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to import datafile: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func datafile_delete(id, filepath, name)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg filepath {string}
+	/// @arg name {string}
+	lib.CreateFunction(tab, "datafile_delete",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "filepath"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			err = proj.IncludedFileDelete(args["filepath"].(string), args["name"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to delete datafile: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func datafile_exists(id, filepath, name) -> bool
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg filepath {string}
+	/// @arg name {string}
+	/// @returns {bool}
+	lib.CreateFunction(tab, "datafile_exists",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "filepath"},
+			{Type: lua.STRING, Name: "name"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			proj, err := r.CR_GMP.Item(args["id"].(int))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+			}
+
+			exists := proj.IncludedFileExists(args["filepath"].(string), args["name"].(string))
+
+			state.Push(golua.LBool(exists))
+			return 1
+		})
+
 	/// @func project_as_parent(id) -> struct<gamemaker.ResourceNode>
 	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
 	/// @returns {struct<gamemaker.ResourceNode>}
@@ -770,6 +897,10 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("NINESLICESLICE_RIGHT", golua.LNumber(yyp.NINESLICESLICE_RIGHT))
 	tab.RawSetString("NINESLICESLICE_BOTTOM", golua.LNumber(yyp.NINESLICESLICE_BOTTOM))
 	tab.RawSetString("NINESLICESLICE_CENTER", golua.LNumber(yyp.NINESLICESLICE_CENTER))
+
+	/// @constants Directories
+	/// @const DIR_DATAFILES
+	tab.RawSetString("DIR_DATAFILES", golua.LString(yyp.INCLUDEDFILE_DEFAULTPATH))
 
 }
 
@@ -1493,4 +1624,71 @@ func bboxTable(state *golua.LState, top, left, bottom, right int) *golua.LTable 
 	t.RawSetString("right", golua.LNumber(right))
 
 	return t
+}
+
+type DataFileType int
+
+const (
+	DATAFILE_STRING DataFileType = iota
+	DATAFILE_FILE
+	DATAFILE_IMAGE
+)
+
+func datafileTable(state *golua.LState, name, filepath string, data golua.LValue, dataType DataFileType) *golua.LTable {
+	/// @struct DataFile
+	/// @prop name {string}
+	/// @prop filepath {string}
+	/// @prop data {string | int<collection.IMAGE>}
+	/// @prop datatype {int<gamemaker.DataFileType>}
+
+	t := state.NewTable()
+	t.RawSetString("name", golua.LString(name))
+	t.RawSetString("filepath", golua.LString(filepath))
+	t.RawSetString("data", data)
+	t.RawSetString("datatype", golua.LNumber(dataType))
+
+	return t
+}
+
+func datafileBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.Logger) *yyp.IncludedFile {
+	name := string(t.RawGetString("name").(golua.LString))
+	filepath := string(t.RawGetString("filepath").(golua.LString))
+	data := t.RawGetString("data")
+	dataType := DataFileType(t.RawGetString("datatype").(golua.LNumber))
+
+	var fdata []byte
+	var err error
+
+	switch dataType {
+	case DATAFILE_STRING:
+		fdata = []byte(string(data.(golua.LString)))
+	case DATAFILE_FILE:
+		fdata, err = os.ReadFile(string(data.(golua.LString)))
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to read file: %s", data), log.LEVEL_ERROR)), 0)
+			return nil
+		}
+	case DATAFILE_IMAGE:
+		var img image.Image
+		var encoding imageutil.ImageEncoding
+		<-r.IC.Schedule(int(data.(golua.LNumber)), &collection.Task[collection.ItemImage]{
+			Lib:  LIB_GAMEMAKER,
+			Name: "datafile_save",
+			Fn: func(i *collection.Item[collection.ItemImage]) {
+				img = i.Self.Image
+				encoding = i.Self.Encoding
+			},
+		})
+
+		var b bytes.Buffer
+		err := imageutil.Encode(&b, img, encoding)
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to encode image: %s", data), log.LEVEL_ERROR)), 0)
+			return nil
+		}
+
+		fdata = b.Bytes()
+	}
+
+	return yyp.NewIncludedFile(filepath, name, &fdata)
 }

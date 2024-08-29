@@ -3,7 +3,7 @@ function init(workflow)
     workflow.import({
         "gamemaker",
         "image",
-        "cli",
+        "io",
     })
 end
 
@@ -12,14 +12,14 @@ dir = "/home/joseph/dev/gm-proj-tool-testing"
 function main()
     local proj = gamemaker.project_load(dir)
 
-    local sprite = gamemaker.sprite_load(proj, "sprImgScal", image.ENCODING_PNG)
-    cli.print(sprite.name)
-    cli.print_number(sprite.__layerCount)
-    cli.print_number(sprite.width, true)
-    cli.print_number(sprite.height, true)
+    local img = image.new("datafile", image.ENCODING_PNG, 16, 16)
 
-    sprite.name = "sprImgScal2"
-
-    gamemaker.sprite_save(proj, sprite)
+    local datafile1 = gamemaker.datafile_from_string("data.txt", "datafiles", "hello world!")
+    local datafile2 = gamemaker.datafile_from_file("filedata.txt", "datafiles", io.path_join({io.wd(), "filedata.txt"}))
+    local datafile3 = gamemaker.datafile_from_image("data.png", "datafiles", img)
+ 
+    gamemaker.datafile_save(proj, datafile1)
+    gamemaker.datafile_save(proj, datafile2)
+    gamemaker.datafile_save(proj, datafile3)
     gamemaker.project_save(proj)
 end
