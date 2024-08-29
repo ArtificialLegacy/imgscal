@@ -399,6 +399,9 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 				t.RawSetString("__messages", msgs)
 			}
 
+			t.RawSetString("__playbackSpeed", golua.LNumber(sprite.Resource.Sequence.PlaybackSpeed))
+			t.RawSetString("__playbackUnits", golua.LNumber(sprite.Resource.Sequence.TimeUnits))
+
 			state.Push(t)
 			return 1
 		})
@@ -898,6 +901,12 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("NINESLICESLICE_BOTTOM", golua.LNumber(yyp.NINESLICESLICE_BOTTOM))
 	tab.RawSetString("NINESLICESLICE_CENTER", golua.LNumber(yyp.NINESLICESLICE_CENTER))
 
+	/// @constants Playback Units
+	/// @const PLAYBACK_PERSECOND
+	/// @const PLAYBACK_PERFRAME
+	tab.RawSetString("PLAYBACK_PERSECOND", golua.LNumber(yyp.SEQUNITS_TIME))
+	tab.RawSetString("PLAYBACK_PERFRAME", golua.LNumber(yyp.SEQUNITS_FRAME))
+
 	/// @constants Directories
 	/// @const DIR_DATAFILES
 	tab.RawSetString("DIR_DATAFILES", golua.LString(yyp.INCLUDEDFILE_DEFAULTPATH))
@@ -999,6 +1008,7 @@ func spriteTable(state *golua.LState, name string, width, height int, parent, te
 	/// @method nineslice(top int, left int, bottom int, right int) -> self
 	/// @method nineslice_tilemode(int<gamemaker.NineSliceSlice>, int<gamemaker.NineSliceTile>) -> self
 	/// @method broadcast_message(frame int, msg string) -> self
+	/// @method playback(speed int, units int<gamemaker.PlaybackUnits>?) -> self
 
 	t := state.NewTable()
 	t.RawSetString("name", golua.LString(name))
@@ -1027,6 +1037,8 @@ func spriteTable(state *golua.LState, name string, width, height int, parent, te
 	t.RawSetString("__ninesliceRight", golua.LNumber(0))
 	t.RawSetString("__ninesliceTiles", golua.LNil)
 	t.RawSetString("__messages", golua.LNil)
+	t.RawSetString("__playbackSpeed", golua.LNil)
+	t.RawSetString("__playbackUnits", golua.LNil)
 
 	t.RawSetString("__layerCount", golua.LNumber(0))
 	t.RawSetString("__layers", state.NewTable())
@@ -1152,6 +1164,17 @@ func spriteTable(state *golua.LState, name string, width, height int, parent, te
 
 		messages.(*golua.LTable).Append(mt)
 		t.RawSetString("__messages", messages)
+	})
+
+	tableBuilderFunc(state, t, "playback", func(state *golua.LState, t *golua.LTable) {
+		speed := state.CheckNumber(2)
+		units := state.OptNumber(3, -1)
+
+		t.RawSetString("__playbackSpeed", speed)
+
+		if units > -1 {
+			t.RawSetString("__playbackUnits", units)
+		}
 	})
 
 	return t
@@ -1352,6 +1375,16 @@ func spriteBuild(t *golua.LTable, r *lua.Runner) (*yyp.Sprite, error) {
 			message := string(msg.RawGetString("__msg").(golua.LString))
 
 			sprite.Resource.Sequence.Events.Keyframes = append(sprite.Resource.Sequence.Events.Keyframes, yyp.NewResourceSpriteSequenceEventKeyframe([][]string{{message}}, key))
+		}
+	}
+
+	playback := t.RawGetString("__playbackSpeed")
+	if playback.Type() == golua.LTNumber {
+		sprite.Resource.Sequence.PlaybackSpeed = float64(playback.(golua.LNumber))
+
+		units := t.RawGetString("__playbackUnits")
+		if units.Type() == golua.LTNumber {
+			sprite.Resource.Sequence.TimeUnits = yyp.SeqTimeUnits(units.(golua.LNumber))
 		}
 	}
 
