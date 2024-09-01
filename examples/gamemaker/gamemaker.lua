@@ -3,7 +3,7 @@ function init(workflow)
     workflow.import({
         "gamemaker",
         "image",
-        "context"
+        "context",
     })
 end
 
