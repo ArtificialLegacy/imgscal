@@ -323,7 +323,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			imgids := args["icon_ids"].(map[string]any)
+			imgids := args["icon_ids"].([]any)
 			imgList := []image.Image{}
 			wg := sync.WaitGroup{}
 

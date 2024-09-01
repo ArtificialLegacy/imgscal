@@ -380,14 +380,14 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func del_many(ids)
-	/// @arg ids {[]int<collection.CRATE_REF>}
+	/// @func del_many(ids...)
+	/// @arg ids {int<collection.CRATE_REF>...}
 	lib.CreateFunction(tab, "del_many",
 		[]lua.Arg{
-			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
+			lua.ArgVariadic("ids", lua.ArrayType{Type: lua.INT}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			ids := args["ids"].(map[string]any)
+			ids := args["ids"].([]any)
 			for _, id := range ids {
 				r.CR_REF.Clean(id.(int))
 			}

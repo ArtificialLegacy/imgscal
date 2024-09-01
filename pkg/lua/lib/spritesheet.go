@@ -3,7 +3,6 @@ package lib
 import (
 	"fmt"
 	"image"
-	"strconv"
 	"sync"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -313,7 +312,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			}},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			imgs := args["ids"].(map[string]any)
+			imgs := args["ids"].([]any)
 			wg := sync.WaitGroup{}
 			finish := make(chan struct{})
 
@@ -327,7 +326,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			wg.Add(len(imgs))
 			for ind := range len(imgs) {
-				id := imgs[strconv.Itoa(ind+1)].(int)
+				id := imgs[ind].(int)
 
 				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,

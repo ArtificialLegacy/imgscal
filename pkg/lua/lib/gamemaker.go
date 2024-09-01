@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image"
 	"os"
-	"strconv"
 	"sync"
 
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
@@ -89,11 +88,11 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 
 			folder := yyp.NewFolder(name, folderpath)
 
-			tags := args["tags"].(map[string]any)
-			if tags != nil {
+			tags := args["tags"].([]any)
+			if len(tags) > 0 {
 				tagList := make([]string, len(tags))
-				for i := range len(tags) {
-					tagList[i] = tags[strconv.Itoa(i+1)].(string)
+				for i, v := range tags {
+					tagList[i] = v.(string)
 				}
 				folder.Resource.Tags = tagList
 			}

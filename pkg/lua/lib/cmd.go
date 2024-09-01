@@ -3,7 +3,6 @@ package lib
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -414,10 +413,10 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 				opt = buildOptions(state, optv.(*golua.LTable))
 			}
 
-			choices := []string{}
-			chv := args["choices"].(map[string]any)
-			for i := range len(chv) {
-				choices = append(choices, chv[strconv.Itoa(i+1)].(string))
+			chv := args["choices"].([]any)
+			choices := make([]string, len(chv))
+			for i, v := range chv {
+				choices[i] = v.(string)
 			}
 
 			f := r.CMDParser.Command.Selector(args["short"].(string), args["long"].(string), choices, opt)
@@ -446,10 +445,10 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 				opt = buildOptions(state, optv.(*golua.LTable))
 			}
 
-			choices := []string{}
-			chv := args["choices"].(map[string]any)
-			for i := range len(chv) {
-				choices = append(choices, chv[strconv.Itoa(i+1)].(string))
+			chv := args["choices"].([]any)
+			choices := make([]string, len(chv))
+			for i, v := range chv {
+				choices[i] = v.(string)
 			}
 
 			f := r.CMDParser.Command.SelectorPositional(choices, opt)

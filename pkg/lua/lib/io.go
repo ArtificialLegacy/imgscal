@@ -7,7 +7,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/assets"
@@ -282,9 +281,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			lua.ArgArray("filter", lua.ArrayType{Type: lua.STRING}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			filter := []string{}
-			for _, v := range args["filter"].(map[string]any) {
-				filter = append(filter, v.(string))
+			fv := args["filter"].([]any)
+			filter := make([]string, len(fv))
+			for i, v := range fv {
+				filter[i] = v.(string)
 			}
 
 			parseDir("dir_filter", args["path"].(string), filter, lib)
@@ -308,19 +308,19 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func path_join(paths) -> string
-	/// @arg paths {[]string}
+	/// @func path_join(paths...) -> string
+	/// @arg paths {string...}
 	/// @returns {string}
 	lib.CreateFunction(tab, "path_join",
 		[]lua.Arg{
-			lua.ArgArray("paths", lua.ArrayType{Type: lua.STRING}, false),
+			lua.ArgVariadic("paths", lua.ArrayType{Type: lua.STRING}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			strs := []string{}
-			pths := args["paths"].(map[string]any)
+			pths := args["paths"].([]any)
+			strs := make([]string, len(pths))
 
-			for i := range len(pths) {
-				strs = append(strs, pths[strconv.Itoa(i+1)].(string))
+			for i, v := range pths {
+				strs[i] = v.(string)
 			}
 
 			pth := path.Join(strs...)

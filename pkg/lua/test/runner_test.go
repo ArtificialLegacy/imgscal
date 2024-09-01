@@ -23,7 +23,7 @@ func TestParseArgs_Int(t *testing.T) {
 	lib.State.Push(golua.LNumber(1))
 	lib.State.Push(golua.LNumber(2))
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.INT, Name: "v1"}, {Type: lua.INT, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_int", []lua.Arg{{Type: lua.INT, Name: "v1"}, {Type: lua.INT, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(int) != 1 {
@@ -48,7 +48,7 @@ func TestParseArgs_Float(t *testing.T) {
 	lib.State.Push(golua.LNumber(1.5))
 	lib.State.Push(golua.LNumber(2.5))
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.FLOAT, Name: "v1"}, {Type: lua.FLOAT, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_float", []lua.Arg{{Type: lua.FLOAT, Name: "v1"}, {Type: lua.FLOAT, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(float64) != 1.5 {
@@ -73,7 +73,7 @@ func TestParseArgs_Bool(t *testing.T) {
 	lib.State.Push(golua.LBool(true))
 	lib.State.Push(golua.LBool(false))
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.BOOL, Name: "v1"}, {Type: lua.BOOL, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_bool", []lua.Arg{{Type: lua.BOOL, Name: "v1"}, {Type: lua.BOOL, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(bool) != true {
@@ -98,7 +98,7 @@ func TestParseArgs_String(t *testing.T) {
 	lib.State.Push(golua.LString("A"))
 	lib.State.Push(golua.LString("B"))
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2"}}, 2, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_string", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2"}}, 2, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(string) != "A" {
@@ -122,7 +122,7 @@ func TestParseArgs_Optional(t *testing.T) {
 
 	lib.State.Push(golua.LString("A"))
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2", Optional: true}}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_optional", []lua.Arg{{Type: lua.STRING, Name: "v1"}, {Type: lua.STRING, Name: "v2", Optional: true}}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v.(string) != "A" {
@@ -148,7 +148,7 @@ func TestParseArgs_Table(t *testing.T) {
 	tab.RawSetString("v1", golua.LNumber(1))
 	lib.State.Push(tab)
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{{Type: lua.TABLE, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_table", []lua.Arg{{Type: lua.TABLE, Name: "v1", Table: &[]lua.Arg{{Type: lua.INT, Name: "v1"}}}}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
 		if v, ok := v.(map[string]any)["v1"]; ok {
@@ -168,14 +168,42 @@ func TestParseArgs_Array(t *testing.T) {
 
 	tab := lib.State.NewTable()
 	tab.RawSetInt(1, golua.LNumber(1))
+	tab.RawSetInt(2, golua.LNumber(2))
 	lib.State.Push(tab)
 
-	argMap, _ := lib.ParseArgs(lib.State, "test", []lua.Arg{lua.ArgArray("v1", lua.ArrayType{Type: lua.INT}, false)}, 1, 0)
+	argMap, _ := lib.ParseArgs(lib.State, "test_array", []lua.Arg{lua.ArgArray("v1", lua.ArrayType{Type: lua.INT}, false)}, 1, 0)
 
 	if v, ok := argMap["v1"]; ok {
-		if v, ok := v.(map[string]any)["1"]; ok {
-			if v.(int) != 1 {
-				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v)
+		if v, ok := v.([]any); ok {
+			if v[0].(int) != 1 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v[0])
+			}
+			if v[1].(int) != 2 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 2, v[1])
+			}
+		} else {
+			t.Error("failed to parse v1 field")
+		}
+	} else {
+		t.Error("failed to parse v1 argument")
+	}
+}
+
+func TestParseArgs_Variadic(t *testing.T) {
+	lib := setupLib()
+
+	lib.State.Push(golua.LNumber(1))
+	lib.State.Push(golua.LNumber(2))
+
+	argMap, _ := lib.ParseArgs(lib.State, "test_variadic", []lua.Arg{lua.ArgVariadic("v1", lua.ArrayType{Type: lua.INT}, false)}, 2, 0)
+
+	if v, ok := argMap["v1"]; ok {
+		if v, ok := v.([]any); ok {
+			if v[0].(int) != 1 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v[0])
+			}
+			if v[1].(int) != 2 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 2, v[1])
 			}
 		} else {
 			t.Error("failed to parse v1 field")

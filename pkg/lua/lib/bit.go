@@ -1,8 +1,6 @@
 package lib
 
 import (
-	"strconv"
-
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/yuin/gopher-lua"
@@ -35,19 +33,19 @@ func RegisterBit(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func bitor_many([]operands) -> int
-	/// @arg operands {[]int}
+	/// @func bitor_many(operands...) -> int
+	/// @arg operands {int...}
 	/// @returns {int} - The result of all operands on (0 | operand[1] | operand[2]...).
 	lib.CreateFunction(tab, "bitor_many",
 		[]lua.Arg{
-			lua.ArgArray("operands", lua.ArrayType{Type: lua.INT}, false),
+			lua.ArgVariadic("operands", lua.ArrayType{Type: lua.INT}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			list := args["operands"].(map[string]any)
+			list := args["operands"].([]any)
 			acc := 0
 
 			for i := range len(list) {
-				v := list[strconv.Itoa(i+1)].(int)
+				v := list[i].(int)
 				acc |= v
 			}
 

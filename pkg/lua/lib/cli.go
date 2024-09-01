@@ -2,7 +2,7 @@ package lib
 
 import (
 	"fmt"
-	"strconv"
+	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -20,11 +20,33 @@ const LIB_CLI = "cli"
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_CLI, r, r.State, lg)
 
-	/// @func print(msg)
-	/// @arg msg {string} - The message to print to the console.
+	/// @func print(msg...)
+	/// @arg msg {string...} - The messages to print to the console.
 	/// @desc
 	/// This is also including in the log similar to std.log.
 	lib.CreateFunction(tab, "print",
+		[]lua.Arg{
+			lua.ArgVariadic("msg", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			msgs := args["msg"].([]any)
+			msg := make([]string, len(msgs))
+			for i, v := range msgs {
+				msg[i] = v.(string)
+			}
+
+			str := strings.Join(msg, ", ")
+
+			fmt.Println(str)
+			lg.Append(fmt.Sprintf("lua msg printed: %s", str), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func println(msg)
+	/// @arg msg {string} - The message to print to the console.
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "println",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "msg"},
 		},
@@ -34,12 +56,56 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func print_number(number)
+	/// @func print_float(numbers...)
+	/// @arg numbers {float64...} - The numbers to print to the console.
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "print_float",
+		[]lua.Arg{
+			lua.ArgVariadic("numbers", lua.ArrayType{Type: lua.FLOAT}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			nums := args["numbers"].([]any)
+			msg := make([]string, len(nums))
+			for i, v := range nums {
+				msg[i] = fmt.Sprintf("%f", v)
+			}
+
+			str := strings.Join(msg, ", ")
+
+			fmt.Println(str)
+			lg.Append(fmt.Sprintf("lua msg printed: %s", str), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func print_int(numbers...)
+	/// @arg numbers {int...} - The numbers to print to the console.
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "print_int",
+		[]lua.Arg{
+			lua.ArgVariadic("numbers", lua.ArrayType{Type: lua.INT}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			nums := args["numbers"].([]any)
+			msg := make([]string, len(nums))
+			for i, v := range nums {
+				msg[i] = fmt.Sprintf("%d", v)
+			}
+
+			str := strings.Join(msg, ", ")
+
+			fmt.Println(str)
+			lg.Append(fmt.Sprintf("lua msg printed: %s", str), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func println_number(number, trunc?)
 	/// @arg number {float64} - The number to print to the console.
 	/// @arg? trunc {bool}
 	/// @desc
 	/// This is also including in the log similar to std.log.
-	lib.CreateFunction(tab, "print_number",
+	lib.CreateFunction(tab, "println_number",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "number"},
 			{Type: lua.BOOL, Name: "trunc", Optional: true},
@@ -56,20 +122,6 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			fmt.Println(msg)
 			lg.Append(fmt.Sprintf("lua msg printed: %s", msg), log.LEVEL_INFO)
-			return 0
-		})
-
-	/// @func print_value(value)
-	/// @arg value {any} - The value to print to the console.
-	/// @desc
-	/// This is also including in the log similar to std.log.
-	lib.CreateFunction(tab, "print_value",
-		[]lua.Arg{
-			{Type: lua.RAW_TABLE, Name: "value"},
-		},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			fmt.Printf("%+v\n", args["value"])
-			lg.Append(fmt.Sprintf("lua msg printed: %s", args["value"]), log.LEVEL_INFO)
 			return 0
 		})
 
@@ -109,10 +161,10 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			/// @prop accepts {[]string} - List of accepted responses.
 			/// @prop fallback {string} - A default response to return when the one entered by the user is not in 'accepts'.
 
-			acc := args["options"].(map[string]any)["accepts"]
-			accepts := []string{}
-			if str, ok := acc.([]string); ok {
-				accepts = str
+			acc := args["options"].(map[string]any)["accepts"].([]any)
+			accepts := make([]string, len(acc))
+			for i, v := range acc {
+				accepts[i] = v.(string)
 			}
 
 			opts := cli.QuestionOptions{
@@ -153,10 +205,10 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			lua.ArgArray("options", lua.ArrayType{Type: lua.STRING}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			opts := []string{}
-			options := args["options"].(map[string]any)
-			for i := range len(options) {
-				opts = append(opts, options[strconv.Itoa(i+1)].(string))
+			options := args["options"].([]any)
+			opts := make([]string, len(options))
+			for i, v := range options {
+				opts[i] = v.(string)
 			}
 
 			ind, err := cli.SelectMenu(

@@ -1857,9 +1857,10 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
-					pattern := []float64{}
-					for _, v := range args["pattern"].(map[string]any) {
-						pattern = append(pattern, v.(float64))
+					pv := args["pattern"].([]any)
+					pattern := make([]float64, len(pv))
+					for ind, v := range pv {
+						pattern[ind] = v.(float64)
 					}
 
 					i.Self.Context.SetDash(pattern...)
