@@ -67,6 +67,62 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func new_filled(name, encoding, width, height, color, model?) -> int<collection.IMAGE>
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg color {struct<image.Color>}
+	/// @arg? model {int<image.ColorModel>}
+	/// @returns {int<collection.IMAGE>}
+	lib.CreateFunction(tab, "new_filled",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.RAW_TABLE, Name: "color"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+					width := args["width"].(int)
+					height := args["height"].(int)
+
+					img := imageutil.NewImage(width, height, model)
+					red, green, blue, alpha := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+
+					for ix := 0; ix < width; ix++ {
+						for iy := 0; iy < height; iy++ {
+							imageutil.Set(img, ix, iy, int(red), int(green), int(blue), int(alpha))
+						}
+					}
+
+					i.Self = &collection.ItemImage{
+						Image:    img,
+						Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
+						Name:     name,
+						Model:    model,
+					}
+				},
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
 	/// @func name(id, name)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg name {string} - The new name to use for the image, not including the file extension.
