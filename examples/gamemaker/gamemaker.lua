@@ -22,7 +22,7 @@ function main()
     local img2 = context.to_image(ctx, "img2", image.ENCODING_PNG, image.MODEL_NRGBA, true)
 
     local sprite = gamemaker.sprite("sprImgScal", 16, 16, gamemaker.project_as_parent(proj), gamemaker.texgroup_default())
-        :tags({"test 1", "test 2", "test 3"})
+        :tags("test 1", "test 2", "test 3")
         :tile(false, true)
         :origin(gamemaker.SPRITEORIGIN_CUSTOM, 4, 4)
         :collision(gamemaker.BBOXMODE_MANUAL, gamemaker.COLLMASK_RECT, gamemaker.bbox(2, 2, 13, 13))

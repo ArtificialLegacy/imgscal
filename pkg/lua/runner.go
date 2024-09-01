@@ -464,6 +464,21 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 	}))
 }
 
+func (l *Lib) BuilderFunction(state *lua.LState, t *lua.LTable, name string, args []Arg, fn func(state *lua.LState, t *lua.LTable, args map[string]any)) {
+	t.RawSetString(name, state.NewFunction(func(state *lua.LState) int {
+		self := state.CheckTable(1)
+		state.Remove(1)
+
+		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
+		state.Pop(c)
+
+		fn(state, self, argMap)
+
+		state.Push(self)
+		return 1
+	}))
+}
+
 type PluginMap map[string]func(r *Runner, lg *log.Logger)
 
 func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins PluginMap, reqs []string, state *lua.LState) {
