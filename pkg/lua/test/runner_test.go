@@ -246,3 +246,25 @@ func TestMapSchema(t *testing.T) {
 		t.Errorf("v4 should not be in the result, but got=%s", v)
 	}
 }
+
+func TestMapSchemaNesting(t *testing.T) {
+	schema := map[string]any{"v1": map[string]any{"v2": "A"}}
+	data := map[string]any{"v1": map[string]any{"v2": "B", "v3": "C"}}
+	result := lua.MapSchema(schema, data)
+
+	if v, ok := result["v1"]; ok {
+		if v, ok := v.(map[string]any)["v2"]; ok {
+			if v != "B" {
+				t.Errorf("got wrong string: wanted=%s, got=%s", "B", v)
+			}
+		} else {
+			t.Error("failed to map v2 field")
+		}
+
+		if v, ok := v.(map[string]any)["v3"]; ok {
+			t.Errorf("v3 should not be in the result, but got=%s", v)
+		}
+	} else {
+		t.Error("failed to map v1 field")
+	}
+}

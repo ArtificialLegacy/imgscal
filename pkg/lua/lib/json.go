@@ -55,6 +55,90 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func parse_schema(path, schema) -> table<any>
+	/// @arg path {string}
+	/// @arg schema {table<any>}
+	/// @returns {table<any>} - Table representing the json file parsed.
+	lib.CreateFunction(tab, "parse_schema",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.RAW_TABLE, Name: "schema"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			file, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid json path provided to io.load_image: %s", args["path"]), log.LEVEL_ERROR)), 0)
+			}
+			if file.IsDir() {
+				state.Error(golua.LString(lg.Append("cannot parse a directory as an json", log.LEVEL_ERROR)), 0)
+			}
+			if path.Ext(file.Name()) != ".json" {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("file is not recognized as json: %s has extension: '%s' not '.json'", file.Name(), path.Ext(file.Name())), log.LEVEL_ERROR)), 0)
+			}
+
+			fb, err := os.ReadFile(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot open file %s: %s", args["path"], err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			var data map[string]any
+			err = json.Unmarshal(fb, &data)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to unmarshal json: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			schema := lua.GetValue(args["schema"].(*golua.LTable)).(map[string]any)
+			result := lua.MapSchema(schema, data)
+
+			state.Push(lua.CreateValue(result, state))
+			return 1
+		})
+
+	/// @func parse_string(str) -> table<any>
+	/// @arg str {string}
+	/// @returns {table<any>} - Table representing the json string parsed.
+	lib.CreateFunction(tab, "parse_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "str"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fb := []byte(args["str"].(string))
+
+			var data map[string]any
+			err := json.Unmarshal(fb, &data)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to unmarshal json: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			state.Push(lua.CreateValue(data, state))
+			return 1
+		})
+
+	/// @func parse_string_schema(str, schema) -> table<any>
+	/// @arg str {string}
+	/// @arg schema {table<any>}
+	/// @returns {table<any>} - Table representing the json string parsed.
+	lib.CreateFunction(tab, "parse_string_schema",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "str"},
+			{Type: lua.RAW_TABLE, Name: "schema"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fb := []byte(args["str"].(string))
+
+			var data map[string]any
+			err := json.Unmarshal(fb, &data)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to unmarshal json: %s", err.Error()), log.LEVEL_ERROR)), 0)
+			}
+
+			schema := lua.GetValue(args["schema"].(*golua.LTable)).(map[string]any)
+			result := lua.MapSchema(schema, data)
+
+			state.Push(lua.CreateValue(result, state))
+			return 1
+		})
+
 	/// @func save(value, path, compact?)
 	/// @arg value {table<any>} - Table to convert to json.
 	/// @arg path {string}
