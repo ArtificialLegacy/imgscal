@@ -212,3 +212,37 @@ func TestParseArgs_Variadic(t *testing.T) {
 		t.Error("failed to parse v1 argument")
 	}
 }
+
+func TestMapSchema(t *testing.T) {
+	schema := map[string]any{"v1": 1, "v2": 2, "v3": "A"}
+	data := map[string]any{"v1": 2, "v2": 3, "v4": "B"}
+	result := lua.MapSchema(schema, data)
+
+	if v, ok := result["v1"]; ok {
+		if v != 2 {
+			t.Errorf("got wrong number: wanted=%d, got=%d", 2, v)
+		}
+	} else {
+		t.Error("failed to map v1 field")
+	}
+
+	if v, ok := result["v2"]; ok {
+		if v != 3 {
+			t.Errorf("got wrong number: wanted=%d, got=%d", 3, v)
+		}
+	} else {
+		t.Error("failed to map v2 field")
+	}
+
+	if v, ok := result["v3"]; ok {
+		if v != "A" {
+			t.Errorf("got wrong string: wanted=%s, got=%s", "A", v)
+		}
+	} else {
+		t.Error("failed to map v3 field")
+	}
+
+	if v, ok := result["v4"]; ok {
+		t.Errorf("v4 should not be in the result, but got=%s", v)
+	}
+}

@@ -122,6 +122,12 @@ code, code.import {
     color: var(--cyan);
 }
 
+code.none {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
 code.type {
     color: var(--purple);
 }
@@ -256,4 +262,41 @@ li.lib:hover, li.lib-current:hover {
 
 li.lib-current {
     color: var(--green);
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: 5px 5px 10px black;
+    border-radius: 10px;
+}
+table tr th,
+table tr td {
+    padding: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+table tr td {
+    background: var(--current-line);
+}
+
+table tr:nth-child(even) td, table tr th {
+    background: var(--background);
+}
+
+table tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+table tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
 }

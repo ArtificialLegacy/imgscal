@@ -84,4 +84,26 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LString(format))
 			return 1
 		})
+
+	/// @func config() -> table<any>
+	/// @returns {table<any>}
+	lib.CreateFunction(tab, "config",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			data := lua.CreateValue(r.ConfigData, state)
+
+			state.Push(data)
+			return 1
+		})
+
+	/// @func secrets() -> table<any>
+	/// @returns {table<any>}
+	lib.CreateFunction(tab, "secrets",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			data := lua.CreateValue(r.SecretData, state)
+
+			state.Push(data)
+			return 1
+		})
 }

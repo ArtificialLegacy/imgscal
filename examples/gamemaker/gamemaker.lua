@@ -4,13 +4,21 @@ function init(workflow)
         "gamemaker",
         "image",
         "context",
+        "std",
+    })
+
+    workflow.secrets({
+        project_directory = "",
     })
 end
 
-dir = "/home/joseph/dev/gm-proj-tool-testing"
-
 function main()
-    local proj = gamemaker.project_load(dir)
+    local secrets = std.secrets()
+    if secrets.project_directory == "" then
+        std.panic("Please set the 'project_directory' secret to the path of the GameMaker project.")
+    end
+
+    local proj = gamemaker.project_load(secrets.project_directory)
     local ctx = context.new(16, 16)
     context.draw_rect(ctx, 1, 1, 14, 14)
     context.color_rgb255(ctx, 255, 0, 0)

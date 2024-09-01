@@ -347,7 +347,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "default_output",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			state.Push(golua.LString(r.Output))
+			state.Push(golua.LString(r.Config.OutputDirectory))
 			return 1
 		})
 

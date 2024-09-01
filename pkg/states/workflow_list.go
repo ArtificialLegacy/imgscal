@@ -72,6 +72,7 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 		WorkflowConfirmEnter(sm, WorkflowConfirmData{
 			Workflow: optionsWorkflows[result],
 			Entry:    optionsPaths[result],
+			Name:     options[result],
 		})
 	}
 

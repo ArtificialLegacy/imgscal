@@ -12,13 +12,20 @@ import (
 	golua "github.com/yuin/gopher-lua"
 )
 
-func WorkflowRunEnter(sm *statemachine.StateMachine, script string) {
+type WorkflowRunData struct {
+	Script string
+	Name   string
+}
+
+func WorkflowRunEnter(sm *statemachine.StateMachine, data WorkflowRunData) {
 	sm.SetState(STATE_WORKFLOW_RUN)
-	sm.Data = script
+	sm.Data = data
 }
 
 func WorkflowRun(sm *statemachine.StateMachine) error {
-	pth := sm.Data.(string)
+	data := sm.Data.(WorkflowRunData)
+	pth := data.Script
+	name := data.Name
 	sm.Data = nil
 
 	if !sm.CliMode {
@@ -36,7 +43,8 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := golua.NewState()
 	runner := lua.NewRunner(state, &lg, sm.CliMode)
-	runner.Output = sm.Config.OutputDirectory
+	runner.Config = sm.Config
+	runner.Entry = name
 
 	defer func() {
 		if r := recover(); r != nil {

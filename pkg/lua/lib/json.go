@@ -51,7 +51,7 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to unmarshal json: %s", err.Error()), log.LEVEL_ERROR)), 0)
 			}
 
-			state.Push(createValue(data, state))
+			state.Push(lua.CreateValue(data, state))
 			return 1
 		})
 
@@ -72,7 +72,7 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			}
 			defer file.Close()
 
-			data := getValue(args["value"].(golua.LValue))
+			data := lua.GetValue(args["value"].(golua.LValue))
 
 			var b []byte
 
@@ -104,7 +104,7 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "compact", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			data := getValue(args["value"].(golua.LValue))
+			data := lua.GetValue(args["value"].(golua.LValue))
 
 			var b []byte
 			var err error
@@ -121,71 +121,4 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LString(b))
 			return 1
 		})
-}
-
-func createValue(value any, state *golua.LState) golua.LValue {
-	switch v := value.(type) {
-	case int:
-		return golua.LNumber(v)
-	case float64:
-		return golua.LNumber(v)
-	case bool:
-		return golua.LBool(v)
-	case string:
-		return golua.LString(v)
-
-	case []any:
-		t := state.NewTable()
-		for _, va := range v {
-			t.Append(createValue(va, state))
-		}
-		return t
-
-	case map[string]any:
-		t := state.NewTable()
-		for k, va := range v {
-			t.RawSetString(k, createValue(va, state))
-		}
-		return t
-
-	default:
-		return golua.LNil
-	}
-}
-
-func getValue(value golua.LValue) any {
-	switch v := value.(type) {
-	case golua.LNumber:
-		return float64(v)
-	case golua.LBool:
-		return bool(v)
-	case golua.LString:
-		return string(v)
-	case *golua.LTable:
-		isNumeric := true
-		v.ForEach(func(l1, l2 golua.LValue) {
-			if l1.Type() != golua.LTNumber {
-				isNumeric = false
-			} else if float64(l1.(golua.LNumber)) != float64(int(l1.(golua.LNumber))) {
-				isNumeric = false
-			}
-		})
-
-		if isNumeric {
-			t := []any{}
-			v.ForEach(func(l1, l2 golua.LValue) {
-				t = append(t, getValue(l2))
-			})
-			return t
-		} else {
-			t := map[string]any{}
-			v.ForEach(func(l1, l2 golua.LValue) {
-				t[l1.String()] = getValue(l2)
-			})
-			return t
-		}
-
-	default:
-		return nil
-	}
 }

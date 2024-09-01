@@ -12,6 +12,7 @@ type WorkflowConfirmData struct {
 	Workflow *workflow.Workflow
 	Entry    string
 	Base     string
+	Name     string
 }
 
 func WorkflowConfirmEnter(sm *statemachine.StateMachine, data WorkflowConfirmData) {
@@ -53,7 +54,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	switch answer {
 	case "y":
-		WorkflowRunEnter(sm, pth)
+		WorkflowRunEnter(sm, WorkflowRunData{Script: pth, Name: workflow.Name})
 	case "n":
 		sm.SetState(STATE_WORKFLOW_LIST)
 	default:

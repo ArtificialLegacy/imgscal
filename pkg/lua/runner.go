@@ -1,17 +1,21 @@
 package lua
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/AllenDang/giu"
 
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	"github.com/ArtificialLegacy/imgscal/pkg/config"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	"github.com/akamensky/argparse"
@@ -19,10 +23,13 @@ import (
 )
 
 type Runner struct {
-	State  *lua.LState
-	lg     *log.Logger
-	Dir    string
-	Output string
+	State      *lua.LState
+	lg         *log.Logger
+	Dir        string
+	Config     *config.Config
+	Entry      string
+	ConfigData map[string]any
+	SecretData map[string]any
 
 	Failed string
 
@@ -171,7 +178,87 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 		return 0
 	}))
 
+	t.RawSetString("config", r.State.NewFunction(func(l *lua.LState) int {
+		r.ConfigData = r.WorkflowConfig(l, ".json")
+		return 0
+	}))
+
+	t.RawSetString("secrets", r.State.NewFunction(func(l *lua.LState) int {
+		r.SecretData = r.WorkflowConfig(l, ".secrets.json")
+		return 0
+	}))
+
 	return t
+}
+
+func MapSchema(schema, data map[string]any) map[string]any {
+	result := map[string]any{}
+
+	for k, v := range schema {
+		if d, ok := data[k]; ok {
+			result[k] = d
+		} else {
+			result[k] = v
+		}
+	}
+
+	return result
+}
+
+func (r *Runner) WorkflowConfig(l *lua.LState, ext string) map[string]any {
+	cfg := l.CheckTable(-1)
+	v := GetValue(cfg).(map[string]any)
+
+	fpath := path.Join(r.Config.ConfigDirectory, strings.ReplaceAll(r.Entry, "/", "_")+ext)
+
+	_, err := os.Stat(fpath)
+	if err != nil {
+		err := jsonWrite(fpath, v)
+		if err != nil {
+			l.Error(lua.LString(r.lg.Append(err.Error(), log.LEVEL_ERROR)), 0)
+		}
+
+		return v
+	}
+
+	b, err := os.ReadFile(fpath)
+	if err != nil {
+		l.Error(lua.LString(r.lg.Append(fmt.Sprintf("failed to read config file: %s", err), log.LEVEL_ERROR)), 0)
+	}
+
+	vs := map[string]any{}
+	err = json.Unmarshal(b, &vs)
+	if err != nil {
+		l.Error(lua.LString(r.lg.Append(fmt.Sprintf("failed to unmarshal config: %s", err), log.LEVEL_ERROR)), 0)
+	}
+
+	result := MapSchema(v, vs)
+	err = jsonWrite(fpath, result)
+	if err != nil {
+		l.Error(lua.LString(r.lg.Append(err.Error(), log.LEVEL_ERROR)), 0)
+	}
+
+	return result
+}
+
+func jsonWrite(fpath string, data map[string]any) error {
+	f, err := os.Create(fpath)
+	if err != nil {
+		return fmt.Errorf("failed to create config file: %s", err)
+	}
+	defer f.Close()
+
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %s", err)
+	}
+
+	_, err = f.Write(b)
+	if err != nil {
+		return fmt.Errorf("failed to write config file: %s", err)
+	}
+
+	return nil
 }
 
 func (r *Runner) WorkflowInfo(name string, wf *workflow.Workflow, lg *log.Logger) *lua.LTable {
@@ -490,5 +577,72 @@ func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins PluginMap, reqs [
 			builtin(r, lg)
 			lg.Append(fmt.Sprintf("%s: registered plugin %s", to, req), log.LEVEL_SYSTEM)
 		}
+	}
+}
+
+func CreateValue(value any, state *lua.LState) lua.LValue {
+	switch v := value.(type) {
+	case int:
+		return lua.LNumber(v)
+	case float64:
+		return lua.LNumber(v)
+	case bool:
+		return lua.LBool(v)
+	case string:
+		return lua.LString(v)
+
+	case []any:
+		t := state.NewTable()
+		for _, va := range v {
+			t.Append(CreateValue(va, state))
+		}
+		return t
+
+	case map[string]any:
+		t := state.NewTable()
+		for k, va := range v {
+			t.RawSetString(k, CreateValue(va, state))
+		}
+		return t
+
+	default:
+		return lua.LNil
+	}
+}
+
+func GetValue(value lua.LValue) any {
+	switch v := value.(type) {
+	case lua.LNumber:
+		return float64(v)
+	case lua.LBool:
+		return bool(v)
+	case lua.LString:
+		return string(v)
+	case *lua.LTable:
+		isNumeric := true
+		v.ForEach(func(l1, l2 lua.LValue) {
+			if l1.Type() != lua.LTNumber {
+				isNumeric = false
+			} else if float64(l1.(lua.LNumber)) != float64(int(l1.(lua.LNumber))) {
+				isNumeric = false
+			}
+		})
+
+		if isNumeric {
+			t := []any{}
+			v.ForEach(func(l1, l2 lua.LValue) {
+				t = append(t, GetValue(l2))
+			})
+			return t
+		} else {
+			t := map[string]any{}
+			v.ForEach(func(l1, l2 lua.LValue) {
+				t[l1.String()] = GetValue(l2)
+			})
+			return t
+		}
+
+	default:
+		return nil
 	}
 }

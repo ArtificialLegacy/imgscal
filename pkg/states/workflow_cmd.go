@@ -50,6 +50,6 @@ func WorkflowCMD(sm *statemachine.StateMachine) error {
 		break
 	}
 
-	WorkflowRunEnter(sm, foundPath)
+	WorkflowRunEnter(sm, WorkflowRunData{Script: foundPath, Name: name})
 	return nil
 }
