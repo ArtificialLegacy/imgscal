@@ -1700,7 +1700,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
@@ -2325,7 +2325,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<context.PatternSolid>}
 	lib.CreateFunction(tab, "pattern_solid",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := patternSolidTable(state, args["color"].(*golua.LTable))
@@ -2437,7 +2437,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "fill_style",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "pattern"},
+			{Type: lua.RAW_TABLE, Name: "pattern"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
@@ -2460,7 +2460,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "stroke_style",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "pattern"},
+			{Type: lua.RAW_TABLE, Name: "pattern"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{

@@ -479,7 +479,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.INT, Name: "x"},
 			{Type: lua.INT, Name: "y"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
@@ -612,7 +612,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @returns {string}
 	lib.CreateFunction(tab, "color_to_hex",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.STRING, Name: "prefix", Optional: true},
 			{Type: lua.BOOL, Name: "lowercase", Optional: true},
 		},
@@ -813,7 +813,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_rgb",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			cr, cg, cb, ca := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
@@ -829,7 +829,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_hsv",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			ch, cs, cv, ca := imageutil.ColorTableToHSVA(args["color"].(*golua.LTable))
@@ -845,7 +845,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_hsl",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			ch, cs, cl, ca := imageutil.ColorTableToHSLA(args["color"].(*golua.LTable))
@@ -861,7 +861,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_gray",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			cy, ca := imageutil.ColorTableToGrayA(args["color"].(*golua.LTable))
@@ -877,7 +877,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_gray_average",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			cr, cg, cb, ca := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
@@ -898,7 +898,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// Alpha is maintained.
 	lib.CreateFunction(tab, "color_to_gray_weight",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.INT, Name: "rWeight"},
 			{Type: lua.INT, Name: "gWeight"},
 			{Type: lua.INT, Name: "bWeight"},
@@ -923,7 +923,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "convert_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "model"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			cr, cg, cb, ca := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))

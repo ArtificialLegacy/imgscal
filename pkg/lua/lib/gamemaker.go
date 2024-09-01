@@ -200,8 +200,8 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
-			{Type: lua.ANY, Name: "parent"},
-			{Type: lua.ANY, Name: "texgroup"},
+			{Type: lua.RAW_TABLE, Name: "parent"},
+			{Type: lua.RAW_TABLE, Name: "texgroup"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := spriteTable(state,
@@ -222,7 +222,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "sprite_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "sprite"},
+			{Type: lua.RAW_TABLE, Name: "sprite"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -415,7 +415,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.STRING, Name: "text"},
-			{Type: lua.ANY, Name: "parent"},
+			{Type: lua.RAW_TABLE, Name: "parent"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := noteTable(state, args["name"].(string), args["text"].(string), args["parent"].(*golua.LTable))
@@ -430,7 +430,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "note_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "note"},
+			{Type: lua.RAW_TABLE, Name: "note"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -539,7 +539,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.STRING, Name: "code"},
-			{Type: lua.ANY, Name: "parent"},
+			{Type: lua.RAW_TABLE, Name: "parent"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := scriptTable(state, args["name"].(string), args["code"].(string), args["parent"].(*golua.LTable))
@@ -554,7 +554,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "script_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "script"},
+			{Type: lua.RAW_TABLE, Name: "script"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -714,7 +714,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "datafile_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "datafile"},
+			{Type: lua.RAW_TABLE, Name: "datafile"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))

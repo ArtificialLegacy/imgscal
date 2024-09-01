@@ -106,7 +106,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -134,7 +134,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -162,7 +162,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -190,7 +190,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -214,7 +214,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	/// @returns {int<ref.STRING>}
 	lib.CreateFunction(tab, "arg_string_pos",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -242,7 +242,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -270,7 +270,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -294,7 +294,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	/// @returns {int<ref.INT>}
 	lib.CreateFunction(tab, "arg_int_pos",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -322,7 +322,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -350,7 +350,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -374,7 +374,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	/// @returns {int<[]ref.FLOAT>}
 	lib.CreateFunction(tab, "arg_float_pos",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -404,7 +404,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "short"},
 			{Type: lua.STRING, Name: "long"},
 			lua.ArgArray("choices", lua.ArrayType{Type: lua.STRING}, false),
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil
@@ -436,7 +436,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "arg_selector_pos",
 		[]lua.Arg{
 			lua.ArgArray("choices", lua.ArrayType{Type: lua.STRING}, false),
-			{Type: lua.ANY, Name: "options", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var opt *argparse.Options = nil

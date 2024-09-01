@@ -71,7 +71,7 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "fmt",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "str"},
-			{Type: lua.ANY, Name: "values"},
+			{Type: lua.RAW_TABLE, Name: "values"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := []any{}

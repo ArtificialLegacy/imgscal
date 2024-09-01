@@ -193,7 +193,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "window_set_bg_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			w, err := r.CR_WIN.Item(args["id"].(int))
@@ -408,7 +408,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "window_register_keyboard_shortcuts",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "shortcuts"},
+			{Type: lua.RAW_TABLE, Name: "shortcuts"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			w, err := r.CR_WIN.Item(args["id"].(int))
@@ -600,7 +600,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// Builds a list of widgets when called.
 	lib.CreateFunction(tab, "layout",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "widgets", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "widgets", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			widgets := args["widgets"].(*golua.LTable)
@@ -1206,8 +1206,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg intersect {bool}
 	lib.CreateFunction(tab, "push_clip_rect",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "min"},
-			{Type: lua.ANY, Name: "max"},
+			{Type: lua.RAW_TABLE, Name: "min"},
+			{Type: lua.RAW_TABLE, Name: "max"},
 			{Type: lua.BOOL, Name: "intersect"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1221,7 +1221,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_button",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorButton(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1232,7 +1232,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_button_active",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorButtonActive(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1243,7 +1243,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_button_hovered",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorButtonHovered(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1254,7 +1254,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_frame_bg",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorFrameBg(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1265,7 +1265,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_text",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorText(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1276,7 +1276,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_text_disabled",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorTextDisabled(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1287,7 +1287,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "push_color_window_bg",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushColorWindowBg(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1371,7 +1371,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "push_style_color",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.PushStyleColor(g.StyleColorID(args["id"].(int)), imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1427,7 +1427,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg point {struct<image.Point>}
 	lib.CreateFunction(tab, "cursor_pos_set",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "point"},
+			{Type: lua.RAW_TABLE, Name: "point"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.SetCursorPos(imageutil.TableToPoint(state, args["point"].(*golua.LTable)))
@@ -1454,7 +1454,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg point {struct<image.Point>}
 	lib.CreateFunction(tab, "cursor_screen_pos_set",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "point"},
+			{Type: lua.RAW_TABLE, Name: "point"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			g.SetCursorScreenPos(imageutil.TableToPoint(state, args["point"].(*golua.LTable)))
@@ -1555,7 +1555,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// Returns the uint32 to lua as a float64 (The type lua uses for numbers).
 	lib.CreateFunction(tab, "color_to_uint32",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			cuint := g.ColorToUint(imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable)))
@@ -1721,7 +1721,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<gui.WidgetColumn>}
 	lib.CreateFunction(tab, "wg_column",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "widgets", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "widgets", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := args["widgets"]
@@ -1739,7 +1739,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<gui.WidgetRow>}
 	lib.CreateFunction(tab, "wg_row",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "widgets", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "widgets", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := args["widgets"]
@@ -1778,7 +1778,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
 			{Type: lua.STRING, Name: "preview"},
-			{Type: lua.ANY, Name: "items"},
+			{Type: lua.RAW_TABLE, Name: "items"},
 			{Type: lua.INT, Name: "i32ref"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1802,7 +1802,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "wg_combo_preview",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "text"},
-			{Type: lua.ANY, Name: "items"},
+			{Type: lua.RAW_TABLE, Name: "items"},
 			{Type: lua.INT, Name: "i32ref"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -1832,8 +1832,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "wg_condition",
 		[]lua.Arg{
 			{Type: lua.BOOL, Name: "condition"},
-			{Type: lua.ANY, Name: "widgetIf"},
-			{Type: lua.ANY, Name: "widgetElse"},
+			{Type: lua.RAW_TABLE, Name: "widgetIf"},
+			{Type: lua.RAW_TABLE, Name: "widgetElse"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			widgetIf := args["widgetIf"].(golua.LValue)
@@ -2090,7 +2090,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<gui.WidgetListbox>}
 	lib.CreateFunction(tab, "wg_list_box",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "items"},
+			{Type: lua.RAW_TABLE, Name: "items"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := listBoxTable(state, args["items"].(golua.LValue))
@@ -2295,7 +2295,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<gui.TableRow>}
 	lib.CreateFunction(tab, "wg_table_row",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "widgets", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "widgets", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := args["widgets"]
@@ -2354,7 +2354,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "wg_tree_table_row",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "label"},
-			{Type: lua.ANY, Name: "widgets", Optional: true},
+			{Type: lua.RAW_TABLE, Name: "widgets", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := args["widgets"]
@@ -2416,8 +2416,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "direction"},
 			{Type: lua.INT, Name: "f32ref"},
-			{Type: lua.ANY, Name: "layout1"},
-			{Type: lua.ANY, Name: "layout2"},
+			{Type: lua.RAW_TABLE, Name: "layout1"},
+			{Type: lua.RAW_TABLE, Name: "layout2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			layout1 := args["layout1"].(golua.LValue)
@@ -2451,7 +2451,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "wg_stack",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "visible"},
-			{Type: lua.ANY, Name: "widgets"},
+			{Type: lua.RAW_TABLE, Name: "widgets"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := stackTable(state, args["visible"].(int), args["widgets"].(golua.LValue))
@@ -2606,7 +2606,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "pt_bar_h",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
-			{Type: lua.ANY, Name: "data"},
+			{Type: lua.RAW_TABLE, Name: "data"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := plotBarHTable(state, args["title"].(string), args["data"].(golua.LValue))
@@ -2622,7 +2622,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "pt_bar",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
-			{Type: lua.ANY, Name: "data"},
+			{Type: lua.RAW_TABLE, Name: "data"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := plotBarTable(state, args["title"].(string), args["data"].(golua.LValue))
@@ -2638,7 +2638,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "pt_line",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
-			{Type: lua.ANY, Name: "data"},
+			{Type: lua.RAW_TABLE, Name: "data"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := plotLineTable(state, args["title"].(string), args["data"].(golua.LValue))
@@ -2655,8 +2655,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "pt_line_xy",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
-			{Type: lua.ANY, Name: "xdata"},
-			{Type: lua.ANY, Name: "ydata"},
+			{Type: lua.RAW_TABLE, Name: "xdata"},
+			{Type: lua.RAW_TABLE, Name: "ydata"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := plotLineXYTable(state, args["title"].(string), args["xdata"].(golua.LValue), args["ydata"].(golua.LValue))
@@ -2674,8 +2674,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<gui.PlotPieChart>}
 	lib.CreateFunction(tab, "pt_pie_chart",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "labels"},
-			{Type: lua.ANY, Name: "data"},
+			{Type: lua.RAW_TABLE, Name: "labels"},
+			{Type: lua.RAW_TABLE, Name: "data"},
 			{Type: lua.FLOAT, Name: "x"},
 			{Type: lua.FLOAT, Name: "y"},
 			{Type: lua.FLOAT, Name: "radius"},
@@ -2699,7 +2699,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "pt_scatter",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
-			{Type: lua.ANY, Name: "data"},
+			{Type: lua.RAW_TABLE, Name: "data"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := plotScatterTable(state, args["title"].(string), args["data"].(golua.LValue))
@@ -2716,8 +2716,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "pt_scatter_xy",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "title"},
-			{Type: lua.ANY, Name: "xdata"},
-			{Type: lua.ANY, Name: "ydata"},
+			{Type: lua.RAW_TABLE, Name: "xdata"},
+			{Type: lua.RAW_TABLE, Name: "ydata"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := plotScatterXYTable(state, args["title"].(string), args["xdata"].(golua.LValue), args["ydata"].(golua.LValue))
@@ -2798,11 +2798,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg segments {int}
 	lib.CreateFunction(tab, "canvas_bezier_cubic",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "pos0"},
-			{Type: lua.ANY, Name: "cp0"},
-			{Type: lua.ANY, Name: "cp1"},
-			{Type: lua.ANY, Name: "pos1"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "pos0"},
+			{Type: lua.RAW_TABLE, Name: "cp0"},
+			{Type: lua.RAW_TABLE, Name: "cp1"},
+			{Type: lua.RAW_TABLE, Name: "pos1"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.FLOAT, Name: "thickness"},
 			{Type: lua.INT, Name: "segments"},
 		},
@@ -2829,9 +2829,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_circle",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "center"},
+			{Type: lua.RAW_TABLE, Name: "center"},
 			{Type: lua.FLOAT, Name: "radius"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.INT, Name: "segments"},
 			{Type: lua.FLOAT, Name: "thickness"},
 		},
@@ -2854,9 +2854,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_circle_filled",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "center"},
+			{Type: lua.RAW_TABLE, Name: "center"},
 			{Type: lua.FLOAT, Name: "radius"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
@@ -2876,9 +2876,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_line",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
-			{Type: lua.ANY, Name: "p2"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p2"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.FLOAT, Name: "thickness"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2902,11 +2902,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_quad",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
-			{Type: lua.ANY, Name: "p2"},
-			{Type: lua.ANY, Name: "p3"},
-			{Type: lua.ANY, Name: "p4"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p2"},
+			{Type: lua.RAW_TABLE, Name: "p3"},
+			{Type: lua.RAW_TABLE, Name: "p4"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.FLOAT, Name: "thickness"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -2931,11 +2931,11 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_quad_filled",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
-			{Type: lua.ANY, Name: "p2"},
-			{Type: lua.ANY, Name: "p3"},
-			{Type: lua.ANY, Name: "p4"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p2"},
+			{Type: lua.RAW_TABLE, Name: "p3"},
+			{Type: lua.RAW_TABLE, Name: "p4"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
@@ -2959,9 +2959,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_rect",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "min"},
-			{Type: lua.ANY, Name: "max"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "min"},
+			{Type: lua.RAW_TABLE, Name: "max"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.FLOAT, Name: "rounding"},
 			{Type: lua.INT, Name: "flags"},
 			{Type: lua.FLOAT, Name: "thickness"},
@@ -2988,9 +2988,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg flags {int<gui.DrawFlags>}
 	lib.CreateFunction(tab, "canvas_rect_filled",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "min"},
-			{Type: lua.ANY, Name: "max"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "min"},
+			{Type: lua.RAW_TABLE, Name: "max"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.FLOAT, Name: "rounding"},
 			{Type: lua.INT, Name: "flags"},
 		},
@@ -3013,8 +3013,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg text {string}
 	lib.CreateFunction(tab, "canvas_text",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "pos"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "pos"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.STRING, Name: "text"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -3036,10 +3036,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_triangle",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
-			{Type: lua.ANY, Name: "p2"},
-			{Type: lua.ANY, Name: "p3"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p2"},
+			{Type: lua.RAW_TABLE, Name: "p3"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.FLOAT, Name: "thickness"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -3062,10 +3062,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_triangle_filled",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
-			{Type: lua.ANY, Name: "p2"},
-			{Type: lua.ANY, Name: "p3"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p2"},
+			{Type: lua.RAW_TABLE, Name: "p3"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
@@ -3087,7 +3087,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg segments {int}
 	lib.CreateFunction(tab, "canvas_path_arc_to",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "center"},
+			{Type: lua.RAW_TABLE, Name: "center"},
 			{Type: lua.FLOAT, Name: "radius"},
 			{Type: lua.FLOAT, Name: "min"},
 			{Type: lua.FLOAT, Name: "max"},
@@ -3113,7 +3113,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg max {int}
 	lib.CreateFunction(tab, "canvas_path_arc_to_fast",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "center"},
+			{Type: lua.RAW_TABLE, Name: "center"},
 			{Type: lua.FLOAT, Name: "radius"},
 			{Type: lua.INT, Name: "min"},
 			{Type: lua.INT, Name: "max"},
@@ -3137,9 +3137,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg segments {int}
 	lib.CreateFunction(tab, "canvas_path_bezier_cubic_to",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
-			{Type: lua.ANY, Name: "p2"},
-			{Type: lua.ANY, Name: "p3"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p2"},
+			{Type: lua.RAW_TABLE, Name: "p3"},
 			{Type: lua.INT, Name: "segments"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -3167,7 +3167,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg color {struct<image.Color>}
 	lib.CreateFunction(tab, "canvas_path_fill_convex",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
@@ -3182,7 +3182,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg p1 {struct<image.Point>}
 	lib.CreateFunction(tab, "canvas_path_line_to",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
@@ -3197,7 +3197,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg p1 {struct<image.Point>}
 	lib.CreateFunction(tab, "canvas_path_line_to_merge_duplicate",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "p1"},
+			{Type: lua.RAW_TABLE, Name: "p1"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
@@ -3214,7 +3214,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg thickness {float}
 	lib.CreateFunction(tab, "canvas_path_stroke",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.INT, Name: "flags"},
 			{Type: lua.FLOAT, Name: "thickness"},
 		},
@@ -3343,7 +3343,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @returns {[]string}
 	lib.CreateFunction(tab, "fontatlas_register_string_many",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "str"},
+			{Type: lua.RAW_TABLE, Name: "str"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			atlas := g.Context.FontAtlas

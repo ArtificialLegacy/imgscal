@@ -32,7 +32,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
 			{Type: lua.INT, Name: "id2"},
-			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.RAW_TABLE, Name: "filters"},
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -93,9 +93,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id1"},
 			{Type: lua.INT, Name: "id2"},
-			{Type: lua.ANY, Name: "point"},
+			{Type: lua.RAW_TABLE, Name: "point"},
 			{Type: lua.INT, Name: "op"},
-			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.RAW_TABLE, Name: "filters"},
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -161,7 +161,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "x"},
 			{Type: lua.INT, Name: "y"},
 			{Type: lua.INT, Name: "op"},
-			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.RAW_TABLE, Name: "filters"},
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -227,7 +227,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "bounds",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.RAW_TABLE, Name: "filters"},
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -264,7 +264,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "bounds_size",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "filters"},
+			{Type: lua.RAW_TABLE, Name: "filters"},
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -381,7 +381,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<filter.FilterConvolution>}
 	lib.CreateFunction(tab, "convolution",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "kernel"},
+			{Type: lua.RAW_TABLE, Name: "kernel"},
 			{Type: lua.BOOL, Name: "normalize"},
 			{Type: lua.BOOL, Name: "alpha"},
 			{Type: lua.BOOL, Name: "abs"},
@@ -406,8 +406,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<filter.FilterCrop>}
 	lib.CreateFunction(tab, "crop",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "min"},
-			{Type: lua.ANY, Name: "max"},
+			{Type: lua.RAW_TABLE, Name: "min"},
+			{Type: lua.RAW_TABLE, Name: "max"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
@@ -548,7 +548,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "rotate",
 		[]lua.Arg{
 			{Type: lua.FLOAT, Name: "angle"},
-			{Type: lua.ANY, Name: "bgcolor"},
+			{Type: lua.RAW_TABLE, Name: "bgcolor"},
 			{Type: lua.INT, Name: "interpolation"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {

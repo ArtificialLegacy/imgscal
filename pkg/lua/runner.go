@@ -217,6 +217,7 @@ const (
 	ARRAY
 	ANY
 	FUNC
+	RAW_TABLE
 )
 
 type Arg struct {
@@ -250,7 +251,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 		if value.Type() == lua.LTNumber {
 			argMap[arg.Name] = int(math.Round(float64(value.(lua.LNumber))))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid number provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -259,7 +260,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 		if value.Type() == lua.LTNumber {
 			argMap[arg.Name] = float64(value.(lua.LNumber))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid number provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -268,7 +269,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 		if value.Type() == lua.LTBool {
 			argMap[arg.Name] = bool(value.(lua.LBool))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid bool provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -277,7 +278,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 		if value.Type() == lua.LTString {
 			argMap[arg.Name] = string(value.(lua.LString))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid string provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -289,9 +290,18 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 		if value.Type() == lua.LTFunction {
 			argMap[arg.Name] = value
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid function provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case RAW_TABLE:
+		if value.Type() == lua.LTTable {
+			argMap[arg.Name] = value
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			argMap[arg.Name] = l.getDefault(arg, state)
+		} else {
+			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid table provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
 
 	case ARRAY:
@@ -309,7 +319,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 			}
 			argMap[arg.Name] = m
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid array provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -325,7 +335,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 
 			argMap[arg.Name] = m
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			argMap[arg.Name] = l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid table provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -348,7 +358,7 @@ func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level in
 			if !a.Optional {
 				state.ArgError(i, l.Lg.Append(fmt.Sprintf("required arg not provided: %d", i), log.LEVEL_ERROR))
 			} else {
-				argMap[a.Name] = l.getDefault(a)
+				argMap[a.Name] = l.getDefault(a, state)
 			}
 		} else {
 			argMap = l.ParseValue(state, i, v, a, argMap)
@@ -359,7 +369,7 @@ func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level in
 	return argMap, count
 }
 
-func (l *Lib) getDefault(a Arg) any {
+func (l *Lib) getDefault(a Arg, state *lua.LState) any {
 	switch a.Type {
 	case INT:
 		return 0
@@ -376,12 +386,15 @@ func (l *Lib) getDefault(a Arg) any {
 	case TABLE:
 		tab := map[string]any{}
 		for _, v := range *a.Table {
-			tab[v.Name] = l.getDefault(v)
+			tab[v.Name] = l.getDefault(v, state)
 		}
 		return tab
 
 	case ARRAY:
 		return map[string]any{}
+
+	case RAW_TABLE:
+		return state.NewTable()
 
 	case ANY:
 		return lua.LNil

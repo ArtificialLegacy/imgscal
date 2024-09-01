@@ -65,7 +65,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// This is also including in the log similar to std.log.
 	lib.CreateFunction(tab, "print_value",
 		[]lua.Arg{
-			{Type: lua.ANY, Name: "value"},
+			{Type: lua.RAW_TABLE, Name: "value"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			fmt.Printf("%+v\n", args["value"])

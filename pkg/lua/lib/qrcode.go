@@ -165,7 +165,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "color_set_foreground",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
@@ -186,7 +186,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "color_set_background",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "color"},
+			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
