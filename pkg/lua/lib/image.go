@@ -1133,6 +1133,63 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func compare(id1, id2) -> bool
+	/// @arg id1 {int<collection.IMAGE>}
+	/// @arg id2 {int<collection.IMAGE>}
+	/// @returns {bool}
+	/// @blocking
+	/// @desc
+	/// Compares two images pixel by pixel.
+	/// Early returns if the image ids are the same, without scheduling any tasks.
+	lib.CreateFunction(tab, "compare",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id1"},
+			{Type: lua.INT, Name: "id2"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id1 := args["id1"].(int)
+			id2 := args["id2"].(int)
+			if id1 == id2 {
+				state.Push(golua.LTrue)
+				return 1
+			}
+
+			imgReady := make(chan struct{}, 2)
+			imgFinished := make(chan struct{}, 2)
+
+			var img image.Image
+			var equal bool
+
+			r.IC.Schedule(id1, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+					imgReady <- struct{}{}
+					<-imgFinished
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgReady <- struct{}{}
+				},
+			})
+
+			<-r.IC.Schedule(id2, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					<-imgReady
+					equal = imageutil.ImageCompare(img, i.Self.Image)
+					imgFinished <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgFinished <- struct{}{}
+				},
+			})
+
+			state.Push(golua.LBool(equal))
+			return 1
+		})
+
 	/// @func ext_to_encoding(ext) -> int<image.Encoding>
 	/// @arg ext {string}
 	/// @returns {int<image.Encoding>}

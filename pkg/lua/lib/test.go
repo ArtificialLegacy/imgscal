@@ -2,8 +2,11 @@ package lib
 
 import (
 	"fmt"
+	"image"
 	"time"
 
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/yuin/gopher-lua"
@@ -39,6 +42,69 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 				return 0
 			}
 			state.Error(golua.LString("assertion failed"), 0)
+
+			return 0
+		})
+
+	/// @func assert_image(img1, img2, msg?)
+	/// @arg img1 {int<collection.IMAGE>}
+	/// @arg img2 {int<collection.IMAGE>}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "img1"},
+			{Type: lua.INT, Name: "img2"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			img1 := args["img1"].(int)
+			img2 := args["img2"].(int)
+			if img1 == img2 {
+				return 0
+			}
+
+			msg := args["msg"].(string)
+
+			var img image.Image
+			imgReady := make(chan struct{}, 2)
+			imgFinished := make(chan struct{}, 2)
+
+			r.IC.Schedule(img1, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+					imgReady <- struct{}{}
+					<-imgFinished
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgReady <- struct{}{}
+					state.Error(golua.LString("compare failed while retrieving image1"), 0)
+				},
+			})
+
+			r.IC.Schedule(img2, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					<-imgReady
+					equal := imageutil.ImageCompare(img, i.Self.Image)
+
+					if !equal {
+						if msg != "" {
+							state.Error(golua.LString(lg.Append(fmt.Sprintf("assertion failed: %s", msg), log.LEVEL_ERROR)), 0)
+							return
+						}
+						state.Error(golua.LString("assertion failed"), 0)
+					}
+
+					imgFinished <- struct{}{}
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					imgFinished <- struct{}{}
+					state.Error(golua.LString("compare failed while processing image2"), 0)
+				},
+			})
 
 			return 0
 		})
