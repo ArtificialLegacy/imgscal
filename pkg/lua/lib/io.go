@@ -187,6 +187,50 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func remove(path, all?)
+	/// @arg path {string}
+	/// @arg? all {bool} - If to remove all directories going to the given path.
+	lib.CreateFunction(tab, "remove",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.BOOL, Name: "all", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if args["all"].(bool) {
+				err := os.RemoveAll(args["path"].(string))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to remove all directories: %s", err), log.LEVEL_ERROR)), 0)
+				}
+			} else {
+				err := os.Remove(args["path"].(string))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to remove file: %s", err), log.LEVEL_ERROR)), 0)
+				}
+			}
+
+			return 0
+		})
+
+	/// @func exists(path) -> bool, bool
+	/// @arg path {string}
+	/// @returns {bool} - If the file exists.
+	/// @returns {bool} - If the file is a directory.
+	lib.CreateFunction(tab, "exists",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fs, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.Push(golua.LFalse)
+				state.Push(golua.LFalse)
+			} else {
+				state.Push(golua.LTrue)
+				state.Push(golua.LBool(fs.IsDir()))
+			}
+			return 2
+		})
+
 	/// @func dir(path) -> []string
 	/// @arg path {string}
 	/// @returns {[]string} - Array containing all file paths in the directory.

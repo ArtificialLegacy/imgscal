@@ -66,7 +66,6 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	runner.TC.CollectAll()
 	runner.IC.CollectAll()
-	runner.FC.CollectAll()
 	runner.CC.CollectAll()
 	runner.QR.CollectAll()
 
@@ -108,10 +107,9 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	ert := collErr(runner.TC.Errs, "TC", pth, &lg, sm)
 	eri := collErr(runner.IC.Errs, "IC", pth, &lg, sm)
-	erf := collErr(runner.FC.Errs, "FC", pth, &lg, sm)
 	erc := collErr(runner.CC.Errs, "CC", pth, &lg, sm)
 	erq := collErr(runner.QR.Errs, "QR", pth, &lg, sm)
-	if ert || eri || erf || erc || erq {
+	if ert || eri || erc || erq {
 		if sm.CliMode {
 			sm.SetState(STATE_EXIT)
 			return fmt.Errorf("error running script")
