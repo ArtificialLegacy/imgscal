@@ -125,6 +125,17 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func print_table(table)
+	/// @arg table {table<any>} - The table to print to the console.
+	lib.CreateFunction(tab, "print_table",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "table"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			printValue(args["table"].(golua.LValue), "", "")
+			return 0
+		})
+
 	/// @func question(question) -> string
 	/// @arg question {string} - The message to be displayed.
 	/// @returns {string} - The answer given by the user.
@@ -332,4 +343,35 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BOLD", golua.LString(cli.COLOR_BOLD))
 	tab.RawSetString("UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
 	tab.RawSetString("REVERSED", golua.LString(cli.COLOR_REVERSED))
+}
+
+func printValue(val golua.LValue, prefix, indent string) {
+	switch val.Type() {
+	case golua.LTNil:
+		fmt.Printf("%s%snil\n", indent, prefix)
+	case golua.LTBool:
+		fmt.Printf("%s%s%t\n", indent, prefix, val.(golua.LBool))
+	case golua.LTNumber:
+		fmt.Printf("%s%s%f\n", indent, prefix, val.(golua.LNumber))
+	case golua.LTString:
+		fmt.Printf("%s%s%s\n", indent, prefix, val.(golua.LString))
+	case golua.LTTable:
+		tbl := val.(*golua.LTable)
+		fmt.Printf("%s%s{\n", indent, prefix)
+		tbl.ForEach(func(k, v golua.LValue) {
+			prefix := ""
+			if k.Type() == golua.LTString {
+				prefix = fmt.Sprintf("%s: ", k.(golua.LString))
+			} else if k.Type() == golua.LTNumber {
+				prefix = fmt.Sprintf("%d: ", k.(golua.LNumber))
+			} else {
+				prefix = fmt.Sprintf("%s: ", k.String())
+			}
+			printValue(v, prefix, indent+"  ")
+		})
+		fmt.Printf("%s}\n", indent)
+	case golua.LTFunction:
+		name := val.(*golua.LFunction).String()
+		fmt.Printf("%s%s%s\n", indent, prefix, name)
+	}
 }
