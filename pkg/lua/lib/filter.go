@@ -126,7 +126,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					<-imgReady
 
 					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
-					pt := imageutil.TableToPoint(scheduledState, args["point"].(*golua.LTable))
+					pt := imageutil.TableToPoint(args["point"].(*golua.LTable))
 					if args["disableParallelization"].(bool) {
 						g.SetParallelization(false)
 					}
@@ -410,8 +410,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "max"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
-			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			min := imageutil.TableToPoint(args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(args["max"].(*golua.LTable))
 
 			t := cropTable(state, min.X, min.Y, max.X, max.Y)
 

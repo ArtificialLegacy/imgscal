@@ -1,0 +1,11 @@
+{
+    "name": "test",
+    "author": "Blub",
+    "version": "1.0.0",
+
+    "desc": "",
+
+    "workflows": {
+        "*": "test.lua"
+    }
+}

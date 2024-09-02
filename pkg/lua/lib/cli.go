@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/yuin/gopher-lua"
@@ -153,6 +155,46 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			printValue(args["table"].(golua.LValue), "", "")
+			return 0
+		})
+
+	/// @func print_image(id, double?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	/// @blocking
+	lib.CreateFunction(tab, "print_image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "double", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := args["id"].(int)
+			double := args["double"].(bool)
+
+			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					boundsMin := i.Self.Image.Bounds().Min
+					boundsMax := i.Self.Image.Bounds().Max
+
+					for y := boundsMin.Y; y < boundsMax.Y; y++ {
+						for x := boundsMin.X; x < boundsMax.X; x++ {
+							r, g, b, _ := imageutil.Get(i.Self.Image, x, y)
+							color := trueColorBg(r, g, b)
+
+							if double {
+								fmt.Printf("%s  ", color)
+							} else {
+								fmt.Printf("%s ", color)
+							}
+						}
+						fmt.Println()
+					}
+					fmt.Print(cli.COLOR_RESET)
+				},
+			})
+
 			return 0
 		})
 
@@ -309,6 +351,26 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_true(red, green, blue) -> string
+	/// @arg red {int}
+	/// @arg green {int}
+	/// @arg blue {int}
+	/// @returns {string} - The color control code.
+	lib.CreateFunction(tab, "color_true",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "red"},
+			{Type: lua.INT, Name: "green"},
+			{Type: lua.INT, Name: "blue"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red := args["red"].(int)
+			green := args["green"].(int)
+			blue := args["blue"].(int)
+
+			state.Push(golua.LString(trueColor(red, green, blue)))
+			return 1
+		})
+
 	/// @func color_bg_256(code) -> string
 	/// @arg code {int}
 	/// @returns {string} - The color control code.
@@ -319,6 +381,26 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			code := args["code"].(int)
 			state.Push(golua.LString(fmt.Sprintf("\u001b[48;5;%dm", code)))
+			return 1
+		})
+
+	/// @func color_bg_true(red, green, blue) -> string
+	/// @arg red {int}
+	/// @arg green {int}
+	/// @arg blue {int}
+	/// @returns {string} - The color control code.
+	lib.CreateFunction(tab, "color_bg_true",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "red"},
+			{Type: lua.INT, Name: "green"},
+			{Type: lua.INT, Name: "blue"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red := args["red"].(int)
+			green := args["green"].(int)
+			blue := args["blue"].(int)
+
+			state.Push(golua.LString(trueColorBg(red, green, blue)))
 			return 1
 		})
 
@@ -571,4 +653,12 @@ func printValue(val golua.LValue, prefix, indent string) {
 		name := val.(*golua.LFunction).String()
 		fmt.Printf("%s%s%s\n", indent, prefix, name)
 	}
+}
+
+func trueColor(red, green, blue int) string {
+	return fmt.Sprintf("\u001b[38;2;%d;%d;%dm", red, green, blue)
+}
+
+func trueColorBg(red, green, blue int) string {
+	return fmt.Sprintf("\u001b[48;2;%d;%d;%dm", red, green, blue)
 }

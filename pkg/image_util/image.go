@@ -106,7 +106,7 @@ func ImageCompare(img1, img2 image.Image) bool {
 	return true
 }
 
-func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {
+func TableToPoint(t *golua.LTable) image.Point {
 	x := t.RawGetString("x").(golua.LNumber)
 	y := t.RawGetString("y").(golua.LNumber)
 

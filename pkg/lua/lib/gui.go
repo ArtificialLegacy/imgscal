@@ -1211,8 +1211,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "intersect"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
-			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			min := imageutil.TableToPoint(args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(args["max"].(*golua.LTable))
 			g.PushClipRect(min, max, args["intersect"].(bool))
 			return 0
 		})
@@ -1430,7 +1430,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "point"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.SetCursorPos(imageutil.TableToPoint(state, args["point"].(*golua.LTable)))
+			g.SetCursorPos(imageutil.TableToPoint(args["point"].(*golua.LTable)))
 			return 0
 		})
 
@@ -1457,7 +1457,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "point"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			g.SetCursorScreenPos(imageutil.TableToPoint(state, args["point"].(*golua.LTable)))
+			g.SetCursorScreenPos(imageutil.TableToPoint(args["point"].(*golua.LTable)))
 			return 0
 		})
 
@@ -2809,10 +2809,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			pos0 := imageutil.TableToPoint(state, args["pos0"].(*golua.LTable))
-			cp0 := imageutil.TableToPoint(state, args["cp0"].(*golua.LTable))
-			cp1 := imageutil.TableToPoint(state, args["cp1"].(*golua.LTable))
-			pos1 := imageutil.TableToPoint(state, args["pos1"].(*golua.LTable))
+			pos0 := imageutil.TableToPoint(args["pos0"].(*golua.LTable))
+			cp0 := imageutil.TableToPoint(args["cp0"].(*golua.LTable))
+			cp1 := imageutil.TableToPoint(args["cp1"].(*golua.LTable))
+			pos1 := imageutil.TableToPoint(args["pos1"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 			segments := args["segments"].(int)
@@ -2838,7 +2838,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			center := imageutil.TableToPoint(args["center"].(*golua.LTable))
 			radius := args["radius"].(float64)
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			segments := args["segments"].(int)
@@ -2861,7 +2861,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			center := imageutil.TableToPoint(args["center"].(*golua.LTable))
 			radius := args["radius"].(float64)
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
@@ -2884,8 +2884,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
-			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(args["p2"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 
@@ -2912,10 +2912,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
-			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
-			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
-			p4 := imageutil.TableToPoint(state, args["p4"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(args["p3"].(*golua.LTable))
+			p4 := imageutil.TableToPoint(args["p4"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 
@@ -2940,10 +2940,10 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
-			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
-			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
-			p4 := imageutil.TableToPoint(state, args["p4"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(args["p3"].(*golua.LTable))
+			p4 := imageutil.TableToPoint(args["p4"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
 			c.AddQuadFilled(p1, p2, p3, p4, col)
@@ -2969,8 +2969,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
-			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			min := imageutil.TableToPoint(args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(args["max"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			rounding := args["rounding"].(float64)
 			flags := args["flags"].(int)
@@ -2997,8 +2997,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			min := imageutil.TableToPoint(state, args["min"].(*golua.LTable))
-			max := imageutil.TableToPoint(state, args["max"].(*golua.LTable))
+			min := imageutil.TableToPoint(args["min"].(*golua.LTable))
+			max := imageutil.TableToPoint(args["max"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			rounding := args["rounding"].(float64)
 			flags := args["flags"].(int)
@@ -3020,7 +3020,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			pos := imageutil.TableToPoint(state, args["pos"].(*golua.LTable))
+			pos := imageutil.TableToPoint(args["pos"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			text := args["text"].(string)
 
@@ -3045,9 +3045,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
-			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
-			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(args["p3"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 			thickness := args["thickness"].(float64)
 
@@ -3070,9 +3070,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
-			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
-			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(args["p3"].(*golua.LTable))
 			col := imageutil.ColorTableToRGBAColor(args["color"].(*golua.LTable))
 
 			c.AddTriangleFilled(p1, p2, p3, col)
@@ -3096,7 +3096,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			center := imageutil.TableToPoint(args["center"].(*golua.LTable))
 			radius := args["radius"].(float64)
 			min := args["min"].(float64)
 			max := args["max"].(float64)
@@ -3121,7 +3121,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			center := imageutil.TableToPoint(state, args["center"].(*golua.LTable))
+			center := imageutil.TableToPoint(args["center"].(*golua.LTable))
 			radius := args["radius"].(float64)
 			min := args["min"].(int)
 			max := args["max"].(int)
@@ -3145,9 +3145,9 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
-			p2 := imageutil.TableToPoint(state, args["p2"].(*golua.LTable))
-			p3 := imageutil.TableToPoint(state, args["p3"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
+			p2 := imageutil.TableToPoint(args["p2"].(*golua.LTable))
+			p3 := imageutil.TableToPoint(args["p3"].(*golua.LTable))
 			segments := args["segments"].(int)
 
 			c.PathBezierCubicCurveTo(p1, p2, p3, int32(segments))
@@ -3187,7 +3187,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
 
 			c.PathLineTo(p1)
 			return 0
@@ -3202,7 +3202,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			c := g.GetCanvas()
 
-			p1 := imageutil.TableToPoint(state, args["p1"].(*golua.LTable))
+			p1 := imageutil.TableToPoint(args["p1"].(*golua.LTable))
 
 			c.PathLineToMergeDuplicate(p1)
 			return 0
@@ -9260,8 +9260,8 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 	uv0 := t.RawGetString("__uv0")
 	uv1 := t.RawGetString("__uv1")
 	if uv0.Type() == golua.LTTable && uv1.Type() == golua.LTTable {
-		p1 := imageutil.TableToPoint(state, uv0.(*golua.LTable))
-		p2 := imageutil.TableToPoint(state, uv1.(*golua.LTable))
+		p1 := imageutil.TableToPoint(uv0.(*golua.LTable))
+		p2 := imageutil.TableToPoint(uv1.(*golua.LTable))
 
 		b.UV(p1, p2)
 	}
