@@ -119,4 +119,23 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			state.Push(data)
 			return 1
 		})
+
+	/// @func call_thread(func)
+	/// @arg func {function} - The function to call in a new thread.
+	/// @desc
+	/// This function will call the provided function in a new thread, unlike tasks there is no control over the thread.
+	/// There is also no guarantee that the thread will finish before the script ends.
+	lib.CreateFunction(tab, "call_thread",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			scheduledState, _ := state.NewThread()
+			go func() {
+				scheduledState.Push(args["func"].(golua.LValue))
+				scheduledState.Call(0, 0)
+				scheduledState.Close()
+			}()
+			return 0
+		})
 }
