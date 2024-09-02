@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
@@ -61,6 +62,18 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			state.Error(golua.LString(lg.Append(fmt.Sprintf("lua panic: %s", args["msg"]), log.LEVEL_ERROR)), 0)
+			return 0
+		})
+
+	/// @func sleep(ms)
+	/// @arg ms {int} - The number of milliseconds to sleep.
+	lib.CreateFunction(tab, "sleep",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "ms"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ms := args["ms"].(int)
+			time.Sleep(time.Duration(time.UnixMilli(int64(ms)).UnixNano()))
 			return 0
 		})
 

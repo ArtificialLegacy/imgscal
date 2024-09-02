@@ -20,6 +20,26 @@ const LIB_CLI = "cli"
 func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_CLI, r, r.State, lg)
 
+	/// @func clear()
+	/// @desc
+	/// Clears the console screen.
+	lib.CreateFunction(tab, "clear",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cli.Clear()
+			return 0
+		})
+
+	/// @func clear_line()
+	/// @desc
+	/// Clears the current line in the console.
+	lib.CreateFunction(tab, "clear_line",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cli.ClearLine()
+			return 0
+		})
+
 	/// @func print(msg...)
 	/// @arg msg {string...} - The messages to print to the console.
 	/// @desc
@@ -133,6 +153,46 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			printValue(args["table"].(golua.LValue), "", "")
+			return 0
+		})
+
+	/// @func progress(current, total, width, title, bar?, empty?, noreset?)
+	/// @arg current {int} - The current step.
+	/// @arg total {int} - The total number of steps.
+	/// @arg width {int} - The width of the progress bar.
+	/// @arg title {string} - The title of the progress bar.
+	/// @arg? bar {string} - The character to use for the progress bar, default is '#'.
+	/// @arg? empty {string} - The character to use for the empty space, default is ' '.
+	/// @arg? noreset {bool} - If true, the progress bar will not reset to the beginning of the line. If false, it will print a newline after the progress bar.
+	lib.CreateFunction(tab, "progress",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "current"},
+			{Type: lua.INT, Name: "total"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.STRING, Name: "title"},
+			{Type: lua.STRING, Name: "bar", Optional: true},
+			{Type: lua.STRING, Name: "empty", Optional: true},
+			{Type: lua.BOOL, Name: "noreset", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			total := args["total"].(int)
+			current := args["current"].(int)
+			width := args["width"].(int)
+			title := args["title"].(string)
+
+			bar := "#"
+			if args["bar"].(string) != "" {
+				bar = args["bar"].(string)
+			}
+			empty := " "
+			if args["empty"].(string) != "" {
+				empty = args["empty"].(string)
+			}
+
+			noreset := args["noreset"].(bool)
+
+			cli.Progress(current, total, width, title, bar, empty, !noreset)
+
 			return 0
 		})
 
@@ -262,6 +322,113 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func cursor_up(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_up",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dA", n)))
+			return 1
+		})
+
+	/// @func cursor_down(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_down",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dB", n)))
+			return 1
+		})
+
+	/// @func cursor_right(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_right",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dC", n)))
+			return 1
+		})
+
+	/// @func cursor_left(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_left",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dD", n)))
+			return 1
+		})
+
+	/// @func cursor_pos(x, y) -> string
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_pos",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			x := args["x"].(int)
+			y := args["y"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%d;%dH", y, x)))
+			return 1
+		})
+
+	/// @func cursor_next_line(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_next_line",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dE", n)))
+			return 1
+		})
+
+	/// @func cursor_prev_line(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_prev_line",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dF", n)))
+			return 1
+		})
+
+	/// @func cursor_column(n) -> string
+	/// @arg n {int}
+	/// @returns {string} - The cursor control code.
+	lib.CreateFunction(tab, "cursor_column",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			n := args["n"].(int)
+			state.Push(golua.LString(fmt.Sprintf("\u001b[%dG", n)))
+			return 1
+		})
+
 	/// @constants Control
 	/// @const RESET
 	tab.RawSetString("RESET", golua.LString(cli.COLOR_RESET))
@@ -343,6 +510,36 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BOLD", golua.LString(cli.COLOR_BOLD))
 	tab.RawSetString("UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
 	tab.RawSetString("REVERSED", golua.LString(cli.COLOR_REVERSED))
+
+	/// @constants Cursor
+	/// @const CURSOR_HOME
+	/// @const CURSOR_LINEUP
+	/// @const CURSOR_SAVE
+	/// @const CURSOR_LOAD
+	/// @const CURSOR_INVISIBLE
+	/// @const CURSOR_VISIBLE
+	tab.RawSetString("CURSOR_HOME", golua.LString(cli.COLOR_CURSOR_HOME))
+	tab.RawSetString("CURSOR_LINEUP", golua.LString(cli.COLOR_CURSOR_LINEUP))
+	tab.RawSetString("CURSOR_SAVE", golua.LString(cli.COLOR_CURSOR_SAVE))
+	tab.RawSetString("CURSOR_LOAD", golua.LString(cli.COLOR_CURSOR_LOAD))
+	tab.RawSetString("CURSOR_INVISIBLE", golua.LString(cli.COLOR_CURSOR_INVISIBLE))
+	tab.RawSetString("CURSOR_VISIBLE", golua.LString(cli.COLOR_CURSOR_VISIBLE))
+
+	/// @constants Erase
+	/// @const ERASE_DOWN
+	/// @const ERASE_UP
+	/// @const ERASE_SCREEN
+	/// @const ERASE_SAVED
+	/// @const ERASE_LINE_END
+	/// @const ERASE_LINE_START
+	/// @const ERASE_LINE
+	tab.RawSetString("ERASE_DOWN", golua.LString(cli.COLOR_ERASE_DOWN))
+	tab.RawSetString("ERASE_UP", golua.LString(cli.COLOR_ERASE_UP))
+	tab.RawSetString("ERASE_SCREEN", golua.LString(cli.COLOR_ERASE_SCREEN))
+	tab.RawSetString("ERASE_SAVED", golua.LString(cli.COLOR_ERASE_SAVED))
+	tab.RawSetString("ERASE_LINE_END", golua.LString(cli.COLOR_ERASE_LINE_END))
+	tab.RawSetString("ERASE_LINE_START", golua.LString(cli.COLOR_ERASE_LINE_START))
+	tab.RawSetString("ERASE_LINE", golua.LString(cli.COLOR_ERASE_LINE))
 }
 
 func printValue(val golua.LValue, prefix, indent string) {
