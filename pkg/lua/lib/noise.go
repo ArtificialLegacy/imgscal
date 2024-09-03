@@ -22,7 +22,7 @@ const LIB_NOISE = "noise"
 func RegisterNoise(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_NOISE, r, r.State, lg)
 
-	/// @func simplex_image_new(seed, coef, normalize, name, encoding, width, model?, disableColor?, disableAlpha?) -> int<collection.IMAGE>
+	/// @func simplex_image_new(seed, coef, normalize, name, encoding, width, height, model?, disableColor?, disableAlpha?) -> int<collection.IMAGE>
 	/// @arg seed {int}
 	/// @arg coef {float}
 	/// @arg normalize {bool} - Use noise values between (0,1) instead of (-1,1).

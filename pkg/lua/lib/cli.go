@@ -9,6 +9,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/disintegration/gift"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -181,6 +182,56 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 					for y := boundsMin.Y; y < boundsMax.Y; y++ {
 						for x := boundsMin.X; x < boundsMax.X; x++ {
 							r, g, b, _ := imageutil.Get(i.Self.Image, x, y)
+							color := trueColorBg(r, g, b)
+
+							if double {
+								fmt.Printf("%s  ", color)
+							} else {
+								fmt.Printf("%s ", color)
+							}
+						}
+						fmt.Println()
+					}
+					fmt.Print(cli.COLOR_RESET)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func print_image_size(id, width, height, double?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg width {int} - The width of the image.
+	/// @arg height {int} - The height of the image.
+	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	/// @blocking
+	lib.CreateFunction(tab, "print_image_size",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.BOOL, Name: "double", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := args["id"].(int)
+			double := args["double"].(bool)
+
+			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+
+					g := gift.New(gift.Resize(args["width"].(int), args["height"].(int), gift.NearestNeighborResampling))
+					newBounds := g.Bounds(i.Self.Image.Bounds())
+					dst := imageutil.NewImage(newBounds.Dx(), newBounds.Dy(), i.Self.Model)
+					g.Draw(imageutil.ImageGetDraw(dst), i.Self.Image)
+
+					boundsMin := dst.Bounds().Min
+					boundsMax := dst.Bounds().Max
+
+					for y := boundsMin.Y; y < boundsMax.Y; y++ {
+						for x := boundsMin.X; x < boundsMax.X; x++ {
+							r, g, b, _ := imageutil.Get(dst, x, y)
 							color := trueColorBg(r, g, b)
 
 							if double {

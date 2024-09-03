@@ -7,6 +7,7 @@
 
     "workflows": {
         "noise": "noise.lua",
-        "filter": "filter.lua"
+        "filter": "filter.lua",
+        "imger": "imger.lua"
     }
 }

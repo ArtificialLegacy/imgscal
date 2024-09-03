@@ -31,13 +31,19 @@ make dev
 > This requires ImgScal to have been run at least **once**,
 > as the config file and workflow directory must exist.
 
-### GUI/Noise - [Source](/examples/gui/example_noise.lua)
+### GUI/Imger - [Source](/examples/gui/imger.lua)
+
+Demo worflow that creates an interface with controls to apply filters from the Imger library onto images.
+
+![imger example](assets/demos/example_imger.png)
+
+### GUI/Noise - [Source](/examples/gui/noise.lua)
 
 Demo workflow that creates an interface with controls to generate noise maps.
 
 ![noise example](assets/demos/example_noise.png)
 
-### GUI/Filter - [Source](/examples/gui/example_filter.lua)
+### GUI/Filter - [Source](/examples/gui/filter.lua)
 
 Demo workflow that creates an interface to apply filters to an image.
 
