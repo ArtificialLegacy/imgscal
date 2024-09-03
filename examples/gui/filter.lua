@@ -84,12 +84,12 @@ channelValue = {
 function main()
     local widget = require("widget")
 
-    local win = gui.window_master("Filter Example", 512, 512, bit.bitor_many({
-        FLAGWINDOW_NORESIZE,
-    }))
+    local win = gui.window_master("Filter Example", 512, 512, bit.bitor_many(
+        gui.FLAGWINDOW_NORESIZE
+    ))
     gui.window_set_icon_imgscal(win, true)
 
-    local imgSrc = io.load_image(io.path_join({io.wd(), "example_image.png"}))
+    local imgSrc = io.load_image(io.path_join(io.wd(), "example_image.png"))
     local imgDst = image.new("dst_img", image.ENCODING_PNG, 200, 200)
 
     -- window padding used for setting the size of the child widget that wraps the images.
@@ -232,11 +232,11 @@ function main()
                                 -- using wg_image_sync here allows it to display while the image is being processed.
                                 -- otherwise the main goroutine would be blocked here
                                 gui.wg_table()
-                                    :flags(bit.bitor_many({
+                                    :flags(bit.bitor_many(
                                         gui.FLAGTABLE_SIZINGSTRETCHSAME,
                                         gui.FLAGTABLE_BORDERSINNERV,
-                                        gui.FLAGTABLE_NOPADOUTERX,
-                                    }))
+                                        gui.FLAGTABLE_NOPADOUTERX
+                                    ))
                                     :rows({
                                         gui.wg_table_row({
                                             gui.wg_image_sync(imgSrc)
@@ -591,12 +591,12 @@ function main()
                                 ref.set(convolution2x2, 0)
                             end),
                         gui.wg_table()
-                            :flags(bit.bitor_many({
+                            :flags(bit.bitor_many(
                                 gui.FLAGTABLE_BORDERSINNER,
                                 gui.FLAGTABLE_SIZINGFIXEDFIT,
                                 gui.FLAGTABLE_PRECISEWIDTHS,
-                                gui.FLAGTABLE_NOHOSTEXTENDX,
-                            }))
+                                gui.FLAGTABLE_NOHOSTEXTENDX
+                            ))
                             :rows({
                                 gui.wg_table_row({
                                     gui.wg_input_float(convolution0x0):format("%.2f"):size(50),
@@ -823,10 +823,10 @@ end
 
 function wg_filter(name, widgets)
     return gui.wg_tree_node(name)
-        :flags(bit.bitor_many({
+        :flags(bit.bitor_many(
             gui.FLAGTREENODE_FRAMED,
-            gui.FLAGTREENODE_NOTREEPUSHONOPEN,
-        }))
+            gui.FLAGTREENODE_NOTREEPUSHONOPEN
+        ))
         :layout(widgets)
 end
 

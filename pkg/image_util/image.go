@@ -70,7 +70,43 @@ func ImageGetDraw(img image.Image) draw.Image {
 	}
 }
 
-func TableToPoint(state *golua.LState, t *golua.LTable) image.Point {
+func ImageCompare(img1, img2 image.Image) bool {
+	draw1 := ImageGetDraw(img1)
+	draw2 := ImageGetDraw(img2)
+	if draw1 == nil || draw2 == nil {
+		return false
+	}
+
+	bounds1 := draw1.Bounds()
+	bounds2 := draw2.Bounds()
+
+	if bounds1.Dx() != bounds2.Dx() || bounds1.Dy() != bounds2.Dy() {
+		return false
+	}
+
+	for x := bounds1.Min.X; x < bounds1.Max.X; x++ {
+		for y := bounds1.Min.Y; y < bounds1.Max.Y; y++ {
+			zx1 := x - bounds1.Min.X
+			zy1 := y - bounds1.Min.Y
+			x2 := bounds2.Min.X + zx1
+			y2 := bounds2.Min.Y + zy1
+
+			c1 := draw1.At(x, y)
+			c2 := draw2.At(x2, y2)
+
+			r1, g1, b1, a1 := c1.RGBA()
+			r2, g2, b2, a2 := c2.RGBA()
+
+			if r1 != r2 || g1 != g2 || b1 != b2 || a1 != a2 {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func TableToPoint(t *golua.LTable) image.Point {
 	x := t.RawGetString("x").(golua.LNumber)
 	y := t.RawGetString("y").(golua.LNumber)
 

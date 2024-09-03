@@ -7,7 +7,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/assets"
@@ -188,6 +187,50 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func remove(path, all?)
+	/// @arg path {string}
+	/// @arg? all {bool} - If to remove all directories going to the given path.
+	lib.CreateFunction(tab, "remove",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.BOOL, Name: "all", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if args["all"].(bool) {
+				err := os.RemoveAll(args["path"].(string))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to remove all directories: %s", err), log.LEVEL_ERROR)), 0)
+				}
+			} else {
+				err := os.Remove(args["path"].(string))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to remove file: %s", err), log.LEVEL_ERROR)), 0)
+				}
+			}
+
+			return 0
+		})
+
+	/// @func exists(path) -> bool, bool
+	/// @arg path {string}
+	/// @returns {bool} - If the file exists.
+	/// @returns {bool} - If the file is a directory.
+	lib.CreateFunction(tab, "exists",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fs, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.Push(golua.LFalse)
+				state.Push(golua.LFalse)
+			} else {
+				state.Push(golua.LTrue)
+				state.Push(golua.LBool(fs.IsDir()))
+			}
+			return 2
+		})
+
 	/// @func dir(path) -> []string
 	/// @arg path {string}
 	/// @returns {[]string} - Array containing all file paths in the directory.
@@ -282,9 +325,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			lua.ArgArray("filter", lua.ArrayType{Type: lua.STRING}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			filter := []string{}
-			for _, v := range args["filter"].(map[string]any) {
-				filter = append(filter, v.(string))
+			fv := args["filter"].([]any)
+			filter := make([]string, len(fv))
+			for i, v := range fv {
+				filter[i] = v.(string)
 			}
 
 			parseDir("dir_filter", args["path"].(string), filter, lib)
@@ -308,19 +352,19 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func path_join(paths) -> string
-	/// @arg paths {[]string}
+	/// @func path_join(paths...) -> string
+	/// @arg paths {string...}
 	/// @returns {string}
 	lib.CreateFunction(tab, "path_join",
 		[]lua.Arg{
-			lua.ArgArray("paths", lua.ArrayType{Type: lua.STRING}, false),
+			lua.ArgVariadic("paths", lua.ArrayType{Type: lua.STRING}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			strs := []string{}
-			pths := args["paths"].(map[string]any)
+			pths := args["paths"].([]any)
+			strs := make([]string, len(pths))
 
-			for i := range len(pths) {
-				strs = append(strs, pths[strconv.Itoa(i+1)].(string))
+			for i, v := range pths {
+				strs[i] = v.(string)
 			}
 
 			pth := path.Join(strs...)
@@ -347,7 +391,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "default_output",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			state.Push(golua.LString(r.Output))
+			state.Push(golua.LString(r.Config.OutputDirectory))
 			return 1
 		})
 

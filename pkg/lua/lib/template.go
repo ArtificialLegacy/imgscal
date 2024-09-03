@@ -39,7 +39,7 @@ func RegisterTemplate(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to parse template: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			data := getValue(args["data"].(golua.LValue))
+			data := lua.GetValue(args["data"].(golua.LValue))
 			str := &strings.Builder{}
 
 			err = t.Execute(str, data)
@@ -73,7 +73,7 @@ func RegisterTemplate(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to parse template: %s, %s", pth, err), log.LEVEL_ERROR)), 0)
 			}
 
-			data := getValue(args["data"].(golua.LValue))
+			data := lua.GetValue(args["data"].(golua.LValue))
 			str := &strings.Builder{}
 
 			err = t.Execute(str, data)
@@ -110,7 +110,7 @@ func RegisterTemplate(r *lua.Runner, lg *log.Logger) {
 			}
 			defer f.Close()
 
-			data := getValue(args["data"].(golua.LValue))
+			data := lua.GetValue(args["data"].(golua.LValue))
 			err = t.Execute(f, data)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed executing template: %s", err), log.LEVEL_ERROR)), 0)
@@ -148,7 +148,7 @@ func RegisterTemplate(r *lua.Runner, lg *log.Logger) {
 			}
 			defer f.Close()
 
-			data := getValue(args["data"].(golua.LValue))
+			data := lua.GetValue(args["data"].(golua.LValue))
 			err = t.Execute(f, data)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed executing template: %s", err), log.LEVEL_ERROR)), 0)

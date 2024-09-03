@@ -31,5 +31,5 @@ function main()
     })
 
     io.out(outImg, io.path_to(inpath))
-    cli.print("Resized image saved to: "..io.path_join({inpath, outName})..".")
+    cli.print("Resized image saved to: "..io.path_join(inpath, outName)..".")
 end

@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
@@ -64,6 +65,18 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func sleep(ms)
+	/// @arg ms {int} - The number of milliseconds to sleep.
+	lib.CreateFunction(tab, "sleep",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "ms"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ms := args["ms"].(int)
+			time.Sleep(time.Duration(time.UnixMilli(int64(ms)).UnixNano()))
+			return 0
+		})
+
 	/// @func fmt(str, values) -> string
 	/// @arg str {string}
 	/// @arg values {[]any} - The value in each index should be compatible with the Go fmt string provided.
@@ -71,7 +84,7 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "fmt",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "str"},
-			{Type: lua.ANY, Name: "values"},
+			{Type: lua.RAW_TABLE, Name: "values"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := []any{}
@@ -83,5 +96,46 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			format := fmt.Sprintf(args["str"].(string), v...)
 			state.Push(golua.LString(format))
 			return 1
+		})
+
+	/// @func config() -> table<any>
+	/// @returns {table<any>}
+	lib.CreateFunction(tab, "config",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			data := lua.CreateValue(r.ConfigData, state)
+
+			state.Push(data)
+			return 1
+		})
+
+	/// @func secrets() -> table<any>
+	/// @returns {table<any>}
+	lib.CreateFunction(tab, "secrets",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			data := lua.CreateValue(r.SecretData, state)
+
+			state.Push(data)
+			return 1
+		})
+
+	/// @func call_thread(func)
+	/// @arg func {function} - The function to call in a new thread.
+	/// @desc
+	/// This function will call the provided function in a new thread, unlike tasks there is no control over the thread.
+	/// There is also no guarantee that the thread will finish before the script ends.
+	lib.CreateFunction(tab, "call_thread",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			scheduledState, _ := state.NewThread()
+			go func() {
+				scheduledState.Push(args["func"].(golua.LValue))
+				scheduledState.Call(0, 0)
+				scheduledState.Close()
+			}()
+			return 0
 		})
 }

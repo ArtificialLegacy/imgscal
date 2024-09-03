@@ -73,6 +73,7 @@ func viewConfig(cfg *config.Config) {
 	fmt.Printf("%sImgScal Config%s v%s\n", cli.COLOR_BOLD, cli.COLOR_RESET, cfg.ConfigVersion)
 	fmt.Printf("%s%s%s\n\n", configPathColor, cfgPath, cli.COLOR_RESET)
 
+	fmt.Printf("config_directory:   %s%s%s\n", configPathColor, cfg.ConfigDirectory, cli.COLOR_RESET)
 	fmt.Printf("workflow_directory: %s%s%s\n", configPathColor, cfg.WorkflowDirectory, cli.COLOR_RESET)
 	fmt.Printf("log_directory:      %s%s%s\n", configPathColor, cfg.LogDirectory, cli.COLOR_RESET)
 	fmt.Printf("output_directory:   %s%s%s\n", configPathColor, cfg.OutputDirectory, cli.COLOR_RESET)

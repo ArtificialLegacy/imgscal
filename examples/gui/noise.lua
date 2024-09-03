@@ -6,7 +6,6 @@ function init(workflow)
         "noise",
         "ref",
         "collection",
-        "cli",
     })
 end
 

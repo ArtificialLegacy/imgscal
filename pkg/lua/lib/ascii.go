@@ -169,4 +169,84 @@ func RegisterASCII(r *lua.Runner, lg *log.Logger) {
 			return 1
 		},
 	)
+
+	/// @func to_string_matrix(id, color?, reverse?) -> []string
+	/// @arg id {int(collection.IMAGE)} - Image to convert to ascii.
+	/// @arg? color {bool} - Enable only for terminal dislay.
+	/// @arg? reverse {bool}
+	/// @returns {[]string} - The generated ASCII art.
+	/// @blocking
+	lib.CreateFunction(tab, "to_string_matrix",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "color", Optional: true},
+			{Type: lua.BOOL, Name: "reverse", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			str := []string{}
+
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					converter := convert.NewImageConverter()
+					str = converter.Image2ASCIIMatrix(i.Self.Image, &convert.Options{
+						Colored:  args["color"].(bool),
+						Reversed: args["reverse"].(bool),
+					})
+				},
+			})
+
+			tab := state.NewTable()
+			for _, s := range str {
+				tab.Append(golua.LString(s))
+			}
+
+			state.Push(tab)
+			return 1
+		},
+	)
+
+	/// @func to_string_matrix_size(id, width, height, color?, reverse?) -> []string
+	/// @arg id {int(collection.IMAGE)} - Image to convert to ascii.
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? color {bool} - Enable only for terminal dislay.
+	/// @arg? reverse {bool}
+	/// @returns {[]string} - The generated ASCII art.
+	/// @blocking
+	lib.CreateFunction(tab, "to_string_matrix_size",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.BOOL, Name: "color", Optional: true},
+			{Type: lua.BOOL, Name: "reverse", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			str := []string{}
+
+			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					converter := convert.NewImageConverter()
+					str = converter.Image2ASCIIMatrix(i.Self.Image, &convert.Options{
+						FixedWidth:  args["width"].(int),
+						FixedHeight: args["height"].(int),
+						Colored:     args["color"].(bool),
+						Reversed:    args["reverse"].(bool),
+					})
+				},
+			})
+
+			tab := state.NewTable()
+			for _, s := range str {
+				tab.Append(golua.LString(s))
+			}
+
+			state.Push(tab)
+			return 1
+		},
+	)
 }

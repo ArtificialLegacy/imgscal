@@ -3,7 +3,6 @@ package collection
 import (
 	"fmt"
 	"image"
-	"os"
 	"runtime/debug"
 	"sync"
 
@@ -20,7 +19,6 @@ type CollectionType int
 const (
 	TYPE_TASK CollectionType = iota
 	TYPE_IMAGE
-	TYPE_FILE
 	TYPE_CONTEXT
 	TYPE_QR
 )
@@ -28,7 +26,6 @@ const (
 var CollectionList = []CollectionType{
 	TYPE_TASK,
 	TYPE_IMAGE,
-	TYPE_FILE,
 	TYPE_CONTEXT,
 	TYPE_QR,
 }
@@ -45,13 +42,6 @@ type ItemImage struct {
 }
 
 func (img ItemImage) Identifier() CollectionType { return TYPE_IMAGE }
-
-type ItemFile struct {
-	File *os.File
-	Name string
-}
-
-func (file ItemFile) Identifier() CollectionType { return TYPE_FILE }
 
 type ItemContext struct {
 	Context *gg.Context

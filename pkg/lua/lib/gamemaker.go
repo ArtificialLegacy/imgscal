@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image"
 	"os"
-	"strconv"
 	"sync"
 
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
@@ -76,7 +75,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.STRING, Name: "path", Optional: true},
-			lua.ArgArray("tags", lua.ArrayType{Type: lua.STRING}, true),
+			lua.ArgVariadic("tags", lua.ArrayType{Type: lua.STRING}, true),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -89,11 +88,11 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 
 			folder := yyp.NewFolder(name, folderpath)
 
-			tags := args["tags"].(map[string]any)
-			if tags != nil {
+			tags := args["tags"].([]any)
+			if len(tags) > 0 {
 				tagList := make([]string, len(tags))
-				for i := range len(tags) {
-					tagList[i] = tags[strconv.Itoa(i+1)].(string)
+				for i, v := range tags {
+					tagList[i] = v.(string)
 				}
 				folder.Resource.Tags = tagList
 			}
@@ -200,11 +199,11 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
-			{Type: lua.ANY, Name: "parent"},
-			{Type: lua.ANY, Name: "texgroup"},
+			{Type: lua.RAW_TABLE, Name: "parent"},
+			{Type: lua.RAW_TABLE, Name: "texgroup"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := spriteTable(state,
+			t := spriteTable(lib, state,
 				args["name"].(string),
 				args["width"].(int), args["height"].(int),
 				args["parent"].(*golua.LTable),
@@ -222,7 +221,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "sprite_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "sprite"},
+			{Type: lua.RAW_TABLE, Name: "sprite"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -314,7 +313,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 
 			parent := resourceNodeTable(state, sprite.Resource.Parent.Name, sprite.Resource.Parent.Path)
 			texgroup := resourceNodeTable(state, sprite.Resource.TexGroupID.Name, sprite.Resource.TexGroupID.Path)
-			t := spriteTable(state, sprite.Name, sprite.Resource.Width, sprite.Resource.Height, parent, texgroup, lg)
+			t := spriteTable(lib, state, sprite.Name, sprite.Resource.Width, sprite.Resource.Height, parent, texgroup, lg)
 
 			layerParent := layersTable(state, t)
 			layers := state.NewTable()
@@ -415,10 +414,10 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.STRING, Name: "text"},
-			{Type: lua.ANY, Name: "parent"},
+			{Type: lua.RAW_TABLE, Name: "parent"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := noteTable(state, args["name"].(string), args["text"].(string), args["parent"].(*golua.LTable))
+			t := noteTable(lib, state, args["name"].(string), args["text"].(string), args["parent"].(*golua.LTable))
 
 			state.Push(t)
 			return 1
@@ -430,7 +429,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "note_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "note"},
+			{Type: lua.RAW_TABLE, Name: "note"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -516,7 +515,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			}
 
 			parent := resourceNodeTable(state, note.Resource.Parent.Name, note.Resource.Parent.Path)
-			t := noteTable(state, note.Name, note.Text, parent)
+			t := noteTable(lib, state, note.Name, note.Text, parent)
 
 			if note.Resource.Tags != nil {
 				tags := state.NewTable()
@@ -539,10 +538,10 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.STRING, Name: "code"},
-			{Type: lua.ANY, Name: "parent"},
+			{Type: lua.RAW_TABLE, Name: "parent"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := scriptTable(state, args["name"].(string), args["code"].(string), args["parent"].(*golua.LTable))
+			t := scriptTable(lib, state, args["name"].(string), args["code"].(string), args["parent"].(*golua.LTable))
 
 			state.Push(t)
 			return 1
@@ -554,7 +553,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "script_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "script"},
+			{Type: lua.RAW_TABLE, Name: "script"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -640,7 +639,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			}
 
 			parent := resourceNodeTable(state, script.Resource.Parent.Name, script.Resource.Parent.Path)
-			t := scriptTable(state, script.Name, script.Code, parent)
+			t := scriptTable(lib, state, script.Name, script.Code, parent)
 
 			if script.Resource.Tags != nil {
 				tags := state.NewTable()
@@ -714,7 +713,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "datafile_save",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
-			{Type: lua.ANY, Name: "datafile"},
+			{Type: lua.RAW_TABLE, Name: "datafile"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			proj, err := r.CR_GMP.Item(args["id"].(int))
@@ -989,7 +988,7 @@ func resourceNodeBuild(t *golua.LTable) yyp.ProjectResourceNode {
 	}
 }
 
-func spriteTable(state *golua.LState, name string, width, height int, parent, texgroup *golua.LTable, lg *log.Logger) *golua.LTable {
+func spriteTable(lib *lua.Lib, state *golua.LState, name string, width, height int, parent, texgroup *golua.LTable, lg *log.Logger) *golua.LTable {
 	/// @struct Sprite
 	/// @prop name {string}
 	/// @prop width {int}
@@ -998,7 +997,8 @@ func spriteTable(state *golua.LState, name string, width, height int, parent, te
 	/// @prop texgroup {struct<gamemaker.ResourceNode>}
 	/// @method layers() -> struct<gamemaker.SpriteLayers>
 	/// @method frames() -> struct<gamemaker.SpriteFrames>
-	/// @method tags([]string) -> self
+	/// @method tags(string...) -> self
+	/// @method tag_list([]string) -> self
 	/// @method tile(htile bool, vtile bool) -> self
 	/// @method origin(int<gamemaker.SpriteOrigin>, xorigin int?, yorigin int?) -> self
 	/// @method collision(int<gamemaker.BBOXMode>, int<gamemaker.CollMask>, struct<gamemaker.BBOX>?, tolerance int?) -> self
@@ -1017,7 +1017,6 @@ func spriteTable(state *golua.LState, name string, width, height int, parent, te
 	t.RawSetString("parent", parent)
 	t.RawSetString("texgroup", texgroup)
 
-	t.RawSetString("__tags", golua.LNil)
 	t.RawSetString("__htile", golua.LNil)
 	t.RawSetString("__vtile", golua.LNil)
 	t.RawSetString("__origin", golua.LNil)
@@ -1059,10 +1058,7 @@ func spriteTable(state *golua.LState, name string, width, height int, parent, te
 		return 1
 	}))
 
-	tableBuilderFunc(state, t, "tags", func(state *golua.LState, t *golua.LTable) {
-		st := state.CheckTable(-1)
-		t.RawSetString("__tags", st)
-	})
+	resourceTags(lib, state, t)
 
 	tableBuilderFunc(state, t, "tile", func(state *golua.LState, t *golua.LTable) {
 		htile := state.CheckBool(-2)
@@ -1559,24 +1555,20 @@ func frameBuild(t *golua.LTable) []int {
 	return frameImgs
 }
 
-func noteTable(state *golua.LState, name, text string, parent golua.LValue) *golua.LTable {
+func noteTable(lib *lua.Lib, state *golua.LState, name, text string, parent golua.LValue) *golua.LTable {
 	/// @struct Note
 	/// @prop name {string}
 	/// @prop text {string}
 	/// @prop parent {struct<gamemaker.ResourceNode>}
-	/// @method tags([]string) -> self
+	/// @method tags(string...) -> self
+	/// @method tag_list([]string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("name", golua.LString(name))
 	t.RawSetString("text", golua.LString(text))
 	t.RawSetString("parent", parent)
 
-	t.RawSetString("__tags", golua.LNil)
-
-	tableBuilderFunc(state, t, "tags", func(state *golua.LState, t *golua.LTable) {
-		st := state.CheckTable(-1)
-		t.RawSetString("__tags", st)
-	})
+	resourceTags(lib, state, t)
 
 	return t
 }
@@ -1601,24 +1593,20 @@ func noteBuild(t *golua.LTable) *yyp.Note {
 	return note
 }
 
-func scriptTable(state *golua.LState, name, code string, parent golua.LValue) *golua.LTable {
+func scriptTable(lib *lua.Lib, state *golua.LState, name, code string, parent golua.LValue) *golua.LTable {
 	/// @struct Script
 	/// @prop name {string}
 	/// @prop code {string}
 	/// @prop parent {struct<gamemaker.ResourceNode>}
-	/// @method tags([]string) -> self
+	/// @method tags(string...) -> self
+	/// @method tag_list([]string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("name", golua.LString(name))
 	t.RawSetString("code", golua.LString(code))
 	t.RawSetString("parent", parent)
 
-	t.RawSetString("__tags", golua.LNil)
-
-	tableBuilderFunc(state, t, "tags", func(state *golua.LState, t *golua.LTable) {
-		st := state.CheckTable(-1)
-		t.RawSetString("__tags", st)
-	})
+	resourceTags(lib, state, t)
 
 	return t
 }
@@ -1724,4 +1712,30 @@ func datafileBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.
 	}
 
 	return yyp.NewIncludedFile(filepath, name, &fdata)
+}
+
+func resourceTags(lib *lua.Lib, state *golua.LState, t *golua.LTable) {
+	t.RawSetString("__tags", golua.LNil)
+
+	lib.BuilderFunction(state, t, "tags",
+		[]lua.Arg{
+			lua.ArgVariadic("tags", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			tv := args["tags"].([]any)
+			tags := state.NewTable()
+			for _, v := range tv {
+				tags.Append(golua.LString(v.(string)))
+			}
+
+			t.RawSetString("__tags", tags)
+		})
+
+	lib.BuilderFunction(state, t, "tag_list",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "tags"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__tags", args["tags"].(*golua.LTable))
+		})
 }

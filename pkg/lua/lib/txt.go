@@ -3,9 +3,8 @@ package lib
 import (
 	"fmt"
 	"os"
-	"path"
+	"strings"
 
-	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	golua "github.com/yuin/gopher-lua"
@@ -16,100 +15,314 @@ const LIB_TXT = "txt"
 /// @lib Text
 /// @import txt
 /// @desc
-/// Library for reading and writing to '.txt' files.
+/// Library for reading and writing to text files.
 
 func RegisterTXT(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TXT, r, r.State, lg)
 
-	/// @func file_open(path, file, flag?) -> int<collection.FILE>
-	/// @arg path {string} - The directory path to the file.
-	/// @arg file {string} - The name of the file.
-	/// @arg? flag {int<txt.FileFlags>} - Defaults to 'txt.CREATE'.
-	/// @returns {int<collection.FILE>}
-	/// @desc
-	/// Will create the file if it does not exist,
-	/// but will not create non-existant directories.
-	/// Use 'bit.bitor' or 'bit.bitor_many' to combine flags.
-	lib.CreateFunction(tab, "file_open",
-		[]lua.Arg{
-			{Type: lua.STRING, Name: "path"},
-			{Type: lua.STRING, Name: "file"},
-			{Type: lua.INT, Name: "flag", Optional: true},
-		},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			fi, err := os.Stat(args["path"].(string))
-			if err != nil {
-				state.Error(golua.LString(lg.Append(fmt.Sprintf("cannot find directory to txt file: %s", args["path"].(string)), log.LEVEL_ERROR)), 0)
-			}
-
-			if !fi.IsDir() {
-				state.Error(golua.LString(lg.Append(fmt.Sprintf("path provided is not a dir: %s", args["path"].(string)), log.LEVEL_ERROR)), 0)
-			}
-
-			chLog := log.NewLogger(fmt.Sprintf("file_%s", fi.Name()), lg)
-			lg.Append(fmt.Sprintf("child log created: file_%s", fi.Name()), log.LEVEL_INFO)
-
-			id := r.FC.AddItem(&chLog)
-
-			r.FC.Schedule(id, &collection.Task[collection.ItemFile]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemFile]) {
-					flag := args["flag"].(int)
-					if flag == 0 {
-						flag = os.O_CREATE
-					}
-					f, err := os.OpenFile(path.Join(args["path"].(string), args["file"].(string)), flag, 0o666)
-					if err != nil {
-						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("failed to open txt file: %s", args["file"].(string)), log.LEVEL_ERROR)), 0)
-					}
-
-					i.Self = &collection.ItemFile{
-						Name: args["path"].(string),
-						File: f,
-					}
-				},
-			})
-
-			state.Push(golua.LNumber(id))
-			return 1
-		})
-
-	/// @func write(id, txt)
-	/// @arg id {int<collection.FILE>}
-	/// @arg txt {string}
+	/// @func write(path, text)
+	/// @arg path {string}
+	/// @arg text {string}
 	lib.CreateFunction(tab, "write",
 		[]lua.Arg{
-			{Type: lua.INT, Name: "id"},
-			{Type: lua.STRING, Name: "txt"},
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.STRING, Name: "text"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.FC.Schedule(args["id"].(int), &collection.Task[collection.ItemFile]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemFile]) {
-					_, err := i.Self.File.WriteString(args["txt"].(string))
-					if err != nil {
-						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("failed to write to txt file: %d", args["id"]), log.LEVEL_ERROR)), 0)
-					}
-				},
-			})
+			path := args["path"].(string)
+			text := args["text"].(string)
+
+			err := os.WriteFile(path, []byte(text), 0o666)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to write to file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
 			return 0
 		})
 
-	/// @constants File Flags
-	/// @const CREATE
-	/// @const TRUNC
-	/// @const EXCL
-	/// @const APPEND
-	/// @const RDWR
-	/// @const RDONLY
-	/// @const WRONLY
-	tab.RawSetString("CREATE", golua.LNumber(os.O_CREATE))
-	tab.RawSetString("TRUNC", golua.LNumber(os.O_TRUNC))
-	tab.RawSetString("EXCL", golua.LNumber(os.O_EXCL))
-	tab.RawSetString("APPEND", golua.LNumber(os.O_APPEND))
-	tab.RawSetString("RDWR", golua.LNumber(os.O_RDWR))
-	tab.RawSetString("RDONLY", golua.LNumber(os.O_RDONLY))
-	tab.RawSetString("WRONLY", golua.LNumber(os.O_WRONLY))
+	/// @func write_lines(path, lines)
+	/// @arg path {string}
+	/// @arg lines {[]string}
+	lib.CreateFunction(tab, "write_lines",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			lua.ArgArray("lines", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			lines := args["lines"].([]any)
+
+			text := ""
+			for _, line := range lines {
+				text += line.(string) + "\n"
+			}
+
+			err := os.WriteFile(path, []byte(text), 0o666)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to write to file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func truncate(path)
+	/// @arg path {string}
+	lib.CreateFunction(tab, "truncate",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+
+			err := os.WriteFile(path, []byte{}, 0o666)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to truncate file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func append(path, text)
+	/// @arg path {string}
+	/// @arg text {string}
+	lib.CreateFunction(tab, "append",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			text := args["text"].(string)
+
+			file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to append to file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			defer file.Close()
+
+			_, err = file.WriteString(text)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to append to file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			return 0
+		})
+
+	/// @func append_lines(path, lines)
+	/// @arg path {string}
+	/// @arg lines {[]string}
+	lib.CreateFunction(tab, "append_lines",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			lua.ArgArray("lines", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			lines := args["lines"].([]any)
+
+			file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to append to file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			defer file.Close()
+
+			for _, line := range lines {
+				_, err = file.WriteString(line.(string) + "\n")
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to append to file: %s", err), log.LEVEL_ERROR)), 0)
+				}
+			}
+
+			return 0
+		})
+
+	/// @func read(path) -> string
+	/// @arg path {string}
+	/// @returns {string}
+	lib.CreateFunction(tab, "read",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			state.Push(golua.LString(string(text)))
+			return 1
+		})
+
+	/// @func read_lines(path) -> []string
+	/// @arg path {string}
+	/// @returns {[]string}
+	lib.CreateFunction(tab, "read_lines",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			lines := strings.Split(string(text), "\n")
+			arr := state.NewTable()
+			for i, line := range lines {
+				arr.RawSetInt(i+1, golua.LString(line))
+			}
+
+			state.Push(arr)
+			return 1
+		})
+
+	/// @func line_count(path) -> int
+	/// @arg path {string}
+	/// @returns {int}
+	lib.CreateFunction(tab, "line_count",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			b := strings.Split(string(text), "\n")
+			state.Push(golua.LNumber(len(b)))
+
+			return 1
+		})
+
+	/// @func line(path, index) -> string
+	/// @arg path {string}
+	/// @arg index {int}
+	/// @returns {string} - Returns an empty string if the index is out of bounds.
+	lib.CreateFunction(tab, "line",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.INT, Name: "index"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			index := args["index"].(int)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			lines := strings.Split(string(text), "\n")
+			if index < 0 || index >= len(lines) {
+				state.Push(golua.LString(""))
+			} else {
+				state.Push(golua.LString(lines[index]))
+			}
+
+			return 1
+		})
+
+	/// @func iter(path, func)
+	/// @arg path {string}
+	/// @arg func {function(line string, index int)}
+	lib.CreateFunction(tab, "iter",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			fn := args["func"].(*golua.LFunction)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			lines := strings.Split(string(text), "\n")
+
+			for i, line := range lines {
+				state.Push(fn)
+				state.Push(golua.LString(line))
+				state.Push(golua.LNumber(i + 1))
+				state.Call(2, 0)
+			}
+
+			return 0
+		})
+
+	/// @func map(path, func) -> string
+	/// @arg path {string}
+	/// @arg func {function(line string, index int) -> string}
+	/// @returns {string}
+	lib.CreateFunction(tab, "map",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			fn := args["func"].(*golua.LFunction)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			lines := strings.Split(string(text), "\n")
+			var out string
+
+			for i, line := range lines {
+				state.Push(fn)
+				state.Push(golua.LString(line))
+				state.Push(golua.LNumber(i + 1))
+				state.Call(2, 1)
+				out += state.ToString(-1)
+				state.Pop(1)
+			}
+
+			state.Push(golua.LString(out))
+			return 1
+		})
+
+	/// @func map_lines(path, func) -> []string
+	/// @arg path {string}
+	/// @arg func {function(line string, index int) -> string}
+	/// @returns {[]string}
+	lib.CreateFunction(tab, "map_lines",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.FUNC, Name: "func"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			path := args["path"].(string)
+			fn := args["func"].(*golua.LFunction)
+
+			text, err := os.ReadFile(path)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to read file: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			lines := strings.Split(string(text), "\n")
+			arr := state.NewTable()
+
+			for i, line := range lines {
+				state.Push(fn)
+				state.Push(golua.LString(line))
+				state.Push(golua.LNumber(i + 1))
+				state.Call(2, 1)
+				arr.RawSetInt(i+1, golua.LString(state.ToString(-1)))
+				state.Pop(1)
+			}
+
+			state.Push(arr)
+			return 1
+		})
 }

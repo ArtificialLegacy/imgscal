@@ -12,13 +12,20 @@ import (
 	golua "github.com/yuin/gopher-lua"
 )
 
-func WorkflowRunEnter(sm *statemachine.StateMachine, script string) {
+type WorkflowRunData struct {
+	Script string
+	Name   string
+}
+
+func WorkflowRunEnter(sm *statemachine.StateMachine, data WorkflowRunData) {
 	sm.SetState(STATE_WORKFLOW_RUN)
-	sm.Data = script
+	sm.Data = data
 }
 
 func WorkflowRun(sm *statemachine.StateMachine) error {
-	pth := sm.Data.(string)
+	data := sm.Data.(WorkflowRunData)
+	pth := data.Script
+	name := data.Name
 	sm.Data = nil
 
 	if !sm.CliMode {
@@ -36,7 +43,8 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
 	state := golua.NewState()
 	runner := lua.NewRunner(state, &lg, sm.CliMode)
-	runner.Output = sm.Config.OutputDirectory
+	runner.Config = sm.Config
+	runner.Entry = name
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -58,7 +66,6 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	runner.TC.CollectAll()
 	runner.IC.CollectAll()
-	runner.FC.CollectAll()
 	runner.CC.CollectAll()
 	runner.QR.CollectAll()
 
@@ -100,10 +107,9 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	ert := collErr(runner.TC.Errs, "TC", pth, &lg, sm)
 	eri := collErr(runner.IC.Errs, "IC", pth, &lg, sm)
-	erf := collErr(runner.FC.Errs, "FC", pth, &lg, sm)
 	erc := collErr(runner.CC.Errs, "CC", pth, &lg, sm)
 	erq := collErr(runner.QR.Errs, "QR", pth, &lg, sm)
-	if ert || eri || erf || erc || erq {
+	if ert || eri || erc || erq {
 		if sm.CliMode {
 			sm.SetState(STATE_EXIT)
 			return fmt.Errorf("error running script")

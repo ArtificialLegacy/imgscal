@@ -1,17 +1,21 @@
 package lua
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/AllenDang/giu"
 
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	"github.com/ArtificialLegacy/imgscal/pkg/config"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	"github.com/akamensky/argparse"
@@ -19,10 +23,13 @@ import (
 )
 
 type Runner struct {
-	State  *lua.LState
-	lg     *log.Logger
-	Dir    string
-	Output string
+	State      *lua.LState
+	lg         *log.Logger
+	Dir        string
+	Config     *config.Config
+	Entry      string
+	ConfigData map[string]any
+	SecretData map[string]any
 
 	Failed string
 
@@ -34,7 +41,6 @@ type Runner struct {
 	// -- collections
 	TC *collection.Collection[collection.ItemTask]
 	IC *collection.Collection[collection.ItemImage]
-	FC *collection.Collection[collection.ItemFile]
 	CC *collection.Collection[collection.ItemContext]
 	QR *collection.Collection[collection.ItemQR]
 
@@ -57,12 +63,6 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 
 		// -- collections
 		IC: collection.NewCollection[collection.ItemImage](lg, wg),
-		FC: collection.NewCollection[collection.ItemFile](lg, wg).OnCollect(
-			func(i *collection.Item[collection.ItemFile]) {
-				if i.Self != nil {
-					i.Self.File.Close()
-				}
-			}),
 		CC: collection.NewCollection[collection.ItemContext](lg, wg),
 		QR: collection.NewCollection[collection.ItemQR](lg, wg),
 		TC: collection.NewCollection[collection.ItemTask](lg, wg),
@@ -171,7 +171,95 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 		return 0
 	}))
 
+	t.RawSetString("config", r.State.NewFunction(func(l *lua.LState) int {
+		r.ConfigData = r.WorkflowConfig(l, ".json")
+		return 0
+	}))
+
+	t.RawSetString("secrets", r.State.NewFunction(func(l *lua.LState) int {
+		r.SecretData = r.WorkflowConfig(l, ".secrets.json")
+		return 0
+	}))
+
 	return t
+}
+
+func MapSchema(schema, data map[string]any) map[string]any {
+	result := map[string]any{}
+
+	for k, v := range schema {
+		if d, ok := data[k]; ok {
+			if v1, ok := v.(map[string]any); ok {
+				if d1, ok := d.(map[string]any); ok {
+					result[k] = MapSchema(v1, d1)
+				} else {
+					result[k] = d
+				}
+			} else {
+				result[k] = d
+			}
+		} else {
+			result[k] = v
+		}
+	}
+
+	return result
+}
+
+func (r *Runner) WorkflowConfig(l *lua.LState, ext string) map[string]any {
+	cfg := l.CheckTable(-1)
+	v := GetValue(cfg).(map[string]any)
+
+	fpath := path.Join(r.Config.ConfigDirectory, strings.ReplaceAll(r.Entry, "/", "_")+ext)
+
+	_, err := os.Stat(fpath)
+	if err != nil {
+		err := jsonWrite(fpath, v)
+		if err != nil {
+			l.Error(lua.LString(r.lg.Append(err.Error(), log.LEVEL_ERROR)), 0)
+		}
+
+		return v
+	}
+
+	b, err := os.ReadFile(fpath)
+	if err != nil {
+		l.Error(lua.LString(r.lg.Append(fmt.Sprintf("failed to read config file: %s", err), log.LEVEL_ERROR)), 0)
+	}
+
+	vs := map[string]any{}
+	err = json.Unmarshal(b, &vs)
+	if err != nil {
+		l.Error(lua.LString(r.lg.Append(fmt.Sprintf("failed to unmarshal config: %s", err), log.LEVEL_ERROR)), 0)
+	}
+
+	result := MapSchema(v, vs)
+	err = jsonWrite(fpath, result)
+	if err != nil {
+		l.Error(lua.LString(r.lg.Append(err.Error(), log.LEVEL_ERROR)), 0)
+	}
+
+	return result
+}
+
+func jsonWrite(fpath string, data map[string]any) error {
+	f, err := os.Create(fpath)
+	if err != nil {
+		return fmt.Errorf("failed to create config file: %s", err)
+	}
+	defer f.Close()
+
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %s", err)
+	}
+
+	_, err = f.Write(b)
+	if err != nil {
+		return fmt.Errorf("failed to write config file: %s", err)
+	}
+
+	return nil
 }
 
 func (r *Runner) WorkflowInfo(name string, wf *workflow.Workflow, lg *log.Logger) *lua.LTable {
@@ -217,6 +305,8 @@ const (
 	ARRAY
 	ANY
 	FUNC
+	RAW_TABLE
+	VARIADIC
 )
 
 type Arg struct {
@@ -244,72 +334,94 @@ func ArgArray(name string, arrType ArrayType, optional bool) Arg {
 	}
 }
 
-func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, argMap map[string]any) map[string]any {
+func ArgVariadic(name string, arrType ArrayType, optional bool) Arg {
+	table := []Arg{
+		{Type: arrType.Type, Name: name, Table: arrType.Table},
+	}
+
+	return Arg{
+		Type:     VARIADIC,
+		Name:     name,
+		Optional: optional,
+		Table:    &table,
+	}
+}
+
+func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg) any {
 	switch arg.Type {
 	case INT:
 		if value.Type() == lua.LTNumber {
-			argMap[arg.Name] = int(math.Round(float64(value.(lua.LNumber))))
+			return int(math.Round(float64(value.(lua.LNumber))))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid number provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
 
 	case FLOAT:
 		if value.Type() == lua.LTNumber {
-			argMap[arg.Name] = float64(value.(lua.LNumber))
+			return float64(value.(lua.LNumber))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid number provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
 
 	case BOOL:
 		if value.Type() == lua.LTBool {
-			argMap[arg.Name] = bool(value.(lua.LBool))
+			return bool(value.(lua.LBool))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid bool provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
 
 	case STRING:
 		if value.Type() == lua.LTString {
-			argMap[arg.Name] = string(value.(lua.LString))
+			return string(value.(lua.LString))
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid string provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
 
 	case ANY:
-		argMap[arg.Name] = value
+		return value
 
 	case FUNC:
 		if value.Type() == lua.LTFunction {
-			argMap[arg.Name] = value
+			return value
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid function provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
+		}
+
+	case RAW_TABLE:
+		if value.Type() == lua.LTTable {
+			return value
+		} else if value.Type() == lua.LTNil && arg.Optional {
+			return l.getDefault(arg, state)
+		} else {
+			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid table provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
 
 	case ARRAY:
 		if value.Type() == lua.LTTable {
 			v := value.(*lua.LTable)
 
-			m := map[string]any{}
+			m := make([]any, v.Len())
 
 			for i := range v.Len() {
-				m = l.ParseValue(state, pos, v.RawGetInt(i+1), Arg{
+				m[i] = l.ParseValue(state, pos, v.RawGetInt(i+1), Arg{
 					Type:  (*arg.Table)[0].Type,
 					Name:  strconv.Itoa(i + 1),
 					Table: (*arg.Table)[0].Table,
-				}, m)
+				})
 			}
-			argMap[arg.Name] = m
+			return m
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid array provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -320,12 +432,12 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 			m := map[string]any{}
 
 			for _, a := range *arg.Table {
-				m = l.ParseValue(state, pos, v.RawGetString(a.Name), a, m)
+				m[a.Name] = l.ParseValue(state, pos, v.RawGetString(a.Name), a)
 			}
 
-			argMap[arg.Name] = m
+			return m
 		} else if value.Type() == lua.LTNil && arg.Optional {
-			argMap[arg.Name] = l.getDefault(arg)
+			return l.getDefault(arg, state)
 		} else {
 			state.ArgError(pos, l.Lg.Append(fmt.Sprintf("invalid table provided to %s: %+v", arg.Name, value), log.LEVEL_ERROR))
 		}
@@ -334,7 +446,7 @@ func (l *Lib) ParseValue(state *lua.LState, pos int, value lua.LValue, arg Arg, 
 		state.ArgError(pos, l.Lg.Append(fmt.Sprintf("unsupport arg type provided: %T", value), log.LEVEL_ERROR))
 	}
 
-	return argMap
+	return lua.LNil
 }
 
 func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level int) (map[string]any, int) {
@@ -344,14 +456,40 @@ func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level in
 	for i, a := range args {
 		ind := -ln + i
 		v := state.CheckAny(ind)
+
+		if a.Type == VARIADIC {
+			if ind < 0 {
+				m := make([]any, ind*-1)
+
+				vi := 0
+				for ; ind < 0; ind++ {
+					m[vi] = l.ParseValue(state, i, state.CheckAny(ind), Arg{
+						Type:  (*a.Table)[0].Type,
+						Name:  strconv.Itoa(vi + 1),
+						Table: (*a.Table)[0].Table,
+					})
+					vi++
+				}
+
+				argMap[a.Name] = m
+			} else if a.Optional {
+				argMap[a.Name] = l.getDefault(a, state)
+			} else {
+				state.ArgError(i, l.Lg.Append(fmt.Sprintf("invalid variadic provided to %s (non-optional variadics require at least 1 value): %+v", a.Name, v), log.LEVEL_ERROR))
+			}
+
+			count++
+			return argMap, count
+		}
+
 		if i >= ln {
 			if !a.Optional {
 				state.ArgError(i, l.Lg.Append(fmt.Sprintf("required arg not provided: %d", i), log.LEVEL_ERROR))
 			} else {
-				argMap[a.Name] = l.getDefault(a)
+				argMap[a.Name] = l.getDefault(a, state)
 			}
 		} else {
-			argMap = l.ParseValue(state, i, v, a, argMap)
+			argMap[a.Name] = l.ParseValue(state, i, v, a)
 			count++
 		}
 	}
@@ -359,7 +497,7 @@ func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level in
 	return argMap, count
 }
 
-func (l *Lib) getDefault(a Arg) any {
+func (l *Lib) getDefault(a Arg, state *lua.LState) any {
 	switch a.Type {
 	case INT:
 		return 0
@@ -376,12 +514,17 @@ func (l *Lib) getDefault(a Arg) any {
 	case TABLE:
 		tab := map[string]any{}
 		for _, v := range *a.Table {
-			tab[v.Name] = l.getDefault(v)
+			tab[v.Name] = l.getDefault(v, state)
 		}
 		return tab
 
 	case ARRAY:
-		return map[string]any{}
+		return []any{}
+	case VARIADIC:
+		return []any{}
+
+	case RAW_TABLE:
+		return state.NewTable()
 
 	case ANY:
 		return lua.LNil
@@ -409,6 +552,21 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 	}))
 }
 
+func (l *Lib) BuilderFunction(state *lua.LState, t *lua.LTable, name string, args []Arg, fn func(state *lua.LState, t *lua.LTable, args map[string]any)) {
+	t.RawSetString(name, state.NewFunction(func(state *lua.LState) int {
+		self := state.CheckTable(1)
+		state.Remove(1)
+
+		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
+		state.Pop(c)
+
+		fn(state, self, argMap)
+
+		state.Push(self)
+		return 1
+	}))
+}
+
 type PluginMap map[string]func(r *Runner, lg *log.Logger)
 
 func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins PluginMap, reqs []string, state *lua.LState) {
@@ -420,5 +578,72 @@ func LoadPlugins(to string, r *Runner, lg *log.Logger, plugins PluginMap, reqs [
 			builtin(r, lg)
 			lg.Append(fmt.Sprintf("%s: registered plugin %s", to, req), log.LEVEL_SYSTEM)
 		}
+	}
+}
+
+func CreateValue(value any, state *lua.LState) lua.LValue {
+	switch v := value.(type) {
+	case int:
+		return lua.LNumber(v)
+	case float64:
+		return lua.LNumber(v)
+	case bool:
+		return lua.LBool(v)
+	case string:
+		return lua.LString(v)
+
+	case []any:
+		t := state.NewTable()
+		for _, va := range v {
+			t.Append(CreateValue(va, state))
+		}
+		return t
+
+	case map[string]any:
+		t := state.NewTable()
+		for k, va := range v {
+			t.RawSetString(k, CreateValue(va, state))
+		}
+		return t
+
+	default:
+		return lua.LNil
+	}
+}
+
+func GetValue(value lua.LValue) any {
+	switch v := value.(type) {
+	case lua.LNumber:
+		return float64(v)
+	case lua.LBool:
+		return bool(v)
+	case lua.LString:
+		return string(v)
+	case *lua.LTable:
+		isNumeric := true
+		v.ForEach(func(l1, l2 lua.LValue) {
+			if l1.Type() != lua.LTNumber {
+				isNumeric = false
+			} else if float64(l1.(lua.LNumber)) != float64(int(l1.(lua.LNumber))) {
+				isNumeric = false
+			}
+		})
+
+		if isNumeric {
+			t := []any{}
+			v.ForEach(func(l1, l2 lua.LValue) {
+				t = append(t, GetValue(l2))
+			})
+			return t
+		} else {
+			t := map[string]any{}
+			v.ForEach(func(l1, l2 lua.LValue) {
+				t[l1.String()] = GetValue(l2)
+			})
+			return t
+		}
+
+	default:
+		return nil
 	}
 }

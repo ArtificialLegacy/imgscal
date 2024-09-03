@@ -44,4 +44,21 @@ const (
 	COLOR_BOLD      CliColor = "\u001b[1m"
 	COLOR_UNDERLINE CliColor = "\u001b[4m"
 	COLOR_REVERSED  CliColor = "\u001b[7m"
+
+	COLOR_CURSOR_HOME   CliColor = "\u001b[H"
+	COLOR_CURSOR_LINEUP CliColor = "\u001b M"
+	COLOR_CURSOR_SAVE   CliColor = "\u001b 7"
+	COLOR_CURSOR_LOAD   CliColor = "\u001b 8"
+
+	COLOR_ERASE_DOWN   CliColor = "\u001b[0J"
+	COLOR_ERASE_UP     CliColor = "\u001b[1J"
+	COLOR_ERASE_SCREEN CliColor = "\u001b[2J"
+	COLOR_ERASE_SAVED  CliColor = "\u001b[3J"
+
+	COLOR_ERASE_LINE_END   CliColor = "\u001b[0K"
+	COLOR_ERASE_LINE_START CliColor = "\u001b[1K"
+	COLOR_ERASE_LINE       CliColor = "\u001b[2K"
+
+	COLOR_CURSOR_INVISIBLE CliColor = "\u001b[?25l"
+	COLOR_CURSOR_VISIBLE   CliColor = "\u001b[?25h"
 )

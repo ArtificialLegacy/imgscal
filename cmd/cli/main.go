@@ -81,6 +81,23 @@ func main() {
 		}
 	}
 
+	_, err = os.Stat(sm.Config.ConfigDirectory)
+	if err != nil {
+		err := os.MkdirAll(sm.Config.ConfigDirectory, 0o777)
+		if err != nil {
+			panic(fmt.Sprintf("failed to make config directory! (%s)", err))
+		}
+		f, err := os.OpenFile(path.Join(sm.Config.ConfigDirectory, ".gitignore"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+		if err != nil {
+			panic(fmt.Sprintf("failed to make config .gitignore! (%s)", err))
+		}
+
+		_, err = f.WriteString("**/*.secrets.json")
+		if err != nil {
+			panic(fmt.Sprintf("failed to write to config .gitignore! (%s)", err))
+		}
+	}
+
 	_, err = os.Stat(sm.Config.OutputDirectory)
 	if err != nil {
 		err := os.MkdirAll(sm.Config.OutputDirectory, 0o777)

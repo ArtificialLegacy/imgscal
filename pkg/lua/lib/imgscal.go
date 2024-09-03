@@ -34,6 +34,8 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_CMD:         RegisterCmd,
 	LIB_TEMPLATE:    RegisterTemplate,
 	LIB_GAMEMAKER:   RegisterGamemaker,
+	LIB_TEST:        RegisterTest,
+	LIB_IMGER:       RegisterImger,
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
@@ -52,6 +54,8 @@ func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func
 /// @method debug() - Open the lua debug library to the workflow.
 /// @method verbose() - Enable verbose logging when running the workflow.
 /// @method import([]string) - Array containing the import names for built-in libraries.
+/// @method config(table<any>) - Set the default configuration for the workflow.
+/// @method secrets(table<any>) - Set the default secrets for the workflow.
 
 /// @struct WorkflowInfo
 /// @prop is_cli {bool}
