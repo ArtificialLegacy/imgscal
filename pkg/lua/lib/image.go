@@ -1002,6 +1002,76 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_24bit_to_rgba(c) -> struct<image.ColorRGBA>
+	/// @arg c {int}
+	/// @returns {struct<image.ColorRGBA>}
+	lib.CreateFunction(tab, "color_24bit_to_rgba",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "c"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := args["c"].(int)
+
+			red := c & 0xFF
+			green := (c >> 8) & 0xFF
+			blue := (c >> 16) & 0xFF
+			alpha := 255
+
+			t := imageutil.RGBAToColorTable(state, red, green, blue, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_32bit_to_rgba(c) -> struct<image.ColorRGBA>
+	/// @arg c {int}
+	/// @returns {struct<image.ColorRGBA>}
+	lib.CreateFunction(tab, "color_32bit_to_rgba",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "c"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := args["c"].(int)
+
+			red := c & 0xFF
+			green := (c >> 8) & 0xFF
+			blue := (c >> 16) & 0xFF
+			alpha := (c >> 24) & 0xFF
+
+			t := imageutil.RGBAToColorTable(state, red, green, blue, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_24bit(color) -> int
+	/// @arg color {struct<image.Color>}
+	/// @returns {int}
+	lib.CreateFunction(tab, "color_to_24bit",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red, green, blue, _ := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+
+			c := int(red) | (int(green) << 8) | (int(blue) << 16)
+			state.Push(golua.LNumber(c))
+			return 1
+		})
+
+	/// @func color_to_32bit(color) -> int
+	/// @arg color {struct<image.Color>}
+	/// @returns {int}
+	lib.CreateFunction(tab, "color_to_32bit",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			red, green, blue, alpha := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+
+			c := int(red) | (int(green) << 8) | (int(blue) << 16) | (int(alpha) << 24)
+			state.Push(golua.LNumber(c))
+			return 1
+		})
+
 	/// @func color_rgb(r, g, b) -> struct<image.ColorRGBA>
 	/// @arg r {int}
 	/// @arg g {int}
