@@ -910,6 +910,45 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	/// @const DIR_DATAFILES
 	tab.RawSetString("DIR_DATAFILES", golua.LString(yyp.INCLUDEDFILE_DEFAULTPATH))
 
+	/// @constants Color (24 Bit)
+	/// @const COLOR_AQUA
+	/// @const COLOR_BLACK
+	/// @const COLOR_BLUE
+	/// @const COLOR_DKGRAY
+	/// @const COLOR_FUCHSIA
+	/// @const COLOR_GRAY
+	/// @const COLOR_GREEN
+	/// @const COLOR_LIME
+	/// @const COLOR_LTGRAY
+	/// @const COLOR_MAROON
+	/// @const COLOR_NAVY
+	/// @const COLOR_OLIVE
+	/// @const COLOR_ORANGE
+	/// @const COLOR_PURPLE
+	/// @const COLOR_RED
+	/// @const COLOR_SILVER
+	/// @const COLOR_TEAL
+	/// @const COLOR_WHITE
+	/// @const COLOR_YELLOW
+	tab.RawSetString("COLOR_AQUA", golua.LNumber(16776960))
+	tab.RawSetString("COLOR_BLACK", golua.LNumber(0))
+	tab.RawSetString("COLOR_BLUE", golua.LNumber(16711680))
+	tab.RawSetString("COLOR_DKGRAY", golua.LNumber(4210752))
+	tab.RawSetString("COLOR_FUCHSIA", golua.LNumber(16711935))
+	tab.RawSetString("COLOR_GRAY", golua.LNumber(8421504))
+	tab.RawSetString("COLOR_GREEN", golua.LNumber(32768))
+	tab.RawSetString("COLOR_LIME", golua.LNumber(65280))
+	tab.RawSetString("COLOR_LTGRAY", golua.LNumber(12632256))
+	tab.RawSetString("COLOR_MAROON", golua.LNumber(128))
+	tab.RawSetString("COLOR_NAVY", golua.LNumber(8388608))
+	tab.RawSetString("COLOR_OLIVE", golua.LNumber(32896))
+	tab.RawSetString("COLOR_ORANGE", golua.LNumber(4235519))
+	tab.RawSetString("COLOR_PURPLE", golua.LNumber(8388736))
+	tab.RawSetString("COLOR_RED", golua.LNumber(255))
+	tab.RawSetString("COLOR_SILVER", golua.LNumber(12632256))
+	tab.RawSetString("COLOR_TEAL", golua.LNumber(8421376))
+	tab.RawSetString("COLOR_WHITE", golua.LNumber(16777215))
+	tab.RawSetString("COLOR_YELLOW", golua.LNumber(65535))
 }
 
 const (
