@@ -1394,9 +1394,13 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @const ENCODING_PNG
 	/// @const ENCODING_JPEG
 	/// @const ENCODING_GIF
+	/// @const ENCODING_TIFF
+	/// @const ENCODING_BMP
 	tab.RawSetString("ENCODING_PNG", golua.LNumber(imageutil.ENCODING_PNG))
 	tab.RawSetString("ENCODING_JPEG", golua.LNumber(imageutil.ENCODING_JPEG))
 	tab.RawSetString("ENCODING_GIF", golua.LNumber(imageutil.ENCODING_GIF))
+	tab.RawSetString("ENCODING_TIFF", golua.LNumber(imageutil.ENCODING_TIFF))
+	tab.RawSetString("ENCODING_BMP", golua.LNumber(imageutil.ENCODING_BMP))
 
 	/// @constants Color Types
 	/// @const COLOR_TYPE_RGBA

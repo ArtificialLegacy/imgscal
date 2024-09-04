@@ -7,6 +7,9 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+
+	"golang.org/x/image/bmp"
+	"golang.org/x/image/tiff"
 )
 
 func Decode(r io.Reader, encoding ImageEncoding) (image.Image, error) {
@@ -22,6 +25,12 @@ func Decode(r io.Reader, encoding ImageEncoding) (image.Image, error) {
 
 	case ENCODING_GIF:
 		return gif.Decode(r)
+
+	case ENCODING_TIFF:
+		return tiff.Decode(r)
+
+	case ENCODING_BMP:
+		return bmp.Decode(r)
 	}
 
 	return nil, fmt.Errorf("cannot decode unsupported encoding: %d", encoding)

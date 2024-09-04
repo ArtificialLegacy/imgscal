@@ -14,6 +14,8 @@ const (
 	ENCODING_PNG ImageEncoding = iota
 	ENCODING_JPEG
 	ENCODING_GIF
+	ENCODING_TIFF
+	ENCODING_BMP
 	ENCODING_UNKNOWN
 )
 
@@ -25,6 +27,10 @@ func EncodingExtension(encoding ImageEncoding) string {
 		return ".jpg"
 	case ENCODING_GIF:
 		return ".gif"
+	case ENCODING_TIFF:
+		return ".tiff"
+	case ENCODING_BMP:
+		return ".bmp"
 	default:
 		return ".unknown"
 	}
@@ -40,6 +46,10 @@ func ExtensionEncoding(ext string) ImageEncoding {
 		return ENCODING_JPEG
 	case ".gif":
 		return ENCODING_GIF
+	case ".tiff":
+		return ENCODING_TIFF
+	case ".bmp":
+		return ENCODING_BMP
 	}
 
 	return ENCODING_UNKNOWN
