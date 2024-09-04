@@ -19,6 +19,15 @@ const (
 	ENCODING_UNKNOWN
 )
 
+var EncodingList = []ImageEncoding{
+	ENCODING_PNG,
+	ENCODING_JPEG,
+	ENCODING_GIF,
+	ENCODING_TIFF,
+	ENCODING_BMP,
+	ENCODING_UNKNOWN,
+}
+
 func EncodingExtension(encoding ImageEncoding) string {
 	switch encoding {
 	case ENCODING_PNG:
@@ -132,11 +141,4 @@ func PointToTable(state *golua.LState, p image.Point) *golua.LTable {
 	t.RawSetString("y", golua.LNumber(p.Y))
 
 	return t
-}
-
-var EncodingList = []ImageEncoding{
-	ENCODING_PNG,
-	ENCODING_JPEG,
-	ENCODING_GIF,
-	ENCODING_UNKNOWN,
 }

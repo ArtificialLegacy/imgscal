@@ -25,3 +25,21 @@ func TestImageCompare(t *testing.T) {
 		t.Error("Images should not be equal")
 	}
 }
+
+func Test8BitTo16Bit(t *testing.T) {
+	c8 := uint8(0x80)
+	c16 := imageutil.Color8BitTo16Bit(c8)
+
+	if c16 != 0x8080 {
+		t.Errorf("Expected 0x8000, got %x", c16)
+	}
+}
+
+func Test16BitTo8Bit(t *testing.T) {
+	c16 := uint16(0x8080)
+	c8 := imageutil.Color16BitTo8Bit(c16)
+
+	if c8 != 0x80 {
+		t.Errorf("Expected 0x80, got %x", c8)
+	}
+}

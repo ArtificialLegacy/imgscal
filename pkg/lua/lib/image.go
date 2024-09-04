@@ -821,6 +821,32 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_8bit_to_16bit(c) -> int
+	/// @arg c {int}
+	/// @returns {int}
+	lib.CreateFunction(tab, "color_8bit_to_16bit",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "c"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := args["c"].(int)
+			state.Push(golua.LNumber(imageutil.Color8BitTo16Bit(uint8(c))))
+			return 1
+		})
+
+	/// @func color_16bit_to_8bit(c) -> int
+	/// @arg c {int}
+	/// @returns {int}
+	lib.CreateFunction(tab, "color_16bit_to_8bit",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "c"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			c := args["c"].(int)
+			state.Push(golua.LNumber(imageutil.Color16BitTo8Bit(uint16(c))))
+			return 1
+		})
+
 	/// @func color_rgb(r, g, b) -> struct<image.ColorRGBA>
 	/// @arg r {int}
 	/// @arg g {int}
@@ -868,41 +894,6 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			t := imageutil.RGBAToColorTable(state, args["r"].(int), args["g"].(int), args["b"].(int), args["a"].(int))
-			state.Push(t)
-			return 1
-		})
-
-	/// @func color_gray(v) -> struct<image.ColorGRAYA>
-	/// @arg v {int}
-	/// @returns struct<image.ColorGRAYA>
-	/// @desc
-	/// Alpha channel is set to 255.
-	lib.CreateFunction(tab, "color_gray",
-		[]lua.Arg{
-			{Type: lua.INT, Name: "v"},
-		},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct ColorGRAYA
-			/// @prop type {string<image.ColorType>}
-			/// @prop gray {int}
-			/// @prop alpha {int}
-
-			t := imageutil.GrayAToColorTable(state, args["v"].(int), 255)
-			state.Push(t)
-			return 1
-		})
-
-	/// @func color_graya(v, a) -> struct<image.ColorGRAYA>
-	/// @arg v {int}
-	/// @arg a {int}
-	/// @returns {struct<image.ColorGRAYA>}
-	lib.CreateFunction(tab, "color_graya",
-		[]lua.Arg{
-			{Type: lua.INT, Name: "v"},
-			{Type: lua.INT, Name: "a"},
-		},
-		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := imageutil.GrayAToColorTable(state, args["v"].(int), args["a"].(int))
 			state.Push(t)
 			return 1
 		})
@@ -997,6 +988,169 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_alpha(a) -> struct<image.ColorALPHA>
+	/// @arg a {int}
+	/// @returns {struct<image.ColorALPHA>}
+	lib.CreateFunction(tab, "color_alpha",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorALPHA
+			/// @prop type {string<image.ColorType>}
+			/// @prop alpha {int}
+
+			t := imageutil.AlphaToColorTable(state, args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_alpha16(a) -> struct<image.ColorALPHA16>
+	/// @arg a {int}
+	/// @returns {struct<image.ColorALPHA16>}
+	lib.CreateFunction(tab, "color_alpha16",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorALPHA16
+			/// @prop type {string<image.ColorType>}
+			/// @prop alpha {int}
+
+			t := imageutil.Alpha16ToColorTable(state, args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_gray(v) -> struct<image.ColorGRAY>
+	/// @arg v {int}
+	/// @returns struct<image.ColorGRAY>
+	lib.CreateFunction(tab, "color_gray",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "v"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorGRAY
+			/// @prop type {string<image.ColorType>}
+			/// @prop gray {int}
+
+			t := imageutil.GrayToColorTable(state, args["v"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_gray16(v) -> struct<image.ColorGRAY16>
+	/// @arg v {int}
+	/// @returns {struct<image.ColorGRAY16>}
+	lib.CreateFunction(tab, "color_gray16",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "v"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorGRAY16
+			/// @prop type {string<image.ColorType>}
+			/// @prop gray {int}
+
+			t := imageutil.Gray16ToColorTable(state, args["v"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_graya(v, a) -> struct<image.ColorGRAYA>
+	/// @arg v {int}
+	/// @arg a {int}
+	/// @returns {struct<image.ColorGRAYA>}
+	lib.CreateFunction(tab, "color_graya",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "v"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorGRAYA
+			/// @prop type {string<image.ColorType>}
+			/// @prop gray {int}
+			/// @prop alpha {int}
+
+			t := imageutil.GrayAToColorTable(state, args["v"].(int), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_graya16(v, a) -> struct<image.ColorGRAYA16>
+	/// @arg v {int}
+	/// @arg a {int}
+	/// @returns {struct<image.ColorGRAYA16>}
+	lib.CreateFunction(tab, "color_graya16",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "v"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorGRAYA16
+			/// @prop type {string<image.ColorType>}
+			/// @prop gray {int}
+			/// @prop alpha {int}
+
+			t := imageutil.GrayA16ToColorTable(state, args["v"].(int), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_cmyk(c, m, y, k) -> struct<image.ColorCMYK>
+	/// @arg c {int}
+	/// @arg m {int}
+	/// @arg y {int}
+	/// @arg k {int}
+	/// @returns {struct<image.ColorCMYK>}
+	lib.CreateFunction(tab, "color_cmyk",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "c"},
+			{Type: lua.INT, Name: "m"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "k"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorCMYK
+			/// @prop type {string<image.ColorType>}
+			/// @prop cyan {int}
+			/// @prop magenta {int}
+			/// @prop yellow {int}
+			/// @prop key {int}
+
+			t := imageutil.CMYKToColorTable(state, args["c"].(int), args["m"].(int), args["y"].(int), args["k"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_cmyka(c, m, y, k, a) -> struct<image.ColorCMYKA>
+	/// @arg c {int}
+	/// @arg m {int}
+	/// @arg y {int}
+	/// @arg k {int}
+	/// @arg a {int}
+	/// @returns {struct<image.ColorCMYKA>}
+	lib.CreateFunction(tab, "color_cmyka",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "c"},
+			{Type: lua.INT, Name: "m"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "k"},
+			{Type: lua.INT, Name: "a"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorCMYKA
+			/// @prop type {string<image.ColorType>}
+			/// @prop cyan {int}
+			/// @prop magenta {int}
+			/// @prop yellow {int}
+			/// @prop key {int}
+			/// @prop alpha {int}
+
+			t := imageutil.CMYKAToColorTable(state, args["c"].(int), args["m"].(int), args["y"].(int), args["k"].(int), args["a"].(int))
+			state.Push(t)
+			return 1
+		})
+
 	/// @func color_to_rgb(color) -> struct<image.ColorRGBA>
 	/// @arg color {struct<image.Color>}
 	/// @returns {struct<image.ColorRGBA>}
@@ -1045,12 +1199,68 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_gray(color) -> struct<image.ColorGRAYA>
+	/// @func color_to_gray(color) -> struct<image.ColorGRAY>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorGRAY>}
+	lib.CreateFunction(tab, "color_to_gray",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cy := imageutil.ColorTableToGray(args["color"].(*golua.LTable))
+			t := imageutil.GrayToColorTable(state, int(cy))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_gray_average(color) -> struct<image.ColorGRAY>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorGRAY>}
+	lib.CreateFunction(tab, "color_to_gray_average",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cr, cg, cb, _ := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+			g := colorconv.RGBToGrayAverage(cr, cg, cb)
+			t := imageutil.GrayToColorTable(state, int(g.Y))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_gray_weight(color, rWeight, gWeight, bWeight) -> struct<image.ColorGRAY>
+	/// @arg color {struct<image.Color>}
+	/// @arg rWeight {int}
+	/// @arg gWeight {int}
+	/// @arg bWeight {int}
+	/// @returns {struct<image.ColorGRAY>}
+	lib.CreateFunction(tab, "color_to_gray_weight",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+			{Type: lua.INT, Name: "rWeight"},
+			{Type: lua.INT, Name: "gWeight"},
+			{Type: lua.INT, Name: "bWeight"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			rWeight := args["rWeight"].(int)
+			gWeight := args["gWeight"].(int)
+			bWeight := args["bWeight"].(int)
+
+			cr, cg, cb, _ := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+			g := colorconv.RGBToGrayWithWeight(cr, cg, cb, uint(rWeight), uint(gWeight), uint(bWeight))
+			t := imageutil.GrayToColorTable(state, int(g.Y))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_graya(color) -> struct<image.ColorGRAYA>
 	/// @arg color {struct<image.Color>}
 	/// @returns {struct<image.ColorGRAYA>}
 	/// @desc
 	/// Alpha is maintained.
-	lib.CreateFunction(tab, "color_to_gray",
+	lib.CreateFunction(tab, "color_to_graya",
 		[]lua.Arg{
 			{Type: lua.RAW_TABLE, Name: "color"},
 		},
@@ -1061,12 +1271,12 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_gray_average(color) -> struct<image.ColorGRAYA>
+	/// @func color_to_graya_average(color) -> struct<image.ColorGRAYA>
 	/// @arg color {struct<image.Color>}
 	/// @returns {struct<image.ColorGRAYA>}
 	/// @desc
 	/// Alpha is maintained.
-	lib.CreateFunction(tab, "color_to_gray_average",
+	lib.CreateFunction(tab, "color_to_graya_average",
 		[]lua.Arg{
 			{Type: lua.RAW_TABLE, Name: "color"},
 		},
@@ -1079,7 +1289,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_gray_weight(color, rWeight, gWeight, bWeight) -> struct<image.ColorGRAYA>
+	/// @func color_to_graya_weight(color, rWeight, gWeight, bWeight) -> struct<image.ColorGRAYA>
 	/// @arg color {struct<image.Color>}
 	/// @arg rWeight {int}
 	/// @arg gWeight {int}
@@ -1087,7 +1297,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @returns {struct<image.ColorGRAYA>}
 	/// @desc
 	/// Alpha is maintained.
-	lib.CreateFunction(tab, "color_to_gray_weight",
+	lib.CreateFunction(tab, "color_to_graya_weight",
 		[]lua.Arg{
 			{Type: lua.RAW_TABLE, Name: "color"},
 			{Type: lua.INT, Name: "rWeight"},
@@ -1103,6 +1313,124 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			g := colorconv.RGBToGrayWithWeight(cr, cg, cb, uint(rWeight), uint(gWeight), uint(bWeight))
 			t := imageutil.GrayAToColorTable(state, int(g.Y), int(ca))
 
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_graya16(color) -> struct<image.ColorGRAYA16>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorGRAYA16>}
+	/// @desc
+	/// Alpha is maintained.
+	lib.CreateFunction(tab, "color_to_graya16",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cy, ca := imageutil.ColorTableToGrayA16(args["color"].(*golua.LTable))
+			t := imageutil.GrayA16ToColorTable(state, int(cy), int(ca))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_graya16_average(color) -> struct<image.ColorGRAYA16>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorGRAYA16>}
+	/// @desc
+	/// Alpha is maintained.
+	lib.CreateFunction(tab, "color_to_graya16_average",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cr, cg, cb, ca := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+			g := colorconv.RGBToGrayAverage(cr, cg, cb)
+			t := imageutil.GrayA16ToColorTable(state, int(imageutil.Color8BitTo16Bit(g.Y)), int(imageutil.Color8BitTo16Bit(ca)))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_graya16_weight(color, rWeight, gWeight, bWeight) -> struct<image.ColorGRAYA16>
+	/// @arg color {struct<image.Color>}
+	/// @arg rWeight {int}
+	/// @arg gWeight {int}
+	/// @arg bWeight {int}
+	/// @returns {struct<image.ColorGRAYA16>}
+	/// @desc
+	/// Alpha is maintained.
+	lib.CreateFunction(tab, "color_to_graya16_weight",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+			{Type: lua.INT, Name: "rWeight"},
+			{Type: lua.INT, Name: "gWeight"},
+			{Type: lua.INT, Name: "bWeight"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			rWeight := args["rWeight"].(int)
+			gWeight := args["gWeight"].(int)
+			bWeight := args["bWeight"].(int)
+
+			cr, cg, cb, ca := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+			g := colorconv.RGBToGrayWithWeight(cr, cg, cb, uint(rWeight), uint(gWeight), uint(bWeight))
+			t := imageutil.GrayA16ToColorTable(state, int(imageutil.Color8BitTo16Bit(g.Y)), int(imageutil.Color8BitTo16Bit(ca)))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_alpha(color) -> struct<image.ColorALPHA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorALPHA>}
+	lib.CreateFunction(tab, "color_to_alpha",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ca := imageutil.ColorTableToAlpha(args["color"].(*golua.LTable))
+			t := imageutil.AlphaToColorTable(state, int(ca))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_alpha16(color) -> struct<image.ColorALPHA16>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorALPHA16>}
+	lib.CreateFunction(tab, "color_to_alpha16",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ca := imageutil.ColorTableToAlpha16(args["color"].(*golua.LTable))
+			t := imageutil.Alpha16ToColorTable(state, int(ca))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_cmyk(color) -> struct<image.ColorCMYK>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorCMYK>}
+	lib.CreateFunction(tab, "color_to_cmyk",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cc, cm, cy, ck := imageutil.ColorTableToCMYK(args["color"].(*golua.LTable))
+			t := imageutil.CMYKToColorTable(state, int(cc), int(cm), int(cy), int(ck))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_cmyka(color) -> struct<image.ColorCMYKA>
+	/// @arg color {struct<image.Color>}
+	/// @returns {struct<image.ColorCMYKA>}
+	lib.CreateFunction(tab, "color_to_cmyka",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cc, cm, cy, ck, ca := imageutil.ColorTableToCMYKA(args["color"].(*golua.LTable))
+			t := imageutil.CMYKAToColorTable(state, int(cc), int(cm), int(cy), int(ck), int(ca))
 			state.Push(t)
 			return 1
 		})
@@ -1406,9 +1734,23 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @const COLOR_TYPE_RGBA
 	/// @const COLOR_TYPE_HSVA
 	/// @const COLOR_TYPE_HSLA
+	/// @const COLOR_TYPE_GRAY
+	/// @const COLOR_TYPE_GRAY16
 	/// @const COLOR_TYPE_GRAYA
+	/// @const COLOR_TYPE_GRAYA16
+	/// @const COLOR_TYPE_ALPHA
+	/// @const COLOR_TYPE_ALPHA16
+	/// @const COLOR_TYPE_CMYK
+	/// @const COLOR_TYPE_CMYKA
 	tab.RawSetString("COLOR_TYPE_RGBA", golua.LString(imageutil.COLOR_TYPE_RGBA))
 	tab.RawSetString("COLOR_TYPE_HSVA", golua.LString(imageutil.COLOR_TYPE_HSVA))
 	tab.RawSetString("COLOR_TYPE_HSLA", golua.LString(imageutil.COLOR_TYPE_HSLA))
+	tab.RawSetString("COLOR_TYPE_GRAY", golua.LString(imageutil.COLOR_TYPE_GRAY))
+	tab.RawSetString("COLOR_TYPE_GRAY16", golua.LString(imageutil.COLOR_TYPE_GRAY16))
 	tab.RawSetString("COLOR_TYPE_GRAYA", golua.LString(imageutil.COLOR_TYPE_GRAYA))
+	tab.RawSetString("COLOR_TYPE_GRAYA16", golua.LString(imageutil.COLOR_TYPE_GRAYA16))
+	tab.RawSetString("COLOR_TYPE_ALPHA", golua.LString(imageutil.COLOR_TYPE_ALPHA))
+	tab.RawSetString("COLOR_TYPE_ALPHA16", golua.LString(imageutil.COLOR_TYPE_ALPHA16))
+	tab.RawSetString("COLOR_TYPE_CMYK", golua.LString(imageutil.COLOR_TYPE_CMYK))
+	tab.RawSetString("COLOR_TYPE_CMYKA", golua.LString(imageutil.COLOR_TYPE_CMYKA))
 }
