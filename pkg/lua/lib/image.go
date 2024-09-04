@@ -719,7 +719,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func color_hex_to_rgba(hex) -> struct<image.ColorRGBA>
-	/// @arg hex {string} - Accepts the formats RGBA, RGB, RRGGBBAA, RRGGBB, and an optional prefix of either # or 0x.
+	/// @arg hex {string} - Accepts the formats RGBA, RGB, RRGGBBAA, RRGGBB, and an optional prefix of "#", "$", or "0x".
 	/// @returns {struct<image.ColorRGBA>}
 	lib.CreateFunction(tab, "color_hex_to_rgba",
 		[]lua.Arg{
@@ -729,6 +729,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			hex := args["hex"].(string)
 			hex = strings.TrimPrefix(hex, "0x")
 			hex = strings.TrimPrefix(hex, "#")
+			hex = strings.TrimPrefix(hex, "$")
 
 			red := 0
 			green := 0
@@ -796,14 +797,101 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func color_to_hex(color, prefix?, lowercase?) -> string
+	/// @func color_hex_to_rgba_bgr(hex) -> struct<image.ColorRGBA>
+	/// @arg hex {string} - Accepts the formats ABGR, BGR, AABBGGRR, BBGGRR, and an optional prefix of "#", "$", or "0x".
+	/// @returns {struct<image.ColorRGBA>}
+	lib.CreateFunction(tab, "color_hex_to_rgba_bgr",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "hex"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			hex := args["hex"].(string)
+			hex = strings.TrimPrefix(hex, "0x")
+			hex = strings.TrimPrefix(hex, "#")
+			hex = strings.TrimPrefix(hex, "$")
+
+			red := 0
+			green := 0
+			blue := 0
+			alpha := 255
+
+			offset := 0
+
+			switch len(hex) {
+			case 4:
+				c, err := strconv.ParseInt(string(hex[0])+string(hex[0]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on alpha): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				alpha = int(c)
+				offset = 1
+				fallthrough
+			case 3:
+				c, err := strconv.ParseInt(string(hex[2+offset])+string(hex[2+offset]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on red): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				red = int(c)
+
+				c, err = strconv.ParseInt(string(hex[1+offset])+string(hex[1+offset]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on green): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				green = int(c)
+
+				c, err = strconv.ParseInt(string(hex[offset])+string(hex[offset]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on blue): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				blue = int(c)
+
+			case 8:
+				c, err := strconv.ParseInt(string(hex[0])+string(hex[1]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on alpha): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				alpha = int(c)
+				offset = 2
+				fallthrough
+			case 6:
+				c, err := strconv.ParseInt(string(hex[4+offset])+string(hex[5+offset]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on red): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				red = int(c)
+
+				c, err = strconv.ParseInt(string(hex[2+offset])+string(hex[3+offset]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on green): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				green = int(c)
+
+				c, err = strconv.ParseInt(string(hex[offset])+string(hex[offset]), 16, 64)
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string (failed on blue): %s", hex), log.LEVEL_ERROR)), 0)
+				}
+				blue = int(c)
+			default:
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid hex string: %s", hex), log.LEVEL_ERROR)), 0)
+			}
+
+			t := imageutil.RGBAToColorTable(state, red, green, blue, alpha)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func color_to_hex(color, noalpha?, prefix?, lowercase?) -> string
 	/// @arg color {struct<image.Color>}
-	/// @arg? prefix {string} - Should be "", "#" or "0x".
+	/// @arg? noalpha {bool} - Set to true to exclude the alpha channel.
+	/// @arg? prefix {string} - Should be "", "#", '$', or "0x".
 	/// @arg? lowercase {bool} - Set to true to use lowercase letters in the hex string.
 	/// @returns {string}
+	/// @desc
+	/// In the format RRGGBBAA or RRGGBB.
 	lib.CreateFunction(tab, "color_to_hex",
 		[]lua.Arg{
 			{Type: lua.RAW_TABLE, Name: "color"},
+			{Type: lua.BOOL, Name: "noalpha", Optional: true},
 			{Type: lua.STRING, Name: "prefix", Optional: true},
 			{Type: lua.BOOL, Name: "lowercase", Optional: true},
 		},
@@ -811,10 +899,77 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			var hex string
 			red, green, blue, alpha := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
 
+			var redString string
+			var greenString string
+			var blueString string
+			var alphaString string
+
+			prefix := args["prefix"].(string)
+
 			if args["lowercase"].(bool) {
-				hex = fmt.Sprintf("%s%02x%02x%02x%02x", args["prefix"], red, green, blue, alpha)
+				redString = fmt.Sprintf("%02x", red)
+				greenString = fmt.Sprintf("%02x", green)
+				blueString = fmt.Sprintf("%02x", blue)
+				alphaString = fmt.Sprintf("%02x", alpha)
 			} else {
-				hex = fmt.Sprintf("%s%02X%02X%02X%02X", args["prefix"], red, green, blue, alpha)
+				redString = fmt.Sprintf("%02X", red)
+				greenString = fmt.Sprintf("%02X", green)
+				blueString = fmt.Sprintf("%02X", blue)
+				alphaString = fmt.Sprintf("%02X", alpha)
+			}
+
+			if args["noalpha"].(bool) {
+				hex = fmt.Sprintf("%s%s%s%s", prefix, redString, greenString, blueString)
+			} else {
+				hex = fmt.Sprintf("%s%s%s%s%s", prefix, redString, greenString, blueString, alphaString)
+			}
+
+			state.Push(golua.LString(hex))
+			return 1
+		})
+
+	/// @func color_to_hex_bgr(color, noalpha?, prefix?, lowercase?) -> string
+	/// @arg color {struct<image.Color>}
+	/// @arg? noalpha {bool} - Set to true to exclude the alpha channel.
+	/// @arg? prefix {string} - Should be "", "#", '$', or "0x".
+	/// @arg? lowercase {bool} - Set to true to use lowercase letters in the hex string.
+	/// @returns {string}
+	/// @desc
+	/// In the format AABBGGRR or BBGGRR.
+	lib.CreateFunction(tab, "color_to_hex_bgr",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color"},
+			{Type: lua.BOOL, Name: "noalpha", Optional: true},
+			{Type: lua.STRING, Name: "prefix", Optional: true},
+			{Type: lua.BOOL, Name: "lowercase", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var hex string
+			red, green, blue, alpha := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+
+			var redString string
+			var greenString string
+			var blueString string
+			var alphaString string
+
+			prefix := args["prefix"].(string)
+
+			if args["lowercase"].(bool) {
+				redString = fmt.Sprintf("%02x", red)
+				greenString = fmt.Sprintf("%02x", green)
+				blueString = fmt.Sprintf("%02x", blue)
+				alphaString = fmt.Sprintf("%02x", alpha)
+			} else {
+				redString = fmt.Sprintf("%02X", red)
+				greenString = fmt.Sprintf("%02X", green)
+				blueString = fmt.Sprintf("%02X", blue)
+				alphaString = fmt.Sprintf("%02X", alpha)
+			}
+
+			if args["noalpha"].(bool) {
+				hex = fmt.Sprintf("%s%s%s%s", prefix, blueString, greenString, redString)
+			} else {
+				hex = fmt.Sprintf("%s%s%s%s%s", prefix, alphaString, blueString, greenString, redString)
 			}
 
 			state.Push(golua.LString(hex))
