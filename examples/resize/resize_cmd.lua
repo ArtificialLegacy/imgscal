@@ -47,7 +47,7 @@ function main()
     end
 
     local inPath = ref.get(inRef)
-    local inImg = io.load_image(inPath)
+    local inImg = io.decode(inPath)
 
     -- check output file name, if not provided default to input file with "resized_" prefix.
     local outPath = ref.get(outRef)
@@ -79,5 +79,5 @@ function main()
         filter.resize(width, height, resampling),
     })
 
-    io.out(outImg, io.path_to(outPath))
+    io.encode(outImg, io.path_to(outPath))
 end

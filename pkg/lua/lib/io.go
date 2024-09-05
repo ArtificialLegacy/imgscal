@@ -27,11 +27,11 @@ const LIB_IO = "io"
 func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_IO, r, r.State, lg)
 
-	/// @func load_image(path, model?) -> int<collection.IMAGE>
+	/// @func decode(path, model?) -> int<collection.IMAGE>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
 	/// @returns {int<collection.IMAGE>}
-	lib.CreateFunction(tab, "load_image",
+	lib.CreateFunction(tab, "decode",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
 			{Type: lua.INT, Name: "model", Optional: true},
@@ -39,7 +39,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			file, err := os.Stat(args["path"].(string))
 			if err != nil {
-				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid image path provided to io.load_image: %s", args["path"]), log.LEVEL_ERROR)), 0)
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid image path provided to io.decode: %s", args["path"]), log.LEVEL_ERROR)), 0)
 			}
 			if file.IsDir() {
 				state.Error(golua.LString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR)), 0)
@@ -152,10 +152,10 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func out(id, path)
+	/// @func encode(id, path)
 	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
 	/// @arg path {string} - The directory path to save the file to.
-	lib.CreateFunction(tab, "out",
+	lib.CreateFunction(tab, "encode",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "path"},

@@ -10,7 +10,7 @@ end
 
 function main()
     local inpath = cli.question("Enter input image to resize")
-    local inImg = io.load_image(inpath)
+    local inImg = io.decode(inpath)
 
     local width = tonumber(cli.question("Enter new width"))
     local height = tonumber(cli.question("Enter new height"))
@@ -30,6 +30,6 @@ function main()
         filter.resize(width, height, resampling-1),
     })
 
-    io.out(outImg, io.path_to(inpath))
+    io.encode(outImg, io.path_to(inpath))
     cli.print("Resized image saved to: "..io.path_join(inpath, outName)..".")
 end

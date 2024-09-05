@@ -89,7 +89,7 @@ function main()
     ))
     gui.window_set_icon_imgscal(win, true)
 
-    local imgSrc = io.load_image(io.path_join(io.wd(), "example_image.png"))
+    local imgSrc = io.decode(io.path_join(io.wd(), "example_image.png"))
     local imgDst = image.new("dst_img", image.ENCODING_PNG, 200, 200)
 
     -- window padding used for setting the size of the child widget that wraps the images.
