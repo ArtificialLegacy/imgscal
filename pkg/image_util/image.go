@@ -19,6 +19,15 @@ const (
 	ENCODING_UNKNOWN
 )
 
+var EncodingExts = []string{
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".tiff",
+	".bmp",
+}
+
 var EncodingList = []ImageEncoding{
 	ENCODING_PNG,
 	ENCODING_JPEG,
@@ -52,6 +61,8 @@ func ExtensionEncoding(ext string) ImageEncoding {
 	case ".png":
 		return ENCODING_PNG
 	case ".jpg":
+		fallthrough
+	case ".jpeg":
 		return ENCODING_JPEG
 	case ".gif":
 		return ENCODING_GIF

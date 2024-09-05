@@ -275,7 +275,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "path"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			parseDir("io.dir_img", args["path"].(string), []string{".png", ".jpg", ".gif"}, lib)
+			parseDir("io.dir_img", args["path"].(string), imageutil.EncodingExts, lib)
 			return 1
 		})
 
