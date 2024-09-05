@@ -16,6 +16,8 @@ const (
 	ENCODING_GIF
 	ENCODING_TIFF
 	ENCODING_BMP
+	ENCODING_ICO
+	ENCODING_CUR
 	ENCODING_UNKNOWN
 )
 
@@ -26,6 +28,8 @@ var EncodingExts = []string{
 	".gif",
 	".tiff",
 	".bmp",
+	".ico",
+	".cur",
 }
 
 var EncodingList = []ImageEncoding{
@@ -34,6 +38,8 @@ var EncodingList = []ImageEncoding{
 	ENCODING_GIF,
 	ENCODING_TIFF,
 	ENCODING_BMP,
+	ENCODING_ICO,
+	ENCODING_CUR,
 	ENCODING_UNKNOWN,
 }
 
@@ -49,6 +55,10 @@ func EncodingExtension(encoding ImageEncoding) string {
 		return ".tiff"
 	case ENCODING_BMP:
 		return ".bmp"
+	case ENCODING_ICO:
+		return ".ico"
+	case ENCODING_CUR:
+		return ".cur"
 	default:
 		return ".unknown"
 	}
@@ -70,6 +80,10 @@ func ExtensionEncoding(ext string) ImageEncoding {
 		return ENCODING_TIFF
 	case ".bmp":
 		return ENCODING_BMP
+	case ".ico":
+		return ENCODING_ICO
+	case ".cur":
+		return ENCODING_CUR
 	}
 
 	return ENCODING_UNKNOWN

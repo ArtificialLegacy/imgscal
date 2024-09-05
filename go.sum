@@ -30,6 +30,8 @@ github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829134708-c2d3b7d2d275 h1:J
 github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829134708-c2d3b7d2d275/go.mod h1:x8nZ6DrugBlS+FtIcEOlKJoCE276V08tKSZMM2BfXXA=
 github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829175936-7ea472aea965 h1:e//5/jfaSLALMVX3A+7pz7W7C8m1WClCe02Gb5FozVM=
 github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829175936-7ea472aea965/go.mod h1:x8nZ6DrugBlS+FtIcEOlKJoCE276V08tKSZMM2BfXXA=
+github.com/ArtificialLegacy/go-ico v0.0.0-20240905165543-df31b047e3f7 h1:UEiUvGRYf82nvhuFWJEYMBEbgO64mEOOcLF2Tf/ftBM=
+github.com/ArtificialLegacy/go-ico v0.0.0-20240905165543-df31b047e3f7/go.mod h1:G/72hCrRE8iw8SVCoHgYPPCBrZdVQHOkvoNvj1RIsvY=
 github.com/akamensky/argparse v1.4.0 h1:YGzvsTqCvbEZhL8zZu2AiA5nq805NZh75JNj4ajn1xc=
 github.com/akamensky/argparse v1.4.0/go.mod h1:S5kwC7IuDcEr5VeXtGPRVZ5o/FdhcMlQz4IZQuw64xA=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 h1:WWB576BN5zNSZc/M9d/10pqEx5VHNhaQ/yOVAkmj5Yo=
@@ -74,6 +76,8 @@ github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
 github.com/ojrac/opensimplex-go v1.0.2 h1:l4vs0D+JCakcu5OV0kJ99oEaWJfggSc9jiLpxaWvSzs=
 github.com/ojrac/opensimplex-go v1.0.2/go.mod h1:NwbXFFbXcdGgIFdiA7/REME+7n/lOf1TuEbLiZYOWnM=
+github.com/orcaman/writerseeker v0.0.0-20200621085525-1d3f536ff85e h1:s2RNOM/IGdY0Y6qfTeUKhDawdHDpK9RGBdx80qN4Ttw=
+github.com/orcaman/writerseeker v0.0.0-20200621085525-1d3f536ff85e/go.mod h1:nBdnFKj15wFbf94Rwfq4m30eAcyY9V/IyKAGQFtqkW0=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 h1:KoWmjvw+nsYOo29YJK9vDA65RGE3NrOnUtO7a+RF9HU=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8/go.mod h1:HKlIX3XHQyzLZPlr7++PzdhaXEj94dEiJgZDTsxEqUI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -102,6 +106,8 @@ golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 h1:yixxcjnhBmY0nkL253HFVIm0J
 golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8/go.mod h1:jj3sYF3dwk5D+ghuXyeI3r5MFf+NT2An6/9dOA95KSI=
 golang.org/x/image v0.18.0 h1:jGzIakQa/ZXI1I0Fxvaa9W7yP25TqT6cHIHn+6CqvSQ=
 golang.org/x/image v0.18.0/go.mod h1:4yyo5vMFQjVjUcVk4jEQcU9MGy/rulF5WvUILseCM2E=
+golang.org/x/image v0.20.0 h1:7cVCUjQwfL18gyBJOmYvptfSHS8Fb3YUDtfLIZ7Nbpw=
+golang.org/x/image v0.20.0/go.mod h1:0a88To4CYVBAHp5FXJm8o7QbUl37Vd85ply1vyD8auM=
 golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

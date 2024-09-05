@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"bytes"
 	"fmt"
 	"image"
 	"os"
@@ -12,6 +11,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/ArtificialLegacy/imgscal/pkg/writeseeker"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -1740,8 +1740,8 @@ func datafileBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.
 			},
 		})
 
-		var b bytes.Buffer
-		err := imageutil.Encode(&b, img, encoding)
+		b := writeseeker.NewWriteSeeker(1000)
+		err := imageutil.Encode(b, img, encoding)
 		if err != nil {
 			state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to encode image: %s", data), log.LEVEL_ERROR)), 0)
 			return nil
