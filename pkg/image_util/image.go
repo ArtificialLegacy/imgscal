@@ -77,6 +77,8 @@ func ExtensionEncoding(ext string) ImageEncoding {
 	case ".gif":
 		return ENCODING_GIF
 	case ".tiff":
+		fallthrough
+	case ".tif":
 		return ENCODING_TIFF
 	case ".bmp":
 		return ENCODING_BMP

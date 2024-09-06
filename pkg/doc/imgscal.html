@@ -3,101 +3,51 @@
     <hr>
 
     <details class="imgscal">
-        <summary>Type Information</summary>
+        <summary>Supported Encodings</summary>
         <hr>
 
         <p>
-            When viewing the API documentation type inforamation will appear as: <code class="type">int</code>.
-            While lua does not have an <code class="type">int</code> type, the documentation uses it to specify when a number value must be whole.
+            Encodings are split into basic and unique.
+            Basic encodings are images without any additional functionality.
+            Unique encodings are images that have additional functionality that isn't covered by 
+            <code class="field">io.decode</code> and <code class="field">io.encode</code>.
         </p>
-        <br>
-        <p>
-            Types that begin with <code class="type">[]</code> specify that it is a lua table with integer indexes starting at 1,
-            in Go these indexes become 0 based.
-        </p>
-        <br>
-        <p>
-            Variadic arguments are specified with the suffix <code class="type">...</code>, these arguments will capture all remaining values on the stack in an array.
-            Variadics can be both optional and required, when required at least one value must be present.
-        </p>
-        
         <hr>
 
-        <h3>Optional Values</h3>
-
-        <p>
-            When a type is followed by a <code class="type">?</code> it means the value is optional.
-            When an optional value is not provided, the zero value for that type will be used.
-        </p>
         <figure>
-            <figcaption>List of zero values:</figcaption>
+            <figcaption>Basic Encodings Supported</figcaption>
 
-            <table>
-                <thead><tr>
-                    <th>Type</th>
-                    <th>Zero Value</th>
-                </tr></thead>
-                <tbody>
-                    <tr>
-                        <td><code class="none"><span class="purple">int <span class="white">|</span> float</span></code></td>
-                        <td><code class="none"><span class="cyan">0</span></code>
-                    </tr>
-                    <tr>
-                        <td><code class="none"><span class="purple">string</span></code></td>
-                        <td><code class="none"><span class="cyan">""</span></code>
-                    </tr>
-                    <tr>
-                        <td><code class="none"><span class="purple">bool</span></code></td>
-                        <td><code class="none"><span class="cyan">false</span></code>
-                    </tr>
-                    <tr>
-                        <td><code class="none"><span class="purple">table&lt;any&gt;</span></code></td>
-                        <td><code class="none"><span class="cyan">{}</span></code>
-                    </tr>
-                    <tr>
-                        <td><code class="none"><span class="purple">struct&lt;Structure&gt;</span></code></td>
-                        <td><code class="none"><span class="cyan">{...Structure}</span></code>
-                    </tr>
-                    <tr>
-                        <td><code class="none"><span class="purple">[]any <span class="white">|</span> any...</span></code></td>
-                        <td><code class="none"><span class="cyan">{} Numeric</span></code>
-                    </tr>
-                    <tr>
-                        <td><code class="none"><span class="purple">function <span class="white">|</span> any</span></code></td>
-                        <td><code class="none"><span class="cyan">nil</span></code>
-                    </tr>
-                </tbody>
-            </table>
+            <ul>
+                <li>PNG - <code class="field">.png</code></li>
+                <li>JPEG - <code class="field">.jpg</code>, <code class="field">.jpeg</code></li>
+                <li>BMP - <code class="field">.bmp</code></li>
+                <li>TIFF - <code class="field">.tiff</code>, <code class="field">.tif</code></li>
+            </ul>
         </figure>
-        
+
         <hr>
 
-        <h3>Constraints</h3>
-        <p>
-            Sometimes a type may include two different types such as: <code class="type">int&lt;collection.IMAGE&gt;</code>.
+        <figure>
+            <figcaption>Unique Encodings Supported</figcaption>
+
             <ul>
                 <li>
-                    <code class="type">int</code> is the type that exists within lua.
+                    FAVICON - <code class="field">.ico</code>, <code class="field">.cur</code>
+                    <ul>
+                        <li>When decoded using the generic <code class="field">io.decode</code> function, only the largest image will be returned.</li>
+                        <li>When encoded using the generic <code class="field">io.encode</code> function, only a single image can be provided, and will always be of the ICO type.</li>
+                    </ul>
                 </li>
                 <li>
-                    <code class="type">collection.IMAGE</code> is the constraint on that type.
+                    GIF - <code class="field">.gif</code>
+                    <ul>
+                        <li>When decoded using the generic <code class="field">io.decode</code> function, only the first frame will be returned.</li>
+                        <li>When encoded using the generic <code class="field">io.encode</code> function, will not include animation.</li>
+                        <li>Currently does not have full support, no dedicated encoding or decoding functions exist.</li>
+                    </ul>
                 </li>
             </ul>
-            Here the value must be an <code class="type">int</code> and
-            be a valid id from <code class="type">collection.IMAGE</code>.
-        </p>
-        
-        <hr>
-
-        <h3>Structs and Tables</h3>
-        <p>
-            There is also an additional special type called <code class="type">struct</code>,
-            this refers to a lua table with a specified structure. The constraint on these
-            shows where that structure is defined in the documentation. 
-            E.g. <code class="type">struct&lt;gui.Widget&gt;</code> is a struct named Widget defined
-            in the gui library.
-            When there is no specified structure, <code class="type">table&lt;any&gt;</code> is used.
-        </p>
+        </figure>
     </details>
 
     <details class="imgscal">
@@ -275,6 +225,39 @@ example/
     </details>
 
     <details class="imgscal">
+        <summary>Built-in Commands</summary>
+        <hr>
+
+        <p>
+            <code><span class="white">imgscal help &lt;workflow&gt;</span></code>
+        </p>
+
+        <p>
+            Prints out the returned string from the workflow's <code><span class="purple">help</span></code> function.
+        </p>
+        <br>
+        <p>
+            The name <code><span class="green">"help"</span></code> is reserved for this command, CLI entry points cannot be mapped to this name.
+            Additionally, only CLI entry points can be called with this, and entry points missing the <code><span class="purple">help</span></code>
+            function will panic.
+        </p>
+
+        <hr>
+
+        <p>
+            <code><span class="white">imgscal list</span></code>
+        </p>
+
+        <p>
+            Lists all available workflows and their entry points.
+        </p>
+        <br>
+        <p>
+            The name <code><span class="green">"list"</span></code> is reserved for this command, CLI entry points cannot be mapped to this name.
+        </p>
+    </details>
+
+    <details class="imgscal">
         <summary>Config File</summary>
 
 <pre>{
@@ -383,17 +366,100 @@ example/
     </details>
 
     <details class="imgscal">
-        <summary>The Help Command</summary>
-
-        <p>
-            This can be called with <code><span class="white">imgscal help &lt;workflow&gt;</span></code>.
-        </p>
+        <summary>Type Information</summary>
         <hr>
 
         <p>
-            The name <code><span class="green">"help"</span></code> is reserved for this command, CLI entry points cannot be mapped to this name.
-            Additionally, only CLI entry points can be called with this, and entry points missing the <code><span class="purple">help</span></code>
-            function will panic.
+            When viewing the API documentation type inforamation will appear as: <code class="type">int</code>.
+            While lua does not have an <code class="type">int</code> type, the documentation uses it to specify when a number value must be whole.
+        </p>
+        <br>
+        <p>
+            Types that begin with <code class="type">[]</code> specify that it is a lua table with integer indexes starting at 1,
+            in Go these indexes become 0 based.
+        </p>
+        <br>
+        <p>
+            Variadic arguments are specified with the suffix <code class="type">...</code>, these arguments will capture all remaining values on the stack in an array.
+            Variadics can be both optional and required, when required at least one value must be present.
+        </p>
+        
+        <hr>
+
+        <h3>Optional Values</h3>
+
+        <p>
+            When a type is followed by a <code class="type">?</code> it means the value is optional.
+            When an optional value is not provided, the zero value for that type will be used.
+        </p>
+        <figure>
+            <figcaption>List of zero values:</figcaption>
+
+            <table>
+                <thead><tr>
+                    <th>Type</th>
+                    <th>Zero Value</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code class="none"><span class="purple">int <span class="white">|</span> float</span></code></td>
+                        <td><code class="none"><span class="cyan">0</span></code>
+                    </tr>
+                    <tr>
+                        <td><code class="none"><span class="purple">string</span></code></td>
+                        <td><code class="none"><span class="cyan">""</span></code>
+                    </tr>
+                    <tr>
+                        <td><code class="none"><span class="purple">bool</span></code></td>
+                        <td><code class="none"><span class="cyan">false</span></code>
+                    </tr>
+                    <tr>
+                        <td><code class="none"><span class="purple">table&lt;any&gt;</span></code></td>
+                        <td><code class="none"><span class="cyan">{}</span></code>
+                    </tr>
+                    <tr>
+                        <td><code class="none"><span class="purple">struct&lt;Structure&gt;</span></code></td>
+                        <td><code class="none"><span class="cyan">{...Structure}</span></code>
+                    </tr>
+                    <tr>
+                        <td><code class="none"><span class="purple">[]any <span class="white">|</span> any...</span></code></td>
+                        <td><code class="none"><span class="cyan">{} Numeric</span></code>
+                    </tr>
+                    <tr>
+                        <td><code class="none"><span class="purple">function <span class="white">|</span> any</span></code></td>
+                        <td><code class="none"><span class="cyan">nil</span></code>
+                    </tr>
+                </tbody>
+            </table>
+        </figure>
+        
+        <hr>
+
+        <h3>Constraints</h3>
+        <p>
+            Sometimes a type may include two different types such as: <code class="type">int&lt;collection.IMAGE&gt;</code>.
+            <ul>
+                <li>
+                    <code class="type">int</code> is the type that exists within lua.
+                </li>
+                <li>
+                    <code class="type">collection.IMAGE</code> is the constraint on that type.
+                </li>
+            </ul>
+            Here the value must be an <code class="type">int</code> and
+            be a valid id from <code class="type">collection.IMAGE</code>.
+        </p>
+        
+        <hr>
+
+        <h3>Structs and Tables</h3>
+        <p>
+            There is also an additional special type called <code class="type">struct</code>,
+            this refers to a lua table with a specified structure. The constraint on these
+            shows where that structure is defined in the documentation. 
+            E.g. <code class="type">struct&lt;gui.Widget&gt;</code> is a struct named Widget defined
+            in the gui library.
+            When there is no specified structure, <code class="type">table&lt;any&gt;</code> is used.
         </p>
     </details>
 </section>
