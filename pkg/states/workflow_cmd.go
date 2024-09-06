@@ -38,11 +38,11 @@ func WorkflowCMD(sm *statemachine.StateMachine) error {
 			break
 		}
 
-		if !strings.HasPrefix(name, path.Dir(w.Base)) {
+		if !strings.HasPrefix(name, path.Base(path.Dir(w.Base))) {
 			continue
 		}
 
-		found, ok := w.CliWorkflows[strings.TrimPrefix(name, path.Dir(w.Base))]
+		found, ok := w.CliWorkflows[strings.TrimPrefix(name, path.Base(path.Dir(w.Base))+"/")]
 		if !ok {
 			continue
 		}

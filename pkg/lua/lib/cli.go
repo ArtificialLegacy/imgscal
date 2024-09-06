@@ -65,17 +65,51 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func println(msg)
+	/// @func printf(msg, args...)
 	/// @arg msg {string} - The message to print to the console.
+	/// @arg args {any...} - The arguments to format the message with.
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "printf",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+			lua.ArgVariadic("args", lua.ArrayType{Type: lua.ANY}, true),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			msg := fmt.Sprintf(args["msg"].(string), args["args"].([]any)...)
+			fmt.Print(msg)
+			lg.Append(fmt.Sprintf("lua msg printed: %s", msg), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func println(msg?)
+	/// @arg? msg {string} - The message to print to the console.
 	/// @desc
 	/// This is also including in the log similar to std.log.
 	lib.CreateFunction(tab, "println",
 		[]lua.Arg{
-			{Type: lua.STRING, Name: "msg"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			fmt.Println(args["msg"].(string))
 			lg.Append(fmt.Sprintf("lua msg printed: %s", args["msg"]), log.LEVEL_INFO)
+			return 0
+		})
+
+	/// @func printlnf(msg, args...)
+	/// @arg msg {string} - The message to print to the console.
+	/// @arg args {any...} - The arguments to format the message with.
+	/// @desc
+	/// This is also including in the log similar to std.log.
+	lib.CreateFunction(tab, "printlnf",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "msg"},
+			lua.ArgVariadic("args", lua.ArrayType{Type: lua.ANY}, true),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			msg := fmt.Sprintf(args["msg"].(string), args["args"].([]any)...)
+			fmt.Println(msg)
+			lg.Append(fmt.Sprintf("lua msg printed: %s", msg), log.LEVEL_INFO)
 			return 0
 		})
 
@@ -190,7 +224,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 								fmt.Printf("%s ", color)
 							}
 						}
-						fmt.Println()
+						fmt.Println(cli.COLOR_RESET)
 					}
 					fmt.Print(cli.COLOR_RESET)
 				},
@@ -240,7 +274,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 								fmt.Printf("%s ", color)
 							}
 						}
-						fmt.Println()
+						fmt.Println(cli.COLOR_RESET)
 					}
 					fmt.Print(cli.COLOR_RESET)
 				},

@@ -538,6 +538,10 @@ type TaskData struct {
 	Name string
 }
 
+func Error(state *lua.LState, err string) {
+	state.Error(lua.LString(err), 0)
+}
+
 func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
 	l.State.SetField(lib, name, l.State.NewFunction(func(state *lua.LState) int {
 		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_VERBOSE)

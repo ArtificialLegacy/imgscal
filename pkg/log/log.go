@@ -148,6 +148,10 @@ func (l *Logger) Append(str string, level LogLevel) string {
 	return str
 }
 
+func (l *Logger) Appendf(format string, level LogLevel, v ...any) string {
+	return l.Append(fmt.Sprintf(format, v...), level)
+}
+
 func (l *Logger) Close() {
 	if l.empty {
 		return
