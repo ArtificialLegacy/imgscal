@@ -27,6 +27,7 @@ func main() {
 	sm.AddState(states.STATE_WORKFLOW_FINISH, states.WorkflowFinish)
 	sm.AddState(states.STATE_WORKFLOW_HELP, states.WorkflowHelp)
 	sm.AddState(states.STATE_WORKFLOW_CMD, states.WorkflowCMD)
+	sm.AddState(states.STATE_WORKFLOW_CMDLIST, states.WorkflowCMDList)
 
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
@@ -110,7 +111,9 @@ func main() {
 		pth := os.Args[1]
 		sm.CliMode = true
 
-		if pth == "help" {
+		if pth == "list" {
+			states.WorkflowCMDList(sm)
+		} else if pth == "help" {
 			if len(os.Args) > 2 {
 				states.WorkflowHelpEnter(sm, os.Args[2])
 			} else {

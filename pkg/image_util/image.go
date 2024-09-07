@@ -14,8 +14,34 @@ const (
 	ENCODING_PNG ImageEncoding = iota
 	ENCODING_JPEG
 	ENCODING_GIF
+	ENCODING_TIFF
+	ENCODING_BMP
+	ENCODING_ICO
+	ENCODING_CUR
 	ENCODING_UNKNOWN
 )
+
+var EncodingExts = []string{
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".tiff",
+	".bmp",
+	".ico",
+	".cur",
+}
+
+var EncodingList = []ImageEncoding{
+	ENCODING_PNG,
+	ENCODING_JPEG,
+	ENCODING_GIF,
+	ENCODING_TIFF,
+	ENCODING_BMP,
+	ENCODING_ICO,
+	ENCODING_CUR,
+	ENCODING_UNKNOWN,
+}
 
 func EncodingExtension(encoding ImageEncoding) string {
 	switch encoding {
@@ -25,6 +51,14 @@ func EncodingExtension(encoding ImageEncoding) string {
 		return ".jpg"
 	case ENCODING_GIF:
 		return ".gif"
+	case ENCODING_TIFF:
+		return ".tiff"
+	case ENCODING_BMP:
+		return ".bmp"
+	case ENCODING_ICO:
+		return ".ico"
+	case ENCODING_CUR:
+		return ".cur"
 	default:
 		return ".unknown"
 	}
@@ -37,9 +71,21 @@ func ExtensionEncoding(ext string) ImageEncoding {
 	case ".png":
 		return ENCODING_PNG
 	case ".jpg":
+		fallthrough
+	case ".jpeg":
 		return ENCODING_JPEG
 	case ".gif":
 		return ENCODING_GIF
+	case ".tiff":
+		fallthrough
+	case ".tif":
+		return ENCODING_TIFF
+	case ".bmp":
+		return ENCODING_BMP
+	case ".ico":
+		return ENCODING_ICO
+	case ".cur":
+		return ENCODING_CUR
 	}
 
 	return ENCODING_UNKNOWN
@@ -122,11 +168,4 @@ func PointToTable(state *golua.LState, p image.Point) *golua.LTable {
 	t.RawSetString("y", golua.LNumber(p.Y))
 
 	return t
-}
-
-var EncodingList = []ImageEncoding{
-	ENCODING_PNG,
-	ENCODING_JPEG,
-	ENCODING_GIF,
-	ENCODING_UNKNOWN,
 }

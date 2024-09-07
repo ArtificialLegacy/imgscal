@@ -20,7 +20,7 @@ function main()
     local win = gui.window_master("Imger Example", 512, 512, 0)
     gui.window_set_icon_imgscal(win, true)
 
-    local imgOrigin = io.load_image(io.path_join(io.wd(), "example_image.png"))
+    local imgOrigin = io.decode(io.path_join(io.wd(), "example_image.png"))
     local imgEmpty = image.new("empty", image.ENCODING_PNG, 200, 200)
     local imgSrc = image.copy(imgOrigin, "src", image.MODEL_RGBA)
     local imgDst = image.new("dest", image.ENCODING_PNG, 200, 200)

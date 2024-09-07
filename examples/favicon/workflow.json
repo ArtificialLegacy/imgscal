@@ -1,0 +1,13 @@
+{
+    "name": "favicon",
+    "author": "Blub",
+    "version": "1.0.0",
+
+    "desc": "Encode or Decode a favicon.",
+
+    "cli_workflows": {
+        "*": "view.lua",
+        "decode": "decode.lua",
+        "encode": "encode.lua"
+    }
+}
