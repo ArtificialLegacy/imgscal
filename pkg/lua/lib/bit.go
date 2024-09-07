@@ -154,4 +154,23 @@ func RegisterBit(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LNumber(a << b))
 			return 1
 		})
+
+	/// @func byte_string(nums...) -> string
+	/// @arg nums {int...} - A list of numbers to convert to bytes. These will be treated as uint8.
+	/// @returns {string} - The byte string representation of the numbers.
+	lib.CreateFunction(tab, "byte_string",
+		[]lua.Arg{
+			lua.ArgVariadic("nums", lua.ArrayType{Type: lua.INT}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			list := args["nums"].([]any)
+			bytes := make([]byte, len(list))
+
+			for i, v := range list {
+				bytes[i] = byte(v.(int))
+			}
+
+			state.Push(golua.LString(bytes))
+			return 1
+		})
 }
