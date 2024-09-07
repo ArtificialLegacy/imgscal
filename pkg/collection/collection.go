@@ -191,6 +191,19 @@ func (c *Collection[T]) Item(id int) *Item[T] {
 	return item
 }
 
+func (c *Collection[T]) ItemExists(id int) bool {
+	if id < 0 && id >= len(c.items) {
+		return false
+	}
+
+	item := c.items[id]
+	if item == nil {
+		return false
+	}
+
+	return !item.collect && !item.cleaned && !item.failed
+}
+
 func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	wait := make(chan struct{}, 2)
 

@@ -256,6 +256,35 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func exists(type, id) -> bool
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @returns {bool} - If the item exists, and has not been collected.
+	/// @desc
+	/// Note that this is non-blocking, and can return true for items that get collected soon after.
+	lib.CreateFunction(tab, "exists",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var exists bool
+
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				exists = r.TC.ItemExists(args["id"].(int))
+			case collection.TYPE_IMAGE:
+				exists = r.IC.ItemExists(args["id"].(int))
+			case collection.TYPE_CONTEXT:
+				exists = r.CC.ItemExists(args["id"].(int))
+			case collection.TYPE_QR:
+				exists = r.QR.ItemExists(args["id"].(int))
+			}
+
+			state.Push(golua.LBool(exists))
+			return 1
+		})
+
 	/// @func log(type, id, msg)
 	/// @arg type {int<collection.Type>}
 	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
