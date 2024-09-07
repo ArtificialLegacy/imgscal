@@ -1997,6 +1997,28 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func png_data_chunk(key, data) -> struct<image.PNGDataChunk>
+	/// @arg key {string}
+	/// @arg data {string}
+	/// @returns {struct<image.PNGDataChunk>}
+	lib.CreateFunction(tab, "png_data_chunk",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "key"},
+			{Type: lua.STRING, Name: "data"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct PNGDataChunk
+			/// @prop key {string}
+			/// @prop data {string}
+
+			t := state.NewTable()
+			t.RawSetString("key", golua.LString(args["key"].(string)))
+			t.RawSetString("data", golua.LString(args["data"].(string)))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @constants Color Models
 	/// @const RGBA
 	/// @const RGBA64

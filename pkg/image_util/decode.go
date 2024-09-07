@@ -19,7 +19,7 @@ func Decode(r io.ReadSeeker, encoding ImageEncoding) (image.Image, error) {
 		strip := PNGChunkStripper{
 			Reader: r,
 		}
-		return png.Decode(io.Reader(&strip))
+		return png.Decode(&strip)
 
 	case ENCODING_JPEG:
 		return jpeg.Decode(r)

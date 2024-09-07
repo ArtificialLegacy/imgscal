@@ -60,7 +60,7 @@ func RegisterBase64(r *lua.Runner, lg *log.Logger) {
 
 	/// @func decode(data, url?, raw?) -> string
 	/// @arg data {string}
-	// @arg? url {bool} - If true, use URL encoding.
+	/// @arg? url {bool} - If true, use URL encoding.
 	/// @arg? raw {bool} - If true, use raw encoding.
 	/// @returns {string} - The base64 decoded data.
 	lib.CreateFunction(tab, "decode",

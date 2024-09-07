@@ -86,6 +86,61 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGData>
+	/// @arg path {string} - The path to grab the image from.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {int<collection.IMAGE>}
+	/// @returns {[]struct<image.PNGData>}
+	lib.CreateFunction(tab, "decode_png_data",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			f, err := os.Open(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+			}
+			defer f.Close()
+
+			name := strings.TrimSuffix(f.Name(), path.Ext(f.Name()))
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			img, chunks, err := imageutil.PNGDataChunkDecode(f)
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided file is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
+					i.Self = &collection.ItemImage{
+						Name:     name,
+						Image:    img,
+						Encoding: imageutil.ENCODING_PNG,
+						Model:    model,
+					}
+				},
+			})
+
+			ct := state.NewTable()
+			for _, chunk := range chunks {
+				t := imageutil.DataChunkToTable(chunk, state)
+				ct.Append(t)
+			}
+
+			state.Push(golua.LNumber(id))
+			state.Push(ct)
+			return 2
+		})
+
 	/// @func decode_favicon(path, encoding, model?) -> []int<collection.IMAGE>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg encoding {int<image.Encoding>} - The encoding to use for the extracted images.
@@ -387,7 +442,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					ext := imageutil.EncodingExtension(i.Self.Encoding)
-					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+ext), os.O_CREATE|os.O_RDWR, 0o666)
+					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+ext), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 					if err != nil {
 						state.Error(golua.LString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
 					}
@@ -395,6 +450,49 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 					i.Lg.Append(fmt.Sprintf("encoding using %d", i.Self.Encoding), log.LEVEL_INFO)
 					err = imageutil.Encode(f, i.Self.Image, i.Self.Encoding)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("cannot write image to file: %s", err), log.LEVEL_ERROR)), 0)
+					}
+				},
+			})
+			return 0
+		})
+
+	/// @func encode_png_data(id, chunks, path)
+	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
+	/// @arg chunks {[]struct<image.PNGData>} - The PNG data chunks to encode with the image.
+	/// @arg path {string} - The directory path to save the file to.
+	lib.CreateFunction(tab, "encode_png_data",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			lua.ArgArray("chunks", lua.ArrayType{Type: lua.RAW_TABLE}, false),
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			_, err := os.Stat(args["path"].(string))
+			if err != nil {
+				os.MkdirAll(args["path"].(string), 0o777)
+			}
+
+			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+".png"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+					}
+					defer f.Close()
+
+					data := []*imageutil.PNGDataChunk{}
+					chunks := args["chunks"].([]any)
+
+					for _, chunk := range chunks {
+						data = append(data, imageutil.TableToDataChunk(chunk.(*golua.LTable)))
+					}
+
+					i.Lg.Append(fmt.Sprintf("encoding using %d, with data", imageutil.ENCODING_PNG), log.LEVEL_INFO)
+					err = imageutil.PNGDataChunkEncode(f, i.Self.Image, data)
 					if err != nil {
 						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("cannot write image to file: %s", err), log.LEVEL_ERROR)), 0)
 					}
@@ -440,7 +538,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			name := args["name"].(string)
 
-			f, err := os.OpenFile(path.Join(args["path"].(string), name+".ico"), os.O_CREATE|os.O_RDWR, 0o666)
+			f, err := os.OpenFile(path.Join(args["path"].(string), name+".ico"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 			if err != nil {
 				lua.Error(state, lg.Append("cannot open provided file", log.LEVEL_ERROR))
 			}
@@ -499,7 +597,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			name := args["name"].(string)
 
-			f, err := os.OpenFile(path.Join(args["path"].(string), name+".cur"), os.O_CREATE|os.O_RDWR, 0o666)
+			f, err := os.OpenFile(path.Join(args["path"].(string), name+".cur"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
 			if err != nil {
 				lua.Error(state, lg.Append("cannot open provided file", log.LEVEL_ERROR))
 			}
