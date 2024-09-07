@@ -10,6 +10,24 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 )
 
+func TestPNGDataKeyLength(t *testing.T) {
+	c1 := imageutil.NewPNGDataChunk("testkey0", "Hello, World!")
+	c2 := imageutil.NewPNGDataChunk("testkey11", "Hello, World!")
+	c3 := imageutil.NewPNGDataChunk("testkey", "Hello, World!")
+
+	if len(c1.Key) != 8 {
+		t.Errorf("Expected key length of 8, got %d", len(c1.Key))
+	}
+
+	if len(c2.Key) != 8 {
+		t.Errorf("Expected key length of 8, got %d", len(c2.Key))
+	}
+
+	if len(c3.Key) != 8 {
+		t.Errorf("Expected key length of 8, got %d", len(c3.Key))
+	}
+}
+
 func TestPNGDataWrite(t *testing.T) {
 	data := "Hello, World!"
 	key := "testkey0"

@@ -87,7 +87,7 @@ type PNGDataChunk struct {
 
 func NewPNGDataChunk(key string, data string) *PNGDataChunk {
 	if len(key) < dataKeyLength {
-		key = fmt.Sprintf("%*s", dataKeyLength-len(key), key)
+		key = fmt.Sprintf("%*s", dataKeyLength, key)
 	} else if len(key) > dataKeyLength {
 		key = key[:dataKeyLength]
 	}
