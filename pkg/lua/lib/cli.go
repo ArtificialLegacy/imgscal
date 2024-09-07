@@ -60,7 +60,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			str := strings.Join(msg, ", ")
 
-			fmt.Println(str)
+			fmt.Print(str)
 			lg.Append(fmt.Sprintf("lua msg printed: %s", str), log.LEVEL_INFO)
 			return 0
 		})
@@ -193,18 +193,21 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func print_image(id, double?)
+	/// @func print_image(id, double?, alpha?)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	/// @arg? alpha {int} - Remove pixels with an alpha below this value.
 	/// @blocking
 	lib.CreateFunction(tab, "print_image",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.BOOL, Name: "double", Optional: true},
+			{Type: lua.INT, Name: "alpha", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			id := args["id"].(int)
 			double := args["double"].(bool)
+			alpha := args["alpha"].(int)
 
 			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
@@ -215,8 +218,13 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 					for y := boundsMin.Y; y < boundsMax.Y; y++ {
 						for x := boundsMin.X; x < boundsMax.X; x++ {
-							r, g, b, _ := imageutil.Get(i.Self.Image, x, y)
-							color := trueColorBg(r, g, b)
+							col := imageutil.GetColor(i.Self.Image, state, x, y)
+							r, g, b, a := imageutil.ColorTableToRGBA(col)
+							color := trueColorBg(int(r), int(g), int(b))
+
+							if int(a) < alpha {
+								color = string(cli.COLOR_RESET)
+							}
 
 							if double {
 								fmt.Printf("%s  ", color)
@@ -233,11 +241,12 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func print_image_size(id, width, height, double?)
+	/// @func print_image_size(id, width, height, double?, alpha?)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg width {int} - The width of the image.
 	/// @arg height {int} - The height of the image.
 	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	/// @arg? alpha {int} - Remove pixels with an alpha below this value.
 	/// @blocking
 	lib.CreateFunction(tab, "print_image_size",
 		[]lua.Arg{
@@ -245,10 +254,12 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
 			{Type: lua.BOOL, Name: "double", Optional: true},
+			{Type: lua.INT, Name: "alpha", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			id := args["id"].(int)
 			double := args["double"].(bool)
+			alpha := args["alpha"].(int)
 
 			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
@@ -265,8 +276,13 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 					for y := boundsMin.Y; y < boundsMax.Y; y++ {
 						for x := boundsMin.X; x < boundsMax.X; x++ {
-							r, g, b, _ := imageutil.Get(dst, x, y)
-							color := trueColorBg(r, g, b)
+							col := imageutil.GetColor(i.Self.Image, state, x, y)
+							r, g, b, a := imageutil.ColorTableToRGBA(col)
+							color := trueColorBg(int(r), int(g), int(b))
+
+							if int(a) < alpha {
+								color = string(cli.COLOR_RESET)
+							}
 
 							if double {
 								fmt.Printf("%s  ", color)
@@ -279,6 +295,52 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 					fmt.Print(cli.COLOR_RESET)
 				},
 			})
+
+			return 0
+		})
+
+	/// @func print_color(c, double?)
+	/// @arg c {struct<color>} - The color to print.
+	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	lib.CreateFunction(tab, "print_color",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "c"},
+			{Type: lua.BOOL, Name: "double", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r, g, b, _ := imageutil.ColorTableToRGBA(args["c"].(*golua.LTable))
+			double := args["double"].(bool)
+
+			color := trueColorBg(int(r), int(g), int(b))
+
+			if double {
+				fmt.Printf("%s  %s", color, cli.COLOR_RESET)
+			} else {
+				fmt.Printf("%s %s", color, cli.COLOR_RESET)
+			}
+
+			return 0
+		})
+
+	/// @func println_color(c, double?)
+	/// @arg c {struct<color>} - The color to print.
+	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	lib.CreateFunction(tab, "println_color",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "c"},
+			{Type: lua.BOOL, Name: "double", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r, g, b, _ := imageutil.ColorTableToRGBA(args["c"].(*golua.LTable))
+			double := args["double"].(bool)
+
+			color := trueColorBg(int(r), int(g), int(b))
+
+			if double {
+				fmt.Printf("%s  %s\n", color, cli.COLOR_RESET)
+			} else {
+				fmt.Printf("%s %s\n", color, cli.COLOR_RESET)
+			}
 
 			return 0
 		})

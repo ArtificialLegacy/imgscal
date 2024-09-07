@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"math/rand"
 	"path"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/crazy3lf/colorconv"
+	color_extractor "github.com/marekm4/color-extractor"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -1920,6 +1922,78 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			ext := imageutil.EncodingExtension(imageutil.ImageEncoding(args["encoding"].(int)))
 
 			state.Push(golua.LString(ext))
+			return 1
+		})
+
+	/// @func extract_colors(img) -> []struct<image.ColorRGBA>
+	/// @arg img {int<collection.IMAGE>}
+	/// @returns {[]struct<image.ColorRGBA>}
+	/// @blocking
+	lib.CreateFunction(tab, "extract_colors",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "img"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var img image.Image
+
+			<-r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+				},
+			})
+
+			colors := color_extractor.ExtractColors(img)
+
+			t := state.NewTable()
+
+			for _, c := range colors {
+				cr := c.(color.RGBA)
+				t.Append(imageutil.RGBAColorToColorTable(state, &cr))
+			}
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func extract_colors_config(img, downSizeTo, smallBucket) -> []struct<image.ColorRGBA>
+	/// @arg img {int<collection.IMAGE>}
+	/// @arg downSizeTo {float}
+	/// @arg smallBucket {float}
+	/// @returns {[]struct<image.ColorRGBA>}
+	/// @blocking
+	lib.CreateFunction(tab, "extract_colors_config",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "img"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var img image.Image
+
+			<-r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+				},
+			})
+
+			downSizeTo := args["downSizeTo"].(float64)
+			smallBucket := args["smallBucket"].(float64)
+
+			colors := color_extractor.ExtractColorsWithConfig(img, color_extractor.Config{
+				DownSizeTo:  downSizeTo,
+				SmallBucket: smallBucket,
+			})
+
+			t := state.NewTable()
+
+			for _, c := range colors {
+				cr := c.(color.RGBA)
+				t.Append(imageutil.RGBAColorToColorTable(state, &cr))
+			}
+
+			state.Push(t)
 			return 1
 		})
 

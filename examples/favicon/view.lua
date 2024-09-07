@@ -60,7 +60,19 @@ function main()
             cli.printlnf("Hotspot: (%s%d,%d%s)", cli.GREEN, cfg.entries[i].data1, cfg.entries[i].data2, cli.RESET)
         end
 
-        cli.print_image(img, true)
+        cli.print_image(img, true, 32)
         cli.println()
     end
+
+    cli.println()
+    cli.print("Palette: ")
+
+    local colors = image.extract_colors(imgs[cfg.largest+1])
+
+    for i, color in ipairs(colors) do
+        cli.print_color(color, true)
+    end
+
+    cli.println()
+    cli.println()
 end

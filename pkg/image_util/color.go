@@ -47,6 +47,41 @@ func Get(img image.Image, x, y int) (int, int, int, int) {
 	return int(cr), int(cg), int(cb), int(ca)
 }
 
+func GetColor(img image.Image, state *golua.LState, x, y int) *golua.LTable {
+	switch i := img.(type) {
+	case *image.RGBA:
+		r, g, b, a := i.RGBAAt(x, y).RGBA()
+		return RGBAToColorTable(state, int(r), int(g), int(b), int(a))
+	case *image.RGBA64:
+		r, g, b, a := i.RGBA64At(x, y).RGBA()
+		return RGBAToColorTable(state, int(r), int(g), int(b), int(a))
+	case *image.NRGBA:
+		c := i.NRGBAAt(x, y)
+		return RGBAToColorTable(state, int(c.R), int(c.G), int(c.B), int(c.A))
+	case *image.NRGBA64:
+		c := i.NRGBA64At(x, y)
+		return RGBAToColorTable(state, int(c.R), int(c.G), int(c.B), int(c.A))
+	case *image.Alpha:
+		_, _, _, a := i.AlphaAt(x, y).RGBA()
+		return AlphaToColorTable(state, int(a))
+	case *image.Alpha16:
+		_, _, _, a := i.Alpha16At(x, y).RGBA()
+		return Alpha16ToColorTable(state, int(a))
+	case *image.Gray:
+		r, _, _, _ := i.GrayAt(x, y).RGBA()
+		return GrayToColorTable(state, int(r))
+	case *image.Gray16:
+		r, _, _, _ := i.Gray16At(x, y).RGBA()
+		return Gray16ToColorTable(state, int(r))
+	case *image.CMYK:
+		r, g, b, a := i.CMYKAt(x, y).RGBA()
+		return CMYKToColorTable(state, int(r), int(g), int(b), int(a))
+
+	}
+
+	return nil
+}
+
 func ConvertColor(model ColorModel, red, green, blue, alpha int) (int, int, int, int) {
 	col := color.RGBA{R: uint8(red), G: uint8(green), B: uint8(blue), A: uint8(alpha)}
 
