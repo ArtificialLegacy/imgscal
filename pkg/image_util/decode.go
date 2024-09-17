@@ -47,3 +47,46 @@ func Decode(r io.ReadSeeker, encoding ImageEncoding) (image.Image, error) {
 
 	return nil, fmt.Errorf("cannot decode unsupported encoding: %d", encoding)
 }
+
+func DecodeConfig(r io.Reader, encoding ImageEncoding) (int, int, error) {
+	var cfg image.Config
+	var err error
+
+	switch encoding {
+	case ENCODING_PNG:
+		strip := PNGChunkStripper{
+			Reader: r,
+		}
+		cfg, err = png.DecodeConfig(&strip)
+
+	case ENCODING_JPEG:
+		cfg, err = jpeg.DecodeConfig(r)
+
+	case ENCODING_GIF:
+		cfg, err = gif.DecodeConfig(r)
+
+	case ENCODING_TIFF:
+		cfg, err = tiff.DecodeConfig(r)
+
+	case ENCODING_BMP:
+		cfg, err = bmp.DecodeConfig(r)
+
+	case ENCODING_ICO:
+		fallthrough
+	case ENCODING_CUR:
+		fcfg, ferr := goico.DecodeConfig(r)
+		cfg, err = image.Config{
+			Width:  fcfg.Entries[fcfg.Largest].Width,
+			Height: fcfg.Entries[fcfg.Largest].Height,
+		}, ferr
+
+	default:
+		return 0, 0, fmt.Errorf("unsupported encoding: %d", encoding)
+	}
+
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return cfg.Width, cfg.Height, nil
+}

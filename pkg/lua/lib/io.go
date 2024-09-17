@@ -86,6 +86,37 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func decode_config(path) -> int, int, bool
+	/// @arg path {string} - The path to grab the image from.
+	/// @returns {int} - The width of the image.
+	/// @returns {int} - The height of the image.
+	/// @returns {bool} - If the image can be decoded.
+	lib.CreateFunction(tab, "decode_config",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			f, err := os.Open(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+			}
+			defer f.Close()
+
+			encoding := imageutil.ExtensionEncoding(path.Ext(f.Name()))
+			width, height, err := imageutil.DecodeConfig(f, encoding)
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			if err != nil {
+				state.Push(golua.LFalse)
+				lg.Append(err.Error(), log.LEVEL_WARN)
+			} else {
+				state.Push(golua.LTrue)
+			}
+			return 0
+		},
+	)
+
 	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGData>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
