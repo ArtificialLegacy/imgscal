@@ -1,0 +1,12 @@
+{
+    "name": "tui",
+    "author": "Blub",
+    "version": "1.0.0",
+
+    "desc": "Workflow for testing TUI lib.",
+
+    "workflows": {
+        "*": "testing.lua"
+    }
+}
+
