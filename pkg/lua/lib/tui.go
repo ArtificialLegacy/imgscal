@@ -1909,6 +1909,32 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		return 1
 	}))
 
+	t.RawSetString("did_select_file", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		did, str := item.FilePickers[id].DidSelectFile(*item.Msg)
+
+		state.Push(golua.LBool(did))
+		state.Push(golua.LString(str))
+		return 2
+	}))
+
+	t.RawSetString("did_select_disabled", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		did, str := item.FilePickers[id].DidSelectDisabledFile(*item.Msg)
+
+		state.Push(golua.LBool(did))
+		state.Push(golua.LString(str))
+		return 2
+	}))
+
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
@@ -2015,6 +2041,249 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 				list[i] = v.(string)
 			}
 			item.FilePickers[id].AllowedTypes = list
+		})
+
+	t.RawSetString("show_perm", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].ShowPermissions
+
+		state.Push(golua.LBool(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "show_perm_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].ShowPermissions = args["enabled"].(bool)
+		})
+
+	t.RawSetString("show_size", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].ShowSize
+
+		state.Push(golua.LBool(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "show_size_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].ShowSize = args["enabled"].(bool)
+		})
+
+	t.RawSetString("show_hidden", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].ShowHidden
+
+		state.Push(golua.LBool(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "show_hidden_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].ShowHidden = args["enabled"].(bool)
+		})
+
+	t.RawSetString("dir_allowed", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].DirAllowed
+
+		state.Push(golua.LBool(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "dir_allowed_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].DirAllowed = args["enabled"].(bool)
+		})
+
+	t.RawSetString("file_allowed", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].FileAllowed
+
+		state.Push(golua.LBool(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "file_allowed_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].FileAllowed = args["enabled"].(bool)
+		})
+
+	t.RawSetString("file_selected", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].FileSelected
+
+		state.Push(golua.LString(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "file_selected_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "file"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].FileSelected = args["file"].(string)
+		})
+
+	t.RawSetString("height", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].Height
+
+		state.Push(golua.LNumber(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "height_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].Height = args["height"].(int)
+		})
+
+	t.RawSetString("height_auto", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].AutoHeight
+
+		state.Push(golua.LBool(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "height_auto_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].AutoHeight = args["enabled"].(bool)
+		})
+
+	t.RawSetString("cursor", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+
+		value := item.FilePickers[id].Cursor
+
+		state.Push(golua.LString(value))
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "cursor_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "cursor"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.FilePickers[id].Cursor = args["cursor"].(string)
 		})
 
 	return t
