@@ -5,6 +5,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/filepicker"
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/paginator"
+	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -30,11 +33,14 @@ type TeaItem struct {
 	Msg  *tea.Msg
 	Cmds []tea.Cmd
 
-	Spinners    map[int]*spinner.Model
-	TextAreas   []*textarea.Model
-	TextInputs  []*textinput.Model
-	Cursors     []*cursor.Model
-	FilePickers []*filepicker.Model
+	Spinners     map[int]*spinner.Model
+	TextAreas    []*textarea.Model
+	TextInputs   []*textinput.Model
+	Cursors      []*cursor.Model
+	FilePickers  []*filepicker.Model
+	Lists        []*list.Model
+	Paginators   []*paginator.Model
+	ProgressBars []*progress.Model
 }
 
 type Crate[T any] struct {

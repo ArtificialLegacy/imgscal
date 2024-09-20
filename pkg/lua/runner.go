@@ -544,8 +544,8 @@ func Error(state *lua.LState, err string) {
 	state.Error(lua.LString(err), 0)
 }
 
-func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
-	l.State.SetField(lib, name, l.State.NewFunction(func(state *lua.LState) int {
+func (l *Lib) CreateFunction(lib *lua.LTable, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
+	lib.RawSetString(name, l.State.NewFunction(func(state *lua.LState) int {
 		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_VERBOSE)
 
 		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
@@ -554,6 +554,17 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 		ret := fn(state, TaskData{Lib: l.Lib, Name: name}, argMap)
 
 		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_VERBOSE)
+		return ret
+	}))
+}
+
+func (l *Lib) TableFunction(state *lua.LState, t *lua.LTable, name string, args []Arg, fn func(state *lua.LState, args map[string]any) int) {
+	t.RawSetString(name, state.NewFunction(func(state *lua.LState) int {
+		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
+		state.Pop(c)
+
+		ret := fn(state, argMap)
+
 		return ret
 	}))
 }
