@@ -4,17 +4,23 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	customtea "github.com/ArtificialLegacy/imgscal/pkg/custom_tea"
+	teamodels "github.com/ArtificialLegacy/imgscal/pkg/custom_tea/models"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/filepicker"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/stopwatch"
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/timer"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	golua "github.com/yuin/gopher-lua"
 )
@@ -34,7 +40,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "new",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := r.CR_TEA.Add(&collection.TeaItem{
+			id := r.CR_TEA.Add(&teamodels.TeaItem{
 				Spinners: map[int]*spinner.Model{},
 			})
 			t := teaTable(r, state, lib, id)
@@ -59,7 +65,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			}
 
 			pstate, _ := state.NewThread()
-			p := tea.NewProgram(teamodel{id: id, item: item, state: pstate, r: r, lg: lg})
+			p := tea.NewProgram(customtea.ProgramModel{Id: id, Item: item, State: pstate, R: r, Lg: lg})
 			_, err = p.Run()
 			if err != nil {
 				lua.Error(state, err.Error())
@@ -244,7 +250,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "filter", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			li := listItemTable(state, args["title"].(string), args["desc"].(string), args["filter"].(string))
+			li := customtea.ListItemTable(state, args["title"].(string), args["desc"].(string), args["filter"].(string))
 
 			state.Push(li)
 			return 1
@@ -287,7 +293,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			items := make([]list.Item, len(itemList))
 
 			for i, v := range itemList {
-				items[i] = listItemBuild(v.(*golua.LTable))
+				items[i] = customtea.ListItemBuild(v.(*golua.LTable))
 			}
 
 			li := list.New(items, list.NewDefaultDelegate(), args["width"].(int), args["height"].(int))
@@ -376,6 +382,318 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func stopwatch(id, interval?) -> struct<tui.StopWatch>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the stopwatch to.
+	/// @arg? interval {int}
+	/// @returns {struct<tui.StopWatch>}
+	lib.CreateFunction(tab, "stopwatch",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "interval", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			interval := args["interval"].(int)
+
+			var sw stopwatch.Model
+			if interval >= 0 {
+				sw = stopwatch.NewWithInterval(time.Duration(interval * 1e6))
+			} else {
+				sw = stopwatch.New()
+			}
+
+			id := sw.ID()
+			item.StopWatches[id] = &sw
+
+			t := stopwatchTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func timer(id, timeout, interval?) -> struct<tui.Timer>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the timer to.
+	/// @arg timeout {int}
+	/// @arg? interval {int}
+	/// @returns {struct<tui.Timer>}
+	lib.CreateFunction(tab, "timer",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "timeout"},
+			{Type: lua.INT, Name: "interval", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			timeout := time.Duration(args["timeout"].(int) * 1e6)
+			interval := args["interval"].(int)
+
+			var ti timer.Model
+			if interval >= 0 {
+				ti = timer.NewWithInterval(timeout, time.Duration(interval*1e6))
+			} else {
+				ti = timer.New(timeout)
+			}
+
+			id := ti.ID()
+			item.Timers[id] = &ti
+
+			t := timerTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func table_options() -> struct<tui.TableOptions>
+	/// @returns {struct<tui.TableOptions>}
+	lib.CreateFunction(tab, "table_options",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(tableOptionsTable(lib, state))
+			return 1
+		})
+
+	/// @func table_column(title, width) -> struct<tui.TableColumn>
+	/// @arg title {string}
+	/// @arg width {int}
+	/// @returns {struct<tui.TableColumn>}
+	lib.CreateFunction(tab, "table_column",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "title"},
+			{Type: lua.INT, Name: "width"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tuitableColTable(state, args["title"].(string), args["width"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func table(id, options?) -> struct<tui.Table>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the table to.
+	/// @arg? options {struct<tui.TableOptions>}
+	/// @returns {struct<tui.Table>}
+	lib.CreateFunction(tab, "table",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.RAW_TABLE, Name: "options", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			opts := tableOptionsBuild(args["options"].(*golua.LTable))
+
+			tb := table.New(opts...)
+			id := len(item.Tables)
+			item.Tables = append(item.Tables, &tb)
+
+			t := tuitableTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func viewport(id, width, height) -> struct<tui.Viewport>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the viewport to.
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @returns {struct<tui.Viewport>}
+	lib.CreateFunction(tab, "viewport",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			width := args["width"].(int)
+			height := args["height"].(int)
+			id := len(item.Viewports)
+			vp := viewport.New(width, height)
+			item.Viewports = append(item.Viewports, &vp)
+
+			t := viewportTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func viewport_sync(model) -> struct<tui.CMDViewportSync>
+	/// @arg model {int} - ID of the viewport model.
+	/// @returns {struct<tui.CMDViewportSync>}
+	lib.CreateFunction(tab, "viewport_sync",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "model"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := customtea.CMDViewportSync(state, args["model"].(int))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func viewport_view_up(model, lines) -> struct<tui.CMDViewportUp>
+	/// @arg model {int} - ID of the viewport model.
+	/// @arg lines {[]string}
+	/// @returns {struct<tui.CMDViewportUp>}
+	lib.CreateFunction(tab, "viewport_view_up",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "model"},
+			{Type: lua.RAW_TABLE, Name: "lines"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := customtea.CMDViewportUp(state, args["model"].(int), args["lines"].(*golua.LTable))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func viewport_view_down(model, lines) -> struct<tui.CMDViewportDown>
+	/// @arg model {int} - ID of the viewport model.
+	/// @arg lines {[]string}
+	/// @returns {struct<tui.CMDViewportDown>}
+	lib.CreateFunction(tab, "viewport_view_down",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "model"},
+			{Type: lua.RAW_TABLE, Name: "lines"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := customtea.CMDViewportDown(state, args["model"].(int), args["lines"].(*golua.LTable))
+			state.Push(t)
+			return 1
+		})
+
+	/// @func custom(id, init, update, view) -> struct<tui.Custom>
+	/// @arg id {int<collection.CRATE_TEA>}
+	/// @arg init {function(id int) -> table<any>, struct<tui.CMD>}
+	/// @arg update {function(data table<any>, msg struct<tui.MSG>) -> struct<tui.CMD>}
+	/// @arg view {function(data table<any>) -> string}
+	/// @returns {struct<tui.Custom>}
+	lib.CreateFunction(tab, "custom",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.FUNC, Name: "init"},
+			{Type: lua.FUNC, Name: "update"},
+			{Type: lua.FUNC, Name: "view"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			init := args["init"].(*golua.LFunction)
+			update := args["update"].(*golua.LFunction)
+			view := args["view"].(*golua.LFunction)
+
+			id := len(item.Customs)
+			cm := teamodels.NewCustomModel(prgrm, init, update, view, state, item, customtea.CMDBuild, customtea.BuildMSG)
+			item.Customs = append(item.Customs, &cm)
+
+			t := tuicustomTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func keybinding_option() -> struct<tui.KeyOption>
+	/// @returns {struct<tui.KeyOption>}
+	lib.CreateFunction(tab, "keybinding_option",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := keyOptionsTable(state, lib)
+			state.Push(t)
+			return 1
+		})
+
+	/// @func keybinding(id, option) -> struct<tui.Keybinding>
+	/// @arg id {int<collection.CRATE_TEA>}
+	/// @arg? option {struct<tui.KeyOption>}
+	/// @returns {struct<tui.Keybinding>}
+	lib.CreateFunction(tab, "keybinding",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.RAW_TABLE, Name: "option", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			options := args["option"].(*golua.LTable)
+			opts := keyOptionsBuild(options)
+
+			id := len(item.KeyBindings)
+			ky := key.NewBinding(opts...)
+			item.KeyBindings = append(item.KeyBindings, &ky)
+
+			t := tuikeyTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func key_match(msg, keybindings...) -> bool
+	/// @arg msg {struct<tui.MSGKey>}
+	/// @arg keybinding {struct<tui.Keybinding>...}
+	/// @returns {bool}
+	lib.CreateFunction(tab, "key_match",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "msg"},
+			lua.ArgVariadic("bindings", lua.ArrayType{Type: lua.RAW_TABLE}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			msg := args["msg"].(*golua.LTable)
+			bindings := args["bindings"].([]any)
+
+			mtype := msg.RawGetString("msg")
+			if mtype.Type() != golua.LTNumber {
+				state.Push(golua.LFalse)
+				return 1
+			}
+			if customtea.TeaMSG(mtype.(golua.LNumber)) != customtea.MSG_KEY {
+				state.Push(golua.LFalse)
+				return 1
+			}
+
+			mk := msg.RawGetString("key").(golua.LString)
+
+			blist := make([]key.Binding, len(bindings))
+			for i, v := range bindings {
+				vt := v.(*golua.LTable)
+				prgrm := int(vt.RawGetString("program").(golua.LNumber))
+				item, err := r.CR_TEA.Item(prgrm)
+				if err != nil {
+					lua.Error(state, err.Error())
+				}
+				id := int(vt.RawGetString("id").(golua.LNumber))
+				blist[i] = *item.KeyBindings[id]
+			}
+
+			matches := key.Matches(mk, blist...)
+
+			state.Push(golua.LBool(matches))
+			return 1
+		})
+
 	/// @func file_is_hidden(path) -> bool
 	/// @arg path {string}
 	/// @returns {bool}
@@ -395,7 +713,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_none",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			state.Push(cmdNone(state))
+			state.Push(customtea.CMDNone(state))
 			return 1
 		})
 
@@ -407,7 +725,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "cmds"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := cmdBatch(state, args["cmds"].(*golua.LTable))
+			t := customtea.CMDBatch(state, args["cmds"].(*golua.LTable))
 
 			state.Push(t)
 			return 1
@@ -421,7 +739,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "cmds"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := cmdSequence(state, args["cmds"].(*golua.LTable))
+			t := customtea.CMDSequence(state, args["cmds"].(*golua.LTable))
 
 			state.Push(t)
 			return 1
@@ -434,12 +752,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @const MSG_STOPWATCHRESET
 	/// @const MSG_STOPWATCHSTARTSTOP
 	/// @const MSG_STOPWATCHTICK
-	tab.RawSetString("MSG_KEY", golua.LNumber(MSG_KEY))
-	tab.RawSetString("MSG_SPINNERTICK", golua.LNumber(MSG_SPINNERTICK))
-	tab.RawSetString("MSG_BLINK", golua.LNumber(MSG_BLINK))
-	tab.RawSetString("MSG_STOPWATCHRESET", golua.LNumber(MSG_STOPWATCHRESET))
-	tab.RawSetString("MSG_STOPWATCHSTARTSTOP", golua.LNumber(MSG_STOPWATCHSTARTSTOP))
-	tab.RawSetString("MSG_STOPWATCHTICK", golua.LNumber(MSG_STOPWATCHTICK))
+	tab.RawSetString("MSG_KEY", golua.LNumber(customtea.MSG_KEY))
+	tab.RawSetString("MSG_SPINNERTICK", golua.LNumber(customtea.MSG_SPINNERTICK))
+	tab.RawSetString("MSG_BLINK", golua.LNumber(customtea.MSG_BLINK))
+	tab.RawSetString("MSG_STOPWATCHRESET", golua.LNumber(customtea.MSG_STOPWATCHRESET))
+	tab.RawSetString("MSG_STOPWATCHSTARTSTOP", golua.LNumber(customtea.MSG_STOPWATCHSTARTSTOP))
+	tab.RawSetString("MSG_STOPWATCHTICK", golua.LNumber(customtea.MSG_STOPWATCHTICK))
 
 	/// @constants Spinners
 	/// @const SPINNER_LINE
@@ -498,68 +816,6 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("PAGINATOR_DOT", golua.LNumber(paginator.Dots))
 }
 
-type TeaMSG int
-
-const (
-	MSG_NONE TeaMSG = iota
-	MSG_KEY
-	MSG_SPINNERTICK
-	MSG_BLINK
-	MSG_STOPWATCHRESET
-	MSG_STOPWATCHSTARTSTOP
-	MSG_STOPWATCHTICK
-)
-
-type TeaCMD int
-
-const (
-	CMD_NONE TeaCMD = iota
-	CMD_STORED
-	CMD_BATCH
-	CMD_SEQUENCE
-	CMD_SPINNERTICK
-	CMD_TEXTAREAFOCUS
-	CMD_TEXTINPUTFOCUS
-	CMD_BLINK
-	CMD_CURSORFOCUS
-	CMD_FILEPICKERINIT
-	CMD_LISTSETITEMS
-	CMD_LISTINSERTITEM
-	CMD_LISTSETITEM
-	CMD_LISTSTATUSMESSAGE
-	CMD_LISTSPINNERSTART
-	CMD_LISTSPINNERTOGGLE
-	CMD_PROGRESSSET
-	CMD_PROGRESSDEC
-	CMD_PROGRESSINC
-)
-
-var cmdList = []func(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd{}
-
-func init() {
-	cmdList = []func(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd{
-		func(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd { return nil },
-		cmdStoredBuild,
-		cmdBatchBuild,
-		cmdSequenceBuild,
-		cmdSpinnerTickBuild,
-		cmdTextAreaFocusBuild,
-		cmdTextInputFocusBuild,
-		cmdBlinkBuild,
-		cmdCursorFocusBuild,
-		cmdFilePickerInitBuild,
-		cmdListSetItemsBuild,
-		cmdListInsertItemBuild,
-		cmdListSetItemBuild,
-		cmdListStatusMessageBuild,
-		cmdListSpinnerStartBuild,
-		cmdListSpinnerToggleBuild,
-		cmdProgressSetBuild,
-		cmdProgressDecBuild,
-		cmdProgressIncBuild,
-	}
-}
-
 type Spinners int
 
 const (
@@ -590,438 +846,6 @@ var spinnerList = []spinner.Spinner{
 	spinner.Meter,
 	spinner.Hamburger,
 	spinner.Ellipsis,
-}
-
-type teamodel struct {
-	item  *collection.TeaItem
-	state *golua.LState
-	id    int
-	r     *lua.Runner
-	lg    *log.Logger
-}
-
-func (m teamodel) Init() tea.Cmd {
-	m.state.Push(m.item.FnInit)
-	m.state.Push(golua.LNumber(m.id))
-	m.state.Call(1, 2)
-	model := m.state.CheckTable(-2)
-	cmd := m.state.CheckTable(-1)
-	m.state.Pop(2)
-
-	bcmd := m.cmdBuild(m.state, cmd)
-
-	m.item.LuaModel = model
-
-	return bcmd
-}
-
-func (m teamodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m.item.Msg = &msg
-	defer func() {
-		m.item.Msg = nil
-	}()
-	luaMsg := msgTableNone(m.state)
-	var bcmd tea.Cmd
-
-	m.item.Cmds = []tea.Cmd{}
-
-	// Program should always be exittable
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
-		}
-		luaMsg = msgTableKey(m.state, msg.String())
-	case spinner.TickMsg:
-		luaMsg = msgTableSpinnerTick(m.state, msg.ID)
-	case cursor.BlinkMsg:
-		luaMsg = msgTableCursorBlink(m.state)
-	}
-
-	if luaMsg != nil {
-		m.state.Push(m.item.FnUpdate)
-		m.state.Push(m.item.LuaModel)
-		m.state.Push(luaMsg)
-
-		m.state.Call(2, 1)
-		cmd := m.state.OptTable(-1, cmdNone(m.state))
-		m.state.Pop(1)
-
-		bcmd = m.cmdBuild(m.state, cmd)
-	}
-
-	return m, bcmd
-}
-
-func msgTableNone(state *golua.LState) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("msg", golua.LNumber(MSG_NONE))
-
-	return t
-}
-
-func msgTableKey(state *golua.LState, key string) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("msg", golua.LNumber(MSG_KEY))
-	t.RawSetString("key", golua.LString(key))
-
-	return t
-}
-
-func msgTableSpinnerTick(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("msg", golua.LNumber(MSG_SPINNERTICK))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func msgTableCursorBlink(state *golua.LState) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("msg", golua.LNumber(MSG_BLINK))
-
-	return t
-}
-
-func (m *teamodel) cmdBuild(state *golua.LState, t *golua.LTable) tea.Cmd {
-	cmdValue := t.RawGetString("cmd")
-	cmdId := 0
-	if cmdValue.Type() == golua.LTNumber {
-		cmdId = int(cmdValue.(golua.LNumber))
-	}
-	cmd := cmdList[cmdId](m.r, m, state, t)
-
-	return cmd
-}
-
-func cmdNone(state *golua.LState) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_NONE))
-
-	return t
-}
-
-func cmdStored(state *golua.LState, item *collection.TeaItem, cmd tea.Cmd) *golua.LTable {
-	t := state.NewTable()
-
-	id := len(item.Cmds)
-	item.Cmds = append(item.Cmds, cmd)
-
-	t.RawSetString("cmd", golua.LNumber(CMD_STORED))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdStoredBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	cmd := m.item.Cmds[int(t.RawGetString("id").(golua.LNumber))]
-
-	return cmd
-}
-
-func cmdBatch(state *golua.LState, cmds *golua.LTable) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_BATCH))
-	t.RawSetString("cmds", cmds)
-
-	return t
-}
-
-func cmdBatchBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	cmdList := t.RawGetString("cmds").(*golua.LTable)
-	cmds := make([]tea.Cmd, cmdList.Len())
-
-	for i := range cmdList.Len() {
-		bcmd := m.cmdBuild(state, cmdList.RawGetInt(i+1).(*golua.LTable))
-		cmds[i] = bcmd
-	}
-
-	return tea.Batch(cmds...)
-}
-
-func cmdSequence(state *golua.LState, cmds *golua.LTable) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_SEQUENCE))
-	t.RawSetString("cmds", cmds)
-
-	return t
-}
-
-func cmdSequenceBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	cmdList := t.RawGetString("cmds").(*golua.LTable)
-	cmds := make([]tea.Cmd, cmdList.Len())
-
-	for i := range cmdList.Len() {
-		bcmd := m.cmdBuild(state, cmdList.RawGetInt(i+1).(*golua.LTable))
-		cmds[i] = bcmd
-	}
-
-	return tea.Sequence(cmds...)
-}
-
-func cmdSpinnerTick(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_SPINNERTICK))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdTextAreaFocus(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_TEXTAREAFOCUS))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdTextInputFocus(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_TEXTINPUTFOCUS))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdTextAreaFocusBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	textArea := m.item.TextAreas[int(t.RawGetString("id").(golua.LNumber))]
-
-	return textArea.Focus()
-}
-
-func cmdTextInputFocusBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	textInput := m.item.TextInputs[int(t.RawGetString("id").(golua.LNumber))]
-
-	return textInput.Focus()
-}
-
-func cmdSpinnerTickBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	id := int(t.RawGetString("id").(golua.LNumber))
-	return m.item.Spinners[id].Tick
-}
-
-func cmdBlink(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_BLINK))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdBlinkBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	cursor := m.item.Cursors[int(t.RawGetString("id").(golua.LNumber))]
-
-	return cursor.BlinkCmd()
-}
-
-func cmdCursorFocus(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_CURSORFOCUS))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdCursorFocusBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	cursor := m.item.Cursors[int(t.RawGetString("id").(golua.LNumber))]
-
-	return cursor.Focus()
-}
-
-func cmdFilePickerInit(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_FILEPICKERINIT))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdFilePickerInitBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	fp := m.item.FilePickers[int(t.RawGetString("id").(golua.LNumber))]
-
-	return fp.Init()
-}
-
-func cmdListSetItems(state *golua.LState, id int, items *golua.LTable) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_LISTSETITEMS))
-	t.RawSetString("id", golua.LNumber(id))
-	t.RawSetString("items", items)
-
-	return t
-}
-
-func cmdListSetItemsBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.Lists[int(t.RawGetString("id").(golua.LNumber))]
-
-	itemList := t.RawGetString("items").(*golua.LTable)
-	items := make([]list.Item, itemList.Len())
-
-	for i := range itemList.Len() {
-		items[i] = listItemBuild(itemList.RawGetInt(i + 1).(*golua.LTable))
-	}
-
-	return li.SetItems(items)
-}
-
-func cmdListInsertItem(state *golua.LState, id, index int, item *golua.LTable) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_LISTINSERTITEM))
-	t.RawSetString("id", golua.LNumber(id))
-	t.RawSetString("index", golua.LNumber(index))
-	t.RawSetString("item", item)
-
-	return t
-}
-
-func cmdListInsertItemBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.Lists[int(t.RawGetString("id").(golua.LNumber))]
-
-	it := t.RawGetString("item").(*golua.LTable)
-	index := int(t.RawGetString("index").(golua.LNumber))
-
-	return li.InsertItem(index, listItemBuild(it))
-}
-
-func cmdListSetItem(state *golua.LState, id, index int, item *golua.LTable) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_LISTSETITEM))
-	t.RawSetString("id", golua.LNumber(id))
-	t.RawSetString("index", golua.LNumber(index))
-	t.RawSetString("item", item)
-
-	return t
-}
-
-func cmdListSetItemBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.Lists[int(t.RawGetString("id").(golua.LNumber))]
-
-	it := t.RawGetString("item").(*golua.LTable)
-	index := int(t.RawGetString("index").(golua.LNumber))
-
-	return li.SetItem(index, listItemBuild(it))
-}
-
-func cmdListStatusMessage(state *golua.LState, id int, msg string) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_LISTSTATUSMESSAGE))
-	t.RawSetString("id", golua.LNumber(id))
-	t.RawSetString("msg", golua.LString(msg))
-
-	return t
-}
-
-func cmdListStatusMessageBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.Lists[int(t.RawGetString("id").(golua.LNumber))]
-
-	msg := string(t.RawGetString("msg").(golua.LString))
-	return li.NewStatusMessage(msg)
-}
-
-func cmdListSpinnerStart(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_LISTSPINNERSTART))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdListSpinnerStartBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.Lists[int(t.RawGetString("id").(golua.LNumber))]
-
-	return li.StartSpinner()
-}
-
-func cmdListSpinnerToggle(state *golua.LState, id int) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_LISTSPINNERTOGGLE))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdListSpinnerToggleBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.Lists[int(t.RawGetString("id").(golua.LNumber))]
-
-	return li.ToggleSpinner()
-}
-
-func cmdProgressSet(state *golua.LState, id int, percent float64) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_PROGRESSSET))
-	t.RawSetString("id", golua.LNumber(id))
-	t.RawSetString("percent", golua.LNumber(percent))
-
-	return t
-}
-
-func cmdProgressSetBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.ProgressBars[int(t.RawGetString("id").(golua.LNumber))]
-
-	percent := float64(t.RawGetString("percent").(golua.LNumber))
-	return li.SetPercent(percent)
-}
-
-func cmdProgressDec(state *golua.LState, id int, percent float64) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_PROGRESSDEC))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdProgressDecBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.ProgressBars[int(t.RawGetString("id").(golua.LNumber))]
-
-	percent := float64(t.RawGetString("percent").(golua.LNumber))
-	return li.DecrPercent(percent)
-}
-
-func cmdProgressInc(state *golua.LState, id int, percent float64) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("cmd", golua.LNumber(CMD_PROGRESSINC))
-	t.RawSetString("id", golua.LNumber(id))
-
-	return t
-}
-
-func cmdProgressIncBuild(r *lua.Runner, m *teamodel, state *golua.LState, t *golua.LTable) tea.Cmd {
-	li := m.item.ProgressBars[int(t.RawGetString("id").(golua.LNumber))]
-
-	percent := float64(t.RawGetString("percent").(golua.LNumber))
-	return li.IncrPercent(percent)
-}
-
-func (m teamodel) View() string {
-	m.state.Push(m.item.FnView)
-	m.state.Push(m.item.LuaModel)
-	m.state.Call(1, 1)
-	str := m.state.CheckString(-1)
-	m.state.Pop(1)
-
-	return str
 }
 
 func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
@@ -1103,9 +927,9 @@ func spinnerTable(r *lua.Runner, state *golua.LState, program int, id int) *golu
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -1113,7 +937,7 @@ func spinnerTable(r *lua.Runner, state *golua.LState, program int, id int) *golu
 	}))
 
 	t.RawSetString("tick", state.NewFunction(func(state *golua.LState) int {
-		cmd := cmdSpinnerTick(state, int(t.RawGetString("id").(golua.LNumber)))
+		cmd := customtea.CMDSpinnerTick(state, int(t.RawGetString("id").(golua.LNumber)))
 
 		state.Push(cmd)
 		return 1
@@ -1152,9 +976,9 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -1174,7 +998,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		})
 
 	t.RawSetString("focus", state.NewFunction(func(state *golua.LState) int {
-		t := cmdTextAreaFocus(state, int(t.RawGetString("id").(golua.LNumber)))
+		t := customtea.CMDTextAreaFocus(state, int(t.RawGetString("id").(golua.LNumber)))
 
 		state.Push(t)
 		return 1
@@ -1716,9 +1540,9 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -1726,7 +1550,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	}))
 
 	t.RawSetString("focus", state.NewFunction(func(state *golua.LState) int {
-		t := cmdTextInputFocus(state, int(t.RawGetString("id").(golua.LNumber)))
+		t := customtea.CMDTextInputFocus(state, int(t.RawGetString("id").(golua.LNumber)))
 
 		state.Push(t)
 		return 1
@@ -2163,9 +1987,9 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -2173,12 +1997,12 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 	}))
 
 	t.RawSetString("blink", state.NewFunction(func(state *golua.LState) int {
-		state.Push(cmdBlink(state, int(t.RawGetString("id").(golua.LNumber))))
+		state.Push(customtea.CMDBlink(state, int(t.RawGetString("id").(golua.LNumber))))
 		return 1
 	}))
 
 	t.RawSetString("focus", state.NewFunction(func(state *golua.LState) int {
-		t := cmdCursorFocus(state, int(t.RawGetString("id").(golua.LNumber)))
+		t := customtea.CMDCursorFocus(state, int(t.RawGetString("id").(golua.LNumber)))
 
 		state.Push(t)
 		return 1
@@ -2270,9 +2094,9 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -2318,7 +2142,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	}))
 
 	t.RawSetString("init", state.NewFunction(func(state *golua.LState) int {
-		state.Push(cmdFilePickerInit(state, int(t.RawGetString("id").(golua.LNumber))))
+		state.Push(customtea.CMDFilePickerInit(state, int(t.RawGetString("id").(golua.LNumber))))
 		return 1
 	}))
 
@@ -2659,34 +2483,6 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	return t
 }
 
-type teaListItem struct {
-	title       string
-	description string
-	filter      string
-}
-
-func (i teaListItem) Title() string       { return i.title }
-func (i teaListItem) Description() string { return i.description }
-func (i teaListItem) FilterValue() string { return i.filter }
-
-func listItemTable(state *golua.LState, title, description, filter string) *golua.LTable {
-	t := state.NewTable()
-
-	t.RawSetString("title", golua.LString(title))
-	t.RawSetString("description", golua.LString(description))
-	t.RawSetString("filter", golua.LString(filter))
-
-	return t
-}
-
-func listItemBuild(t *golua.LTable) teaListItem {
-	return teaListItem{
-		title:       string(t.RawGetString("title").(golua.LString)),
-		description: string(t.RawGetString("description").(golua.LString)),
-		filter:      string(t.RawGetString("filter").(golua.LString)),
-	}
-}
-
 func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	t := state.NewTable()
 
@@ -2717,9 +2513,9 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -3053,8 +2849,8 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		items := state.NewTable()
 
 		for i, v := range itemList {
-			li := v.(teaListItem)
-			items.RawSetInt(i+1, listItemTable(state, li.title, li.description, li.filter))
+			li := v.(customtea.ListItem)
+			items.RawSetInt(i+1, customtea.ListItemTableFrom(state, li))
 		}
 
 		state.Push(items)
@@ -3072,8 +2868,8 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		items := state.NewTable()
 
 		for i, v := range itemList {
-			li := v.(teaListItem)
-			items.RawSetInt(i+1, listItemTable(state, li.title, li.description, li.filter))
+			li := v.(customtea.ListItem)
+			items.RawSetInt(i+1, customtea.ListItemTableFrom(state, li))
 		}
 
 		state.Push(items)
@@ -3087,7 +2883,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			id := int(t.RawGetString("id").(golua.LNumber))
 
-			state.Push(cmdListSetItems(state, id, args["items"].(*golua.LTable)))
+			state.Push(customtea.CMDListSetItems(state, id, args["items"].(*golua.LTable)))
 			return 1
 		})
 
@@ -3099,7 +2895,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			id := int(t.RawGetString("id").(golua.LNumber))
 
-			state.Push(cmdListInsertItem(state, id, args["index"].(int), args["item"].(*golua.LTable)))
+			state.Push(customtea.CMDListInsertItem(state, id, args["index"].(int), args["item"].(*golua.LTable)))
 			return 1
 		})
 
@@ -3111,7 +2907,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			id := int(t.RawGetString("id").(golua.LNumber))
 
-			state.Push(cmdListSetItem(state, id, args["index"].(int), args["item"].(*golua.LTable)))
+			state.Push(customtea.CMDListSetItem(state, id, args["index"].(int), args["item"].(*golua.LTable)))
 			return 1
 		})
 
@@ -3136,9 +2932,9 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
-		value := item.Lists[id].SelectedItem().(teaListItem)
+		li := item.Lists[id].SelectedItem().(customtea.ListItem)
 
-		state.Push(listItemTable(state, value.title, value.description, value.filter))
+		state.Push(customtea.ListItemTableFrom(state, li))
 		return 1
 	}))
 
@@ -3185,7 +2981,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			id := int(t.RawGetString("id").(golua.LNumber))
 
-			state.Push(cmdListStatusMessage(state, id, args["msg"].(string)))
+			state.Push(customtea.CMDListStatusMessage(state, id, args["msg"].(string)))
 			return 1
 		})
 
@@ -3354,7 +3150,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			id := int(t.RawGetString("id").(golua.LNumber))
 
-			state.Push(cmdListSpinnerStart(state, id))
+			state.Push(customtea.CMDListSpinnerStart(state, id))
 			return 1
 		})
 
@@ -3375,7 +3171,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			id := int(t.RawGetString("id").(golua.LNumber))
 
-			state.Push(cmdListSpinnerToggle(state, id))
+			state.Push(customtea.CMDListSpinnerToggle(state, id))
 			return 1
 		})
 
@@ -3408,9 +3204,16 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			item.Lists[id].InfiniteScrolling = args["enabled"].(bool)
 		})
 
+	t.RawSetString("__filterInput", golua.LNil)
 	lib.TableFunction(state, t, "filter_input",
 		[]lua.Arg{},
 		func(state *golua.LState, args map[string]any) int {
+			ofi := t.RawGetString("__filterInput")
+			if ofi.Type() == golua.LTTable {
+				state.Push(ofi)
+				return 1
+			}
+
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
@@ -3422,13 +3225,22 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			mid := len(item.TextInputs)
 			item.TextInputs = append(item.TextInputs, model)
 
-			state.Push(textinputTable(r, lib, state, program, mid))
+			fi := textinputTable(r, lib, state, program, mid)
+			state.Push(fi)
+			t.RawSetString("__filterInput", fi)
 			return 1
 		})
 
+	t.RawSetString("__paginator", golua.LNil)
 	lib.TableFunction(state, t, "paginator",
 		[]lua.Arg{},
 		func(state *golua.LState, args map[string]any) int {
+			opg := t.RawGetString("__paginator")
+			if opg.Type() == golua.LTTable {
+				state.Push(opg)
+				return 1
+			}
+
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
@@ -3440,7 +3252,9 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			mid := len(item.Paginators)
 			item.Paginators = append(item.Paginators, model)
 
-			state.Push(paginatorTable(r, lib, state, program, mid))
+			pg := paginatorTable(r, lib, state, program, mid)
+			state.Push(pg)
+			t.RawSetString("__paginator", pg)
 			return 1
 		})
 
@@ -3477,9 +3291,9 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -3781,6 +3595,68 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			item.Paginators[id].ArabicFormat = args["format"].(string)
 		})
 
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.Paginators[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.PrevPage,
+				&value.NextPage,
+			)
+
+			ids := [2]int{}
+			for i := range 2 {
+				ids[i] = start + i
+			}
+
+			kmt := paginatorKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	return t
+}
+
+func paginatorKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [2]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("page_prev", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("page_next", tuikeyTable(r, lib, state, program, ids[1]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			pg := item.Paginators[id]
+			pg.KeyMap = paginator.DefaultKeyMap
+			item.KeyBindings[ids[0]] = &pg.KeyMap.PrevPage
+			item.KeyBindings[ids[1]] = &pg.KeyMap.NextPage
+		})
+
 	return t
 }
 
@@ -3977,9 +3853,9 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		var bcmd *golua.LTable
 
 		if cmd == nil {
-			bcmd = cmdNone(state)
+			bcmd = customtea.CMDNone(state)
 		} else {
-			bcmd = cmdStored(state, item, cmd)
+			bcmd = customtea.CMDStored(state, item, cmd)
 		}
 
 		state.Push(bcmd)
@@ -4010,7 +3886,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			id := int(t.RawGetString("id").(golua.LNumber))
 			percent := args["percent"].(float64)
 
-			state.Push(cmdProgressSet(state, id, percent))
+			state.Push(customtea.CMDProgressSet(state, id, percent))
 			return 1
 		})
 
@@ -4022,7 +3898,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			id := int(t.RawGetString("id").(golua.LNumber))
 			percent := args["percent"].(float64)
 
-			state.Push(cmdProgressDec(state, id, percent))
+			state.Push(customtea.CMDProgressDec(state, id, percent))
 			return 1
 		})
 
@@ -4034,7 +3910,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			id := int(t.RawGetString("id").(golua.LNumber))
 			percent := args["percent"].(float64)
 
-			state.Push(cmdProgressInc(state, id, percent))
+			state.Push(customtea.CMDProgressInc(state, id, percent))
 			return 1
 		})
 
@@ -4277,6 +4153,1782 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			id := int(t.RawGetString("id").(golua.LNumber))
 
 			item.ProgressBars[id].EmptyColor = args["color"].(string)
+		})
+
+	return t
+}
+
+func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+
+		str := item.StopWatches[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		sw, cmd := item.StopWatches[id].Update(*item.Msg)
+		item.StopWatches[id] = &sw
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	lib.TableFunction(state, t, "start",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDStopWatchStart(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "stop",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDStopWatchStop(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "toggle",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDStopWatchToggle(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "reset",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDStopWatchReset(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "elapsed",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StopWatches[id].Elapsed()
+
+			state.Push(golua.LNumber(value.Milliseconds()))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "running",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StopWatches[id].Running()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "interval",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StopWatches[id].Interval
+
+			state.Push(golua.LNumber(value.Milliseconds()))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "interval_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "interval"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StopWatches[id].Interval = time.Duration(args["interval"].(int) * 1e6)
+		})
+
+	return t
+}
+
+func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+
+		str := item.Timers[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		ti, cmd := item.Timers[id].Update(*item.Msg)
+		item.Timers[id] = &ti
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	lib.TableFunction(state, t, "init",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDTimerInit(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "start",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDTimerStart(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "stop",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDTimerStop(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "toggle",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			state.Push(customtea.CMDTimerToggle(state, id))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "running",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Timers[id].Running()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "timed_out",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Timers[id].Timedout()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "timeout",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Timers[id].Timeout
+
+			state.Push(golua.LNumber(value.Milliseconds()))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "timeout_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "timeout"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Timers[id].Timeout = time.Duration(args["timeout"].(int) * 1e6)
+		})
+
+	lib.TableFunction(state, t, "interval",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Timers[id].Interval
+
+			state.Push(golua.LNumber(value.Milliseconds()))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "interval_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "interval"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Timers[id].Interval = time.Duration(args["interval"].(int) * 1e6)
+		})
+
+	return t
+}
+
+func tableOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("__columns", golua.LNil)
+	t.RawSetString("__rows", golua.LNil)
+	t.RawSetString("__focused", golua.LNil)
+	t.RawSetString("__width", golua.LNil)
+	t.RawSetString("__height", golua.LNil)
+
+	lib.BuilderFunction(state, t, "focused",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "focused"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__focused", golua.LBool(args["focused"].(bool)))
+		})
+
+	lib.BuilderFunction(state, t, "width",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__width", golua.LNumber(args["width"].(int)))
+		})
+
+	lib.BuilderFunction(state, t, "height",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__height", golua.LNumber(args["height"].(int)))
+		})
+
+	lib.BuilderFunction(state, t, "columns",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "cols"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__columns", args["cols"].(*golua.LTable))
+		})
+
+	lib.BuilderFunction(state, t, "rows",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "rows"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__rows", args["rows"].(*golua.LTable))
+		})
+
+	return t
+}
+
+func tuitableColTable(state *golua.LState, title string, width int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("title", golua.LString(title))
+	t.RawSetString("width", golua.LNumber(width))
+
+	return t
+}
+
+func tableOptionsBuild(t *golua.LTable) []table.Option {
+	opts := []table.Option{}
+
+	focused := t.RawGetString("__focused")
+	if focused.Type() == golua.LTBool {
+		opts = append(opts, table.WithFocused(bool(focused.(golua.LBool))))
+	}
+
+	width := t.RawGetString("__width")
+	if width.Type() == golua.LTNumber {
+		opts = append(opts, table.WithWidth(int(width.(golua.LNumber))))
+	}
+
+	height := t.RawGetString("__height")
+	if height.Type() == golua.LTNumber {
+		opts = append(opts, table.WithHeight(int(height.(golua.LNumber))))
+	}
+
+	cols := t.RawGetString("__columns")
+	if cols.Type() == golua.LTTable {
+		colt := cols.(*golua.LTable)
+		colList := make([]table.Column, colt.Len())
+
+		for i := range colt.Len() {
+			c := colt.RawGetInt(i + 1).(*golua.LTable)
+			colList[i] = table.Column{
+				Title: string(c.RawGetString("title").(golua.LString)),
+				Width: int(c.RawGetString("width").(golua.LNumber)),
+			}
+		}
+
+		opts = append(opts, table.WithColumns(colList))
+	}
+
+	rows := t.RawGetString("__rows")
+	if rows.Type() == golua.LTTable {
+		rowt := rows.(*golua.LTable)
+		rowList := make([]table.Row, rowt.Len())
+
+		for i := range rowt.Len() {
+			r := rowt.RawGetInt(i + 1).(*golua.LTable)
+			rowData := make(table.Row, r.Len())
+			for z := range r.Len() {
+				rowData[z] = string(r.RawGetInt(z + 1).(golua.LString))
+			}
+			rowList[i] = rowData
+		}
+
+		opts = append(opts, table.WithRows(rowList))
+	}
+
+	return opts
+}
+
+func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+
+		str := item.Tables[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		ti, cmd := item.Tables[id].Update(*item.Msg)
+		item.Tables[id] = &ti
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	lib.BuilderFunction(state, t, "update_viewport",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].UpdateViewport()
+		})
+
+	lib.TableFunction(state, t, "focused",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Tables[id].Focused()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "focus",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].Focus()
+		})
+
+	lib.BuilderFunction(state, t, "blur",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].Blur()
+		})
+
+	lib.BuilderFunction(state, t, "goto_top",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].GotoTop()
+		})
+
+	lib.BuilderFunction(state, t, "goto_bottom",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].GotoBottom()
+		})
+
+	lib.BuilderFunction(state, t, "move_up",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].MoveUp(args["n"].(int))
+		})
+
+	lib.BuilderFunction(state, t, "move_down",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].MoveDown(args["n"].(int))
+		})
+
+	lib.TableFunction(state, t, "cursor",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Tables[id].Cursor()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "cursor_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].SetCursor(args["n"].(int))
+		})
+
+	lib.TableFunction(state, t, "columns",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			cols := item.Tables[id].Columns()
+			colt := state.NewTable()
+			for i, v := range cols {
+				colt.RawSetInt(i+1, tuitableColTable(state, v.Title, v.Width))
+			}
+
+			state.Push(colt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "rows",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			rows := item.Tables[id].Rows()
+			rowt := state.NewTable()
+			for i, v := range rows {
+				r := state.NewTable()
+				for z, s := range v {
+					r.RawSetInt(z+1, golua.LString(s))
+				}
+				rowt.RawSetInt(i+1, r)
+			}
+
+			state.Push(rowt)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "columns_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "cols"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			cols := args["cols"].(*golua.LTable)
+			colList := make([]table.Column, cols.Len())
+			for i := range cols.Len() {
+				c := cols.RawGetInt(i + 1).(*golua.LTable)
+				colList[i] = table.Column{
+					Title: string(c.RawGetString("title").(golua.LString)),
+					Width: int(c.RawGetString("width").(golua.LNumber)),
+				}
+			}
+
+			item.Tables[id].SetColumns(colList)
+		})
+
+	lib.BuilderFunction(state, t, "rows_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "rows"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			rows := args["rows"].(*golua.LTable)
+			rowsList := make([]table.Row, rows.Len())
+
+			for i := range rows.Len() {
+				r := rows.RawGetInt(i + 1).(*golua.LTable)
+				row := make([]string, r.Len())
+
+				for z := range r.Len() {
+					row[z] = string(r.RawGetInt(z + 1).(golua.LString))
+				}
+				rowsList[i] = row
+			}
+
+			item.Tables[id].SetRows(rowsList)
+		})
+
+	lib.BuilderFunction(state, t, "from_values",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "value"},
+			{Type: lua.STRING, Name: "separator"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].FromValues(args["value"].(string), args["separator"].(string))
+		})
+
+	lib.TableFunction(state, t, "row_selected",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Tables[id].SelectedRow()
+			rows := state.NewTable()
+
+			for i, s := range value {
+				rows.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(rows)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "width",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Tables[id].Width()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "height",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Tables[id].Height()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "width_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].SetWidth(args["width"].(int))
+		})
+
+	lib.BuilderFunction(state, t, "height_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].SetHeight(args["height"].(int))
+		})
+
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.Tables[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.LineUp,
+				&value.LineDown,
+				&value.PageUp,
+				&value.PageDown,
+				&value.HalfPageUp,
+				&value.HalfPageDown,
+				&value.GotoTop,
+				&value.GotoBottom,
+			)
+
+			ids := [8]int{}
+			for i := range 8 {
+				ids[i] = start + i
+			}
+
+			kmt := tableKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	return t
+}
+
+func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [8]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("line_up", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("line_down", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("page_up", tuikeyTable(r, lib, state, program, ids[2]))
+	t.RawSetString("page_down", tuikeyTable(r, lib, state, program, ids[3]))
+	t.RawSetString("half_page_up", tuikeyTable(r, lib, state, program, ids[4]))
+	t.RawSetString("half_page_down", tuikeyTable(r, lib, state, program, ids[5]))
+	t.RawSetString("goto_top", tuikeyTable(r, lib, state, program, ids[6]))
+	t.RawSetString("goto_bottom", tuikeyTable(r, lib, state, program, ids[7]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			tb := item.Tables[id]
+			tb.KeyMap = table.DefaultKeyMap()
+			item.KeyBindings[ids[0]] = &tb.KeyMap.LineUp
+			item.KeyBindings[ids[1]] = &tb.KeyMap.LineDown
+			item.KeyBindings[ids[2]] = &tb.KeyMap.PageUp
+			item.KeyBindings[ids[3]] = &tb.KeyMap.PageDown
+			item.KeyBindings[ids[4]] = &tb.KeyMap.HalfPageUp
+			item.KeyBindings[ids[5]] = &tb.KeyMap.HalfPageDown
+			item.KeyBindings[ids[6]] = &tb.KeyMap.GotoTop
+			item.KeyBindings[ids[7]] = &tb.KeyMap.GotoBottom
+		})
+
+	return t
+}
+
+func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+
+		str := item.Viewports[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		vp, cmd := item.Viewports[id].Update(*item.Msg)
+		item.Viewports[id] = &vp
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	lib.TableFunction(state, t, "view_up",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].ViewUp()
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_down",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].ViewDown()
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_up_half",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].HalfViewUp()
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_down_half",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].HalfViewDown()
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "at_top",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].AtTop()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "at_bottom",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].AtBottom()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "goto_top",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].GotoTop()
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "goto_bottom",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].GotoBottom()
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "line_up",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].LineUp(args["n"].(int))
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "line_down",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "n"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].LineDown(args["n"].(int))
+			lines := state.NewTable()
+
+			for i, s := range value {
+				lines.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(lines)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "past_bottom",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].PastBottom()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "scroll_percent",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].ScrollPercent()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "width",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].Width
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "height",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].Height
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "width_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].Width = args["width"].(int)
+		})
+
+	lib.BuilderFunction(state, t, "height_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].Height = args["height"].(int)
+		})
+
+	lib.BuilderFunction(state, t, "content_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].SetContent(args["content"].(string))
+		})
+
+	lib.TableFunction(state, t, "line_count_total",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].TotalLineCount()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "line_count_visible",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].VisibleLineCount()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "mouse_wheel_enabled",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].MouseWheelEnabled
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "mouse_wheel_enabled_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].MouseWheelEnabled = args["enabled"].(bool)
+		})
+
+	lib.TableFunction(state, t, "mouse_wheel_delta",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].MouseWheelDelta
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "mouse_wheel_delta_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "delta"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].MouseWheelDelta = args["delta"].(int)
+		})
+
+	lib.TableFunction(state, t, "offset_y",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].YOffset
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "offset_y_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "offset"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].SetYOffset(args["offset"].(int))
+		})
+
+	lib.BuilderFunction(state, t, "offset_y_set_direct",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "offset"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].YOffset = args["offset"].(int)
+		})
+
+	lib.TableFunction(state, t, "position_y",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].YPosition
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "position_y_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "position"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].YPosition = args["position"].(int)
+		})
+
+	lib.TableFunction(state, t, "high_performance",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Viewports[id].HighPerformanceRendering
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "high_performance_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Viewports[id].HighPerformanceRendering = args["enabled"].(bool)
+		})
+
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.Viewports[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.PageDown,
+				&value.PageUp,
+				&value.HalfPageUp,
+				&value.HalfPageDown,
+				&value.Down,
+				&value.Up,
+			)
+
+			ids := [6]int{}
+			for i := range 6 {
+				ids[i] = start + i
+			}
+
+			kmt := viewportKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	return t
+}
+
+func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [6]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("page_down", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("page_up", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("page_up_half", tuikeyTable(r, lib, state, program, ids[2]))
+	t.RawSetString("page_down_half", tuikeyTable(r, lib, state, program, ids[3]))
+	t.RawSetString("down", tuikeyTable(r, lib, state, program, ids[4]))
+	t.RawSetString("up", tuikeyTable(r, lib, state, program, ids[5]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			vp := item.Viewports[id]
+			vp.KeyMap = viewport.DefaultKeyMap()
+			item.KeyBindings[ids[0]] = &vp.KeyMap.PageDown
+			item.KeyBindings[ids[1]] = &vp.KeyMap.PageUp
+			item.KeyBindings[ids[2]] = &vp.KeyMap.HalfPageUp
+			item.KeyBindings[ids[3]] = &vp.KeyMap.HalfPageDown
+			item.KeyBindings[ids[4]] = &vp.KeyMap.Down
+			item.KeyBindings[ids[5]] = &vp.KeyMap.Up
+		})
+
+	return t
+}
+
+func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("init", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		cmd := item.Customs[id].Init()
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, err.Error())
+		}
+
+		str := item.Customs[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	lib.TableFunction(state, t, "update",
+		[]lua.Arg{
+			lua.ArgVariadic("values", lua.ArrayType{Type: lua.ANY}, true),
+		},
+		func(state *golua.LState, args map[string]any) int {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			values := args["values"].([]any)
+			msg := *item.Msg
+
+			if len(values) > 0 {
+				msg = teamodels.CustomMSG{
+					Original: msg,
+					Values:   values,
+				}
+			}
+
+			cuv, cmd := item.Customs[id].Update(msg)
+			cu := cuv.(teamodels.CustomModel)
+			item.Customs[id] = &cu
+
+			var bcmd *golua.LTable
+
+			if cmd == nil {
+				bcmd = customtea.CMDNone(state)
+			} else {
+				bcmd = customtea.CMDStored(state, item, cmd)
+			}
+
+			state.Push(bcmd)
+			return 1
+		})
+
+	return t
+}
+
+func keyOptionsTable(state *golua.LState, lib *lua.Lib) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("__disabled", golua.LNil)
+	t.RawSetString("__helpKey", golua.LNil)
+	t.RawSetString("__helpDesc", golua.LNil)
+	t.RawSetString("__keys", golua.LNil)
+
+	lib.BuilderFunction(state, t, "disabled",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__disabled", golua.LBool(args["enabled"].(bool)))
+		})
+
+	lib.BuilderFunction(state, t, "help",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "key"},
+			{Type: lua.STRING, Name: "desc"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__disabled", golua.LBool(args["enabled"].(bool)))
+		})
+
+	lib.BuilderFunction(state, t, "keys",
+		[]lua.Arg{
+			lua.ArgVariadic("keys", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			keyList := args["keys"].([]any)
+
+			keys := state.NewTable()
+			for i, s := range keyList {
+				keys.RawSetInt(i+1, golua.LString(s.(string)))
+			}
+
+			t.RawSetString("__keys", keys)
+		})
+
+	return t
+}
+
+func keyOptionsBuild(t *golua.LTable) []key.BindingOpt {
+	opts := []key.BindingOpt{}
+
+	disabled := t.RawGetString("__disabled")
+	if disabled.Type() == golua.LTBool {
+		d := bool(disabled.(golua.LBool))
+		if d {
+			opts = append(opts, key.WithDisabled())
+		}
+	}
+
+	helpKey := t.RawGetString("__helpKey")
+	helpDesc := t.RawGetString("__helpDesc")
+	if helpKey.Type() == golua.LTString && helpDesc.Type() == golua.LTString {
+		opts = append(opts, key.WithHelp(
+			string(helpKey.(golua.LString)),
+			string(helpDesc.(golua.LString)),
+		))
+	}
+
+	keys := t.RawGetString("__keys")
+	if keys.Type() == golua.LTTable {
+		kt := keys.(*golua.LTable)
+		keyList := make([]string, kt.Len())
+
+		for i := range kt.Len() {
+			ki := string(kt.RawGetInt(i + 1).(golua.LString))
+			keyList[i] = ki
+		}
+
+		opts = append(opts, key.WithKeys(keyList...))
+	}
+
+	return opts
+}
+
+func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	lib.TableFunction(state, t, "enabled",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.KeyBindings[id].Enabled()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "enabled_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.KeyBindings[id].SetEnabled(args["enabled"].(bool))
+		})
+
+	lib.TableFunction(state, t, "help",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.KeyBindings[id].Help()
+
+			state.Push(golua.LString(value.Key))
+			state.Push(golua.LString(value.Desc))
+			return 2
+		})
+
+	lib.BuilderFunction(state, t, "help_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "key"},
+			{Type: lua.STRING, Name: "desc"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.KeyBindings[id].SetHelp(args["key"].(string), args["desc"].(string))
+		})
+
+	lib.TableFunction(state, t, "keys",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.KeyBindings[id].Keys()
+			keys := state.NewTable()
+
+			for i, s := range value {
+				keys.RawSetInt(i+1, golua.LString(s))
+			}
+
+			state.Push(keys)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "keys_set",
+		[]lua.Arg{
+			lua.ArgVariadic("keys", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			keys := args["keys"].([]any)
+			keyList := make([]string, len(keys))
+
+			for i, s := range keys {
+				keyList[i] = s.(string)
+			}
+
+			item.KeyBindings[id].SetKeys(keyList...)
+		})
+
+	lib.BuilderFunction(state, t, "unbind",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.KeyBindings[id].Unbind()
 		})
 
 	return t

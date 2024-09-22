@@ -16,6 +16,7 @@ import (
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/config"
+	teamodels "github.com/ArtificialLegacy/imgscal/pkg/custom_tea/models"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	"github.com/akamensky/argparse"
@@ -48,7 +49,7 @@ type Runner struct {
 	CR_WIN *collection.Crate[giu.MasterWindow]
 	CR_REF *collection.Crate[collection.RefItem[any]]
 	CR_GMP *collection.Crate[yyp.Project]
-	CR_TEA *collection.Crate[collection.TeaItem]
+	CR_TEA *collection.Crate[teamodels.TeaItem]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -72,7 +73,7 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),
 		CR_REF: collection.NewCrate[collection.RefItem[any]](),
 		CR_GMP: collection.NewCrate[yyp.Project](),
-		CR_TEA: collection.NewCrate[collection.TeaItem](),
+		CR_TEA: collection.NewCrate[teamodels.TeaItem](),
 	}
 }
 
@@ -474,13 +475,13 @@ func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level in
 				}
 
 				argMap[a.Name] = m
+				count++
 			} else if a.Optional {
 				argMap[a.Name] = l.getDefault(a, state)
 			} else {
 				state.ArgError(i, l.Lg.Append(fmt.Sprintf("invalid variadic provided to %s (non-optional variadics require at least 1 value): %+v", a.Name, v), log.LEVEL_ERROR))
 			}
 
-			count++
 			return argMap, count
 		}
 

@@ -1,7 +1,6 @@
 function init(workflow)
 	workflow.import({
 		"tui",
-		"io",
 	})
 end
 
@@ -10,16 +9,19 @@ function main()
 		:init(function(id)
 			local model = {
 				title = "testing program",
-				progress = tui.progress(id),
+				viewport = tui.viewport(id, 100, 1):content_set("test 1\ntest 2\ntest 3\ntest 4"),
 			}
 
-			return model, model.progress.percent_set(0.5)
+			local vkm = model.viewport.keymap()
+			vkm.down:enabled_set(false)
+
+			return model, tui.cmd_none()
 		end)
 		:update(function(model, msg)
-			return model.progress.update()
+			return model.viewport.update()
 		end)
 		:view(function(model)
-			return model.title .. "\n\n" .. model.progress.view() .. "\n\n"
+			return model.title .. "\n\n" .. model.viewport.view() .. "\n\n"
 		end)
 
 	tui.run(program)

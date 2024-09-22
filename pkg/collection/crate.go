@@ -2,17 +2,6 @@ package collection
 
 import (
 	"fmt"
-
-	"github.com/charmbracelet/bubbles/cursor"
-	"github.com/charmbracelet/bubbles/filepicker"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/paginator"
-	"github.com/charmbracelet/bubbles/progress"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	golua "github.com/yuin/gopher-lua"
 )
 
 type CrateItem[T any] struct {
@@ -21,26 +10,6 @@ type CrateItem[T any] struct {
 
 type RefItem[T any] struct {
 	Value T
-}
-
-type TeaItem struct {
-	LuaModel *golua.LTable
-
-	FnInit   *golua.LFunction
-	FnUpdate *golua.LFunction
-	FnView   *golua.LFunction
-
-	Msg  *tea.Msg
-	Cmds []tea.Cmd
-
-	Spinners     map[int]*spinner.Model
-	TextAreas    []*textarea.Model
-	TextInputs   []*textinput.Model
-	Cursors      []*cursor.Model
-	FilePickers  []*filepicker.Model
-	Lists        []*list.Model
-	Paginators   []*paginator.Model
-	ProgressBars []*progress.Model
 }
 
 type Crate[T any] struct {
