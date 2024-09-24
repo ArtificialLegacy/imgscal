@@ -3,6 +3,7 @@ package teamodels
 import (
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/filepicker"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/paginator"
@@ -43,4 +44,5 @@ type TeaItem struct {
 	Tables       []*table.Model
 	Viewports    []*viewport.Model
 	Customs      []*CustomModel
+	Helps        []*help.Model
 }

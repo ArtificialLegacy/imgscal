@@ -265,7 +265,6 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-
 					g := gift.New(gift.Resize(args["width"].(int), args["height"].(int), gift.NearestNeighborResampling))
 					newBounds := g.Bounds(i.Self.Image.Bounds())
 					dst := imageutil.NewImage(newBounds.Dx(), newBounds.Dy(), i.Self.Model)
@@ -276,7 +275,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 					for y := boundsMin.Y; y < boundsMax.Y; y++ {
 						for x := boundsMin.X; x < boundsMax.X; x++ {
-							col := imageutil.GetColor(i.Self.Image, state, x, y)
+							col := imageutil.GetColor(dst, state, x, y)
 							r, g, b, a := imageutil.ColorTableToRGBA(col)
 							color := trueColorBg(int(r), int(g), int(b))
 

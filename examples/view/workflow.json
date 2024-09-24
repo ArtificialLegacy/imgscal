@@ -1,0 +1,11 @@
+{
+    "name": "view",
+    "author": "Blub",
+    "version": "1.0.0",
+
+    "desc": "View an image in the terminal.",
+
+    "cli_workflows": {
+        "*": "view.lua"
+    }
+}

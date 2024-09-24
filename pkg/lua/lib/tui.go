@@ -2,14 +2,17 @@ package lib
 
 import (
 	"errors"
+	"math"
 	"time"
 
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	customtea "github.com/ArtificialLegacy/imgscal/pkg/custom_tea"
 	teamodels "github.com/ArtificialLegacy/imgscal/pkg/custom_tea/models"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/filepicker"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/paginator"
@@ -694,6 +697,30 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func help(id) -> struct<tui.Help>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the help to.
+	/// @returns {struct<tui.Help>}
+	lib.CreateFunction(tab, "help",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			hp := help.New()
+			id := len(item.Helps)
+			item.Helps = append(item.Helps, &hp)
+
+			t := helpTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func file_is_hidden(path) -> bool
 	/// @arg path {string}
 	/// @returns {bool}
@@ -746,18 +773,40 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @constants Message
+	/// @const MSG_NONE
+	/// @const MSG_BLUR
+	/// @const MSG_FOCUS
+	/// @const MSG_QUIT
+	/// @const MSG_RESUME
+	/// @const MSG_SUSPEND
+	/// @const MSG_WINDOWSIZE
 	/// @const MSG_KEY
+	/// @const MSG_MOUSE
 	/// @const MSG_SPINNERTICK
 	/// @const MSG_BLINK
 	/// @const MSG_STOPWATCHRESET
 	/// @const MSG_STOPWATCHSTARTSTOP
 	/// @const MSG_STOPWATCHTICK
+	/// @const MSG_TIMERSTARTSTOP
+	/// @const MSG_TIMERTICK
+	/// @const MSG_TIMERTIMEOUT
+	tab.RawSetString("MSG_NONE", golua.LNumber(customtea.MSG_NONE))
+	tab.RawSetString("MSG_BLUR", golua.LNumber(customtea.MSG_BLUR))
+	tab.RawSetString("MSG_FOCUS", golua.LNumber(customtea.MSG_FOCUS))
+	tab.RawSetString("MSG_QUIT", golua.LNumber(customtea.MSG_QUIT))
+	tab.RawSetString("MSG_RESUME", golua.LNumber(customtea.MSG_RESUME))
+	tab.RawSetString("MSG_SUSPEND", golua.LNumber(customtea.MSG_SUSPEND))
+	tab.RawSetString("MSG_WINDOWSIZE", golua.LNumber(customtea.MSG_WINDOWSIZE))
 	tab.RawSetString("MSG_KEY", golua.LNumber(customtea.MSG_KEY))
+	tab.RawSetString("MSG_MOUSE", golua.LNumber(customtea.MSG_MOUSE))
 	tab.RawSetString("MSG_SPINNERTICK", golua.LNumber(customtea.MSG_SPINNERTICK))
 	tab.RawSetString("MSG_BLINK", golua.LNumber(customtea.MSG_BLINK))
 	tab.RawSetString("MSG_STOPWATCHRESET", golua.LNumber(customtea.MSG_STOPWATCHRESET))
 	tab.RawSetString("MSG_STOPWATCHSTARTSTOP", golua.LNumber(customtea.MSG_STOPWATCHSTARTSTOP))
 	tab.RawSetString("MSG_STOPWATCHTICK", golua.LNumber(customtea.MSG_STOPWATCHTICK))
+	tab.RawSetString("MSG_TIMERSTARTSTOP", golua.LNumber(customtea.MSG_TIMERSTARTSTOP))
+	tab.RawSetString("MSG_TIMERTICK", golua.LNumber(customtea.MSG_TIMERTICK))
+	tab.RawSetString("MSG_TIMERTIMEOUT", golua.LNumber(customtea.MSG_TIMERTIMEOUT))
 
 	/// @constants Spinners
 	/// @const SPINNER_LINE
@@ -849,6 +898,12 @@ var spinnerList = []spinner.Spinner{
 }
 
 func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
+	/// @struct Program
+	/// @prop id {int}
+	/// @method init(fn: function(id) -> any, struct<tui.CMD>)
+	/// @method update(fn: function(data: any, msg: struct<tui.MSG>) -> struct<tui.CMD>)
+	/// @method view(fn: function(data: any) -> string)
+
 	t := state.NewTable()
 	t.RawSetString("id", golua.LNumber(id))
 
@@ -897,7 +952,14 @@ func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.L
 	return t
 }
 
-func spinnerTable(r *lua.Runner, state *golua.LState, program int, id int) *golua.LTable {
+func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Spinner
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method tick() -> struct<tui.CMD>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -943,10 +1005,152 @@ func spinnerTable(r *lua.Runner, state *golua.LState, program int, id int) *golu
 		return 1
 	}))
 
+	lib.TableFunction(state, t, "spinner",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			spinner := item.Spinners[id].Spinner
+
+			fps := math.Floor(float64(time.Second / spinner.FPS))
+
+			frames := state.NewTable()
+			for i, v := range spinner.Frames {
+				frames.RawSetInt(i+1, golua.LString(v))
+			}
+
+			state.Push(frames)
+			state.Push(golua.LNumber(fps))
+			return 2
+		})
+
+	lib.BuilderFunction(state, t, "spinner_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "from"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			from := args["from"].(int)
+			item.Spinners[id].Spinner = spinnerList[from]
+		})
+
+	lib.BuilderFunction(state, t, "spinner_set_custom",
+		[]lua.Arg{
+			lua.ArgArray("frames", lua.ArrayType{Type: lua.STRING}, false),
+			{Type: lua.INT, Name: "fps"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			frames := args["frames"].([]any)
+			frameBuild := make([]string, len(frames))
+
+			for i, v := range frames {
+				frameBuild[i] = v.(string)
+			}
+
+			spin := spinner.Spinner{
+				Frames: frameBuild,
+				FPS:    time.Second / time.Duration(args["fps"].(int)),
+			}
+
+			item.Spinners[id].Spinner = spin
+		})
+
+	t.RawSetString("__style", golua.LNil)
+	lib.TableFunction(state, t, "style",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__style")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Spinners[id].Style
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__style", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Spinners[id].Style = *style.Style
+			t.RawSetString("__style", st)
+		})
+
 	return t
 }
 
 func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct TextArea
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method reset()
+	/// @method focus() -> struct<tui.CMD>
+	/// @method blur()
+	/// @method cursor_down()
+	/// @method cursor_end()
+	/// @method cursor_up()
+	/// @method cursor_down()
+	/// @method focused() -> bool
+	/// @method size() -> int, int
+	/// @method width() -> int
+	/// @method height() -> int
+	/// @method size_set(width int, height int)
+	/// @method width_set(width int)
+	/// @method height_set(height int)
+	/// @method insert_rune(rune int)
+	/// @method insert_string(str string)
+	/// @method length() -> int
+	/// @method line() -> int
+	/// @method line_count() -> int
+	/// @method cursor_set(col int)
+	/// @method value() -> string
+	/// @method value_set(str string)
+	/// @method line_info() -> struct<tui.LineInfo>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -1478,8 +1682,16 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			})
 		})
 
+	t.RawSetString("__cursor", golua.LNil)
 	t.RawSetString("cursor", state.NewFunction(func(state *golua.LState) int {
-		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		oc := t.RawGetString("__cursor")
+		if oc.Type() == golua.LTTable {
+			state.Push(oc)
+			return 1
+		}
+
+		program := int(t.RawGetString("program").(golua.LNumber))
+		item, err := r.CR_TEA.Item(program)
 		if err != nil {
 			lua.Error(state, err.Error())
 		}
@@ -1488,10 +1700,188 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		ta := item.TextAreas[id]
 		cid := len(item.Cursors)
 		item.Cursors = append(item.Cursors, &ta.Cursor)
+		cu := cursorTable(r, lib, state, program, cid)
 
-		state.Push(golua.LNumber(cid))
+		state.Push(cu)
+		t.RawSetString("__cursor", cu)
 		return 1
 	}))
+
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.TextAreas[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.CharacterForward,
+				&value.CharacterBackward,
+				&value.DeleteAfterCursor,
+				&value.DeleteBeforeCursor,
+				&value.DeleteCharacterBackward,
+				&value.DeleteCharacterForward,
+				&value.DeleteWordBackward,
+				&value.DeleteWordForward,
+				&value.InsertNewline,
+				&value.LineEnd,
+				&value.LineNext,
+				&value.LinePrevious,
+				&value.LineStart,
+				&value.Paste,
+				&value.WordBackward,
+				&value.WordForward,
+				&value.InputBegin,
+				&value.InputEnd,
+				&value.UppercaseWordForward,
+				&value.LowercaseWordForward,
+				&value.CapitalizeWordForward,
+				&value.TransposeCharacterBackward,
+			)
+
+			ids := [22]int{}
+			for i := range 22 {
+				ids[i] = start + i
+			}
+
+			kmt := textareaKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	return t
+}
+
+func textareaKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [22]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("character_backward", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("character_forward", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("delete_after_cursor", tuikeyTable(r, lib, state, program, ids[2]))
+	t.RawSetString("delete_before_cursor", tuikeyTable(r, lib, state, program, ids[3]))
+	t.RawSetString("delete_character_backward", tuikeyTable(r, lib, state, program, ids[4]))
+	t.RawSetString("delete_character_forward", tuikeyTable(r, lib, state, program, ids[5]))
+	t.RawSetString("delete_word_backward", tuikeyTable(r, lib, state, program, ids[6]))
+	t.RawSetString("delete_word_forward", tuikeyTable(r, lib, state, program, ids[7]))
+	t.RawSetString("insert_newline", tuikeyTable(r, lib, state, program, ids[8]))
+	t.RawSetString("line_end", tuikeyTable(r, lib, state, program, ids[9]))
+	t.RawSetString("line_next", tuikeyTable(r, lib, state, program, ids[10]))
+	t.RawSetString("line_previous", tuikeyTable(r, lib, state, program, ids[11]))
+	t.RawSetString("line_start", tuikeyTable(r, lib, state, program, ids[12]))
+	t.RawSetString("paste", tuikeyTable(r, lib, state, program, ids[13]))
+	t.RawSetString("word_backward", tuikeyTable(r, lib, state, program, ids[14]))
+	t.RawSetString("word_forward", tuikeyTable(r, lib, state, program, ids[15]))
+	t.RawSetString("input_begin", tuikeyTable(r, lib, state, program, ids[16]))
+	t.RawSetString("input_end", tuikeyTable(r, lib, state, program, ids[17]))
+	t.RawSetString("uppercase_word", tuikeyTable(r, lib, state, program, ids[18]))
+	t.RawSetString("lowercase_word", tuikeyTable(r, lib, state, program, ids[19]))
+	t.RawSetString("capitalize_word", tuikeyTable(r, lib, state, program, ids[20]))
+	t.RawSetString("transpose_character_backward", tuikeyTable(r, lib, state, program, ids[21]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			ta := item.TextAreas[id]
+			ta.KeyMap = textarea.DefaultKeyMap
+			item.KeyBindings[ids[0]] = &ta.KeyMap.CharacterBackward
+			item.KeyBindings[ids[1]] = &ta.KeyMap.CharacterForward
+			item.KeyBindings[ids[2]] = &ta.KeyMap.DeleteAfterCursor
+			item.KeyBindings[ids[3]] = &ta.KeyMap.DeleteBeforeCursor
+			item.KeyBindings[ids[4]] = &ta.KeyMap.DeleteCharacterBackward
+			item.KeyBindings[ids[5]] = &ta.KeyMap.DeleteCharacterForward
+			item.KeyBindings[ids[6]] = &ta.KeyMap.DeleteWordBackward
+			item.KeyBindings[ids[7]] = &ta.KeyMap.DeleteWordForward
+			item.KeyBindings[ids[8]] = &ta.KeyMap.InsertNewline
+			item.KeyBindings[ids[9]] = &ta.KeyMap.LineEnd
+			item.KeyBindings[ids[10]] = &ta.KeyMap.LineNext
+			item.KeyBindings[ids[11]] = &ta.KeyMap.LinePrevious
+			item.KeyBindings[ids[12]] = &ta.KeyMap.LineStart
+			item.KeyBindings[ids[13]] = &ta.KeyMap.Paste
+			item.KeyBindings[ids[14]] = &ta.KeyMap.WordBackward
+			item.KeyBindings[ids[15]] = &ta.KeyMap.WordForward
+			item.KeyBindings[ids[16]] = &ta.KeyMap.InputBegin
+			item.KeyBindings[ids[17]] = &ta.KeyMap.InputEnd
+			item.KeyBindings[ids[18]] = &ta.KeyMap.UppercaseWordForward
+			item.KeyBindings[ids[19]] = &ta.KeyMap.LowercaseWordForward
+			item.KeyBindings[ids[20]] = &ta.KeyMap.CapitalizeWordForward
+			item.KeyBindings[ids[21]] = &ta.KeyMap.TransposeCharacterBackward
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+			kt.RawSetInt(1, t.RawGetString("paste"))
+			kt.RawSetInt(2, t.RawGetString("uppercase_word"))
+			kt.RawSetInt(3, t.RawGetString("lowercase_word"))
+			kt.RawSetInt(4, t.RawGetString("capitalize_word"))
+			kt.RawSetInt(5, t.RawGetString("transpose_character_backward"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("character_forward"))
+			kt1.RawSetInt(2, t.RawGetString("character_backward"))
+			kt1.RawSetInt(3, t.RawGetString("word_forward"))
+			kt1.RawSetInt(4, t.RawGetString("word_backward"))
+			kt1.RawSetInt(5, t.RawGetString("line_start"))
+			kt1.RawSetInt(6, t.RawGetString("line_end"))
+			kt1.RawSetInt(7, t.RawGetString("line_next"))
+			kt1.RawSetInt(8, t.RawGetString("line_previous"))
+			kt1.RawSetInt(9, t.RawGetString("input_begin"))
+			kt1.RawSetInt(10, t.RawGetString("input_end"))
+
+			kt2 := state.NewTable()
+			kt2.RawSetInt(1, t.RawGetString("delete_character_backward"))
+			kt2.RawSetInt(2, t.RawGetString("delete_character_forward"))
+			kt2.RawSetInt(3, t.RawGetString("delete_word_forward"))
+			kt2.RawSetInt(4, t.RawGetString("delete_word_backward"))
+			kt2.RawSetInt(5, t.RawGetString("delete_before_cursor"))
+			kt2.RawSetInt(6, t.RawGetString("delete_after_cursor"))
+
+			kt3 := state.NewTable()
+			kt3.RawSetInt(1, t.RawGetString("insert_newline"))
+			kt3.RawSetInt(2, t.RawGetString("paste"))
+			kt3.RawSetInt(3, t.RawGetString("uppercase_word"))
+			kt3.RawSetInt(4, t.RawGetString("lowercase_word"))
+			kt3.RawSetInt(6, t.RawGetString("capitalize_word"))
+			kt3.RawSetInt(7, t.RawGetString("transpose_character_backward"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+			kt.RawSetInt(2, kt2)
+			kt.RawSetInt(3, kt3)
+
+			state.Push(kt)
+			return 1
+		})
 
 	return t
 }
@@ -1939,8 +2329,16 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			item.TextInputs[id].ShowSuggestions = args["show"].(bool)
 		})
 
+	t.RawSetString("__cursor", golua.LNil)
 	t.RawSetString("cursor", state.NewFunction(func(state *golua.LState) int {
-		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		oc := t.RawGetString("__cursor")
+		if oc.Type() == golua.LTTable {
+			state.Push(oc)
+			return 1
+		}
+
+		program := int(t.RawGetString("program").(golua.LNumber))
+		item, err := r.CR_TEA.Item(program)
 		if err != nil {
 			lua.Error(state, err.Error())
 		}
@@ -1949,10 +2347,351 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		ta := item.TextInputs[id]
 		cid := len(item.Cursors)
 		item.Cursors = append(item.Cursors, &ta.Cursor)
+		cu := cursorTable(r, lib, state, program, cid)
 
-		state.Push(golua.LNumber(cid))
+		state.Push(cu)
+		t.RawSetString("__cursor", cu)
 		return 1
 	}))
+
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.TextInputs[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.CharacterForward,
+				&value.CharacterBackward,
+				&value.WordForward,
+				&value.WordBackward,
+				&value.DeleteWordBackward,
+				&value.DeleteWordForward,
+				&value.DeleteAfterCursor,
+				&value.DeleteBeforeCursor,
+				&value.DeleteCharacterBackward,
+				&value.DeleteCharacterForward,
+				&value.LineStart,
+				&value.LineEnd,
+				&value.Paste,
+				&value.AcceptSuggestion,
+				&value.NextSuggestion,
+				&value.PrevSuggestion,
+			)
+
+			ids := [16]int{}
+			for i := range 16 {
+				ids[i] = start + i
+			}
+
+			kmt := textinputKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	t.RawSetString("__stylePrompt", golua.LNil)
+	lib.TableFunction(state, t, "style_prompt",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePrompt")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextInputs[id].PromptStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePrompt", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_prompt_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextInputs[id].PromptStyle = *style.Style
+			t.RawSetString("__stylePrompt", st)
+		})
+
+	t.RawSetString("__styleText", golua.LNil)
+	lib.TableFunction(state, t, "style_text",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleText")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextInputs[id].TextStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleText", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_text_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextInputs[id].TextStyle = *style.Style
+			t.RawSetString("__styleText", st)
+		})
+
+	t.RawSetString("__stylePlaceholder", golua.LNil)
+	lib.TableFunction(state, t, "style_placeholder",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePlaceholder")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextInputs[id].PlaceholderStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePlaceholder", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_placeholder_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextInputs[id].PlaceholderStyle = *style.Style
+			t.RawSetString("__stylePlaceholder", st)
+		})
+
+	t.RawSetString("__styleCompletion", golua.LNil)
+	lib.TableFunction(state, t, "style_completion",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleCompletion")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextInputs[id].CompletionStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleCompletion", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_completion_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextInputs[id].CompletionStyle = *style.Style
+			t.RawSetString("__styleCompletion", st)
+		})
+
+	return t
+}
+
+func textinputKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [16]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("character_forward", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("character_backward", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("word_forward", tuikeyTable(r, lib, state, program, ids[2]))
+	t.RawSetString("word_backward", tuikeyTable(r, lib, state, program, ids[3]))
+	t.RawSetString("delete_word_backward", tuikeyTable(r, lib, state, program, ids[4]))
+	t.RawSetString("delete_word_forward", tuikeyTable(r, lib, state, program, ids[5]))
+	t.RawSetString("delete_after_cursor", tuikeyTable(r, lib, state, program, ids[6]))
+	t.RawSetString("delete_before_cursor", tuikeyTable(r, lib, state, program, ids[7]))
+	t.RawSetString("delete_character_backward", tuikeyTable(r, lib, state, program, ids[8]))
+	t.RawSetString("delete_character_forward", tuikeyTable(r, lib, state, program, ids[9]))
+	t.RawSetString("line_start", tuikeyTable(r, lib, state, program, ids[10]))
+	t.RawSetString("line_end", tuikeyTable(r, lib, state, program, ids[11]))
+	t.RawSetString("paste", tuikeyTable(r, lib, state, program, ids[12]))
+	t.RawSetString("suggestion_accept", tuikeyTable(r, lib, state, program, ids[13]))
+	t.RawSetString("suggestion_next", tuikeyTable(r, lib, state, program, ids[14]))
+	t.RawSetString("suggestion_prev", tuikeyTable(r, lib, state, program, ids[15]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			ti := item.TextInputs[id]
+			ti.KeyMap = textinput.DefaultKeyMap
+			item.KeyBindings[ids[0]] = &ti.KeyMap.CharacterForward
+			item.KeyBindings[ids[1]] = &ti.KeyMap.CharacterBackward
+			item.KeyBindings[ids[2]] = &ti.KeyMap.WordForward
+			item.KeyBindings[ids[3]] = &ti.KeyMap.WordBackward
+			item.KeyBindings[ids[4]] = &ti.KeyMap.DeleteWordBackward
+			item.KeyBindings[ids[5]] = &ti.KeyMap.DeleteWordForward
+			item.KeyBindings[ids[6]] = &ti.KeyMap.DeleteAfterCursor
+			item.KeyBindings[ids[7]] = &ti.KeyMap.DeleteBeforeCursor
+			item.KeyBindings[ids[8]] = &ti.KeyMap.DeleteCharacterBackward
+			item.KeyBindings[ids[9]] = &ti.KeyMap.DeleteCharacterForward
+			item.KeyBindings[ids[10]] = &ti.KeyMap.LineStart
+			item.KeyBindings[ids[11]] = &ti.KeyMap.LineEnd
+			item.KeyBindings[ids[12]] = &ti.KeyMap.Paste
+			item.KeyBindings[ids[13]] = &ti.KeyMap.AcceptSuggestion
+			item.KeyBindings[ids[14]] = &ti.KeyMap.NextSuggestion
+			item.KeyBindings[ids[15]] = &ti.KeyMap.PrevSuggestion
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+			kt.RawSetInt(1, t.RawGetString("paste"))
+			kt.RawSetInt(2, t.RawGetString("suggestion_accept"))
+			kt.RawSetInt(3, t.RawGetString("suggestion_next"))
+			kt.RawSetInt(4, t.RawGetString("suggestion_prev"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("character_forward"))
+			kt1.RawSetInt(2, t.RawGetString("character_backward"))
+			kt1.RawSetInt(3, t.RawGetString("word_forward"))
+			kt1.RawSetInt(4, t.RawGetString("word_backward"))
+			kt1.RawSetInt(5, t.RawGetString("line_start"))
+			kt1.RawSetInt(6, t.RawGetString("line_end"))
+
+			kt2 := state.NewTable()
+			kt2.RawSetInt(1, t.RawGetString("delete_character_backward"))
+			kt2.RawSetInt(2, t.RawGetString("delete_character_forward"))
+			kt2.RawSetInt(3, t.RawGetString("delete_word_forward"))
+			kt2.RawSetInt(4, t.RawGetString("delete_word_backward"))
+			kt2.RawSetInt(5, t.RawGetString("delete_before_cursor"))
+			kt2.RawSetInt(6, t.RawGetString("delete_after_cursor"))
+
+			kt3 := state.NewTable()
+			kt3.RawSetInt(1, t.RawGetString("paste"))
+			kt3.RawSetInt(2, t.RawGetString("suggestion_accept"))
+			kt3.RawSetInt(3, t.RawGetString("suggestion_next"))
+			kt3.RawSetInt(4, t.RawGetString("suggestion_prev"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+			kt.RawSetInt(2, kt2)
+			kt.RawSetInt(3, kt3)
+
+			state.Push(kt)
+			return 1
+		})
 
 	return t
 }
@@ -2059,6 +2798,100 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			id := int(t.RawGetString("id").(golua.LNumber))
 
 			item.Cursors[id].SetChar(args["str"].(string))
+		})
+
+	t.RawSetString("__style", golua.LNil)
+	lib.TableFunction(state, t, "style",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__style")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Cursors[id].Style
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__style", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Cursors[id].Style = *style.Style
+			t.RawSetString("__style", st)
+		})
+
+	t.RawSetString("__styleText", golua.LNil)
+	lib.TableFunction(state, t, "style_text",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleText")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Cursors[id].TextStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleText", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_text_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Cursors[id].TextStyle = *style.Style
+			t.RawSetString("__styleText", st)
 		})
 
 	return t
@@ -2478,6 +3311,643 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			id := int(t.RawGetString("id").(golua.LNumber))
 
 			item.FilePickers[id].Cursor = args["cursor"].(string)
+		})
+
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.FilePickers[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.GoToTop,
+				&value.GoToLast,
+				&value.Down,
+				&value.Up,
+				&value.PageUp,
+				&value.PageDown,
+				&value.Back,
+				&value.Open,
+				&value.Select,
+			)
+
+			ids := [9]int{}
+			for i := range 9 {
+				ids[i] = start + i
+			}
+
+			kmt := filepickerKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	t.RawSetString("__styleCursor", golua.LNil)
+	lib.TableFunction(state, t, "style_cursor",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleCursor")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.Cursor
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleCursor", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_cursor_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.Cursor = *style.Style
+			t.RawSetString("__styleCursor", st)
+		})
+
+	t.RawSetString("__styleCursorDisabled", golua.LNil)
+	lib.TableFunction(state, t, "style_cursor_disabled",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleCursorDisabled")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.DisabledCursor
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleCursorDisabled", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_cursor_disabled_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.DisabledCursor = *style.Style
+			t.RawSetString("__styleCursorDisabled", st)
+		})
+
+	t.RawSetString("__styleSymlink", golua.LNil)
+	lib.TableFunction(state, t, "style_symlink",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleSymlink")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.Symlink
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleSymlink", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_symlink_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.Symlink = *style.Style
+			t.RawSetString("__styleSymlink", st)
+		})
+
+	t.RawSetString("__styleDirectory", golua.LNil)
+	lib.TableFunction(state, t, "style_directory",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleDirectory")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.Directory
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleDirectory", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_directory_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.Directory = *style.Style
+			t.RawSetString("__styleDirectory", st)
+		})
+
+	t.RawSetString("__styleDirectoryEmpty", golua.LNil)
+	lib.TableFunction(state, t, "style_directory_empty",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleDirectoryEmpty")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.EmptyDirectory
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleDirectoryEmpty", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_directory_empty_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.EmptyDirectory = *style.Style
+			t.RawSetString("__styleDirectoryEmpty", st)
+		})
+
+	t.RawSetString("__styleFile", golua.LNil)
+	lib.TableFunction(state, t, "style_file",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFile")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.File
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFile", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_file_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.File = *style.Style
+			t.RawSetString("__styleFile", st)
+		})
+
+	t.RawSetString("__styleFileSize", golua.LNil)
+	lib.TableFunction(state, t, "style_file_size",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFileSize")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.FileSize
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFileSize", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_file_size_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.FileSize = *style.Style
+			t.RawSetString("__styleFileSize", st)
+		})
+
+	t.RawSetString("__styleFileDisabled", golua.LNil)
+	lib.TableFunction(state, t, "style_file_disabled",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFileDisabled")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.DisabledFile
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFileDisabled", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_file_disabled_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.DisabledFile = *style.Style
+			t.RawSetString("__styleFileDisabled", st)
+		})
+
+	t.RawSetString("__stylePermission", golua.LNil)
+	lib.TableFunction(state, t, "style_permission",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePermission")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.Permission
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePermission", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_permission_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.Permission = *style.Style
+			t.RawSetString("__stylePermission", st)
+		})
+
+	t.RawSetString("__styleSelected", golua.LNil)
+	lib.TableFunction(state, t, "style_selected",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleSelected")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.Selected
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleSelected", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_selected_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.Selected = *style.Style
+			t.RawSetString("__styleSelected", st)
+		})
+
+	t.RawSetString("__styleSelectedDisabled", golua.LNil)
+	lib.TableFunction(state, t, "style_selected_disabled",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleSelectedDisabled")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.FilePickers[id].Styles.DisabledSelected
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleSelectedDisabled", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_selected_disabled_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.FilePickers[id].Styles.DisabledSelected = *style.Style
+			t.RawSetString("__styleSelectedDisabled", st)
+		})
+
+	return t
+}
+
+func filepickerKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [9]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("goto_top", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("goto_last", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("down", tuikeyTable(r, lib, state, program, ids[2]))
+	t.RawSetString("up", tuikeyTable(r, lib, state, program, ids[3]))
+	t.RawSetString("page_up", tuikeyTable(r, lib, state, program, ids[4]))
+	t.RawSetString("page_down", tuikeyTable(r, lib, state, program, ids[5]))
+	t.RawSetString("back", tuikeyTable(r, lib, state, program, ids[6]))
+	t.RawSetString("open", tuikeyTable(r, lib, state, program, ids[7]))
+	t.RawSetString("select", tuikeyTable(r, lib, state, program, ids[8]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fp := item.FilePickers[id]
+			fp.KeyMap = filepicker.DefaultKeyMap()
+			item.KeyBindings[ids[0]] = &fp.KeyMap.GoToTop
+			item.KeyBindings[ids[1]] = &fp.KeyMap.GoToLast
+			item.KeyBindings[ids[2]] = &fp.KeyMap.Down
+			item.KeyBindings[ids[3]] = &fp.KeyMap.Up
+			item.KeyBindings[ids[4]] = &fp.KeyMap.PageUp
+			item.KeyBindings[ids[5]] = &fp.KeyMap.PageDown
+			item.KeyBindings[ids[6]] = &fp.KeyMap.Back
+			item.KeyBindings[ids[7]] = &fp.KeyMap.Open
+			item.KeyBindings[ids[8]] = &fp.KeyMap.Select
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+			kt.RawSetInt(1, t.RawGetString("up"))
+			kt.RawSetInt(2, t.RawGetString("down"))
+			kt.RawSetInt(3, t.RawGetString("goto_top"))
+			kt.RawSetInt(4, t.RawGetString("goto_last"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("up"))
+			kt1.RawSetInt(2, t.RawGetString("down"))
+			kt1.RawSetInt(3, t.RawGetString("goto_top"))
+			kt1.RawSetInt(4, t.RawGetString("goto_last"))
+			kt1.RawSetInt(5, t.RawGetString("page_up"))
+			kt1.RawSetInt(6, t.RawGetString("page_down"))
+
+			kt2 := state.NewTable()
+			kt2.RawSetInt(1, t.RawGetString("back"))
+			kt2.RawSetInt(2, t.RawGetString("open"))
+			kt2.RawSetInt(3, t.RawGetString("select"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+			kt.RawSetInt(2, kt2)
+
+			state.Push(kt)
+			return 1
 		})
 
 	return t
@@ -3258,6 +4728,1064 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			return 1
 		})
 
+	t.RawSetString("__help", golua.LNil)
+	lib.TableFunction(state, t, "help",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			oh := t.RawGetString("__help")
+			if oh.Type() == golua.LTTable {
+				state.Push(oh)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			model := &item.Lists[id].Help
+			mid := len(item.Helps)
+			item.Helps = append(item.Helps, model)
+
+			hp := helpTable(r, lib, state, program, mid)
+			state.Push(hp)
+			t.RawSetString("__help", hp)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_show",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Lists[id].ShowHelp()
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "help_show_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Lists[id].SetShowHelp(args["enabled"].(bool))
+		})
+
+	t.RawSetString("__keymap", golua.LNil)
+	lib.TableFunction(state, t, "keymap",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kmto := t.RawGetString("__keymap")
+			if kmto.Type() == golua.LTTable {
+				state.Push(kmto)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := &item.Lists[id].KeyMap
+			start := len(item.KeyBindings)
+			item.KeyBindings = append(item.KeyBindings,
+				&value.CursorUp,
+				&value.CursorDown,
+				&value.NextPage,
+				&value.PrevPage,
+				&value.GoToStart,
+				&value.GoToEnd,
+				&value.Filter,
+				&value.ClearFilter,
+				&value.CancelWhileFiltering,
+				&value.AcceptWhileFiltering,
+				&value.ShowFullHelp,
+				&value.CloseFullHelp,
+				&value.Quit,
+				&value.ForceQuit,
+			)
+
+			ids := [14]int{}
+			for i := range 14 {
+				ids[i] = start + i
+			}
+
+			kmt := listKeymapTable(r, lib, state, program, id, ids)
+			t.RawSetString("__keymap", kmt)
+			state.Push(kmt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_help",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			li := item.Lists[id]
+			help := li.Help
+			str := help.View(li)
+
+			state.Push(golua.LString(str))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			li := item.Lists[id]
+			help := li.Help
+			str := help.ShortHelpView(li.ShortHelp())
+
+			state.Push(golua.LString(str))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			li := item.Lists[id]
+			help := li.Help
+			str := help.FullHelpView(li.FullHelp())
+
+			state.Push(golua.LString(str))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "help_short_additional",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fn := args["fn"].(*golua.LFunction)
+
+			item.Lists[id].AdditionalShortHelpKeys = func() []key.Binding {
+				state.Push(fn)
+				state.Call(0, 1)
+				bindings := state.CheckTable(-1)
+				state.Pop(1)
+
+				bindingList := make([]key.Binding, bindings.Len())
+				for i := range bindings.Len() {
+					b := bindings.RawGetInt(i + 1).(*golua.LTable)
+					bid := b.RawGetString("id").(golua.LNumber)
+					bindingList[i] = *item.KeyBindings[int(bid)]
+				}
+
+				return bindingList
+			}
+		})
+
+	lib.BuilderFunction(state, t, "help_full_additional",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fn := args["fn"].(*golua.LFunction)
+
+			item.Lists[id].AdditionalFullHelpKeys = func() []key.Binding {
+				state.Push(fn)
+				state.Call(0, 1)
+				bindings := state.CheckTable(-1)
+				state.Pop(1)
+
+				bindingList := make([]key.Binding, bindings.Len())
+				for i := range bindings.Len() {
+					b := bindings.RawGetInt(i + 1).(*golua.LTable)
+					bid := b.RawGetString("id").(golua.LNumber)
+					bindingList[i] = *item.KeyBindings[int(bid)]
+				}
+
+				return bindingList
+			}
+		})
+
+	t.RawSetString("__styleTitlebar", golua.LNil)
+	lib.TableFunction(state, t, "style_titlebar",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleTitlebar")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.TitleBar
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleTitlebar", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_titlebar_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.TitleBar = *style.Style
+			t.RawSetString("__styleTitlebar", st)
+		})
+
+	t.RawSetString("__styleTitle", golua.LNil)
+	lib.TableFunction(state, t, "style_title",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleTitle")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.Title
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleTitle", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_title_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.Title = *style.Style
+			t.RawSetString("__styleTitle", st)
+		})
+
+	t.RawSetString("__styleSpinner", golua.LNil)
+	lib.TableFunction(state, t, "style_spinner",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleSpinner")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.Spinner
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleSpinner", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_spinner_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.Spinner = *style.Style
+			t.RawSetString("__styleSpinner", st)
+		})
+
+	t.RawSetString("__styleFilterPrompt", golua.LNil)
+	lib.TableFunction(state, t, "style_filter_prompt",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFilterPrompt")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.FilterPrompt
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFilterPrompt", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_filter_prompt_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.FilterPrompt = *style.Style
+			t.RawSetString("__styleFilterPrompt", st)
+		})
+
+	t.RawSetString("__styleFilterCursor", golua.LNil)
+	lib.TableFunction(state, t, "style_filter_cursor",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFilterCursor")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.FilterCursor
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFilterCursor", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_filter_cursor_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.FilterCursor = *style.Style
+			t.RawSetString("__styleFilterCursor", st)
+		})
+
+	t.RawSetString("__styleFilterCharMatch", golua.LNil)
+	lib.TableFunction(state, t, "style_filter_char_match",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFilterCursor")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.DefaultFilterCharacterMatch
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFilterCharMatch", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_filter_char_match_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.DefaultFilterCharacterMatch = *style.Style
+			t.RawSetString("__styleFilterCharMatch", st)
+		})
+
+	t.RawSetString("__styleStatusbar", golua.LNil)
+	lib.TableFunction(state, t, "style_statusbar",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleStatusbar")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.StatusBar
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleStatusbar", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_statusbar_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.StatusBar = *style.Style
+			t.RawSetString("__styleStatusbar", st)
+		})
+
+	t.RawSetString("__styleStatusEmpty", golua.LNil)
+	lib.TableFunction(state, t, "style_status_empty",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleStatusEmpty")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.StatusEmpty
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleStatusEmpty", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_status_empty_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.StatusEmpty = *style.Style
+			t.RawSetString("__styleStatusEmpty", st)
+		})
+
+	t.RawSetString("__styleStatusbarFilterActive", golua.LNil)
+	lib.TableFunction(state, t, "style_statusbar_filter_active",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleStatusbarFilterActive")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.StatusBarActiveFilter
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleStatusbarFilterActive", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_statusbar_filter_active_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.StatusBarActiveFilter = *style.Style
+			t.RawSetString("__styleStatusbarFilterActive", st)
+		})
+
+	t.RawSetString("__styleStatusbarFilterCount", golua.LNil)
+	lib.TableFunction(state, t, "style_statusbar_filter_count",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleStatusbarFilterCount")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.StatusBarFilterCount
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleStatusbarFilterCount", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_statusbar_filter_count_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.StatusBarFilterCount = *style.Style
+			t.RawSetString("__styleStatusbarFilterCount", st)
+		})
+
+	t.RawSetString("__styleNoItems", golua.LNil)
+	lib.TableFunction(state, t, "style_no_items",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleNoItems")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.NoItems
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleNoItems", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_no_items_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.NoItems = *style.Style
+			t.RawSetString("__styleNoItems", st)
+		})
+
+	t.RawSetString("__styleHelp", golua.LNil)
+	lib.TableFunction(state, t, "style_help",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleHelp")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.HelpStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleHelp", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_help_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.HelpStyle = *style.Style
+			t.RawSetString("__styleHelp", st)
+		})
+
+	t.RawSetString("__stylePagination", golua.LNil)
+	lib.TableFunction(state, t, "style_pagination",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePagination")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.PaginationStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePagination", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_pagination_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.PaginationStyle = *style.Style
+			t.RawSetString("__stylePagination", st)
+		})
+
+	t.RawSetString("__stylePaginationDotActive", golua.LNil)
+	lib.TableFunction(state, t, "style_pagination_dot_active",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePaginationDotActive")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.ActivePaginationDot
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePaginationDotActive", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_pagination_dot_active_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.ActivePaginationDot = *style.Style
+			t.RawSetString("__stylePaginationDotActive", st)
+		})
+
+	t.RawSetString("__stylePaginationDotInactive", golua.LNil)
+	lib.TableFunction(state, t, "style_pagination_dot_inactive",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePaginationDotInactive")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.InactivePaginationDot
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePaginationDotInactive", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_pagination_dot_inactive_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.InactivePaginationDot = *style.Style
+			t.RawSetString("__stylePaginationDotInactive", st)
+		})
+
+	t.RawSetString("__styleDividerDot", golua.LNil)
+	lib.TableFunction(state, t, "style_divider_dot",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleDividerDot")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Lists[id].Styles.DividerDot
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleDividerDot", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_divider_dot_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Lists[id].Styles.DividerDot = *style.Style
+			t.RawSetString("__styleDividerDot", st)
+		})
+
+	return t
+}
+
+func listKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [14]int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("cursor_up", tuikeyTable(r, lib, state, program, ids[0]))
+	t.RawSetString("cursor_down", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("page_next", tuikeyTable(r, lib, state, program, ids[2]))
+	t.RawSetString("page_prev", tuikeyTable(r, lib, state, program, ids[3]))
+	t.RawSetString("goto_start", tuikeyTable(r, lib, state, program, ids[4]))
+	t.RawSetString("goto_end", tuikeyTable(r, lib, state, program, ids[5]))
+	t.RawSetString("filter", tuikeyTable(r, lib, state, program, ids[6]))
+	t.RawSetString("filter_clear", tuikeyTable(r, lib, state, program, ids[7]))
+	t.RawSetString("filter_cancel", tuikeyTable(r, lib, state, program, ids[8]))
+	t.RawSetString("filter_accept", tuikeyTable(r, lib, state, program, ids[9]))
+	t.RawSetString("show_full_help", tuikeyTable(r, lib, state, program, ids[10]))
+	t.RawSetString("close_full_help", tuikeyTable(r, lib, state, program, ids[11]))
+	t.RawSetString("quit", tuikeyTable(r, lib, state, program, ids[12]))
+	t.RawSetString("force_quit", tuikeyTable(r, lib, state, program, ids[13]))
+
+	lib.BuilderFunction(state, t, "default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			li := item.Lists[id]
+			li.KeyMap = list.DefaultKeyMap()
+			item.KeyBindings[ids[0]] = &li.KeyMap.CursorUp
+			item.KeyBindings[ids[1]] = &li.KeyMap.CursorDown
+			item.KeyBindings[ids[2]] = &li.KeyMap.NextPage
+			item.KeyBindings[ids[3]] = &li.KeyMap.PrevPage
+			item.KeyBindings[ids[4]] = &li.KeyMap.GoToStart
+			item.KeyBindings[ids[5]] = &li.KeyMap.GoToEnd
+			item.KeyBindings[ids[6]] = &li.KeyMap.Filter
+			item.KeyBindings[ids[7]] = &li.KeyMap.ClearFilter
+			item.KeyBindings[ids[8]] = &li.KeyMap.CancelWhileFiltering
+			item.KeyBindings[ids[9]] = &li.KeyMap.AcceptWhileFiltering
+			item.KeyBindings[ids[10]] = &li.KeyMap.ShowFullHelp
+			item.KeyBindings[ids[11]] = &li.KeyMap.CloseFullHelp
+			item.KeyBindings[ids[12]] = &li.KeyMap.Quit
+			item.KeyBindings[ids[13]] = &li.KeyMap.ForceQuit
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+			kt.RawSetInt(1, t.RawGetString("cursor_up"))
+			kt.RawSetInt(2, t.RawGetString("cursor_down"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("cursor_up"))
+			kt1.RawSetInt(2, t.RawGetString("cursor_down"))
+			kt1.RawSetInt(3, t.RawGetString("page_next"))
+			kt1.RawSetInt(4, t.RawGetString("page_prev"))
+			kt1.RawSetInt(5, t.RawGetString("goto_start"))
+			kt1.RawSetInt(6, t.RawGetString("goto_end"))
+
+			kt2 := state.NewTable()
+			kt2.RawSetInt(1, t.RawGetString("filter"))
+			kt2.RawSetInt(2, t.RawGetString("filter_clear"))
+			kt2.RawSetInt(3, t.RawGetString("filter_accept"))
+			kt2.RawSetInt(4, t.RawGetString("filter_cancel"))
+
+			kt3 := state.NewTable()
+			kt3.RawSetInt(1, t.RawGetString("quit"))
+			kt3.RawSetInt(2, t.RawGetString("force_quit"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+			kt.RawSetInt(2, kt2)
+			kt.RawSetInt(3, kt3)
+
+			state.Push(kt)
+			return 1
+		})
+
 	return t
 }
 
@@ -3655,6 +6183,31 @@ func paginatorKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, prog
 			pg.KeyMap = paginator.DefaultKeyMap
 			item.KeyBindings[ids[0]] = &pg.KeyMap.PrevPage
 			item.KeyBindings[ids[1]] = &pg.KeyMap.NextPage
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+			kt.RawSetInt(1, t.RawGetString("page_prev"))
+			kt.RawSetInt(2, t.RawGetString("page_next"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("page_prev"))
+			kt1.RawSetInt(2, t.RawGetString("page_next"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+
+			state.Push(kt)
+			return 1
 		})
 
 	return t
@@ -4155,6 +6708,53 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			item.ProgressBars[id].EmptyColor = args["color"].(string)
 		})
 
+	t.RawSetString("__stylePercent", golua.LNil)
+	lib.TableFunction(state, t, "style_percentage",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__stylePercent")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ProgressBars[id].PercentageStyle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__stylePercent", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_percentage_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ProgressBars[id].PercentageStyle = *style.Style
+			t.RawSetString("__stylePercent", st)
+		})
+
 	return t
 }
 
@@ -4476,6 +7076,9 @@ func tableOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
 	t.RawSetString("__focused", golua.LNil)
 	t.RawSetString("__width", golua.LNil)
 	t.RawSetString("__height", golua.LNil)
+	t.RawSetString("__styleHeader", golua.LNil)
+	t.RawSetString("__styleCell", golua.LNil)
+	t.RawSetString("__styleSelected", golua.LNil)
 
 	lib.BuilderFunction(state, t, "focused",
 		[]lua.Arg{
@@ -4517,6 +7120,18 @@ func tableOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
 			t.RawSetString("__rows", args["rows"].(*golua.LTable))
 		})
 
+	lib.BuilderFunction(state, t, "styles",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "header"},
+			{Type: lua.RAW_TABLE, Name: "cell"},
+			{Type: lua.RAW_TABLE, Name: "selected"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__styleHeader", args["header"].(*golua.LTable))
+			t.RawSetString("__styleCell", args["cell"].(*golua.LTable))
+			t.RawSetString("__styleSelected", args["selected"].(*golua.LTable))
+		})
+
 	return t
 }
 
@@ -4529,7 +7144,7 @@ func tuitableColTable(state *golua.LState, title string, width int) *golua.LTabl
 	return t
 }
 
-func tableOptionsBuild(t *golua.LTable) []table.Option {
+func tableOptionsBuild(t *golua.LTable, r *lua.Runner) []table.Option {
 	opts := []table.Option{}
 
 	focused := t.RawGetString("__focused")
@@ -4578,6 +7193,25 @@ func tableOptionsBuild(t *golua.LTable) []table.Option {
 		}
 
 		opts = append(opts, table.WithRows(rowList))
+	}
+
+	header := t.RawGetString("__styleHeader")
+	cell := t.RawGetString("__styleCell")
+	selected := t.RawGetString("__styleSelected")
+	if header.Type() == golua.LTTable && cell.Type() == golua.LTTable && cell.Type() == golua.LTTable {
+		hid := header.(*golua.LTable).RawGetString("id").(golua.LNumber)
+		cid := cell.(*golua.LTable).RawGetString("id").(golua.LNumber)
+		sid := selected.(*golua.LTable).RawGetString("id").(golua.LNumber)
+
+		header, _ := r.CR_LIP.Item(int(hid))
+		cell, _ := r.CR_LIP.Item(int(cid))
+		selected, _ := r.CR_LIP.Item(int(sid))
+
+		opts = append(opts, table.WithStyles(table.Styles{
+			Header:   *header.Style,
+			Cell:     *cell.Style,
+			Selected: *selected.Style,
+		}))
 	}
 
 	return opts
@@ -4988,6 +7622,89 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			return 1
 		})
 
+	t.RawSetString("__help", golua.LNil)
+	lib.TableFunction(state, t, "help",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			oh := t.RawGetString("__help")
+			if oh.Type() == golua.LTTable {
+				state.Push(oh)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			model := &item.Tables[id].Help
+			mid := len(item.Helps)
+			item.Helps = append(item.Helps, model)
+
+			hp := helpTable(r, lib, state, program, mid)
+			state.Push(hp)
+			t.RawSetString("__help", hp)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_view",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			str := item.Tables[id].HelpView()
+
+			state.Push(golua.LString(str))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "styles",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "header"},
+			{Type: lua.RAW_TABLE, Name: "cell"},
+			{Type: lua.RAW_TABLE, Name: "selected"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			hid := args["header"].(*golua.LTable).RawGetString("id").(golua.LNumber)
+			cid := args["cell"].(*golua.LTable).RawGetString("id").(golua.LNumber)
+			sid := args["selected"].(*golua.LTable).RawGetString("id").(golua.LNumber)
+
+			header, _ := r.CR_LIP.Item(int(hid))
+			cell, _ := r.CR_LIP.Item(int(cid))
+			selected, _ := r.CR_LIP.Item(int(sid))
+
+			item.Tables[id].SetStyles(table.Styles{
+				Header:   *header.Style,
+				Cell:     *cell.Style,
+				Selected: *selected.Style,
+			})
+		})
+
+	lib.BuilderFunction(state, t, "styles_default",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Tables[id].SetStyles(table.DefaultStyles())
+		})
+
 	return t
 }
 
@@ -5025,6 +7742,40 @@ func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program,
 			item.KeyBindings[ids[5]] = &tb.KeyMap.HalfPageDown
 			item.KeyBindings[ids[6]] = &tb.KeyMap.GotoTop
 			item.KeyBindings[ids[7]] = &tb.KeyMap.GotoBottom
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+
+			kt.RawSetInt(1, t.RawGetString("line_up"))
+			kt.RawSetInt(2, t.RawGetString("line_up"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("line_up"))
+			kt1.RawSetInt(2, t.RawGetString("line_down"))
+			kt1.RawSetInt(3, t.RawGetString("goto_top"))
+			kt1.RawSetInt(4, t.RawGetString("goto_bottom"))
+
+			kt2 := state.NewTable()
+			kt2.RawSetInt(1, t.RawGetString("page_up"))
+			kt2.RawSetInt(2, t.RawGetString("page_down"))
+			kt2.RawSetInt(3, t.RawGetString("page_up_half"))
+			kt2.RawSetInt(4, t.RawGetString("page_down_half"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+			kt.RawSetInt(2, kt2)
+			state.Push(kt)
+			return 1
 		})
 
 	return t
@@ -5614,6 +8365,53 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			return 1
 		})
 
+	t.RawSetString("__style", golua.LNil)
+	lib.TableFunction(state, t, "style",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__style")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Viewports[id].Style
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__style", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Viewports[id].Style = *style.Style
+			t.RawSetString("__style", st)
+		})
+
 	return t
 }
 
@@ -5647,6 +8445,41 @@ func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, progr
 			item.KeyBindings[ids[3]] = &vp.KeyMap.HalfPageDown
 			item.KeyBindings[ids[4]] = &vp.KeyMap.Down
 			item.KeyBindings[ids[5]] = &vp.KeyMap.Up
+		})
+
+	lib.TableFunction(state, t, "help_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt := state.NewTable()
+
+			kt.RawSetInt(1, t.RawGetString("up"))
+			kt.RawSetInt(2, t.RawGetString("down"))
+
+			state.Push(kt)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "help_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			kt1 := state.NewTable()
+			kt1.RawSetInt(1, t.RawGetString("up"))
+			kt1.RawSetInt(2, t.RawGetString("down"))
+
+			kt2 := state.NewTable()
+			kt2.RawSetInt(1, t.RawGetString("page_up"))
+			kt2.RawSetInt(2, t.RawGetString("page_down"))
+
+			kt3 := state.NewTable()
+			kt3.RawSetInt(1, t.RawGetString("page_up_half"))
+			kt3.RawSetInt(2, t.RawGetString("page_down_half"))
+
+			kt := state.NewTable()
+			kt.RawSetInt(1, kt1)
+			kt.RawSetInt(2, kt2)
+			kt.RawSetInt(3, kt3)
+			state.Push(kt)
+			return 1
 		})
 
 	return t
@@ -5752,7 +8585,8 @@ func keyOptionsTable(state *golua.LState, lib *lua.Lib) *golua.LTable {
 			{Type: lua.STRING, Name: "desc"},
 		},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
-			t.RawSetString("__disabled", golua.LBool(args["enabled"].(bool)))
+			t.RawSetString("__helpKey", golua.LString(args["key"].(string)))
+			t.RawSetString("__helpDesc", golua.LString(args["desc"].(string)))
 		})
 
 	lib.BuilderFunction(state, t, "keys",
@@ -5929,6 +8763,599 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			id := int(t.RawGetString("id").(golua.LNumber))
 
 			item.KeyBindings[id].Unbind()
+		})
+
+	return t
+}
+
+func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	lib.TableFunction(state, t, "view",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "keymap"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			showAll := item.Helps[id].ShowAll
+			value := ""
+			keymap := args["keymap"].(*golua.LTable)
+
+			if showAll {
+				full := keymap.RawGetString("help_full")
+				if full.Type() == golua.LTFunction {
+					state.Push(full)
+					state.Call(0, 1)
+					groups := state.CheckTable(-1)
+					state.Pop(1)
+
+					state.Push(t.RawGetString("view_help_full"))
+					state.Push(groups)
+					state.Call(1, 1)
+					value = state.CheckString(-1)
+					state.Pop(1)
+				}
+			} else {
+				short := keymap.RawGetString("help_short")
+				if short.Type() == golua.LTFunction {
+					state.Push(short)
+					state.Call(0, 1)
+					bindings := state.CheckTable(-1)
+					state.Pop(1)
+
+					state.Push(t.RawGetString("view_help_short"))
+					state.Push(bindings)
+					state.Call(1, 1)
+					value = state.CheckString(-1)
+					state.Pop(1)
+				}
+			}
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_help_short",
+		[]lua.Arg{
+			lua.ArgArray("bindings", lua.ArrayType{Type: lua.RAW_TABLE}, false),
+		},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			bindings := args["bindings"].([]any)
+			bindList := make([]key.Binding, len(bindings))
+			for i, v := range bindings {
+				b := v.(*golua.LTable)
+				bid := b.RawGetString("id").(golua.LNumber)
+				bindList[i] = *item.KeyBindings[int(bid)]
+			}
+
+			value := item.Helps[id].ShortHelpView(bindList)
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "view_help_full",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "groups"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			groups := args["groups"].(*golua.LTable)
+			groupList := make([][]key.Binding, groups.Len())
+			for i := range groups.Len() {
+				group := groups.RawGetInt(i + 1).(*golua.LTable)
+				groupList[i] = make([]key.Binding, group.Len())
+
+				for z := range group.Len() {
+					b := group.RawGetInt(z + 1).(*golua.LTable)
+					bid := b.RawGetString("id").(golua.LNumber)
+					groupList[i][z] = *item.KeyBindings[int(bid)]
+				}
+			}
+
+			value := item.Helps[id].FullHelpView(groupList)
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "width",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Helps[id].Width
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "width_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Helps[id].Width = args["width"].(int)
+		})
+
+	lib.TableFunction(state, t, "show_all",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Helps[id].ShowAll
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "show_all_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Helps[id].ShowAll = args["enabled"].(bool)
+		})
+
+	lib.TableFunction(state, t, "separator_short",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Helps[id].ShortSeparator
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "separator_short_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "sep"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Helps[id].ShortSeparator = args["sep"].(string)
+		})
+
+	lib.TableFunction(state, t, "separator_full",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Helps[id].FullSeparator
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "separator_full_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "sep"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Helps[id].FullSeparator = args["sep"].(string)
+		})
+
+	lib.TableFunction(state, t, "ellipsis",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Helps[id].Ellipsis
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "ellipsis_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "ellipsis"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Helps[id].Ellipsis = args["ellipsis"].(string)
+		})
+
+	t.RawSetString("__styleEllipsis", golua.LNil)
+	lib.TableFunction(state, t, "style_ellipsis",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleEllipsis")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.Ellipsis
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleEllipsis", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_ellipsis_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.Ellipsis = *style.Style
+			t.RawSetString("__styleEllipsis", st)
+		})
+
+	t.RawSetString("__styleShortKey", golua.LNil)
+	lib.TableFunction(state, t, "style_short_key",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleShortKey")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.ShortKey
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleShortKey", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_short_key_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.ShortKey = *style.Style
+			t.RawSetString("__styleShortKey", st)
+		})
+
+	t.RawSetString("__styleShortDesc", golua.LNil)
+	lib.TableFunction(state, t, "style_short_desc",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleShortDesc")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.ShortDesc
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleShortDesc", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_short_desc_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.ShortDesc = *style.Style
+			t.RawSetString("__styleShortDesc", st)
+		})
+
+	t.RawSetString("__styleShortSep", golua.LNil)
+	lib.TableFunction(state, t, "style_short_separator",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleShortSep")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.ShortSeparator
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleShortSep", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_short_separator_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.ShortSeparator = *style.Style
+			t.RawSetString("__styleShortSep", st)
+		})
+
+	t.RawSetString("__styleFullKey", golua.LNil)
+	lib.TableFunction(state, t, "style_full_key",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFullKey")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.FullKey
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFullKey", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_full_key_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.FullKey = *style.Style
+			t.RawSetString("__styleFullKey", st)
+		})
+
+	t.RawSetString("__styleFullDesc", golua.LNil)
+	lib.TableFunction(state, t, "style_full_desc",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFullDesc")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.FullDesc
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFullDesc", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_full_desc_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.FullDesc = *style.Style
+			t.RawSetString("__styleFullDesc", st)
+		})
+
+	t.RawSetString("__styleFullSep", golua.LNil)
+	lib.TableFunction(state, t, "style_full_separator",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFullSep")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.Helps[id].Styles.FullSeparator
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFullSep", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_full_separator_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.Helps[id].Styles.FullSeparator = *style.Style
+			t.RawSetString("__styleFullSep", st)
 		})
 
 	return t

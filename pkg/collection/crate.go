@@ -2,6 +2,8 @@ package collection
 
 import (
 	"fmt"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 type CrateItem[T any] struct {
@@ -10,6 +12,10 @@ type CrateItem[T any] struct {
 
 type RefItem[T any] struct {
 	Value T
+}
+
+type StyleItem struct {
+	Style *lipgloss.Style
 }
 
 type Crate[T any] struct {
