@@ -29,6 +29,7 @@ const (
 	MSG_TIMERSTARTSTOP
 	MSG_TIMERTICK
 	MSG_TIMERTIMEOUT
+	MSG_LUA
 )
 
 func BuildMSG(msg tea.Msg, state *golua.LState) *golua.LTable {
@@ -65,6 +66,12 @@ func BuildMSG(msg tea.Msg, state *golua.LState) *golua.LTable {
 		luaMsg = msgTableSimple(state, MSG_RESUME)
 	case tea.SuspendMsg:
 		luaMsg = msgTableSimple(state, MSG_SUSPEND)
+	case tea.WindowSizeMsg:
+		luaMsg = msgTableWindowSize(state, msg.Width, msg.Height)
+	case *golua.LTable:
+		luaMsg = msg
+	case golua.LValue:
+		luaMsg = msgTableLua(state, msg)
 	default:
 		luaMsg = msgTableSimple(state, MSG_NONE)
 	}
@@ -178,6 +185,15 @@ func msgTableTimerTick(state *golua.LState, id int, timeout bool) *golua.LTable 
 	t.RawSetString("msg", golua.LNumber(MSG_TIMERTICK))
 	t.RawSetString("id", golua.LNumber(id))
 	t.RawSetString("timeout", golua.LBool(timeout))
+
+	return t
+}
+
+func msgTableLua(state *golua.LState, value golua.LValue) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("msg", golua.LNumber(MSG_LUA))
+	t.RawSetString("value", value)
 
 	return t
 }

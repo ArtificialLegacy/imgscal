@@ -31,18 +31,19 @@ type TeaItem struct {
 
 	KeyBindings []*key.Binding
 
-	Spinners     map[int]*spinner.Model
-	TextAreas    []*textarea.Model
-	TextInputs   []*textinput.Model
-	Cursors      []*cursor.Model
-	FilePickers  []*filepicker.Model
-	Lists        []*list.Model
-	Paginators   []*paginator.Model
-	ProgressBars []*progress.Model
-	StopWatches  map[int]*stopwatch.Model
-	Timers       map[int]*timer.Model
-	Tables       []*table.Model
-	Viewports    []*viewport.Model
-	Customs      []*CustomModel
-	Helps        []*help.Model
+	Spinners      map[int]*spinner.Model
+	TextAreas     []*textarea.Model
+	TextInputs    []*textinput.Model
+	Cursors       []*cursor.Model
+	FilePickers   []*filepicker.Model
+	Lists         []*list.Model
+	ListDelegates []*list.DefaultDelegate
+	Paginators    []*paginator.Model
+	ProgressBars  []*progress.Model
+	StopWatches   map[int]*stopwatch.Model
+	Timers        map[int]*timer.Model
+	Tables        []*table.Model
+	Viewports     []*viewport.Model
+	Customs       []*CustomModel
+	Helps         []*help.Model
 }

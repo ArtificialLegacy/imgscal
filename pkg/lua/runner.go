@@ -634,6 +634,9 @@ func CreateValue(value any, state *lua.LState) lua.LValue {
 func GetValue(value lua.LValue) any {
 	switch v := value.(type) {
 	case lua.LNumber:
+		if float64(v) == float64(int(v)) {
+			return int(v)
+		}
 		return float64(v)
 	case lua.LBool:
 		return bool(v)

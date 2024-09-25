@@ -31,7 +31,6 @@ func WorkflowCMD(sm *statemachine.StateMachine) error {
 
 	foundPath := ""
 	for _, w := range *wf {
-		fmt.Printf("%+v\n", w)
 		if w.Name == name {
 			found, ok := w.CliWorkflows["*"]
 			if !ok {

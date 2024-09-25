@@ -1,6 +1,8 @@
 package customtea
 
 import (
+	"time"
+
 	teamodels "github.com/ArtificialLegacy/imgscal/pkg/custom_tea/models"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -52,6 +54,28 @@ const (
 	CMD_VIEWPORTSYNC
 	CMD_VIEWPORTUP
 	CMD_VIEWPORTDOWN
+	CMD_PRINTF
+	CMD_PRINTLN
+	CMD_WINDOWTITLE
+	CMD_WINDOWSIZE
+	CMD_SUSPEND
+	CMD_QUIT
+	CMD_SHOWCURSOR
+	CMD_HIDECURSOR
+	CMD_CLEARSCREEN
+	CMD_CLEARSCROLLAREA
+	CMD_SCROLLSYNC
+	CMD_SCROLLUP
+	CMD_SCROLLDOWN
+	CMD_EVERY
+	CMD_TICK
+	CMD_TOGGLEREPORTFOCUS
+	CMD_TOGGLEBRACKETEDPASTE
+	CMD_DISABLEMOUSE
+	CMD_ENABLEMOUSEALLMOTION
+	CMD_ENABLEMOUSECELLMOTION
+	CMD_ENTERALTSCREEN
+	CMD_EXITALTSCREEN
 )
 
 type CMDBuilder func(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd
@@ -90,6 +114,28 @@ func init() {
 		CMDViewportSyncBuild,
 		CMDViewportUpBuild,
 		CMDViewportDownBuild,
+		CMDPrintfBuild,
+		CMDPrintlnBuild,
+		CMDWindowTitleBuild,
+		CMDWindowSizeBuild,
+		CMDSuspendBuild,
+		CMDQuitBuild,
+		CMDShowCursorBuild,
+		CMDHideCursorBuild,
+		CMDClearScreenBuild,
+		CMDClearScrollAreaBuild,
+		CMDScrollSyncBuild,
+		CMDScrollUpBuild,
+		CMDScrollDownBuild,
+		CMDEveryBuild,
+		CMDTickBuild,
+		CMDToggleReportFocusBuild,
+		CMDToggleBracketedPasteBuild,
+		CMDDisableMouseBuild,
+		CMDEnableMouseAllMotionBuild,
+		CMDEnableMouseCellMotionBuild,
+		CMDEnterAltScreenBuild,
+		CMDExitAltScreenBuild,
 	}
 }
 
@@ -590,4 +636,399 @@ func CMDViewportDownBuild(item *teamodels.TeaItem, state *golua.LState, t *golua
 	}
 
 	return viewport.ViewDown(*vp, lines)
+}
+
+func CMDPrintf(state *golua.LState, format string, args *golua.LTable) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_PRINTF))
+	t.RawSetString("format", golua.LString(format))
+	t.RawSetString("args", args)
+
+	return t
+}
+
+func CMDPrintfBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	format := t.RawGetString("format").(golua.LString)
+	args := t.RawGetString("args").(*golua.LTable)
+
+	values := make([]any, args.Len())
+	for i := range args.Len() {
+		v := args.RawGetInt(i + 1)
+
+		switch v := v.(type) {
+		case golua.LString:
+			values[i] = string(v)
+		case golua.LNumber:
+			if float64(v) == float64(int(v)) {
+				values[i] = int(v)
+			} else {
+				values[i] = float64(v)
+			}
+		case golua.LBool:
+			values[i] = bool(v)
+		default:
+			values[i] = v.String()
+		}
+	}
+
+	return tea.Printf(string(format), values...)
+}
+
+func CMDPrintln(state *golua.LState, args *golua.LTable) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_PRINTLN))
+	t.RawSetString("args", args)
+
+	return t
+}
+
+func CMDPrintlnBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	args := t.RawGetString("args").(*golua.LTable)
+
+	values := make([]any, args.Len())
+	for i := range args.Len() {
+		v := args.RawGetInt(i + 1)
+
+		switch v := v.(type) {
+		case golua.LString:
+			values[i] = string(v)
+		case golua.LNumber:
+			if float64(v) == float64(int(v)) {
+				values[i] = int(v)
+			} else {
+				values[i] = float64(v)
+			}
+		case golua.LBool:
+			values[i] = bool(v)
+		default:
+			values[i] = v.String()
+		}
+	}
+
+	return tea.Println(values...)
+}
+
+func CMDWindowTitle(state *golua.LState, title string) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_WINDOWTITLE))
+	t.RawSetString("title", golua.LString(title))
+
+	return t
+}
+
+func CMDWindowTitleBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	title := t.RawGetString("title").(golua.LString)
+
+	return tea.SetWindowTitle(string(title))
+}
+
+func CMDWindowSize(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_WINDOWSIZE))
+
+	return t
+}
+
+func CMDWindowSizeBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.WindowSize()
+}
+
+func CMDSuspend(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_SUSPEND))
+
+	return t
+}
+
+func CMDSuspendBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.Suspend
+}
+
+func CMDQuit(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_QUIT))
+
+	return t
+}
+
+func CMDQuitBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.Quit
+}
+
+func CMDShowCursor(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_SHOWCURSOR))
+
+	return t
+}
+
+func CMDShowCursorBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.ShowCursor
+}
+
+func CMDHideCursor(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_HIDECURSOR))
+
+	return t
+}
+
+func CMDHideCursorBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.HideCursor
+}
+
+func CMDClearScreen(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_CLEARSCREEN))
+
+	return t
+}
+
+func CMDClearScreenBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.ClearScreen
+}
+
+func CMDClearScrollArea(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_CLEARSCROLLAREA))
+
+	return t
+}
+
+func CMDClearScrollAreaBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.ClearScrollArea
+}
+
+func CMDScrollSync(state *golua.LState, lines *golua.LTable, top, bottom int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_SCROLLSYNC))
+	t.RawSetString("lines", lines)
+	t.RawSetString("top", golua.LNumber(top))
+	t.RawSetString("bottom", golua.LNumber(bottom))
+
+	return t
+}
+
+func CMDScrollSyncBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	lineList := t.RawGetString("lines").(*golua.LTable)
+	lines := make([]string, lineList.Len())
+
+	for i := range lineList.Len() {
+		l := lineList.RawGetInt(i + 1).(golua.LString)
+		lines[i] = string(l)
+	}
+
+	top := int(t.RawGetString("top").(golua.LNumber))
+	bottom := int(t.RawGetString("bottom").(golua.LNumber))
+
+	return tea.SyncScrollArea(lines, top, bottom)
+}
+
+func CMDScrollUp(state *golua.LState, lines *golua.LTable, top, bottom int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_SCROLLUP))
+	t.RawSetString("lines", lines)
+	t.RawSetString("top", golua.LNumber(top))
+	t.RawSetString("bottom", golua.LNumber(bottom))
+
+	return t
+}
+
+func CMDScrollUpBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	lineList := t.RawGetString("lines").(*golua.LTable)
+	lines := make([]string, lineList.Len())
+
+	for i := range lineList.Len() {
+		l := lineList.RawGetInt(i + 1).(golua.LString)
+		lines[i] = string(l)
+	}
+
+	top := int(t.RawGetString("top").(golua.LNumber))
+	bottom := int(t.RawGetString("bottom").(golua.LNumber))
+
+	return tea.ScrollUp(lines, top, bottom)
+}
+
+func CMDScrollDown(state *golua.LState, lines *golua.LTable, top, bottom int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_SCROLLDOWN))
+	t.RawSetString("lines", lines)
+	t.RawSetString("top", golua.LNumber(top))
+	t.RawSetString("bottom", golua.LNumber(bottom))
+
+	return t
+}
+
+func CMDScrollDownBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	lineList := t.RawGetString("lines").(*golua.LTable)
+	lines := make([]string, lineList.Len())
+
+	for i := range lineList.Len() {
+		l := lineList.RawGetInt(i + 1).(golua.LString)
+		lines[i] = string(l)
+	}
+
+	top := int(t.RawGetString("top").(golua.LNumber))
+	bottom := int(t.RawGetString("bottom").(golua.LNumber))
+
+	return tea.ScrollDown(lines, top, bottom)
+}
+
+func CMDEvery(state *golua.LState, duration int, fn *golua.LFunction) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_EVERY))
+	t.RawSetString("duration", golua.LNumber(duration))
+	t.RawSetString("fn", fn)
+
+	return t
+}
+
+func CMDEveryBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	duration := int(t.RawGetString("duration").(golua.LNumber))
+	fn := t.RawGetString("fn").(*golua.LFunction)
+
+	return tea.Every(time.Duration(duration)*time.Millisecond, func(tm time.Time) tea.Msg {
+		ms := tm.UnixMilli()
+
+		state.Push(fn)
+		state.Push(golua.LNumber(ms))
+		state.Call(1, 1)
+		v := state.CheckAny(-1)
+		state.Pop(1)
+
+		return tea.Msg(v)
+	})
+}
+
+func CMDTick(state *golua.LState, duration int, fn *golua.LFunction) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_TICK))
+	t.RawSetString("duration", golua.LNumber(duration))
+	t.RawSetString("fn", fn)
+
+	return t
+}
+
+func CMDTickBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	duration := int(t.RawGetString("duration").(golua.LNumber))
+	fn := t.RawGetString("fn").(*golua.LFunction)
+
+	return tea.Tick(time.Duration(duration)*time.Millisecond, func(tm time.Time) tea.Msg {
+		ms := tm.UnixMilli()
+
+		state.Push(fn)
+		state.Push(golua.LNumber(ms))
+		state.Call(1, 1)
+		v := state.CheckAny(-1)
+		state.Pop(1)
+
+		return tea.Msg(v)
+	})
+}
+
+func CMDToggleReportFocus(state *golua.LState, enable bool) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_TOGGLEREPORTFOCUS))
+	t.RawSetString("enable", golua.LBool(enable))
+
+	return t
+}
+
+func CMDToggleReportFocusBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	if bool(t.RawGetString("enable").(golua.LBool)) {
+		return tea.EnableReportFocus
+	}
+	return tea.DisableReportFocus
+}
+
+func CMDToggleBracketedPaste(state *golua.LState, enable bool) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_TOGGLEBRACKETEDPASTE))
+	t.RawSetString("enable", golua.LBool(enable))
+
+	return t
+}
+
+func CMDToggleBracketedPasteBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	if bool(t.RawGetString("enable").(golua.LBool)) {
+		return tea.EnableBracketedPaste
+	}
+	return tea.DisableBracketedPaste
+}
+
+func CMDDisableMouse(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_DISABLEMOUSE))
+
+	return t
+}
+
+func CMDDisableMouseBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.DisableMouse
+}
+
+func CMDEnableMouseAllMotion(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_ENABLEMOUSEALLMOTION))
+
+	return t
+}
+
+func CMDEnableMouseAllMotionBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.EnableMouseAllMotion
+}
+
+func CMDEnableMouseCellMotion(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_ENABLEMOUSECELLMOTION))
+
+	return t
+}
+
+func CMDEnableMouseCellMotionBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.EnableMouseCellMotion
+}
+
+func CMDEnterAltScreen(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_ENTERALTSCREEN))
+
+	return t
+}
+
+func CMDEnterAltScreenBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.EnterAltScreen
+}
+
+func CMDExitAltScreen(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_EXITALTSCREEN))
+
+	return t
+}
+
+func CMDExitAltScreenBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	return tea.EnterAltScreen
 }

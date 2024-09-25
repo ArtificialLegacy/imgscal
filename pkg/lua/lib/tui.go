@@ -43,9 +43,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "new",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := r.CR_TEA.Add(&teamodels.TeaItem{
-				Spinners: map[int]*spinner.Model{},
-			})
+			id := r.CR_TEA.Add(&teamodels.TeaItem{})
 			t := teaTable(r, state, lib, id)
 
 			state.Push(t)
@@ -53,11 +51,25 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 	)
 
-	/// @func run(program)
+	/// @func program_options() -> struct<tui.ProgramOptions>
+	/// @returns {struct<tui.ProgramOptions>}
+	lib.CreateFunction(tab, "program_options",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := programOptions(lib, state)
+
+			state.Push(t)
+			return 1
+		},
+	)
+
+	/// @func run(program, opts?)
 	/// @arg program {struct<tui.Program>}
+	/// @arg? opts {struct<tui.ProgramOptions>}
 	lib.CreateFunction(tab, "run",
 		[]lua.Arg{
 			{Type: lua.RAW_TABLE, Name: "program"},
+			{Type: lua.RAW_TABLE, Name: "opts", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			program := args["program"].(*golua.LTable)
@@ -67,8 +79,11 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 				lua.Error(state, err.Error())
 			}
 
+			optArg := args["opts"].(*golua.LTable)
+			opts := programOptionsBuild(state, optArg)
+
 			pstate, _ := state.NewThread()
-			p := tea.NewProgram(customtea.ProgramModel{Id: id, Item: item, State: pstate, R: r, Lg: lg})
+			p := tea.NewProgram(customtea.ProgramModel{Id: id, Item: item, State: pstate, R: r, Lg: lg}, opts...)
 			_, err = p.Run()
 			if err != nil {
 				lua.Error(state, err.Error())
@@ -100,7 +115,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := spin.ID()
 			item.Spinners[id] = &spin
 
-			t := spinnerTable(r, state, prgrm, id)
+			t := spinnerTable(r, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -139,7 +154,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := spin.ID()
 			item.Spinners[id] = &spin
 
-			t := spinnerTable(r, state, prgrm, id)
+			t := spinnerTable(r, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -272,11 +287,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func list(id, items, width, height) -> struct<tui.List>
+	/// @func list(id, items, width, height, delegate) -> struct<tui.List>
 	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the list to.
 	/// @arg items {[]struct<tui.ListItem>} - Array of list items.
 	/// @arg width {int}
 	/// @arg height {int}
+	/// @arg delegate {struct<tui.ListDelegate>}
 	/// @returns {struct<tui.List>}
 	lib.CreateFunction(tab, "list",
 		[]lua.Arg{
@@ -284,6 +300,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			lua.ArgArray("items", lua.ArrayType{Type: lua.RAW_TABLE}, false),
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.INT, Name: "height"},
+			{Type: lua.RAW_TABLE, Name: "delegate"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			prgrm := args["id"].(int)
@@ -299,11 +316,38 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 				items[i] = customtea.ListItemBuild(v.(*golua.LTable))
 			}
 
-			li := list.New(items, list.NewDefaultDelegate(), args["width"].(int), args["height"].(int))
+			did := args["delegate"].(*golua.LTable).RawGetString("id").(golua.LNumber)
+			delegate := item.ListDelegates[int(did)]
+
+			li := list.New(items, delegate, args["width"].(int), args["height"].(int))
 			id := len(item.Lists)
 			item.Lists = append(item.Lists, &li)
 
 			t := listTable(r, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func list_delegate(id) -> struct<tui.ListDelegate>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the list to.
+	/// @returns {struct<tui.ListDelegate>}
+	lib.CreateFunction(tab, "list_delegate",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+
+			di := list.NewDefaultDelegate()
+			id := len(item.ListDelegates)
+			item.ListDelegates = append(item.ListDelegates, &di)
+
+			t := listDelegateTable(r, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -496,7 +540,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 				lua.Error(state, err.Error())
 			}
 
-			opts := tableOptionsBuild(args["options"].(*golua.LTable))
+			opts := tableOptionsBuild(args["options"].(*golua.LTable), r)
 
 			tb := table.New(opts...)
 			id := len(item.Tables)
@@ -744,6 +788,24 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func cmd_suspend() -> struct<tui.CMDSuspend>
+	/// @returns {struct<tui.CMDSuspend>}
+	lib.CreateFunction(tab, "cmd_suspend",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDSuspend(state))
+			return 1
+		})
+
+	/// @func cmd_quit() -> struct<tui.CMDQuit>
+	/// @returns {struct<tui.CMDQuit>}
+	lib.CreateFunction(tab, "cmd_quit",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDQuit(state))
+			return 1
+		})
+
 	/// @func cmd_batch(cmds) -> struct<tui.CMDBatch>
 	/// @arg cmds {[]struct<tui.CMD>}
 	/// @returns {struct<tui.CMDBatch>}
@@ -772,6 +834,244 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func cmd_printf(format, args...) -> struct<tui.CMDPrintf>
+	/// @arg format {string}
+	/// @arg args {any...}
+	/// @returns {struct<tui.CMDPrintf>}
+	lib.CreateFunction(tab, "cmd_printf",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "format"},
+			lua.ArgVariadic("args", lua.ArrayType{Type: lua.ANY}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			a := args["args"].([]any)
+			at := state.NewTable()
+			for i, v := range a {
+				at.RawSetInt(i+1, v.(golua.LValue))
+			}
+			state.Push(customtea.CMDPrintf(state, args["format"].(string), at))
+			return 1
+		})
+
+	/// @func cmd_println(args...) -> struct<tui.CMDPrintln>
+	/// @arg args {any...}
+	/// @returns {struct<tui.CMDPrintln>}
+	lib.CreateFunction(tab, "cmd_println",
+		[]lua.Arg{
+			lua.ArgVariadic("args", lua.ArrayType{Type: lua.ANY}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			a := args["args"].([]any)
+			at := state.NewTable()
+			for i, v := range a {
+				at.RawSetInt(i+1, v.(golua.LValue))
+			}
+			state.Push(customtea.CMDPrintln(state, at))
+			return 1
+		})
+
+	/// @func cmd_window_title(title) -> struct<tui.CMDWindowTitle>
+	/// @arg title {string}
+	/// @returns {struct<tui.CMDWindowTitle>}
+	lib.CreateFunction(tab, "cmd_window_title",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "title"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDWindowTitle(state, args["title"].(string)))
+			return 1
+		})
+
+	/// @func cmd_window_size() -> struct<tui.CMDWindowSize>
+	/// @returns {struct<tui.CMDWindowSize>}
+	lib.CreateFunction(tab, "cmd_window_size",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDWindowSize(state))
+			return 1
+		})
+
+	/// @func cmd_show_cursor() -> struct<tui.CMDShowCursor>
+	/// @returns {struct<tui.CMDShowCursor>}
+	lib.CreateFunction(tab, "cmd_show_cursor",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDShowCursor(state))
+			return 1
+		})
+
+	/// @func cmd_hide_cursor() -> struct<tui.CMDHideCursor>
+	/// @returns {struct<tui.CMDHideCursor>}
+	lib.CreateFunction(tab, "cmd_hide_cursor",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDHideCursor(state))
+			return 1
+		})
+
+	/// @func cmd_clear_screen() -> struct<tui.CMDClearScreen>
+	/// @returns {struct<tui.CMDClearScreen>}
+	lib.CreateFunction(tab, "cmd_clear_screen",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDClearScreen(state))
+			return 1
+		})
+
+	/// @func cmd_clear_scroll_area() -> struct<tui.CMDClearScrollArea>
+	/// @returns {struct<tui.CMDClearScrollArea>}
+	lib.CreateFunction(tab, "cmd_clear_scroll_area",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDClearScrollArea(state))
+			return 1
+		})
+
+	/// @func cmd_scroll_sync(lines, top, bottom) -> struct<tui.CMDScrollSync>
+	/// @arg lines {[]string}
+	/// @arg top {int}
+	/// @arg bottom {int}
+	/// @returns {struct<tui.CMDScrollSync>}
+	lib.CreateFunction(tab, "cmd_scroll_sync",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "lines"},
+			{Type: lua.INT, Name: "top"},
+			{Type: lua.INT, Name: "bottom"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDScrollSync(state, args["lines"].(*golua.LTable), args["top"].(int), args["bottom"].(int)))
+			return 1
+		})
+
+	/// @func cmd_scroll_up(lines, top, bottom) -> struct<tui.CMDScrollUp>
+	/// @arg lines {[]string}
+	/// @arg top {int}
+	/// @arg bottom {int}
+	/// @returns {struct<tui.CMDScrollUp>}
+	lib.CreateFunction(tab, "cmd_scroll_up",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "lines"},
+			{Type: lua.INT, Name: "top"},
+			{Type: lua.INT, Name: "bottom"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDScrollUp(state, args["lines"].(*golua.LTable), args["top"].(int), args["bottom"].(int)))
+			return 1
+		})
+
+	/// @func cmd_scroll_down(lines, top, bottom) -> struct<tui.CMDScrollDown>
+	/// @arg lines {[]string}
+	/// @arg top {int}
+	/// @arg bottom {int}
+	/// @returns {struct<tui.CMDScrollDown>}
+	lib.CreateFunction(tab, "cmd_scroll_down",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "lines"},
+			{Type: lua.INT, Name: "top"},
+			{Type: lua.INT, Name: "bottom"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDScrollDown(state, args["lines"].(*golua.LTable), args["top"].(int), args["bottom"].(int)))
+			return 1
+		})
+
+	/// @func cmd_every(duration, fn) -> struct<tui.CMDEvery>
+	/// @arg duration {int} - Time in ms.
+	/// @arg fn {function(ms) -> any}
+	/// @returns {struct<tui.CMDEvery>}
+	lib.CreateFunction(tab, "cmd_every",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "duration"},
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDEvery(state, args["duration"].(int), args["fn"].(*golua.LFunction)))
+			return 1
+		})
+
+	/// @func cmd_tick(duration, fn) -> struct<tui.CMDTick>
+	/// @arg duration {int} - Time in ms.
+	/// @arg fn {function(ms) -> any}
+	/// @returns {struct<tui.CMDTick>}
+	lib.CreateFunction(tab, "cmd_tick",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "duration"},
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDTick(state, args["duration"].(int), args["fn"].(*golua.LFunction)))
+			return 1
+		})
+
+	/// @func cmd_toggle_report_focus(enabled?) -> struct<tui.CMDToggleReportFocus>
+	/// @arg? enabled {bool}
+	/// @returns {struct<tui.CMDToggleReportFocus>}
+	lib.CreateFunction(tab, "cmd_toggle_report_focus",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDToggleReportFocus(state, args["enabled"].(bool)))
+			return 1
+		})
+
+	/// @func cmd_toggle_bracketed_paste(enabled?) -> struct<tui.CMDToggleBracketedPaste>
+	/// @arg? enabled {bool}
+	/// @returns {struct<tui.CMDToggleBracketedPaste>}
+	lib.CreateFunction(tab, "cmd_toggle_bracketed_paste",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDToggleBracketedPaste(state, args["enabled"].(bool)))
+			return 1
+		})
+
+	/// @func cmd_disable_mouse() -> struct<tui.CMDDisableMouse>
+	/// @returns {struct<tui.CMDDisableMouse>}
+	lib.CreateFunction(tab, "cmd_disable_mouse",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDDisableMouse(state))
+			return 1
+		})
+
+	/// @func cmd_enable_mouse_all_motion() -> struct<tui.CMDEnableMouseAllMotion>
+	/// @returns {struct<tui.CMDEnableMouseAllMotion>}
+	lib.CreateFunction(tab, "cmd_enable_mouse_all_motion",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDEnableMouseAllMotion(state))
+			return 1
+		})
+
+	/// @func cmd_enable_mouse_cell_motion() -> struct<tui.CMDEnableMouseCellMotion>
+	/// @returns {struct<tui.CMDEnableMouseCellMotion>}
+	lib.CreateFunction(tab, "cmd_enable_mouse_cell_motion",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDEnableMouseCellMotion(state))
+			return 1
+		})
+
+	/// @func cmd_enter_alt_screen() -> struct<tui.CMDEnterAltScreen>
+	/// @returns {struct<tui.CMDEnterAltScreen>}
+	lib.CreateFunction(tab, "cmd_enter_alt_screen",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDEnterAltScreen(state))
+			return 1
+		})
+
+	/// @func cmd_exit_alt_screen() -> struct<tui.CMDExitAltScreen>
+	/// @returns {struct<tui.CMDExitAltScreen>}
+	lib.CreateFunction(tab, "cmd_exit_alt_screen",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(customtea.CMDExitAltScreen(state))
+			return 1
+		})
+
 	/// @constants Message
 	/// @const MSG_NONE
 	/// @const MSG_BLUR
@@ -790,6 +1090,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @const MSG_TIMERSTARTSTOP
 	/// @const MSG_TIMERTICK
 	/// @const MSG_TIMERTIMEOUT
+	/// @const MSG_LUA
 	tab.RawSetString("MSG_NONE", golua.LNumber(customtea.MSG_NONE))
 	tab.RawSetString("MSG_BLUR", golua.LNumber(customtea.MSG_BLUR))
 	tab.RawSetString("MSG_FOCUS", golua.LNumber(customtea.MSG_FOCUS))
@@ -807,6 +1108,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MSG_TIMERSTARTSTOP", golua.LNumber(customtea.MSG_TIMERSTARTSTOP))
 	tab.RawSetString("MSG_TIMERTICK", golua.LNumber(customtea.MSG_TIMERTICK))
 	tab.RawSetString("MSG_TIMERTIMEOUT", golua.LNumber(customtea.MSG_TIMERTIMEOUT))
+	tab.RawSetString("MSG_LUA", golua.LNumber(customtea.MSG_LUA))
 
 	/// @constants Spinners
 	/// @const SPINNER_LINE
@@ -863,6 +1165,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @const PAGINATOR_DOT
 	tab.RawSetString("PAGINATOR_ARABIC", golua.LNumber(paginator.Arabic))
 	tab.RawSetString("PAGINATOR_DOT", golua.LNumber(paginator.Dots))
+
+	/// @constants Filter Functions
+	/// @const FILTERFUNC_DEFAULT
+	/// @const FILTERFUNC_UNSORTED
+	tab.RawSetString("FILTERFUNC_DEFAULT", golua.LNumber(FILTERFUNC_DEFAULT))
+	tab.RawSetString("FILTERFUNC_UNSORTED", golua.LNumber(FILTERFUNC_UNSORTED))
 }
 
 type Spinners int
@@ -896,6 +1204,13 @@ var spinnerList = []spinner.Spinner{
 	spinner.Hamburger,
 	spinner.Ellipsis,
 }
+
+type FilterFunc int
+
+const (
+	FILTERFUNC_DEFAULT FilterFunc = iota
+	FILTERFUNC_UNSORTED
+)
 
 func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
 	/// @struct Program
@@ -950,6 +1265,149 @@ func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.L
 	)
 
 	return t
+}
+
+func programOptions(lib *lua.Lib, state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("__ansiCompressor", golua.LFalse)
+	t.RawSetString("__altScreen", golua.LFalse)
+	t.RawSetString("__fps", golua.LNil)
+	t.RawSetString("__filter", golua.LNil)
+	t.RawSetString("__inputTTY", golua.LFalse)
+	t.RawSetString("__mouseAllMotion", golua.LFalse)
+	t.RawSetString("__mouseCellMotion", golua.LFalse)
+	t.RawSetString("__reportFocus", golua.LFalse)
+	t.RawSetString("__noBracketedPaste", golua.LFalse)
+
+	lib.BuilderFunction(state, t, "ansi_compressor",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__ansiCompressor", golua.LTrue)
+		})
+
+	lib.BuilderFunction(state, t, "alt_screen",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__altScreen", golua.LTrue)
+		})
+
+	lib.BuilderFunction(state, t, "fps",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "fps"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__fps", golua.LNumber(args["fps"].(int)))
+		})
+
+	lib.BuilderFunction(state, t, "filter",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "filter"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__filter", args["filter"].(*golua.LFunction))
+		})
+
+	lib.BuilderFunction(state, t, "input_tty",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__inputTTY", golua.LTrue)
+		})
+
+	lib.BuilderFunction(state, t, "mouse_all_motion",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__mouseAllMotion", golua.LTrue)
+		})
+
+	lib.BuilderFunction(state, t, "mouse_cell_motion",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__mouseCellMotion", golua.LTrue)
+		})
+
+	lib.BuilderFunction(state, t, "report_focus",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__reportFocus", golua.LTrue)
+		})
+
+	lib.BuilderFunction(state, t, "no_bracketed_paste",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			t.RawSetString("__noBracketedPaste", golua.LTrue)
+		})
+
+	return t
+}
+
+func programOptionsBuild(state *golua.LState, t *golua.LTable) []tea.ProgramOption {
+	opts := []tea.ProgramOption{}
+
+	ansiCompressor := t.RawGetString("__ansiCompressor")
+	if ansiCompressor.Type() == golua.LTBool && bool(ansiCompressor.(golua.LBool)) {
+		opts = append(opts, tea.WithANSICompressor())
+	}
+
+	altScreen := t.RawGetString("__altScreen")
+	if altScreen.Type() == golua.LTBool && bool(altScreen.(golua.LBool)) {
+		opts = append(opts, tea.WithAltScreen())
+	}
+
+	fps := t.RawGetString("__fps")
+	if altScreen.Type() == golua.LTNumber {
+		opts = append(opts, tea.WithFPS(int(fps.(golua.LNumber))))
+	}
+
+	filter := t.RawGetString("__filter")
+	if filter.Type() == golua.LTFunction {
+		fn := filter.(*golua.LFunction)
+		opts = append(opts, tea.WithFilter(func(m1 tea.Model, m2 tea.Msg) tea.Msg {
+			if _, ok := m2.(tea.QuitMsg); ok {
+				return m2
+			}
+
+			mt := customtea.BuildMSG(m2, state)
+			state.Push(fn)
+			state.Push(mt)
+			state.Call(1, 1)
+			pass := state.CheckBool(-1)
+			state.Pop(1)
+
+			if !pass {
+				return nil
+			}
+
+			return m2
+		}))
+	}
+
+	inputTTY := t.RawGetString("__inputTTY")
+	if inputTTY.Type() == golua.LTBool && bool(inputTTY.(golua.LBool)) {
+		opts = append(opts, tea.WithInputTTY())
+	}
+
+	mouseAllMotion := t.RawGetString("__mouseAllMotion")
+	if mouseAllMotion.Type() == golua.LTBool && bool(mouseAllMotion.(golua.LBool)) {
+		opts = append(opts, tea.WithMouseAllMotion())
+	}
+
+	mouseCellMotion := t.RawGetString("__mouseCellMotion")
+	if mouseCellMotion.Type() == golua.LTBool && bool(mouseCellMotion.(golua.LBool)) {
+		opts = append(opts, tea.WithMouseCellMotion())
+	}
+
+	reportFocus := t.RawGetString("__reportFocus")
+	if reportFocus.Type() == golua.LTBool && bool(reportFocus.(golua.LBool)) {
+		opts = append(opts, tea.WithReportFocus())
+	}
+
+	noBracketedPaste := t.RawGetString("__noBracketedPaste")
+	if noBracketedPaste.Type() == golua.LTBool && bool(noBracketedPaste.(golua.LBool)) {
+		opts = append(opts, tea.WithoutBracketedPaste())
+	}
+
+	return opts
 }
 
 func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
@@ -1760,6 +2218,758 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
+		})
+
+	t.RawSetString("__styleFocusBase", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_base",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusBase")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.Base
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusBase", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_base_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.Base = *style.Style
+			t.RawSetString("__styleFocusBase", st)
+		})
+
+	t.RawSetString("__styleBlurBase", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_base",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurBase")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.Base
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurBase", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_base_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.Base = *style.Style
+			t.RawSetString("__styleBlurBase", st)
+		})
+
+	t.RawSetString("__styleFocusCursorLine", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_cursor_line",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusCursorLine")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.CursorLine
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusCursorLine", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_cursor_line_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.CursorLine = *style.Style
+			t.RawSetString("__styleFocusCursorLine", st)
+		})
+
+	t.RawSetString("__styleBlurCursorLine", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_cursor_line",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurCursorLine")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.CursorLine
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurCursorLine", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_cursor_line_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.CursorLine = *style.Style
+			t.RawSetString("__styleBlurCursorLine", st)
+		})
+
+	t.RawSetString("__styleFocusCursorLineNumber", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_cursor_line_number",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusCursorLineNumber")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.CursorLineNumber
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusCursorLineNumber", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_cursor_line_number_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.CursorLineNumber = *style.Style
+			t.RawSetString("__styleFocusCursorLineNumber", st)
+		})
+
+	t.RawSetString("__styleBlurCursorLineNumber", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_cursor_line_number",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurCursorLineNumber")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.CursorLineNumber
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurCursorLineNumber", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_cursor_line_number_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.CursorLineNumber = *style.Style
+			t.RawSetString("__styleBlurCursorLineNumber", st)
+		})
+
+	t.RawSetString("__styleFocusBufferEnd", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_buffer_end",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusBufferEnd")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.EndOfBuffer
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusBufferEnd", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_buffer_end_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.EndOfBuffer = *style.Style
+			t.RawSetString("__styleFocusEndOfBuffer", st)
+		})
+
+	t.RawSetString("__styleBlurBufferEnd", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_buffer_end",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurBufferEnd")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.EndOfBuffer
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurBufferEnd", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_buffer_end_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.EndOfBuffer = *style.Style
+			t.RawSetString("__styleBlurEndOfBuffer", st)
+		})
+
+	t.RawSetString("__styleFocusLineNumber", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_line_number",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusLineNumber")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.LineNumber
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusLineNumber", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_line_number_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.LineNumber = *style.Style
+			t.RawSetString("__styleFocusLineNumber", st)
+		})
+
+	t.RawSetString("__styleBlurLineNumber", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_line_number",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurLineNumber")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.LineNumber
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurLineNumber", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_line_number_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.LineNumber = *style.Style
+			t.RawSetString("__styleBlurLineNumber", st)
+		})
+
+	t.RawSetString("__styleFocusPlaceholder", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_placeholder",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusPlaceholder")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.Placeholder
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusPlaceholder", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_placeholder_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.Placeholder = *style.Style
+			t.RawSetString("__styleFocusPlaceholder", st)
+		})
+
+	t.RawSetString("__styleBlurPlaceholder", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_placeholder",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurPlaceholder")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.Placeholder
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurPlaceholder", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_placeholder_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.Placeholder = *style.Style
+			t.RawSetString("__styleBlurPlaceholder", st)
+		})
+
+	t.RawSetString("__styleFocusPrompt", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_prompt",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusPrompt")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.Prompt
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusPrompt", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_prompt_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.Prompt = *style.Style
+			t.RawSetString("__styleFocusPrompt", st)
+		})
+
+	t.RawSetString("__styleBlurPrompt", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_prompt",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurPrompt")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.Prompt
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurPrompt", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_prompt_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.Prompt = *style.Style
+			t.RawSetString("__styleBlurPrompt", st)
+		})
+
+	t.RawSetString("__styleFocusText", golua.LNil)
+	lib.TableFunction(state, t, "style_focus_text",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFocusText")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].FocusedStyle.Text
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFocusText", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_focus_text_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].FocusedStyle.Text = *style.Style
+			t.RawSetString("__styleFocusText", st)
+		})
+
+	t.RawSetString("__styleBlurText", golua.LNil)
+	lib.TableFunction(state, t, "style_blur_text",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleBlurText")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.TextAreas[id].BlurredStyle.Text
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleBlurText", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_blur_text_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.TextAreas[id].BlurredStyle.Text = *style.Style
+			t.RawSetString("__styleBlurText", st)
 		})
 
 	return t
@@ -4295,6 +5505,25 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		return 1
 	}))
 
+	lib.BuilderFunction(state, t, "filter_func",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			filter := list.DefaultFilter
+			if args["fn"].(int) == int(FILTERFUNC_UNSORTED) {
+				filter = list.UnsortedFilter
+			}
+
+			item.Lists[id].Filter = filter
+		})
+
 	t.RawSetString("index", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
@@ -5692,6 +6921,531 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 
 			item.Lists[id].Styles.DividerDot = *style.Style
 			t.RawSetString("__styleDividerDot", st)
+		})
+
+	return t
+}
+
+func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	lib.TableFunction(state, t, "show_description",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.ListDelegates[id].ShowDescription
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "show_description_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.ListDelegates[id].ShowDescription = args["enabled"].(bool)
+		})
+
+	lib.BuilderFunction(state, t, "update_func",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fn := args["fn"].(*golua.LFunction)
+
+			item.ListDelegates[id].UpdateFunc = func(msg tea.Msg, _ *list.Model) tea.Cmd {
+				luaMsg := customtea.BuildMSG(msg, state)
+
+				state.Push(fn)
+				state.Push(luaMsg)
+				state.Call(1, 1)
+				cmd := state.CheckTable(-1)
+				state.Pop(1)
+
+				return customtea.CMDBuild(state, item, cmd)
+			}
+		})
+
+	lib.BuilderFunction(state, t, "short_help_func",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fn := args["fn"].(*golua.LFunction)
+
+			item.ListDelegates[id].ShortHelpFunc = func() []key.Binding {
+				state.Push(fn)
+				state.Call(0, 1)
+				bindings := state.CheckTable(-1)
+				state.Pop(1)
+
+				bindingList := make([]key.Binding, bindings.Len())
+
+				for i := range bindings.Len() {
+					b := bindings.RawGetInt(i + 1).(*golua.LTable)
+					bid := b.RawGetString("id").(golua.LNumber)
+
+					bindingList[i] = *item.KeyBindings[int(bid)]
+				}
+
+				return bindingList
+			}
+		})
+
+	lib.BuilderFunction(state, t, "full_help_func",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fn := args["fn"].(*golua.LFunction)
+
+			item.ListDelegates[id].FullHelpFunc = func() [][]key.Binding {
+				state.Push(fn)
+				state.Call(0, 1)
+				groups := state.CheckTable(-1)
+				state.Pop(1)
+
+				groupsList := make([][]key.Binding, groups.Len())
+
+				for i := range groups.Len() {
+					bindings := groups.RawGetInt(i + 1).(*golua.LTable)
+					bindingList := make([]key.Binding, bindings.Len())
+
+					for z := range bindings.Len() {
+						b := bindings.RawGetInt(z + 1).(*golua.LTable)
+						bid := b.RawGetString("id").(golua.LNumber)
+
+						bindingList[z] = *item.KeyBindings[int(bid)]
+					}
+
+					groupsList[i] = bindingList
+				}
+
+				return groupsList
+			}
+		})
+
+	lib.TableFunction(state, t, "height",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.ListDelegates[id].Height()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "height_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.ListDelegates[id].SetHeight(args["height"].(int))
+		})
+
+	lib.TableFunction(state, t, "spacing",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.ListDelegates[id].Spacing()
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "spacing_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "spacing"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.ListDelegates[id].SetSpacing(args["spacing"].(int))
+		})
+
+	t.RawSetString("__styleTitleNormal", golua.LNil)
+	lib.TableFunction(state, t, "style_title_normal",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleTitleNormal")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.NormalTitle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleTitleNormal", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_title_normal_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.NormalTitle = *style.Style
+			t.RawSetString("__styleTitleNormal", st)
+		})
+
+	t.RawSetString("__styleTitleSelected", golua.LNil)
+	lib.TableFunction(state, t, "style_title_selected",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleTitleSelected")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.SelectedTitle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleTitleSelected", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_title_selected_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.SelectedTitle = *style.Style
+			t.RawSetString("__styleTitleSelected", st)
+		})
+
+	t.RawSetString("__styleTitleDimmed", golua.LNil)
+	lib.TableFunction(state, t, "style_title_dimmed",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleTitleDimmed")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.DimmedTitle
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleTitleDimmed", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_title_dimmed_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.DimmedTitle = *style.Style
+			t.RawSetString("__styleTitleDimmed", st)
+		})
+
+	t.RawSetString("__styleDescNormal", golua.LNil)
+	lib.TableFunction(state, t, "style_desc_normal",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleDescNormal")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.NormalDesc
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleDescNormal", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_desc_normal_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.NormalDesc = *style.Style
+			t.RawSetString("__styleDescNormal", st)
+		})
+
+	t.RawSetString("__styleDescSelected", golua.LNil)
+	lib.TableFunction(state, t, "style_desc_selected",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleDescSelected")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.SelectedDesc
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleDescSelected", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_desc_selected_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.SelectedDesc = *style.Style
+			t.RawSetString("__styleDescSelected", st)
+		})
+
+	t.RawSetString("__styleDescDimmed", golua.LNil)
+	lib.TableFunction(state, t, "style_desc_dimmed",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleDescDimmed")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.DimmedDesc
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleDescDimmed", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_desc_dimmed_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.DimmedDesc = *style.Style
+			t.RawSetString("__styleDescDimmed", st)
+		})
+
+	t.RawSetString("__styleFilterMatch", golua.LNil)
+	lib.TableFunction(state, t, "style_filter_match",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			so := t.RawGetString("__styleFilterMatch")
+			if so.Type() == golua.LTTable {
+				state.Push(so)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			style := &item.ListDelegates[id].Styles.FilterMatch
+			mid := r.CR_LIP.Add(&collection.StyleItem{
+				Style: style,
+			})
+
+			st := lipglossStyleTable(state, lib, r, mid)
+			state.Push(st)
+			t.RawSetString("__styleFilterMatch", st)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "style_filter_match_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			st := args["style"].(*golua.LTable)
+			styleid := st.RawGetString("id").(golua.LNumber)
+			style, _ := r.CR_LIP.Item(int(styleid))
+
+			item.ListDelegates[id].Styles.FilterMatch = *style.Style
+			t.RawSetString("__styleFilterMatch", st)
 		})
 
 	return t

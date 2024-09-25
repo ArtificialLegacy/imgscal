@@ -361,13 +361,13 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func place(width, height, hpos, vpos, str, opts) -> string
+	/// @func place(width, height, hpos, vpos, str, opts?) -> string
 	/// @arg width {int}
 	/// @arg height {int}
 	/// @arg hpos {float<lipgloss.Position>}
 	/// @arg vpos {float<lipgloss.Position>}
 	/// @arg str {string}
-	/// @arg opts {struct<lipgloss.WhitespaceOption>}
+	/// @arg? opts {struct<lipgloss.WhitespaceOption>}
 	/// @returns {string}
 	lib.CreateFunction(tab, "place",
 		[]lua.Arg{
@@ -376,7 +376,7 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "hpos"},
 			{Type: lua.FLOAT, Name: "vpos"},
 			{Type: lua.STRING, Name: "str"},
-			{Type: lua.RAW_TABLE, Name: "opts"},
+			{Type: lua.RAW_TABLE, Name: "opts", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			width := args["width"].(int)
@@ -393,18 +393,18 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func place_horizontal(width, hpos, str, opts) -> string
+	/// @func place_horizontal(width, hpos, str, opts?) -> string
 	/// @arg width {int}
 	/// @arg hpos {float<lipgloss.Position>}
 	/// @arg str {string}
-	/// @arg opts {struct<lipgloss.WhitespaceOption>}
+	/// @arg? opts {struct<lipgloss.WhitespaceOption>}
 	/// @returns {string}
 	lib.CreateFunction(tab, "place_horizontal",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "width"},
 			{Type: lua.FLOAT, Name: "hpos"},
 			{Type: lua.STRING, Name: "str"},
-			{Type: lua.RAW_TABLE, Name: "opts"},
+			{Type: lua.RAW_TABLE, Name: "opts", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			width := args["width"].(int)
@@ -419,18 +419,18 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func place_vertical(height, vpos, str, opts) -> string
+	/// @func place_vertical(height, vpos, str, opts?) -> string
 	/// @arg height {int}
 	/// @arg vpos {float<lipgloss.Position>}
 	/// @arg str {string}
-	/// @arg opts {struct<lipgloss.WhitespaceOption>}
+	/// @arg? opts {struct<lipgloss.WhitespaceOption>}
 	/// @returns {string}
 	lib.CreateFunction(tab, "place_vertical",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "height"},
 			{Type: lua.FLOAT, Name: "vpos"},
 			{Type: lua.STRING, Name: "str"},
-			{Type: lua.RAW_TABLE, Name: "opts"},
+			{Type: lua.RAW_TABLE, Name: "opts", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			height := args["height"].(int)
@@ -492,6 +492,34 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			us, _ := r.CR_LIP.Item(int(unmatchid))
 
 			result := lipgloss.StyleRunes(str, indList, *ms.Style, *us.Style)
+
+			state.Push(golua.LString(result))
+			return 1
+		})
+
+	/// @func style_string(str, style) -> string
+	/// @arg str {string}
+	/// @arg style {struct<lipgloss.Style>}
+	/// @returns {string}
+	lib.CreateFunction(tab, "style_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "str"},
+			{Type: lua.RAW_TABLE, Name: "style"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			str := args["str"].(string)
+
+			style := args["style"].(*golua.LTable)
+
+			sid := style.RawGetString("id").(golua.LNumber)
+
+			ss, _ := r.CR_LIP.Item(int(sid))
+			inds := make([]int, len(str))
+			for i := range inds {
+				inds[i] = i
+			}
+
+			result := lipgloss.StyleRunes(str, inds, *ss.Style, lipgloss.NewStyle())
 
 			state.Push(golua.LString(result))
 			return 1

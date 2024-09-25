@@ -14,7 +14,7 @@ function main()
 					tui.list_item("test 1", "one"),
 					tui.list_item("test 2", "two"),
 					tui.list_item("test 3", "three"),
-				}, 250, 10)
+				}, 250, 10, tui.list_delegate(id):show_description_set(false))
 					:help_show_set(true)
 					:title_show_set(true)
 					:statusbar_show_set(true)
@@ -48,5 +48,5 @@ function main()
 			return model.title .. "\n\n" .. model.list.view() .. "\n\n"
 		end)
 
-	tui.run(program)
+	tui.run(program, tui.program_options():fps(1))
 end
