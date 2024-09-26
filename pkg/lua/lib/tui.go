@@ -2,7 +2,6 @@ package lib
 
 import (
 	"errors"
-	"math"
 	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -353,6 +352,29 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func list_filter_rank(index, matched) -> struct<tui.ListFilterRank>
+	/// @arg index {int}
+	/// @arg matched {[]int}
+	/// @returns {struct<tui.ListFilterRank>}
+	lib.CreateFunction(tab, "list_filter_rank",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "index"},
+			{Type: lua.RAW_TABLE, Name: "matched"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ListFilterRank
+			/// @prop index {int} - The index of the item.
+			/// @prop matched {[]int} - The indexes of the matched words.
+
+			t := state.NewTable()
+
+			t.RawSetString("index", golua.LNumber(args["index"].(int)))
+			t.RawSetString("matched", args["matched"].(*golua.LTable))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func paginator(id, per?, total?) -> struct<tui.Paginator>
 	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the paginator to.
 	/// @arg? per {int} - Not set if left at default value of 0.
@@ -590,6 +612,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "model"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDViewportSync
+			/// @prop cmd {int} - The command type.
+			/// @prop id {int} - The viewport id.
+
 			t := customtea.CMDViewportSync(state, args["model"].(int))
 			state.Push(t)
 			return 1
@@ -605,6 +631,11 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "lines"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDViewportUp
+			/// @prop cmd {int} - The command type.
+			/// @prop id {int} - The viewport id.
+			// @prop lines {[]string} - The lines to display.
+
 			t := customtea.CMDViewportUp(state, args["model"].(int), args["lines"].(*golua.LTable))
 			state.Push(t)
 			return 1
@@ -620,6 +651,11 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "lines"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDViewportDown
+			/// @prop cmd {int} - The command type.
+			/// @prop id {int} - The viewport id.
+			// @prop lines {[]string} - The lines to display.
+
 			t := customtea.CMDViewportDown(state, args["model"].(int), args["lines"].(*golua.LTable))
 			state.Push(t)
 			return 1
@@ -784,6 +820,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_none",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMD
+			/// @prop cmd {int} - The command type.
+
+			/// @struct CMDNone
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDNone(state))
 			return 1
 		})
@@ -793,6 +835,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_suspend",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDSuspend
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDSuspend(state))
 			return 1
 		})
@@ -802,6 +847,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_quit",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDQuit
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDQuit(state))
 			return 1
 		})
@@ -814,6 +862,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "cmds"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDBatch
+			/// @prop cmd {int} - The command type.
+			/// @prop cmds {[]struct<tui.CMD>} - The commands to execute.
+
 			t := customtea.CMDBatch(state, args["cmds"].(*golua.LTable))
 
 			state.Push(t)
@@ -828,6 +880,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "cmds"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDSequence
+			/// @prop cmd {int} - The command type.
+			/// @prop cmds {[]struct<tui.CMD>} - The commands to execute.
+
 			t := customtea.CMDSequence(state, args["cmds"].(*golua.LTable))
 
 			state.Push(t)
@@ -844,6 +900,11 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			lua.ArgVariadic("args", lua.ArrayType{Type: lua.ANY}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDPrintf
+			/// @prop cmd {int} - The command type.
+			/// @prop format {string} - The format string.
+			/// @prop args {[]any} - The arguments to format.
+
 			a := args["args"].([]any)
 			at := state.NewTable()
 			for i, v := range a {
@@ -861,6 +922,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			lua.ArgVariadic("args", lua.ArrayType{Type: lua.ANY}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDPrintln
+			/// @prop cmd {int} - The command type.
+			/// @prop args {[]any} - The arguments to print.
+
 			a := args["args"].([]any)
 			at := state.NewTable()
 			for i, v := range a {
@@ -878,6 +943,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "title"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDWindowTitle
+			/// @prop cmd {int} - The command type.
+			/// @prop title {string} - The title to set.
+
 			state.Push(customtea.CMDWindowTitle(state, args["title"].(string)))
 			return 1
 		})
@@ -887,6 +956,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_window_size",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDWindowSize
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDWindowSize(state))
 			return 1
 		})
@@ -896,6 +968,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_show_cursor",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDShowCursor
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDShowCursor(state))
 			return 1
 		})
@@ -905,6 +980,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_hide_cursor",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDHideCursor
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDHideCursor(state))
 			return 1
 		})
@@ -914,6 +992,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_clear_screen",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDClearScreen
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDClearScreen(state))
 			return 1
 		})
@@ -923,6 +1004,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_clear_scroll_area",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDClearScrollArea
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDClearScrollArea(state))
 			return 1
 		})
@@ -939,6 +1023,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "bottom"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDScrollSync
+			/// @prop cmd {int} - The command type.
+			/// @prop lines {[]string} - The lines to display.
+			/// @prop top {int} - The top line.
+			/// @prop bottom {int} - The bottom line.
+
 			state.Push(customtea.CMDScrollSync(state, args["lines"].(*golua.LTable), args["top"].(int), args["bottom"].(int)))
 			return 1
 		})
@@ -955,6 +1045,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "bottom"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDScrollUp
+			/// @prop cmd {int} - The command type.
+			/// @prop lines {[]string} - The lines to display.
+			/// @prop top {int} - The top line.
+			/// @prop bottom {int} - The bottom line.
+
 			state.Push(customtea.CMDScrollUp(state, args["lines"].(*golua.LTable), args["top"].(int), args["bottom"].(int)))
 			return 1
 		})
@@ -971,6 +1067,12 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "bottom"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDScrollDown
+			/// @prop cmd {int} - The command type.
+			/// @prop lines {[]string} - The lines to display.
+			/// @prop top {int} - The top line.
+			/// @prop bottom {int} - The bottom line.
+
 			state.Push(customtea.CMDScrollDown(state, args["lines"].(*golua.LTable), args["top"].(int), args["bottom"].(int)))
 			return 1
 		})
@@ -985,6 +1087,11 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FUNC, Name: "fn"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDEvery
+			/// @prop cmd {int} - The command type.
+			/// @prop duration {int} - Time in ms.
+			/// @prop fn {function(ms) -> any} - The function to call.
+
 			state.Push(customtea.CMDEvery(state, args["duration"].(int), args["fn"].(*golua.LFunction)))
 			return 1
 		})
@@ -999,6 +1106,11 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FUNC, Name: "fn"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDTick
+			/// @prop cmd {int} - The command type.
+			/// @prop duration {int} - Time in ms.
+			/// @prop fn {function(ms) -> any} - The function to call.
+
 			state.Push(customtea.CMDTick(state, args["duration"].(int), args["fn"].(*golua.LFunction)))
 			return 1
 		})
@@ -1011,6 +1123,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "enabled", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDToggleReportFocus
+			/// @prop cmd {int} - The command type.
+			/// @prop enabled {bool} - Whether to report focus.
+
 			state.Push(customtea.CMDToggleReportFocus(state, args["enabled"].(bool)))
 			return 1
 		})
@@ -1023,6 +1139,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "enabled", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDToggleBracketedPaste
+			/// @prop cmd {int} - The command type.
+			/// @prop enabled {bool} - Whether to enable bracketed paste.
+
 			state.Push(customtea.CMDToggleBracketedPaste(state, args["enabled"].(bool)))
 			return 1
 		})
@@ -1032,6 +1152,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_disable_mouse",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDDisableMouse
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDDisableMouse(state))
 			return 1
 		})
@@ -1041,6 +1164,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_enable_mouse_all_motion",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDEnableMouseAllMotion
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDEnableMouseAllMotion(state))
 			return 1
 		})
@@ -1050,6 +1176,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_enable_mouse_cell_motion",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDEnableMouseCellMotion
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDEnableMouseCellMotion(state))
 			return 1
 		})
@@ -1059,6 +1188,9 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_enter_alt_screen",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDEnterAltScreen
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDEnterAltScreen(state))
 			return 1
 		})
@@ -1068,9 +1200,311 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_exit_alt_screen",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct CMDExitAltScreen
+			/// @prop cmd {int} - The command type.
+
 			state.Push(customtea.CMDExitAltScreen(state))
 			return 1
 		})
+
+	/// @struct CMDStored
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int}
+
+	/// @struct CMDSpinnerTick
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The spinner id.
+
+	/// @struct CMDTextAreaFocus
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The text area id.
+
+	/// @struct CMDTextInputFocus
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The text input id.
+
+	/// @struct CMDBlink
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The cursor id.
+
+	/// @struct CMDCursorFocus
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The cursor id.
+
+	/// @struct CMDFilePickerInit
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The file picker id.
+
+	/// @struct CMDListSetItems
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The list id.
+	/// @prop items {[]struct<tui.ListItem>} - The items to set.
+
+	/// @struct CMDListInsertItem
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The list id.
+	/// @prop index {int} - The index to insert at.
+	/// @prop item {struct<tui.ListItem>} - The item to insert.
+
+	/// @struct CMDListSetItem
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The list id.
+	/// @prop index {int} - The index to set.
+	/// @prop item {struct<tui.ListItem>} - The item to set.
+
+	/// @struct CMDListStatusMessage
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The list id.
+	/// @prop msg {string} - The message to display.
+
+	/// @struct CMDListSpinnerStart
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The list id.
+
+	/// @struct CMDListSpinnerToggle
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The list id.
+
+	/// @struct CMDProgressSet
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The progress id.
+	/// @prop percent {float} - The percentage.
+
+	/// @struct CMDProgressDec
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The progress id.
+	/// @prop percent {float} - The percentage to decrease.
+
+	/// @struct CMDProgressInc
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The progress id.
+	/// @prop percent {float} - The percentage to increase.
+
+	/// @struct CMDStopWatchStart
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct CMDStopWatchStop
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct CMDStopWatchReset
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct CMDStopWatchToggle
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct CMDTimerStart
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The timer id.
+
+	/// @struct CMDTimerInit
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The timer id.
+
+	/// @struct CMDTimerStop
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The timer id.
+
+	/// @struct CMDTimerToggle
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The timer id.
+
+	/// @constants Command
+	/// @const CMD_NONE
+	/// @const CMD_STORED
+	/// @const CMD_BATCH
+	/// @const CMD_SEQUENCE
+	/// @const CMD_SPINNERTICK
+	/// @const CMD_TEXTAREAFOCUS
+	/// @const CMD_TEXTINPUTFOCUS
+	/// @const CMD_BLINK
+	/// @const CMD_CURSORFOCUS
+	/// @const CMD_FILEPICKERINIT
+	/// @const CMD_LISTSETITEMS
+	/// @const CMD_LISTINSERTITEM
+	/// @const CMD_LISTSETITEM
+	/// @const CMD_LISTSTATUSMESSAGE
+	/// @const CMD_LISTSPINNERSTART
+	/// @const CMD_LISTSPINNERTOGGLE
+	/// @const CMD_PROGRESSSET
+	/// @const CMD_PROGRESSDEC
+	/// @const CMD_PROGRESSINC
+	/// @const CMD_STOPWATCHSTART
+	/// @const CMD_STOPWATCHSTOP
+	/// @const CMD_STOPWATCHTOGGLE
+	/// @const CMD_STOPWATCHRESET
+	/// @const CMD_TIMERINIT
+	/// @const CMD_TIMERSTART
+	/// @const CMD_TIMERSTOP
+	/// @const CMD_TIMERTOGGLE
+	/// @const CMD_VIEWPORTSYNC
+	/// @const CMD_VIEWPORTUP
+	/// @const CMD_VIEWPORTDOWN
+	/// @const CMD_PRINTF
+	/// @const CMD_PRINTLN
+	/// @const CMD_WINDOWTITLE
+	/// @const CMD_WINDOWSIZE
+	/// @const CMD_SUSPEND
+	/// @const CMD_QUIT
+	/// @const CMD_SHOWCURSOR
+	/// @const CMD_HIDECURSOR
+	/// @const CMD_CLEARSCREEN
+	/// @const CMD_CLEARSCROLLAREA
+	/// @const CMD_SCROLLSYNC
+	/// @const CMD_SCROLLUP
+	/// @const CMD_SCROLLDOWN
+	/// @const CMD_EVERY
+	/// @const CMD_TICK
+	/// @const CMD_TOGGLEREPORTFOCUS
+	/// @const CMD_TOGGLEBRACKETEDPASTE
+	/// @const CMD_DISABLEMOUSE
+	/// @const CMD_ENABLEMOUSEALLMOTION
+	/// @const CMD_ENABLEMOUSECELLMOTION
+	/// @const CMD_ENTERALTSCREEN
+	/// @const CMD_EXITALTSCREEN
+	tab.RawSetString("CMD_NONE", golua.LNumber(customtea.CMD_NONE))
+	tab.RawSetString("CMD_STORED", golua.LNumber(customtea.CMD_STORED))
+	tab.RawSetString("CMD_BATCH", golua.LNumber(customtea.CMD_BATCH))
+	tab.RawSetString("CMD_SEQUENCE", golua.LNumber(customtea.CMD_SEQUENCE))
+	tab.RawSetString("CMD_SPINNERTICK", golua.LNumber(customtea.CMD_SPINNERTICK))
+	tab.RawSetString("CMD_TEXTAREAFOCUS", golua.LNumber(customtea.CMD_TEXTAREAFOCUS))
+	tab.RawSetString("CMD_TEXTINPUTFOCUS", golua.LNumber(customtea.CMD_TEXTINPUTFOCUS))
+	tab.RawSetString("CMD_BLINK", golua.LNumber(customtea.CMD_BLINK))
+	tab.RawSetString("CMD_CURSORFOCUS", golua.LNumber(customtea.CMD_CURSORFOCUS))
+	tab.RawSetString("CMD_FILEPICKERINIT", golua.LNumber(customtea.CMD_FILEPICKERINIT))
+	tab.RawSetString("CMD_LISTSETITEMS", golua.LNumber(customtea.CMD_LISTSETITEMS))
+	tab.RawSetString("CMD_LISTINSERTITEM", golua.LNumber(customtea.CMD_LISTINSERTITEM))
+	tab.RawSetString("CMD_LISTSETITEM", golua.LNumber(customtea.CMD_LISTSETITEM))
+	tab.RawSetString("CMD_LISTSTATUSMESSAGE", golua.LNumber(customtea.CMD_LISTSTATUSMESSAGE))
+	tab.RawSetString("CMD_LISTSPINNERSTART", golua.LNumber(customtea.CMD_LISTSPINNERSTART))
+	tab.RawSetString("CMD_LISTSPINNERTOGGLE", golua.LNumber(customtea.CMD_LISTSPINNERTOGGLE))
+	tab.RawSetString("CMD_PROGRESSSET", golua.LNumber(customtea.CMD_PROGRESSSET))
+	tab.RawSetString("CMD_PROGRESSDEC", golua.LNumber(customtea.CMD_PROGRESSDEC))
+	tab.RawSetString("CMD_PROGRESSINC", golua.LNumber(customtea.CMD_PROGRESSINC))
+	tab.RawSetString("CMD_STOPWATCHSTART", golua.LNumber(customtea.CMD_STOPWATCHSTART))
+	tab.RawSetString("CMD_STOPWATCHSTOP", golua.LNumber(customtea.CMD_STOPWATCHSTOP))
+	tab.RawSetString("CMD_STOPWATCHTOGGLE", golua.LNumber(customtea.CMD_STOPWATCHTOGGLE))
+	tab.RawSetString("CMD_STOPWATCHRESET", golua.LNumber(customtea.CMD_STOPWATCHRESET))
+	tab.RawSetString("CMD_TIMERINIT", golua.LNumber(customtea.CMD_TIMERINIT))
+	tab.RawSetString("CMD_TIMERSTART", golua.LNumber(customtea.CMD_TIMERSTART))
+	tab.RawSetString("CMD_TIMERSTOP", golua.LNumber(customtea.CMD_TIMERSTOP))
+	tab.RawSetString("CMD_TIMERTOGGLE", golua.LNumber(customtea.CMD_TIMERTOGGLE))
+	tab.RawSetString("CMD_VIEWPORTSYNC", golua.LNumber(customtea.CMD_VIEWPORTSYNC))
+	tab.RawSetString("CMD_VIEWPORTUP", golua.LNumber(customtea.CMD_VIEWPORTUP))
+	tab.RawSetString("CMD_VIEWPORTDOWN", golua.LNumber(customtea.CMD_VIEWPORTDOWN))
+	tab.RawSetString("CMD_PRINTF", golua.LNumber(customtea.CMD_PRINTF))
+	tab.RawSetString("CMD_PRINTLN", golua.LNumber(customtea.CMD_PRINTLN))
+	tab.RawSetString("CMD_WINDOWTITLE", golua.LNumber(customtea.CMD_WINDOWTITLE))
+	tab.RawSetString("CMD_WINDOWSIZE", golua.LNumber(customtea.CMD_WINDOWSIZE))
+	tab.RawSetString("CMD_SUSPEND", golua.LNumber(customtea.CMD_SUSPEND))
+	tab.RawSetString("CMD_QUIT", golua.LNumber(customtea.CMD_QUIT))
+	tab.RawSetString("CMD_SHOWCURSOR", golua.LNumber(customtea.CMD_SHOWCURSOR))
+	tab.RawSetString("CMD_HIDECURSOR", golua.LNumber(customtea.CMD_HIDECURSOR))
+	tab.RawSetString("CMD_CLEARSCREEN", golua.LNumber(customtea.CMD_CLEARSCREEN))
+	tab.RawSetString("CMD_CLEARSCROLLAREA", golua.LNumber(customtea.CMD_CLEARSCROLLAREA))
+	tab.RawSetString("CMD_SCROLLSYNC", golua.LNumber(customtea.CMD_SCROLLSYNC))
+	tab.RawSetString("CMD_SCROLLUP", golua.LNumber(customtea.CMD_SCROLLUP))
+	tab.RawSetString("CMD_SCROLLDOWN", golua.LNumber(customtea.CMD_SCROLLDOWN))
+	tab.RawSetString("CMD_EVERY", golua.LNumber(customtea.CMD_EVERY))
+	tab.RawSetString("CMD_TICK", golua.LNumber(customtea.CMD_TICK))
+	tab.RawSetString("CMD_TOGGLEREPORTFOCUS", golua.LNumber(customtea.CMD_TOGGLEREPORTFOCUS))
+	tab.RawSetString("CMD_TOGGLEBRACKETEDPASTE", golua.LNumber(customtea.CMD_TOGGLEBRACKETEDPASTE))
+	tab.RawSetString("CMD_DISABLEMOUSE", golua.LNumber(customtea.CMD_DISABLEMOUSE))
+	tab.RawSetString("CMD_ENABLEMOUSEALLMOTION", golua.LNumber(customtea.CMD_ENABLEMOUSEALLMOTION))
+	tab.RawSetString("CMD_ENABLEMOUSECELLMOTION", golua.LNumber(customtea.CMD_ENABLEMOUSECELLMOTION))
+	tab.RawSetString("CMD_ENTERALTSCREEN", golua.LNumber(customtea.CMD_ENTERALTSCREEN))
+	tab.RawSetString("CMD_EXITALTSCREEN", golua.LNumber(customtea.CMD_EXITALTSCREEN))
+
+	/// @struct MSG
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGNone
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGBlur
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGFocus
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGQuit
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGResume
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGSuspend
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGCursorBlink
+	/// @prop msg {int} - The message type.
+
+	/// @struct MSGKey
+	/// @prop msg {int} - The message type.
+	/// @prop key {string} - The key pressed.
+	/// @prop event {struct<tui.KeyEvent>} - The key event.
+
+	/// @struct MSGMouse
+	/// @prop msg {int} - The message type.
+	/// @prop key {string} - The key pressed.
+	/// @prop event {struct<tui.MouseEvent>} - The mouse event.
+
+	/// @struct MSGWindowSize
+	/// @prop msg {int} - The message type.
+	/// @prop width {int} - The width.
+	/// @prop height {int} - The height.
+
+	/// @struct MSGSpinnerTick
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The spinner id.
+
+	/// @struct MSGStopwatchReset
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct MSGStopwatchStartStop
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct MSGStopwatchTick
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The stopwatch id.
+
+	/// @struct MSGTimerStartStop
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The timer id.
+
+	/// @struct MSGTimerTimeout
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The timer id.
+
+	/// @struct MSGTimerTick
+	/// @prop msg {int} - The message type.
+	/// @prop id {int} - The timer id.
+	/// @prop timeout {int} - If this tick is a timeout.
+
+	/// @struct MSGLua
+	/// @prop msg {int} - The message type.
+	/// @prop value {any} - The value.
+
+	/// @struct KeyEvent
+	/// @prop type {int<tui.Key} - The key event type.
+	/// @prop alt {bool} - Whether the alt key was pressed.
+	/// @prop paste {bool}
+	/// @prop runes {[]int}
+
+	/// @struct MouseEvent
+	/// @prop x {int} - The x position.
+	/// @prop y {int} - The y position.
+	/// @prop shift {bool} - Whether the shift key was pressed.
+	/// @prop alt {bool} - Whether the alt key was pressed.
+	/// @prop ctrl {bool} - Whether the ctrl key was pressed.
+	/// @prop action {int<tui.MouseAction>} - The mouse action.
+	/// @prop button {int<tui.MouseButton>} - The mouse button.
+	/// @prop is_wheel {bool} - Whether the event is a wheel event.
 
 	/// @constants Message
 	/// @const MSG_NONE
@@ -1171,6 +1605,228 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @const FILTERFUNC_UNSORTED
 	tab.RawSetString("FILTERFUNC_DEFAULT", golua.LNumber(FILTERFUNC_DEFAULT))
 	tab.RawSetString("FILTERFUNC_UNSORTED", golua.LNumber(FILTERFUNC_UNSORTED))
+
+	/// @constants Mouse Actions
+	/// @const MOUSE_PRESS
+	/// @const MOUSE_RELEASE
+	/// @const MOUSE_MOTION
+	tab.RawSetString("MOUSE_PRESS", golua.LNumber(tea.MouseActionPress))
+	tab.RawSetString("MOUSE_RELEASE", golua.LNumber(tea.MouseActionRelease))
+	tab.RawSetString("MOUSE_MOTION", golua.LNumber(tea.MouseActionMotion))
+
+	/// @constants Mouse Buttons
+	/// @const MOUSEBUTTON_NONE
+	/// @const MOUSEBUTTON_LEFT
+	/// @const MOUSEBUTTON_MIDDLE
+	/// @const MOUSEBUTTON_RIGHT
+	/// @const MOUSEBUTTON_WHEELUP
+	/// @const MOUSEBUTTON_WHEELDOWN
+	/// @const MOUSEBUTTON_WHEELLEFT
+	/// @const MOUSEBUTTON_WHEELRIGHT
+	/// @const MOUSEBUTTON_BACKWARD
+	/// @const MOUSEBUTTON_FORWARD
+	/// @const MOUSEBUTTON_10
+	/// @const MOUSEBUTTON_11
+	tab.RawSetString("MOUSEBUTTON_NONE", golua.LNumber(tea.MouseButtonNone))
+	tab.RawSetString("MOUSEBUTTON_LEFT", golua.LNumber(tea.MouseButtonLeft))
+	tab.RawSetString("MOUSEBUTTON_MIDDLE", golua.LNumber(tea.MouseButtonMiddle))
+	tab.RawSetString("MOUSEBUTTON_RIGHT", golua.LNumber(tea.MouseButtonRight))
+	tab.RawSetString("MOUSEBUTTON_WHEELUP", golua.LNumber(tea.MouseButtonWheelUp))
+	tab.RawSetString("MOUSEBUTTON_WHEELDOWN", golua.LNumber(tea.MouseButtonWheelDown))
+	tab.RawSetString("MOUSEBUTTON_WHEELLEFT", golua.LNumber(tea.MouseButtonWheelLeft))
+	tab.RawSetString("MOUSEBUTTON_WHEELRIGHT", golua.LNumber(tea.MouseButtonWheelRight))
+	tab.RawSetString("MOUSEBUTTON_BACKWARD", golua.LNumber(tea.MouseButtonBackward))
+	tab.RawSetString("MOUSEBUTTON_FORWARD", golua.LNumber(tea.MouseButtonForward))
+	tab.RawSetString("MOUSEBUTTON_10", golua.LNumber(tea.MouseButton10))
+	tab.RawSetString("MOUSEBUTTON_11", golua.LNumber(tea.MouseButton11))
+
+	/// @constants Keys
+	/// @const KEY_NULL
+	/// @const KEY_BREAK
+	/// @const KEY_ENTER
+	/// @const KEY_BACKSPACE
+	/// @const KEY_TAB
+	/// @const KEY_ESC
+	/// @const KEY_ESCAPE
+	/// @const KEY_CTRL_AT
+	/// @const KEY_CTRL_A
+	/// @const KEY_CTRL_B
+	/// @const KEY_CTRL_C
+	/// @const KEY_CTRL_D
+	/// @const KEY_CTRL_E
+	/// @const KEY_CTRL_F
+	/// @const KEY_CTRL_G
+	/// @const KEY_CTRL_H
+	/// @const KEY_CTRL_I
+	/// @const KEY_CTRL_J
+	/// @const KEY_CTRL_K
+	/// @const KEY_CTRL_L
+	/// @const KEY_CTRL_M
+	/// @const KEY_CTRL_N
+	/// @const KEY_CTRL_O
+	/// @const KEY_CTRL_P
+	/// @const KEY_CTRL_Q
+	/// @const KEY_CTRL_R
+	/// @const KEY_CTRL_S
+	/// @const KEY_CTRL_T
+	/// @const KEY_CTRL_U
+	/// @const KEY_CTRL_V
+	/// @const KEY_CTRL_W
+	/// @const KEY_CTRL_X
+	/// @const KEY_CTRL_Y
+	/// @const KEY_CTRL_Z
+	/// @const KEY_CTRL_OPEN_BRACKET
+	/// @const KEY_CTRL_BACKSLASH
+	/// @const KEY_CTRL_CLOSE_BRACKET
+	/// @const KEY_CTRL_CARET
+	/// @const KEY_CTRL_UNDERSCORE
+	/// @const KEY_CTRL_QUESTION_MARK
+	/// @const KEY_RUNES
+	/// @const KEY_UP
+	/// @const KEY_DOWN
+	/// @const KEY_RIGHT
+	/// @const KEY_LEFT
+	/// @const KEY_SHIFTTAB
+	/// @const KEY_HOME
+	/// @const KEY_END
+	/// @const KEY_PGUP
+	/// @const KEY_PGDOWN
+	/// @const KEY_CTRL_PGUP
+	/// @const KEY_CTRL_PGDOWN
+	/// @const KEY_DELETE
+	/// @const KEY_INSERT
+	/// @const KEY_SPACE
+	/// @const KEY_CTRL_UP
+	/// @const KEY_CTRL_DOWN
+	/// @const KEY_CTRL_RIGHT
+	/// @const KEY_CTRL_LEFT
+	/// @const KEY_CTRL_HOME
+	/// @const KEY_CTRL_END
+	/// @const KEY_SHIFT_UP
+	/// @const KEY_SHIFT_DOWN
+	/// @const KEY_SHIFT_RIGHT
+	/// @const KEY_SHIFT_LEFT
+	/// @const KEY_SHIFT_HOME
+	/// @const KEY_SHIFT_END
+	/// @const KEY_CTRL_SHIFT_UP
+	/// @const KEY_CTRL_SHIFT_DOWN
+	/// @const KEY_CTRL_SHIFT_LEFT
+	/// @const KEY_CTRL_SHIFT_RIGHT
+	/// @const KEY_CTRL_SHIFT_HOME
+	/// @const KEY_CTRL_SHIFT_END
+	/// @const KEY_F1
+	/// @const KEY_F2
+	/// @const KEY_F3
+	/// @const KEY_F4
+	/// @const KEY_F5
+	/// @const KEY_F6
+	/// @const KEY_F7
+	/// @const KEY_F8
+	/// @const KEY_F9
+	/// @const KEY_F10
+	/// @const KEY_F11
+	/// @const KEY_F12
+	/// @const KEY_F13
+	/// @const KEY_F14
+	/// @const KEY_F15
+	/// @const KEY_F16
+	/// @const KEY_F17
+	/// @const KEY_F18
+	/// @const KEY_F19
+	/// @const KEY_F20
+	tab.RawSetString("KEY_NULL", golua.LNumber(tea.KeyNull))
+	tab.RawSetString("KEY_BREAK", golua.LNumber(tea.KeyBreak))
+	tab.RawSetString("KEY_ENTER", golua.LNumber(tea.KeyEnter))
+	tab.RawSetString("KEY_BACKSPACE", golua.LNumber(tea.KeyBackspace))
+	tab.RawSetString("KEY_TAB", golua.LNumber(tea.KeyTab))
+	tab.RawSetString("KEY_ESC", golua.LNumber(tea.KeyEsc))
+	tab.RawSetString("KEY_ESCAPE", golua.LNumber(tea.KeyEscape))
+	tab.RawSetString("KEY_CTRL_AT", golua.LNumber(tea.KeyCtrlAt))
+	tab.RawSetString("KEY_CTRL_A", golua.LNumber(tea.KeyCtrlA))
+	tab.RawSetString("KEY_CTRL_B", golua.LNumber(tea.KeyCtrlB))
+	tab.RawSetString("KEY_CTRL_C", golua.LNumber(tea.KeyCtrlC))
+	tab.RawSetString("KEY_CTRL_D", golua.LNumber(tea.KeyCtrlD))
+	tab.RawSetString("KEY_CTRL_E", golua.LNumber(tea.KeyCtrlE))
+	tab.RawSetString("KEY_CTRL_F", golua.LNumber(tea.KeyCtrlF))
+	tab.RawSetString("KEY_CTRL_G", golua.LNumber(tea.KeyCtrlG))
+	tab.RawSetString("KEY_CTRL_H", golua.LNumber(tea.KeyCtrlH))
+	tab.RawSetString("KEY_CTRL_I", golua.LNumber(tea.KeyCtrlI))
+	tab.RawSetString("KEY_CTRL_J", golua.LNumber(tea.KeyCtrlJ))
+	tab.RawSetString("KEY_CTRL_K", golua.LNumber(tea.KeyCtrlK))
+	tab.RawSetString("KEY_CTRL_L", golua.LNumber(tea.KeyCtrlL))
+	tab.RawSetString("KEY_CTRL_M", golua.LNumber(tea.KeyCtrlM))
+	tab.RawSetString("KEY_CTRL_N", golua.LNumber(tea.KeyCtrlN))
+	tab.RawSetString("KEY_CTRL_O", golua.LNumber(tea.KeyCtrlO))
+	tab.RawSetString("KEY_CTRL_P", golua.LNumber(tea.KeyCtrlP))
+	tab.RawSetString("KEY_CTRL_Q", golua.LNumber(tea.KeyCtrlQ))
+	tab.RawSetString("KEY_CTRL_R", golua.LNumber(tea.KeyCtrlR))
+	tab.RawSetString("KEY_CTRL_S", golua.LNumber(tea.KeyCtrlS))
+	tab.RawSetString("KEY_CTRL_T", golua.LNumber(tea.KeyCtrlT))
+	tab.RawSetString("KEY_CTRL_U", golua.LNumber(tea.KeyCtrlU))
+	tab.RawSetString("KEY_CTRL_V", golua.LNumber(tea.KeyCtrlV))
+	tab.RawSetString("KEY_CTRL_W", golua.LNumber(tea.KeyCtrlW))
+	tab.RawSetString("KEY_CTRL_X", golua.LNumber(tea.KeyCtrlX))
+	tab.RawSetString("KEY_CTRL_Y", golua.LNumber(tea.KeyCtrlY))
+	tab.RawSetString("KEY_CTRL_Z", golua.LNumber(tea.KeyCtrlZ))
+	tab.RawSetString("KEY_CTRL_OPEN_BRACKET", golua.LNumber(tea.KeyCtrlOpenBracket))
+	tab.RawSetString("KEY_CTRL_BACKSLASH", golua.LNumber(tea.KeyCtrlBackslash))
+	tab.RawSetString("KEY_CTRL_CLOSE_BRACKET", golua.LNumber(tea.KeyCtrlCloseBracket))
+	tab.RawSetString("KEY_CTRL_CARET", golua.LNumber(tea.KeyCtrlCaret))
+	tab.RawSetString("KEY_CTRL_UNDERSCORE", golua.LNumber(tea.KeyCtrlUnderscore))
+	tab.RawSetString("KEY_CTRL_QUESTION_MARK", golua.LNumber(tea.KeyCtrlQuestionMark))
+	tab.RawSetString("KEY_RUNES", golua.LNumber(tea.KeyRunes))
+	tab.RawSetString("KEY_UP", golua.LNumber(tea.KeyUp))
+	tab.RawSetString("KEY_DOWN", golua.LNumber(tea.KeyDown))
+	tab.RawSetString("KEY_RIGHT", golua.LNumber(tea.KeyRight))
+	tab.RawSetString("KEY_LEFT", golua.LNumber(tea.KeyLeft))
+	tab.RawSetString("KEY_SHIFTTAB", golua.LNumber(tea.KeyShiftTab))
+	tab.RawSetString("KEY_HOME", golua.LNumber(tea.KeyHome))
+	tab.RawSetString("KEY_END", golua.LNumber(tea.KeyEnd))
+	tab.RawSetString("KEY_PGUP", golua.LNumber(tea.KeyPgUp))
+	tab.RawSetString("KEY_PGDOWN", golua.LNumber(tea.KeyPgDown))
+	tab.RawSetString("KEY_CTRL_PGUP", golua.LNumber(tea.KeyCtrlPgUp))
+	tab.RawSetString("KEY_CTRL_PGDOWN", golua.LNumber(tea.KeyCtrlPgDown))
+	tab.RawSetString("KEY_DELETE", golua.LNumber(tea.KeyDelete))
+	tab.RawSetString("KEY_INSERT", golua.LNumber(tea.KeyInsert))
+	tab.RawSetString("KEY_SPACE", golua.LNumber(tea.KeySpace))
+	tab.RawSetString("KEY_CTRL_UP", golua.LNumber(tea.KeyCtrlUp))
+	tab.RawSetString("KEY_CTRL_DOWN", golua.LNumber(tea.KeyCtrlDown))
+	tab.RawSetString("KEY_CTRL_RIGHT", golua.LNumber(tea.KeyCtrlRight))
+	tab.RawSetString("KEY_CTRL_LEFT", golua.LNumber(tea.KeyCtrlLeft))
+	tab.RawSetString("KEY_CTRL_HOME", golua.LNumber(tea.KeyCtrlHome))
+	tab.RawSetString("KEY_CTRL_END", golua.LNumber(tea.KeyCtrlEnd))
+	tab.RawSetString("KEY_SHIFT_UP", golua.LNumber(tea.KeyShiftUp))
+	tab.RawSetString("KEY_SHIFT_DOWN", golua.LNumber(tea.KeyShiftDown))
+	tab.RawSetString("KEY_SHIFT_RIGHT", golua.LNumber(tea.KeyShiftRight))
+	tab.RawSetString("KEY_SHIFT_LEFT", golua.LNumber(tea.KeyShiftLeft))
+	tab.RawSetString("KEY_SHIFT_HOME", golua.LNumber(tea.KeyShiftHome))
+	tab.RawSetString("KEY_SHIFT_END", golua.LNumber(tea.KeyShiftEnd))
+	tab.RawSetString("KEY_CTRL_SHIFT_UP", golua.LNumber(tea.KeyCtrlShiftUp))
+	tab.RawSetString("KEY_CTRL_SHIFT_DOWN", golua.LNumber(tea.KeyCtrlShiftDown))
+	tab.RawSetString("KEY_CTRL_SHIFT_LEFT", golua.LNumber(tea.KeyCtrlShiftLeft))
+	tab.RawSetString("KEY_CTRL_SHIFT_RIGHT", golua.LNumber(tea.KeyCtrlShiftRight))
+	tab.RawSetString("KEY_CTRL_SHIFT_HOME", golua.LNumber(tea.KeyCtrlShiftHome))
+	tab.RawSetString("KEY_CTRL_SHIFT_END", golua.LNumber(tea.KeyCtrlShiftEnd))
+	tab.RawSetString("KEY_F1", golua.LNumber(tea.KeyF1))
+	tab.RawSetString("KEY_F2", golua.LNumber(tea.KeyF2))
+	tab.RawSetString("KEY_F3", golua.LNumber(tea.KeyF3))
+	tab.RawSetString("KEY_F4", golua.LNumber(tea.KeyF4))
+	tab.RawSetString("KEY_F5", golua.LNumber(tea.KeyF5))
+	tab.RawSetString("KEY_F6", golua.LNumber(tea.KeyF6))
+	tab.RawSetString("KEY_F7", golua.LNumber(tea.KeyF7))
+	tab.RawSetString("KEY_F8", golua.LNumber(tea.KeyF8))
+	tab.RawSetString("KEY_F9", golua.LNumber(tea.KeyF9))
+	tab.RawSetString("KEY_F10", golua.LNumber(tea.KeyF10))
+	tab.RawSetString("KEY_F11", golua.LNumber(tea.KeyF11))
+	tab.RawSetString("KEY_F12", golua.LNumber(tea.KeyF12))
+	tab.RawSetString("KEY_F13", golua.LNumber(tea.KeyF13))
+	tab.RawSetString("KEY_F14", golua.LNumber(tea.KeyF14))
+	tab.RawSetString("KEY_F15", golua.LNumber(tea.KeyF15))
+	tab.RawSetString("KEY_F16", golua.LNumber(tea.KeyF16))
+	tab.RawSetString("KEY_F17", golua.LNumber(tea.KeyF17))
+	tab.RawSetString("KEY_F18", golua.LNumber(tea.KeyF18))
+	tab.RawSetString("KEY_F19", golua.LNumber(tea.KeyF19))
+	tab.RawSetString("KEY_F20", golua.LNumber(tea.KeyF20))
 }
 
 type Spinners int
@@ -1268,6 +1924,17 @@ func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.L
 }
 
 func programOptions(lib *lua.Lib, state *golua.LState) *golua.LTable {
+	/// @struct ProgramOptions
+	/// @method ansi_compressor() -> self
+	/// @method alt_screen() -> self
+	/// @method fps(fps: int) -> self
+	/// @method filter(filter: function(msg: struct<tui.MSG>) -> bool) -> self
+	/// @method input_tty() -> self
+	/// @method mouse_all_motion() -> self
+	/// @method mouse_cell_motion() -> self
+	/// @method report_focus() -> self
+	/// @method no_bracketed_paste() -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("__ansiCompressor", golua.LFalse)
@@ -1416,7 +2083,12 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 	/// @prop id {int}
 	/// @method view() -> string
 	/// @method update() -> struct<tui.CMD>
-	/// @method tick() -> struct<tui.CMD>
+	/// @method tick() -> struct<tui.CMDSpinnerTick>
+	/// @method spinner() -> []string, int
+	/// @method spinner_set(from: int) -> self
+	/// @method spinner_set_custom(frames: []string, fps: int) -> self
+	/// @method style() -> struct<lipgloss.Style>
+	/// @method style_set(style: struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -1475,7 +2147,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 
 			spinner := item.Spinners[id].Spinner
 
-			fps := math.Floor(float64(time.Second / spinner.FPS))
+			fps := time.Second / spinner.FPS
 
 			frames := state.NewTable()
 			for i, v := range spinner.Frames {
@@ -1585,29 +2257,76 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	/// @prop id {int}
 	/// @method view() -> string
 	/// @method update() -> struct<tui.CMD>
-	/// @method reset()
-	/// @method focus() -> struct<tui.CMD>
-	/// @method blur()
-	/// @method cursor_down()
-	/// @method cursor_end()
-	/// @method cursor_up()
-	/// @method cursor_down()
+	/// @method reset() -> self
+	/// @method focus() -> struct<tui.CMDTextAreaFocus>
+	/// @method blur() -> self
+	/// @method cursor_down() -> self
+	/// @method cursor_end() -> self
+	/// @method cursor_up() -> self
+	/// @method cursor_down() -> self
 	/// @method focused() -> bool
 	/// @method size() -> int, int
 	/// @method width() -> int
 	/// @method height() -> int
-	/// @method size_set(width int, height int)
-	/// @method width_set(width int)
-	/// @method height_set(height int)
-	/// @method insert_rune(rune int)
-	/// @method insert_string(str string)
+	/// @method size_set(width int, height int) -> self
+	/// @method width_set(width int) -> self
+	/// @method height_set(height int) -> self
+	/// @method insert_rune(rune int) -> self
+	/// @method insert_string(str string) -> self
 	/// @method length() -> int
 	/// @method line() -> int
 	/// @method line_count() -> int
-	/// @method cursor_set(col int)
+	/// @method cursor_set(col: int) -> self
 	/// @method value() -> string
-	/// @method value_set(str string)
+	/// @method value_set(str: string)
 	/// @method line_info() -> struct<tui.LineInfo>
+	/// @method prompt() -> string
+	/// @method prompt_set(str: string) -> self
+	/// @method line_numbers() -> bool
+	/// @method line_numbers_set(enabled: bool) -> self
+	/// @method char_end() -> int
+	/// @method char_end_set(rune: int) -> self
+	/// @method char_limit() -> int
+	/// @method char_limit_set(limit: int) -> self
+	/// @method width_max() -> int
+	/// @method width_max_set(width: int) -> self
+	/// @method height_max() -> int
+	/// @method height_max_set(height: int) -> self
+	/// @method prompt_func(width: int, fn: function(lineIndex: int) -> string) -> self
+	/// @method cursor() -> struct<tui.Cursor>
+	/// @method keymap() -> struct<tui.TextAreaKeymap>
+	/// @method style_focus_base() -> struct<lipgloss.Style>
+	/// @method style_focus_base_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_base() -> struct<lipgloss.Style>
+	/// @method style_blur_base_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_cursor_line() -> struct<lipgloss.Style>
+	/// @method style_focus_cursor_line_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_cursor_line() -> struct<lipgloss.Style>
+	/// @method style_blur_cursor_line_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_cursor_line_number() -> struct<lipgloss.Style>
+	/// @method style_focus_cursor_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_cursor_line_number() -> struct<lipgloss.Style>
+	/// @method style_blur_cursor_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_buffer_end() -> struct<lipgloss.Style>
+	/// @method style_focus_buffer_end_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_buffer_end() -> struct<lipgloss.Style>
+	/// @method style_blur_buffer_end_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_line_number() -> struct<lipgloss.Style>
+	/// @method style_focus_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_line_number() -> struct<lipgloss.Style>
+	/// @method style_blur_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_placeholder() -> struct<lipgloss.Style>
+	/// @method style_focus_placeholder_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_placeholder() -> struct<lipgloss.Style>
+	/// @method style_blur_placeholder_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_prompt() -> struct<lipgloss.Style>
+	/// @method style_focus_prompt_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_prompt() -> struct<lipgloss.Style>
+	/// @method style_blur_prompt_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_text() -> struct<lipgloss.Style>
+	/// @method style_focus_text_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_text() -> struct<lipgloss.Style>
+	/// @method style_blur_text_set(style: struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -2976,6 +3695,35 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 }
 
 func textareaKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [22]int) *golua.LTable {
+	/// @struct TextAreaKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop character_backward {struct<tui.KeyBinding>}
+	/// @prop character_forward {struct<tui.KeyBinding>}
+	/// @prop delete_after_cursor {struct<tui.KeyBinding>}
+	/// @prop delete_before_cursor {struct<tui.KeyBinding>}
+	/// @prop delete_character_backward {struct<tui.KeyBinding>}
+	/// @prop delete_character_forward {struct<tui.KeyBinding>}
+	/// @prop delete_word_backward {struct<tui.KeyBinding>}
+	/// @prop delete_word_forward {struct<tui.KeyBinding>}
+	/// @prop insert_newline {struct<tui.KeyBinding>}
+	/// @prop line_end {struct<tui.KeyBinding>}
+	/// @prop line_next {struct<tui.KeyBinding>}
+	/// @prop line_previous {struct<tui.KeyBinding>}
+	/// @prop line_start {struct<tui.KeyBinding>}
+	/// @prop paste {struct<tui.KeyBinding>}
+	/// @prop word_backward {struct<tui.KeyBinding>}
+	/// @prop word_forward {struct<tui.KeyBinding>}
+	/// @prop input_begin {struct<tui.KeyBinding>}
+	/// @prop input_end {struct<tui.KeyBinding>}
+	/// @prop uppercase_word {struct<tui.KeyBinding>}
+	/// @prop lowercase_word {struct<tui.KeyBinding>}
+	/// @prop capitalize_word {struct<tui.KeyBinding>}
+	/// @prop transpose_character_backward {struct<tui.KeyBinding>}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -3097,6 +3845,15 @@ func textareaKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, progr
 }
 
 func lineInfoTable(state *golua.LState, info *textarea.LineInfo) *golua.LTable {
+	/// @struct LineInfo
+	/// @prop width {int}
+	/// @prop width_char {int}
+	/// @prop height {int}
+	/// @prop column_start {int}
+	/// @prop column_offset {int}
+	/// @prop row_offset {int}
+	/// @prop char_offset {int}
+
 	t := state.NewTable()
 
 	t.RawSetString("width", golua.LNumber(info.Width))
@@ -3111,6 +3868,50 @@ func lineInfoTable(state *golua.LState, info *textarea.LineInfo) *golua.LTable {
 }
 
 func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct TextInput
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tea.Cmd>
+	/// @method focus() -> struct<tea.CmdTextInputFocus>
+	/// @method reset() -> self
+	/// @method blur() -> self
+	/// @method cursor_start() -> self
+	/// @method cursor_end() -> self
+	/// @method current_suggestion() -> string
+	/// @method available_suggestions() -> []string
+	/// @method suggestions_set(suggestions: []string) -> self
+	/// @method focused() -> bool
+	/// @method position() -> int
+	/// @method position_set(pos: int) -> self
+	/// @method value() -> string
+	/// @method value_set(val: string) -> self
+	/// @method validate(fn: func(string) -> bool, string) -> self
+	/// @method prompt() -> string
+	/// @method prompt_set(string) -> self
+	/// @method placeholder() -> string
+	/// @method placeholder_set(string) -> self
+	/// @method echomode() -> int<tui.EchoMode>
+	/// @method echomode_set(int<tui.EchoMode>) -> self
+	/// @method echo_char() -> int
+	/// @method echo_char_set(rune: int) -> self
+	/// @method char_limit() -> int
+	/// @method char_limit_set(int) -> self
+	/// @method width() -> int
+	/// @method width_set(int) -> self
+	/// @method suggestions_show() -> bool
+	/// @method suggestions_show_set(bool) -> self
+	/// @method cursor() -> struct<tui.Cursor>
+	/// @method keymap() -> struct<TextInputKeymap>
+	/// @method style_prompt() -> struct<lipgloss.Style>
+	/// @method style_prompt_set(struct<lipgloss.Style>) -> self
+	/// @method style_text() -> struct<lipgloss.Style>
+	/// @method style_text_set(struct<lipgloss.Style>) -> self
+	/// @method style_placeholder() -> struct<lipgloss.Style>
+	/// @method style_placeholder_set(struct<lipgloss.Style>) -> self
+	/// @method style_completion() -> struct<lipgloss.Style>
+	/// @method style_completion_set(struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -3805,6 +4606,29 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 }
 
 func textinputKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [16]int) *golua.LTable {
+	/// @struct TextInputKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop character_forward {struct<tui.KeyBinding>}
+	/// @prop character_backward {struct<tui.KeyBinding>}
+	/// @prop word_forward {struct<tui.KeyBinding>}
+	/// @prop word_backward {struct<tui.KeyBinding>}
+	/// @prop delete_word_backward {struct<tui.KeyBinding>}
+	/// @prop delete_word_forward {struct<tui.KeyBinding>}
+	/// @prop delete_after_cursor {struct<tui.KeyBinding>}
+	/// @prop delete_before_cursor {struct<tui.KeyBinding>}
+	/// @prop delete_character_backward {struct<tui.KeyBinding>}
+	/// @prop delete_character_forward {struct<tui.KeyBinding>}
+	/// @prop line_start {struct<tui.KeyBinding>}
+	/// @prop line_end {struct<tui.KeyBinding>}
+	/// @prop paste {struct<tui.KeyBinding>}
+	/// @prop suggestion_accept {struct<tui.KeyBinding>}
+	/// @prop suggestion_next {struct<tui.KeyBinding>}
+	/// @prop suggestion_prev {struct<tui.KeyBinding>}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -3907,6 +4731,22 @@ func textinputKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, prog
 }
 
 func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Cursor
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method blink() -> struct<tui.CMDBlink>
+	/// @method focus() -> struct<tui.CMDCursorFocus>
+	/// @method blur() -> self
+	/// @method mode() -> int<tui.CursorMode>
+	/// @method mode_set(mode: int<tui.CursorMode>) -> self
+	/// @method char_set(str: string) -> self
+	/// @method style() -> struct<lipgloss.Style>
+	/// @method style_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_text() -> struct<lipgloss.Style>
+	/// @method style_text_set(style: struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -4108,6 +4948,62 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 }
 
 func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct FilePicker
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method did_select_file() -> bool, string
+	/// @method did_select_disabled() -> bool, string
+	/// @method init() -> struct<tui.CMDFilePickerInit>
+	/// @method path() -> string
+	/// @method path_set(path: string) -> self
+	/// @method current_directory() -> string
+	/// @method current_directory_set(dir: string) -> self
+	/// @method allowed_types() -> []string
+	/// @method allowed_types_set(types: []string) -> self
+	/// @method show_perm() -> bool
+	/// @method show_perm_set(show: bool) -> self
+	/// @method show_size() -> bool
+	/// @method show_size_set(show: bool) -> self
+	/// @method show_hidden() -> bool
+	/// @method show_hidden_set(show: bool) -> self
+	/// @method dir_allowed() -> bool
+	/// @method dir_allowed_set(allowed: bool) -> self
+	/// @method file_allowed() -> bool
+	/// @method file_allowed_set(allowed: bool) -> self
+	/// @method file_selected() -> string
+	/// @method file_selected_set(file: string) -> self
+	/// @method height() -> int
+	/// @method height_set(height: int) -> self
+	/// @method height_auto() -> bool
+	/// @method height_auto_set(auto: bool) -> self
+	/// @method cursor() -> string
+	/// @method cursor_set(cursor: string) -> self
+	/// @method keymap() -> struct<tui.FilePickerKeymap>
+	/// @method style_cursor() -> struct<lipgloss.Style>
+	/// @method style_cursor_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_cursor_disabled() -> struct<lipgloss.Style>
+	/// @method style_cursor_disabled_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_symlink() -> struct<lipgloss.Style>
+	/// @method style_symlink_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_directory() -> struct<lipgloss.Style>
+	/// @method style_directory_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_directory_empty() -> struct<lipgloss.Style>
+	/// @method style_directory_empty_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_file() -> struct<lipgloss.Style>
+	/// @method style_file_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_file_size() -> struct<lipgloss.Style>
+	/// @method style_file_size_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_file_disabled() -> struct<lipgloss.Style>
+	/// @method style_file_disabled_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_permission() -> struct<lipgloss.Style>
+	/// @method style_permission_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_selected() -> struct<lipgloss.Style>
+	/// @method style_selected_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_selected_disabled() -> struct<lipgloss.Style>
+	/// @method style_selected_disabled_set(style: struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -4170,18 +5066,6 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		state.Push(golua.LBool(did))
 		state.Push(golua.LString(str))
 		return 2
-	}))
-
-	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
-		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
-		if err != nil {
-			lua.Error(state, err.Error())
-		}
-
-		str := item.FilePickers[int(t.RawGetString("id").(golua.LNumber))].View()
-
-		state.Push(golua.LString(str))
-		return 1
 	}))
 
 	t.RawSetString("init", state.NewFunction(func(state *golua.LState) int {
@@ -5086,6 +5970,22 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 }
 
 func filepickerKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [9]int) *golua.LTable {
+	/// @struct FilePickerKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop goto_top {struct<tui.KeyBinding>}
+	/// @prop goto_last {struct<tui.KeyBinding>}
+	/// @prop down {struct<tui.KeyBinding>}
+	/// @prop up {struct<tui.KeyBinding>}
+	/// @prop page_up {struct<tui.KeyBinding>}
+	/// @prop page_down {struct<tui.KeyBinding>}
+	/// @prop back {struct<tui.KeyBinding>}
+	/// @prop open {struct<tui.KeyBinding>}
+	/// @prop select {struct<tui.KeyBinding>}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -5164,6 +6064,107 @@ func filepickerKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, pro
 }
 
 func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct List
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method cursor() -> int
+	/// @method cursor_up() -> self
+	/// @method cursor_down() -> self
+	/// @method page_next() -> self
+	/// @method page_prev() -> self
+	/// @method pagination_show() -> bool
+	/// @method pagination_show_set(enabled: bool) -> self
+	/// @method disable_quit() -> self
+	/// @method size() -> int, int
+	/// @method width() -> int
+	/// @method height() -> int
+	/// @method size_set(width: int, height: int) -> self
+	/// @method width_set(width: int) -> self
+	/// @method height_set(height: int) -> self
+	/// @method filter_state() -> int<tui.FilterState>
+	/// @method filter_value() -> string
+	/// @method filter_enabled() -> bool
+	/// @method filter_enabled_set(enabled: bool) -> self
+	/// @method filter_show() -> bool
+	/// @method filter_show_set(enabled: bool) -> self
+	/// @method filter_reset() -> self
+	/// @method is_filtered() -> bool
+	/// @method filter_setting() -> bool
+	/// @method filter_func(fn: int<tui.FilterFunc>) -> self
+	/// @method filter_func_custom(fn: function(string, []string) -> []struct<tui.ListFilterRank>) -> self
+	/// @method index() -> int
+	/// @method items() -> []struct<tui.ListItem>
+	/// @method items_visible() -> []struct<tui.ListItem>
+	/// @method items_set(items: []struct<tui.ListItem>) -> self
+	/// @method item_insert(index: int, item: struct<tui.ListItem>) -> self
+	/// @method item_set(index: int, item: struct<tui.ListItem>) -> self
+	/// @method item_remove(index: int) -> self
+	/// @method selected() -> struct<tui.ListItem>
+	/// @method select(index: int) -> self
+	/// @method matches(index: int) -> []int
+	/// @method status_message() -> struct<tui.CMDListStatusMessage>
+	/// @method status_message_lifetime() -> int
+	/// @method status_message_lifetime_set(ms: int) -> self
+	/// @method statusbar_show() -> bool
+	/// @method statusbar_show_set(enabled: bool) -> self
+	/// @method statusbar_item_name() -> string, string
+	/// @method statusbar_item_name_set(singular: string, plural: string) -> self
+	/// @method title_show() -> bool
+	/// @method title_show_set(enabled: bool) -> self
+	/// @method spinner_set(from: int<tui.SpinnerType>) -> self
+	/// @method spinner_set_custom(frames: []string, fps: int) -> self
+	/// @method spinner_start() -> struct<tui.CMDListSpinnerStart>
+	/// @method spinner_stop() -> self
+	/// @method spinner_toggle() -> struct<tui.CMDListSpinnerToggle>
+	/// @method infinite_scroll() -> bool
+	/// @method infinite_scroll_set(enabled: bool) -> self
+	/// @method filter_input() -> struct<tui.TextInput>
+	/// @method paginator() -> struct<tui.Paginator>
+	/// @method help() -> struct<tui.Help>
+	/// @method help_show() -> bool
+	/// @method help_show_set(enabled: bool) -> self
+	/// @method keymap() -> struct<tui.ListKeymap>
+	/// @method view_help() -> string
+	/// @method view_help_short() -> string
+	/// @method view_help_full() -> string
+	/// @method help_short_additional(function() -> []struct<tui.KeyBinding>) -> self
+	/// @method help_full_additional(function() -> [][]struct<tui.KeyBinding>) -> self
+	/// @method style_titlebar() -> struct<lipgloss.Style>
+	/// @method style_titlebar_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_title() -> struct<lipgloss.Style>
+	/// @method style_title_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_spinner() -> struct<lipgloss.Style>
+	/// @method style_spinner_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_filter_prompt() -> struct<lipgloss.Style>
+	/// @method style_filter_prompt_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_filter_cursor() -> struct<lipgloss.Style>
+	/// @method style_filter_cursor_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_filter_char_match() -> struct<lipgloss.Style>
+	/// @method style_filter_char_match_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_statusbar() -> struct<lipgloss.Style>
+	/// @method style_statusbar_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_status_empty() -> struct<lipgloss.Style>
+	/// @method style_status_empty_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_statusbar_filter_active() -> struct<lipgloss.Style>
+	/// @method style_statusbar_filter_active_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_statusbar_filter_count() -> struct<lipgloss.Style>
+	/// @method style_statusbar_filter_count_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_no_items() -> struct<lipgloss.Style>
+	/// @method style_no_items_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_help() -> struct<lipgloss.Style>
+	/// @method style_help_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_pagination() -> struct<lipgloss.Style>
+	/// @method style_pagination_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_pagination_dot_active() -> struct<lipgloss.Style>
+	/// @method style_pagination_dot_active_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_pagination_dot_inactive() -> struct<lipgloss.Style>
+	/// @method style_pagination_dot_inactive_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_divider_dot() -> struct<lipgloss.Style>
+	/// @method style_divider_dot_set(style: struct<lipgloss.Style>) -> self
+	/// @method delegate_set(delegate: struct<tui.ListDelegate>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -5522,6 +6523,55 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			}
 
 			item.Lists[id].Filter = filter
+		})
+
+	lib.BuilderFunction(state, t, "filter_func_custom",
+		[]lua.Arg{
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			fn := args["fn"].(*golua.LFunction)
+
+			item.Lists[id].Filter = func(s1 string, s2 []string) []list.Rank {
+				s2t := state.NewTable()
+				for i, v := range s2 {
+					s2t.RawSetInt(i+1, golua.LString(v))
+				}
+
+				state.Push(fn)
+				state.Push(golua.LString(s1))
+				state.Push(s2t)
+				state.Call(2, 1)
+				ranks := state.CheckTable(-1)
+				state.Pop(1)
+
+				rankList := make([]list.Rank, ranks.Len())
+
+				for i := range ranks.Len() {
+					rank := ranks.RawGetInt(i + 1).(*golua.LTable)
+					index := rank.RawGetString("index").(golua.LNumber)
+
+					matched := rank.RawGetString("matched").(*golua.LTable)
+					matchList := make([]int, matched.Len())
+					for z := range matched.Len() {
+						m := matched.RawGetInt(z + 1).(golua.LNumber)
+						matchList[z] = int(m)
+					}
+
+					rankList[i] = list.Rank{
+						Index:          int(index),
+						MatchedIndexes: matchList,
+					}
+				}
+
+				return rankList
+			}
 		})
 
 	t.RawSetString("index", state.NewFunction(func(state *golua.LState) int {
@@ -6923,10 +7973,54 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			t.RawSetString("__styleDividerDot", st)
 		})
 
+	lib.BuilderFunction(state, t, "delegate_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "delegate"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, err.Error())
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			did := args["delegate"].(*golua.LTable).RawGetString("id").(golua.LNumber)
+			delegate := item.ListDelegates[int(did)]
+
+			item.Lists[id].SetDelegate(delegate)
+		})
+
 	return t
 }
 
 func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
+	/// @struct ListDelegate
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method show_description() -> bool
+	/// @method show_description_set(enabled: bool) -> self
+	/// @method update_func(fn: function(msg: struct<tui.MSG>) -> struct<tui.CMD>) -> self
+	/// @method short_help_func(fn: function() -> []struct<tui.KeyBinding>) -> self
+	/// @method full_help_func(fn: function() -> [][]struct<tui.KeyBinding>) -> self
+	/// @method height() -> int
+	/// @method height_set(height: int) -> self
+	/// @method spacing() -> int
+	/// @method spacing_set(spacing: int) -> self
+	/// @method style_title_normal() -> struct<tui.Style>
+	/// @method style_title_normal_set(style: struct<tui.Style>) -> self
+	/// @method style_title_selected() -> struct<tui.Style>
+	/// @method style_title_selected_set(style: struct<tui.Style>) -> self
+	/// @method style_title_dimmed() -> struct<tui.Style>
+	/// @method style_title_dimmed_set(style: struct<tui.Style>) -> self
+	/// @method style_desc_normal() -> struct<tui.Style>
+	/// @method style_desc_normal_set(style: struct<tui.Style>) -> self
+	/// @method style_desc_selected() -> struct<tui.Style>
+	/// @method style_desc_selected_set(style: struct<tui.Style>) -> self
+	/// @method style_desc_dimmed() -> struct<tui.Style>
+	/// @method style_desc_dimmed_set(style: struct<tui.Style>) -> self
+	/// @method style_filter_match() -> struct<tui.Style>
+	/// @method style_filter_match_set(style: struct<tui.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -7452,6 +8546,27 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 }
 
 func listKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [14]int) *golua.LTable {
+	/// @struct ListKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop cursor_up {struct<tui.KeyBinding>}
+	/// @prop cursor_down {struct<tui.KeyBinding>}
+	/// @prop page_next {struct<tui.KeyBinding>}
+	/// @prop page_prev {struct<tui.KeyBinding>}
+	/// @prop goto_start {struct<tui.KeyBinding>}
+	/// @prop goto_end {struct<tui.KeyBinding>}
+	/// @prop filter {struct<tui.KeyBinding>}
+	/// @prop filter_clear {struct<tui.KeyBinding>}
+	/// @prop filter_cancel {struct<tui.KeyBinding>}
+	/// @prop filter_accept {struct<tui.KeyBinding>}
+	/// @prop show_full_help {struct<tui.KeyBinding>}
+	/// @prop close_full_help {struct<tui.KeyBinding>}
+	/// @prop quit {struct<tui.KeyBinding>}
+	/// @prop force_quit {struct<tui.KeyBinding>}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -7544,6 +8659,32 @@ func listKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, 
 }
 
 func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Paginator
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method slice_bounds(length: int) -> int, int
+	/// @method page_next() -> self
+	/// @method page_prev() -> self
+	/// @method page_items(total: int) -> int
+	/// @method page_on_first() -> bool
+	/// @method page_on_last() -> bool
+	/// @method total_pages_set(items: int) -> self
+	/// @method type() -> int<tui.PaginatorType>
+	/// @method type_set(t: int<tui.PaginatorType>) -> self
+	/// @method page() -> int
+	/// @method page_set(p: int) -> self
+	/// @method page_per() -> int
+	/// @method page_per_set(p: int) -> self
+	/// @method page_total() -> int
+	/// @method page_total_set(p: int) -> self
+	/// @method format_dot() -> string, string
+	/// @method format_dot_set(active: string, inactive: string) -> self
+	/// @method format_arabic() -> string
+	/// @method format_arabic_set(f: string) -> self
+	/// @method keymap() -> struct<tui.PaginatorKeymap>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -7916,6 +9057,15 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 }
 
 func paginatorKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [2]int) *golua.LTable {
+	/// @struct PaginatorKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop page_prev {struct<tui.KeyBinding>}
+	/// @prop page_next {struct<tui.KeyBinding>}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -7978,6 +9128,16 @@ const (
 )
 
 func progressOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
+	/// @struct ProgressOptions
+	/// @method width(width: int) -> self
+	/// @method gradient_default() -> self
+	/// @method gradient_default_scaled() -> self
+	/// @method gradient(colorA: string, colorB: string) -> self
+	/// @method gradient_scaled(colorA: string, colorB: string) -> self
+	/// @method solid(colorA: string) -> self
+	/// @method fill_char(full: int, empty: int) -> self
+	/// @method spring_options(freq: float, damp: float) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("__width", golua.LNil)
@@ -8113,6 +9273,35 @@ func progressOptionsBuild(t *golua.LTable) []progress.Option {
 }
 
 func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Progress
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method view_as(percent: float) -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method percent() -> float
+	/// @method percent_set(percent: float) -> struct<tui.CMDProgressSet>
+	/// @method percent_dec(percent: float) -> struct<tui.CMDProgressDec>
+	/// @method percent_inc(percent: float) -> struct<tui.CMDProgressInc>
+	/// @method percent_show() -> bool
+	/// @method percent_show_set(enabled: bool) -> self
+	/// @method percent_format() -> string
+	/// @method percent_format_set(format: string) -> self
+	/// @method is_animating() -> bool
+	/// @method spring_options(freq: float, damp: float) -> self
+	/// @method width() -> int
+	/// @method width_set(width: int) -> self
+	/// @method full() -> int
+	/// @method full_set(rune: int) -> self
+	/// @method full_color() -> string
+	/// @method full_color_set(color: string) -> self
+	/// @method empty() -> int
+	/// @method empty_set(rune: int) -> self
+	/// @method empty_color() -> string
+	/// @method empty_color_set(color: string) -> self
+	/// @method style_percentage() -> struct<lipgloss.Style>
+	/// @method style_percentage_set(style: struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -8267,7 +9456,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			return 1
 		})
 
-	lib.BuilderFunction(state, t, "percent_format",
+	lib.BuilderFunction(state, t, "percent_format_set",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "format"},
 		},
@@ -8513,6 +9702,20 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 }
 
 func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct StopWatch
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method start() -> struct<tui.CMDStopWatchStart>
+	/// @method stop() -> struct<tui.CMDStopWatchStop>
+	/// @method toggle() -> struct<tui.CMDStopWatchToggle>
+	/// @method reset() -> struct<tui.CMDStopWatchReset>
+	/// @method elapsed() -> int
+	/// @method running() -> bool
+	/// @method interval() -> int
+	/// @method interval_set(ms: int) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -8653,6 +9856,22 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 }
 
 func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Timer
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method init() -> struct<tui.CMDTimerInit>
+	/// @method start() -> struct<tui.CMDTimerStart>
+	/// @method stop() -> struct<tui.CMDTimerStop>
+	/// @method toggle() -> struct<tui.CMDTimerToggle>
+	/// @method running() -> bool
+	/// @method timed_out() -> bool
+	/// @method timeout() -> int
+	/// @method timeout_set(ms: int) -> self
+	/// @method interval() -> int
+	/// @method interval_set(ms: int) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -8823,6 +10042,14 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 }
 
 func tableOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
+	/// @struct TableOptions
+	/// @method focused(focused: bool) -> self
+	/// @method width(width: int) -> self
+	/// @method height(height: int) -> self
+	/// @method columns(cols: struct<tui.TableColumn>) -> self
+	/// @method rows(rows: [][]string) -> self
+	/// @method styles(header: struct<lipgloss.Style>, cell: struct<lipgloss.Style>, selected: struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("__columns", golua.LNil)
@@ -8890,6 +10117,10 @@ func tableOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
 }
 
 func tuitableColTable(state *golua.LState, title string, width int) *golua.LTable {
+	/// @struct TableColumn
+	/// @prop title {string}
+	/// @prop width {int}
+
 	t := state.NewTable()
 
 	t.RawSetString("title", golua.LString(title))
@@ -8972,6 +10203,37 @@ func tableOptionsBuild(t *golua.LTable, r *lua.Runner) []table.Option {
 }
 
 func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Table
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method update_viewport() -> self
+	/// @method focused() -> bool
+	/// @method focus() -> self
+	/// @method blur() -> self
+	/// @method goto_top() -> self
+	/// @method goto_bottom() -> self
+	/// @method move_up(n: int) -> self
+	/// @method move_down(n: int) -> self
+	/// @method cursor() -> int
+	/// @method cursor_set(n: int) -> self
+	/// @method columns() -> []struct<tui.TableColumn>
+	/// @method rows() -> [][]string
+	/// @method columns_set(cols: []struct<tui.TableColumn>) -> self
+	/// @method rows_set(rows: [][]string) -> self
+	/// @method from_values(value: string, separator: string) -> self
+	/// @method row_selected() -> []string
+	/// @method width() -> int
+	/// @method height() -> int
+	/// @method width_set(width: int) -> self
+	/// @method height_set(height: int) -> self
+	/// @method keymap() -> struct<tui.TableKeymap>
+	/// @method help() -> struct<tui.Help>
+	/// @method help_view() -> string
+	/// @method styles(header: struct<lipgloss.Style>, cell: struct<lipgloss.Style>, selected: struct<lipgloss.Style>) -> self
+	/// @method styles_default() -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -9463,6 +10725,21 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 }
 
 func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [8]int) *golua.LTable {
+	/// @struct TableKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop line_up {int}
+	/// @prop line_down {int}
+	/// @prop page_up {int}
+	/// @prop page_down {int}
+	/// @prop half_page_up {int}
+	/// @prop half_page_down {int}
+	/// @prop goto_top {int}
+	/// @prop goto_bottom {int}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -9536,6 +10813,45 @@ func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program,
 }
 
 func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Viewport
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tui.CMD>
+	/// @method view_up() -> []string
+	/// @method view_down() -> []string
+	/// @method view_up_half() -> []string
+	/// @method view_down_half() -> []string
+	/// @method at_top() -> bool
+	/// @method at_bottom() -> bool
+	/// @method goto_top() -> []string
+	/// @method goto_bottom() -> []string
+	/// @method line_up() -> []string
+	/// @method line_down() -> []string
+	/// @method past_bottom() -> bool
+	/// @method scroll_percent() -> float
+	/// @method width() -> int
+	/// @method height() -> int
+	/// @method width_set(width: int) -> self
+	/// @method height_set(height: int) -> self
+	/// @method content_set(content: string) -> self
+	/// @method line_count_total() -> int
+	/// @method line_count_visible() -> int
+	/// @method mouse_wheel_enabled() -> bool
+	/// @method mouse_wheel_enabled_set(enabled: bool) -> self
+	/// @method mouse_wheel_delta() -> int
+	/// @method mouse_wheel_delta_set(delta: int) -> self
+	/// @method offset_y() -> int
+	/// @method offset_y_set(offset: int) -> self
+	/// @method offset_y_set_direct(offset: int) -> self
+	/// @method position_y() -> int
+	/// @method position_y_set(position: int) -> self
+	/// @method high_performance() -> bool
+	/// @method high_performance_set(enabled: bool) -> self
+	/// @method keymap() -> struct<tui.ViewportKeymap>
+	/// @method style() -> struct<lipgloss.Style>
+	/// @method style_set(style: struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -10170,6 +11486,19 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 }
 
 func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [6]int) *golua.LTable {
+	/// @struct ViewportKeymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @prop page_down {struct<tui.KeyBinding>}
+	/// @prop page_up {struct<tui.KeyBinding>}
+	/// @prop page_up_half {struct<tui.KeyBinding>}
+	/// @prop page_down_half {struct<tui.KeyBinding>}
+	/// @prop down {struct<tui.KeyBinding>}
+	/// @prop up {struct<tui.KeyBinding>}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -10240,6 +11569,13 @@ func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, progr
 }
 
 func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
+	/// @struct Custom
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method init() -> struct<tui.CMD>
+	/// @method view() -> string
+	/// @method update(values: []any?) -> struct<tui.CMD>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -10318,6 +11654,11 @@ func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, i
 }
 
 func keyOptionsTable(state *golua.LState, lib *lua.Lib) *golua.LTable {
+	/// @struct KeyOptions
+	/// @method disabled(enabled: bool) -> self
+	/// @method help(key: string, desc: string) -> self
+	/// @method keys(keys: []string) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("__disabled", golua.LNil)
@@ -10398,6 +11739,24 @@ func keyOptionsBuild(t *golua.LTable) []key.BindingOpt {
 }
 
 func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct KeyBinding
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method enabled() -> bool
+	/// @method enabled_set(enabled: bool)
+	/// @method help() -> string, string
+	/// @method help_set(key: string, desc: string)
+	/// @method keys() -> []string
+	/// @method keys_set(keys: []string)
+	/// @method unbind() -> self
+
+	/// @struct Keymap
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method default() -> self
+	/// @method help_short() -> []struct<tui.KeyBinding>
+	/// @method help_full() -> [][]struct<tui.KeyBinding>
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
@@ -10523,6 +11882,37 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 }
 
 func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Help
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view(keymap: struct<tui.Keymap>) -> string
+	/// @method view_help_short(bindings: []struct<tui.KeyBinding>) -> string
+	/// @method view_help_full(groups: [][]struct<tui.KeyBinding>) -> string
+	/// @method width() -> int
+	/// @method width_set(width: int) -> self
+	/// @method show_all() -> bool
+	/// @method show_all_set(show_all: bool) -> self
+	/// @method separator_short() -> string
+	/// @method separator_short_set(separator: string) -> self
+	/// @method separator_full() -> string
+	/// @method separator_full_set(separator: string) -> self
+	/// @method ellipsis() -> string
+	/// @method ellipsis_set(ellipsis: string) -> self
+	/// @method style_ellipsis() -> struct<lipgloss.Style>
+	/// @method style_ellipsis_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_short_key() -> struct<lipgloss.Style>
+	/// @method style_short_key_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_short_desc() -> struct<lipgloss.Style>
+	/// @method style_short_desc_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_short_separator() -> struct<lipgloss.Style>
+	/// @method style_short_separator_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_full_key() -> struct<lipgloss.Style>
+	/// @method style_full_key_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_full_desc() -> struct<lipgloss.Style>
+	/// @method style_full_desc_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_full_separator() -> struct<lipgloss.Style>
+	/// @method style_full_separator_set(style: struct<lipgloss.Style>) -> self
+
 	t := state.NewTable()
 
 	t.RawSetString("program", golua.LNumber(program))
