@@ -24,6 +24,8 @@ import (
 	"github.com/charmbracelet/bubbles/timer"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	teaimage "github.com/mistakenelf/teacup/image"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -801,6 +803,80 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func image(id, active, borderless, borderColor?) -> struct<tui.Image>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the image to.
+	/// @arg active {bool}
+	/// @arg borderless {bool}
+	/// @arg? borderColor {struct<lipgloss.ColorAdaptive>} - Defaults to white and black.
+	/// @returns {struct<tui.Image>}
+	lib.CreateFunction(tab, "image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "active"},
+			{Type: lua.BOOL, Name: "borderless"},
+			{Type: lua.RAW_TABLE, Name: "borderColor", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+
+			active := args["active"].(bool)
+			borderless := args["borderless"].(bool)
+			color := args["borderColor"].(*golua.LTable)
+
+			lcolor := lgColorGenericBuild(color)
+			if _, ok := lcolor.(lipgloss.AdaptiveColor); !ok {
+				lcolor = lipgloss.AdaptiveColor{
+					Light: "#000000",
+					Dark:  "#FFFFFF",
+				}
+			}
+
+			im := teaimage.New(active, borderless, lcolor.(lipgloss.AdaptiveColor))
+			id := len(item.Images)
+			item.Images = append(item.Images, &im)
+
+			t := tuiimageTable(r, lg, lib, state, prgrm, id)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func image_to_string(img, width?) -> string
+	/// @arg img {int<collection.IMAGE>}
+	/// @arg? width {int} - Defaults to the image's width.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "image_to_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "img"},
+			{Type: lua.INT, Name: "width", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var result string
+
+			<-r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					width := args["width"].(int)
+					if width == 0 {
+						width = i.Self.Image.Bounds().Dx()
+					}
+					result = teaimage.ToString(width, i.Self.Image)
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					result = ""
+				},
+			})
+
+			state.Push(golua.LString(result))
+			return 1
+		})
+
 	/// @func file_is_hidden(path) -> bool
 	/// @arg path {string}
 	/// @returns {bool}
@@ -1312,6 +1388,17 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @prop cmd {int} - The command type.
 	/// @prop id {int} - The timer id.
 
+	/// @struct CMDImageSize
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The image id.
+	/// @prop width {int} - The width.
+	/// @prop height {int} - The height.
+
+	/// @struct CMDImageFile
+	/// @prop cmd {int} - The command type.
+	/// @prop id {int} - The image id.
+	/// @prop filename {string} - The filename.
+
 	/// @constants Command
 	/// @const CMD_NONE
 	/// @const CMD_STORED
@@ -1365,6 +1452,8 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @const CMD_ENABLEMOUSECELLMOTION
 	/// @const CMD_ENTERALTSCREEN
 	/// @const CMD_EXITALTSCREEN
+	/// @const CMD_IMAGESIZE
+	/// @const CMD_IMAGEFILE
 	tab.RawSetString("CMD_NONE", golua.LNumber(customtea.CMD_NONE))
 	tab.RawSetString("CMD_STORED", golua.LNumber(customtea.CMD_STORED))
 	tab.RawSetString("CMD_BATCH", golua.LNumber(customtea.CMD_BATCH))
@@ -1417,6 +1506,8 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("CMD_ENABLEMOUSECELLMOTION", golua.LNumber(customtea.CMD_ENABLEMOUSECELLMOTION))
 	tab.RawSetString("CMD_ENTERALTSCREEN", golua.LNumber(customtea.CMD_ENTERALTSCREEN))
 	tab.RawSetString("CMD_EXITALTSCREEN", golua.LNumber(customtea.CMD_EXITALTSCREEN))
+	tab.RawSetString("CMD_IMAGESIZE", golua.LNumber(customtea.CMD_IMAGESIZE))
+	tab.RawSetString("CMD_IMAGEFILE", golua.LNumber(customtea.CMD_IMAGEFILE))
 
 	/// @struct MSG
 	/// @prop msg {int} - The message type.
@@ -12500,6 +12591,282 @@ func helpTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState,
 
 			item.Helps[id].Styles.FullSeparator = *style.Style
 			t.RawSetString("__styleFullSep", st)
+		})
+
+	return t
+}
+
+func tuiimageTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct Image
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tea.CMD>
+	/// @method image_string() -> string
+	/// @method image_string_set(img: string) -> self
+	/// @method image_file() -> string
+	/// @method image_file_set(filename: string) -> struct<tea.CMDImageFile>
+	/// @method size_set(width: int, height: int) -> struct<tea.CMDImageSize>
+	/// @method is_active() -> bool
+	/// @method is_active_set(enabled: bool) -> self
+	/// @method borderless() -> bool
+	/// @method borderless_set(enabled: bool) -> self
+	/// @method border_color() -> struct<lipgloss.ColorAdaptive>
+	/// @method border_color_set(color: struct<lipgloss.ColorAny>?) -> self
+	/// @method goto_top() -> self
+	/// @method viewport() -> struct<tui.Viewport>
+
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+		}
+
+		str := item.Images[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		im, cmd := item.Images[id].Update(*item.Msg)
+		item.Images[id] = &im
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	lib.TableFunction(state, t, "image_string",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Images[id].ImageString
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "image_string_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "img"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			imgstr := args["img"].(string)
+			img := item.Images[id]
+
+			img.ImageString = imgstr
+			img.Viewport.SetContent(imgstr)
+		})
+
+	lib.TableFunction(state, t, "image_file",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Images[id].FileName
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "image_file_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "filename"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			id := int(t.RawGetString("id").(golua.LNumber))
+			cmd := customtea.CMDImageFile(state, id, args["filename"].(string))
+
+			state.Push(cmd)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "size_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			id := t.RawGetString("id").(golua.LNumber)
+			cmd := customtea.CMDImageSize(state, int(id), args["width"].(int), args["height"].(int))
+
+			state.Push(cmd)
+			return 1
+		})
+
+	lib.TableFunction(state, t, "is_active",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Images[id].Active
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "is_active_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Images[id].Active = args["enabled"].(bool)
+		})
+
+	lib.TableFunction(state, t, "borderless",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.Images[id].Borderless
+
+			state.Push(golua.LBool(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "borderless_set",
+		[]lua.Arg{
+			{Type: lua.BOOL, Name: "enabled"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Images[id].Borderless = args["enabled"].(bool)
+		})
+
+	lib.TableFunction(state, t, "border_color",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			color := item.Images[id].BorderColor
+			value := lgColorGenericTable(state, color)
+
+			state.Push(value)
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "border_color_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "color", Optional: true},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			color := args["color"].(*golua.LTable)
+			lcolor := lgColorGenericBuild(color)
+
+			if _, ok := lcolor.(lipgloss.AdaptiveColor); !ok {
+				lcolor = lipgloss.AdaptiveColor{
+					Light: "#000000",
+					Dark:  "#FFFFFF",
+				}
+			}
+
+			item.Images[id].BorderColor = lcolor.(lipgloss.AdaptiveColor)
+		})
+
+	lib.BuilderFunction(state, t, "goto_top",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.Images[id].GotoTop()
+		})
+
+	t.RawSetString("__viewport", golua.LNil)
+	lib.TableFunction(state, t, "viewport",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			ovp := t.RawGetString("__viewport")
+			if ovp.Type() == golua.LTTable {
+				state.Push(ovp)
+				return 1
+			}
+
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			model := &item.Images[id].Viewport
+			mid := len(item.Viewports)
+			item.Viewports = append(item.Viewports, model)
+
+			vp := viewportTable(r, lg, lib, state, program, mid)
+			state.Push(vp)
+			t.RawSetString("__viewport", vp)
+			return 1
 		})
 
 	return t

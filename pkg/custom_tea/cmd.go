@@ -76,6 +76,8 @@ const (
 	CMD_ENABLEMOUSECELLMOTION
 	CMD_ENTERALTSCREEN
 	CMD_EXITALTSCREEN
+	CMD_IMAGESIZE
+	CMD_IMAGEFILE
 )
 
 type CMDBuilder func(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd
@@ -136,6 +138,8 @@ func init() {
 		CMDEnableMouseCellMotionBuild,
 		CMDEnterAltScreenBuild,
 		CMDExitAltScreenBuild,
+		CMDImageSizeBuild,
+		CMDImageFileBuild,
 	}
 }
 
@@ -1031,4 +1035,38 @@ func CMDExitAltScreen(state *golua.LState) *golua.LTable {
 
 func CMDExitAltScreenBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
 	return tea.EnterAltScreen
+}
+
+func CMDImageSize(state *golua.LState, id, width, height int) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_IMAGESIZE))
+	t.RawSetString("id", golua.LNumber(id))
+	t.RawSetString("width", golua.LNumber(width))
+	t.RawSetString("height", golua.LNumber(height))
+
+	return t
+}
+
+func CMDImageSizeBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	im := item.Images[int(t.RawGetString("id").(golua.LNumber))]
+	width := t.RawGetString("width").(golua.LNumber)
+	height := t.RawGetString("height").(golua.LNumber)
+	return im.SetSize(int(width), int(height))
+}
+
+func CMDImageFile(state *golua.LState, id int, filename string) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("cmd", golua.LNumber(CMD_IMAGEFILE))
+	t.RawSetString("id", golua.LNumber(id))
+	t.RawSetString("filename", golua.LString(filename))
+
+	return t
+}
+
+func CMDImageFileBuild(item *teamodels.TeaItem, state *golua.LState, t *golua.LTable) tea.Cmd {
+	im := item.Images[int(t.RawGetString("id").(golua.LNumber))]
+	filename := t.RawGetString("filename").(golua.LString)
+	return im.SetFileName(string(filename))
 }

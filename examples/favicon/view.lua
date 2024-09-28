@@ -43,7 +43,7 @@ function main()
 	local imgStrings = {}
 
 	for i, v in pairs(imgs) do
-		imgStrings[i] = cli.string_image(v, true, 25)
+		imgStrings[i] = cli.string_image(v, true, 10)
 	end
 
 	local program = tui.new()
@@ -54,6 +54,8 @@ function main()
 				paginator = tui.paginator(id, 0, cfg.count)
 					:type_set(tui.PAGINATOR_DOT)
 					:format_dot_set(" ● ", " ◌ "),
+				img = tui.image(id, true, true):image_string_set(imgStrings[1]),
+				current = 0,
 			}
 
 			return model, tui.cmd_batch({
@@ -68,10 +70,20 @@ function main()
 			end
 
 			local pagecmd = model.paginator.update()
+			local imgcmd = model.img.update()
 
-			return tui.cmd_batch({
-				pagecmd,
-			})
+			local cmds = { pagecmd, imgcmd }
+
+			local index = model.paginator.page() + 1
+			if index ~= model.current then
+				model.img:image_string_set(imgStrings[index])
+				local imgsize = model.img.size_set(cfg.entries[index].width * 2 + 4, cfg.entries[index].height)
+				model.current = index
+
+				cmds[3] = imgsize
+			end
+
+			return tui.cmd_batch(cmds)
 		end)
 		:view(function(model)
 			local index = model.paginator.page() + 1
@@ -80,7 +92,7 @@ function main()
 			local cfgstr = favicon_data(cfg, model)
 			local datastr = image_data(cfg.entries[index], model)
 			local pagestr = page_view(model)
-			local imgstr = image_view(imgStrings[index], model)
+			local imgstr = image_view(model)
 
 			return lipgloss.join_vertical(lipgloss.POSITION_CENTER, titlestr, cfgstr, datastr, imgstr, pagestr)
 		end)
@@ -142,15 +154,9 @@ function page_view(model)
 	)
 end
 
-function image_view(img, model)
+function image_view(model)
 	return lipgloss.style_string(
-		img,
-		lipgloss
-			.style()
-			:width_set(model.width)
-			:height_set(model.height - 9)
-			:align_set(lipgloss.POSITION_CENTER, lipgloss.POSITION_CENTER)
-			:padding_top_set(2)
-			:padding_bottom_set(2)
+		model.img.view(),
+		lipgloss.style():height_set(model.height - 9):align_vertical_set(lipgloss.POSITION_CENTER)
 	)
 end

@@ -16,6 +16,7 @@ import (
 	"github.com/charmbracelet/bubbles/timer"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	teaimage "github.com/mistakenelf/teacup/image"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -46,4 +47,5 @@ type TeaItem struct {
 	Viewports     []*viewport.Model
 	Customs       []*CustomModel
 	Helps         []*help.Model
+	Images        []*teaimage.Model
 }

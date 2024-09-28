@@ -10,6 +10,7 @@ require (
 	github.com/akamensky/argparse v1.4.0
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.1.1
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/crazy3lf/colorconv v1.2.0
 	github.com/disintegration/gift v1.2.1
 	github.com/ernyoke/imger v1.0.0
@@ -17,9 +18,11 @@ require (
 	github.com/koyachi/go-nude v0.0.2-0.20150410134931-699a88f33605
 	github.com/manifoldco/promptui v0.9.0
 	github.com/marekm4/color-extractor v1.2.1
+	github.com/mistakenelf/teacup v0.4.1
 	github.com/ojrac/opensimplex-go v1.0.2
 	github.com/qeesung/image2ascii v1.0.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a
 	github.com/yuin/gopher-lua v1.1.1
 	golang.org/x/image v0.20.0
 )
@@ -30,9 +33,9 @@ require (
 	github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
-	github.com/charmbracelet/lipgloss v0.13.0 // indirect
 	github.com/charmbracelet/x/ansi v0.2.3 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect
+	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 // indirect
@@ -51,7 +54,6 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a // indirect
 	github.com/wayneashleyberry/terminal-dimensions v1.1.0 // indirect
 	golang.design/x/hotkey v0.4.1 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect

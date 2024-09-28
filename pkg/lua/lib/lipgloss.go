@@ -606,9 +606,12 @@ func lgColorGenericBuild(t *golua.LTable) lipgloss.TerminalColor {
 	/// @struct ColorAny
 	/// @prop type {int<lipgloss.ColorType>} - The type of color.
 
-	typ := t.RawGetString("type").(golua.LNumber)
+	typ := t.RawGetString("type")
+	if typ.Type() != golua.LTNumber {
+		return lipgloss.NoColor{}
+	}
 
-	col := colorList[int(typ)](t)
+	col := colorList[int(typ.(golua.LNumber))](t)
 	return col
 }
 
