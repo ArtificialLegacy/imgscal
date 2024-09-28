@@ -878,8 +878,8 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func statusbar(id, first_foreground, first_background, second_foreground, second_background, third_foreground, third_background, fourth_foreground, fourth_background) -> struct<tui.Image>
-	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the image to.
+	/// @func statusbar(id, first_foreground, first_background, second_foreground, second_background, third_foreground, third_background, fourth_foreground, fourth_background) -> struct<tui.StatusBar>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the statusbar to.
 	/// @arg first_foreground {struct<lipgloss.AdaptiveColor>}
 	/// @arg first_background {struct<lipgloss.AdaptiveColor>}
 	/// @arg second_foreground {struct<lipgloss.AdaptiveColor>}
@@ -888,7 +888,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @arg third_background {struct<lipgloss.AdaptiveColor>}
 	/// @arg fourth_foreground {struct<lipgloss.AdaptiveColor>}
 	/// @arg fourth_background {struct<lipgloss.AdaptiveColor>}
-	/// @returns {struct<tui.Image>}
+	/// @returns {struct<tui.StatusBar>}
 	lib.CreateFunction(tab, "statusbar",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
