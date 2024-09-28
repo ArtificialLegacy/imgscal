@@ -188,6 +188,20 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func remove(id)
+	/// @arg id {int<collection.IMAGE>}
+	/// @desc
+	/// Removes the image from the collection.
+	/// This is a shortcut for collection.collect(collection.IMAGE, id).
+	lib.CreateFunction(tab, "remove",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.IC.Collect(args["id"].(int))
+			return 0
+		})
+
 	/// @func name(id, name)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg name {string} - The new name to use for the image, not including the file extension.
