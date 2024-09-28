@@ -26,6 +26,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	teaimage "github.com/mistakenelf/teacup/image"
+	"github.com/mistakenelf/teacup/statusbar"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -874,6 +875,105 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			})
 
 			state.Push(golua.LString(result))
+			return 1
+		})
+
+	/// @func statusbar(id, first_foreground, first_background, second_foreground, second_background, third_foreground, third_background, fourth_foreground, fourth_background) -> struct<tui.Image>
+	/// @arg id {int<collection.CRATE_TEA>} - The program id to add the image to.
+	/// @arg first_foreground {struct<lipgloss.AdaptiveColor>}
+	/// @arg first_background {struct<lipgloss.AdaptiveColor>}
+	/// @arg second_foreground {struct<lipgloss.AdaptiveColor>}
+	/// @arg second_background {struct<lipgloss.AdaptiveColor>}
+	/// @arg third_foreground {struct<lipgloss.AdaptiveColor>}
+	/// @arg third_background {struct<lipgloss.AdaptiveColor>}
+	/// @arg fourth_foreground {struct<lipgloss.AdaptiveColor>}
+	/// @arg fourth_background {struct<lipgloss.AdaptiveColor>}
+	/// @returns {struct<tui.Image>}
+	lib.CreateFunction(tab, "statusbar",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.RAW_TABLE, Name: "first_foreground"},
+			{Type: lua.RAW_TABLE, Name: "first_background"},
+			{Type: lua.RAW_TABLE, Name: "second_foreground"},
+			{Type: lua.RAW_TABLE, Name: "second_background"},
+			{Type: lua.RAW_TABLE, Name: "third_foreground"},
+			{Type: lua.RAW_TABLE, Name: "third_background"},
+			{Type: lua.RAW_TABLE, Name: "fourth_foreground"},
+			{Type: lua.RAW_TABLE, Name: "fourth_background"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			prgrm := args["id"].(int)
+			item, err := r.CR_TEA.Item(prgrm)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+
+			defaultForeground := lipgloss.AdaptiveColor{
+				Light: "#000000",
+				Dark:  "#FFFFFF",
+			}
+			defaultBackground := lipgloss.AdaptiveColor{
+				Light: "#FFFFFF",
+				Dark:  "#000000",
+			}
+
+			firstForeground := lgColorGenericBuild(args["first_foreground"].(*golua.LTable))
+			if _, ok := firstForeground.(lipgloss.AdaptiveColor); !ok {
+				firstForeground = defaultForeground
+			}
+			firstBackground := lgColorGenericBuild(args["first_background"].(*golua.LTable))
+			if _, ok := firstBackground.(lipgloss.AdaptiveColor); !ok {
+				firstBackground = defaultBackground
+			}
+			secondForeground := lgColorGenericBuild(args["second_foreground"].(*golua.LTable))
+			if _, ok := secondForeground.(lipgloss.AdaptiveColor); !ok {
+				secondForeground = defaultForeground
+			}
+			secondBackground := lgColorGenericBuild(args["second_background"].(*golua.LTable))
+			if _, ok := secondBackground.(lipgloss.AdaptiveColor); !ok {
+				secondBackground = defaultBackground
+			}
+			thirdForeground := lgColorGenericBuild(args["third_foreground"].(*golua.LTable))
+			if _, ok := thirdForeground.(lipgloss.AdaptiveColor); !ok {
+				thirdForeground = defaultForeground
+			}
+			thirdBackground := lgColorGenericBuild(args["third_background"].(*golua.LTable))
+			if _, ok := thirdBackground.(lipgloss.AdaptiveColor); !ok {
+				thirdBackground = defaultBackground
+			}
+			fourthForeground := lgColorGenericBuild(args["fourth_foreground"].(*golua.LTable))
+			if _, ok := fourthForeground.(lipgloss.AdaptiveColor); !ok {
+				fourthForeground = defaultForeground
+			}
+			fourthBackground := lgColorGenericBuild(args["fourth_background"].(*golua.LTable))
+			if _, ok := fourthBackground.(lipgloss.AdaptiveColor); !ok {
+				fourthBackground = defaultBackground
+			}
+
+			firstPairs := statusbar.ColorConfig{
+				Foreground: firstForeground.(lipgloss.AdaptiveColor),
+				Background: firstBackground.(lipgloss.AdaptiveColor),
+			}
+			secondPairs := statusbar.ColorConfig{
+				Foreground: secondForeground.(lipgloss.AdaptiveColor),
+				Background: secondBackground.(lipgloss.AdaptiveColor),
+			}
+			thirdPairs := statusbar.ColorConfig{
+				Foreground: thirdForeground.(lipgloss.AdaptiveColor),
+				Background: thirdBackground.(lipgloss.AdaptiveColor),
+			}
+			fourthPairs := statusbar.ColorConfig{
+				Foreground: fourthForeground.(lipgloss.AdaptiveColor),
+				Background: fourthBackground.(lipgloss.AdaptiveColor),
+			}
+
+			sb := statusbar.New(firstPairs, secondPairs, thirdPairs, fourthPairs)
+			id := len(item.StatusBars)
+			item.StatusBars = append(item.StatusBars, &sb)
+
+			t := statusbarTable(r, lg, lib, state, prgrm, id)
+
+			state.Push(t)
 			return 1
 		})
 
@@ -12867,6 +12967,625 @@ func tuiimageTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 			state.Push(vp)
 			t.RawSetString("__viewport", vp)
 			return 1
+		})
+
+	return t
+}
+
+func statusbarTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+	/// @struct StatusBar
+	/// @prop program {int}
+	/// @prop id {int}
+	/// @method view() -> string
+	/// @method update() -> struct<tea.CMD>
+	/// @method content() -> string, string, string, string
+	/// @method content_set(first: string, second: string, third: string, fourth: string) -> self
+	/// @method colors() -> struct<lipgloss.ColorGeneric>, struct<lipgloss.ColorGeneric>, struct<lipgloss.ColorGeneric>, struct<lipgloss.ColorGeneric>
+	/// @method colors_set(first_foreground: struct<lipgloss.ColorAny>, first_background: struct<lipgloss.ColorAny>, second_foreground: struct<lipgloss.ColorAny>, second_background: struct<lipgloss.ColorAny>, third_foreground: struct<lipgloss.ColorAny>, third_background: struct<lipgloss.ColorAny>, fourth_foreground: struct<lipgloss.ColorAny>, fourth_background: struct<lipgloss.ColorAny>) -> self
+	/// @method width() -> int
+	/// @method width_set(width: int) -> self
+	/// @method height() -> int
+	/// @method height_set(height: int) -> self
+	/// @method column_first() -> string
+	/// @method column_first_set(first: string) -> self
+	/// @method column_second() -> string
+	/// @method column_second_set(second: string) -> self
+	/// @method column_third() -> string
+	/// @method column_third_set(third: string) -> self
+	/// @method column_fourth() -> string
+	/// @method column_fourth_set(fourth: string) -> self
+	/// @method column_first_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
+	/// @method column_first_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_second_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
+	/// @method column_second_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_third_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
+	/// @method column_third_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_fourth_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
+	/// @method column_fourth_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+
+	t := state.NewTable()
+
+	t.RawSetString("program", golua.LNumber(program))
+	t.RawSetString("id", golua.LNumber(id))
+
+	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+		}
+
+		str := item.StatusBars[int(t.RawGetString("id").(golua.LNumber))].View()
+
+		state.Push(golua.LString(str))
+		return 1
+	}))
+
+	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
+		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+		if err != nil {
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+		}
+		id := int(t.RawGetString("id").(golua.LNumber))
+		sb, cmd := item.StatusBars[id].Update(*item.Msg)
+		item.StatusBars[id] = &sb
+
+		var bcmd *golua.LTable
+
+		if cmd == nil {
+			bcmd = customtea.CMDNone(state)
+		} else {
+			bcmd = customtea.CMDStored(state, item, cmd)
+		}
+
+		state.Push(bcmd)
+		return 1
+	}))
+
+	lib.TableFunction(state, t, "content",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			first := item.StatusBars[id].FirstColumn
+			second := item.StatusBars[id].SecondColumn
+			third := item.StatusBars[id].ThirdColumn
+			fourth := item.StatusBars[id].FourthColumn
+
+			state.Push(golua.LString(first))
+			state.Push(golua.LString(second))
+			state.Push(golua.LString(third))
+			state.Push(golua.LString(fourth))
+			return 4
+		})
+
+	lib.BuilderFunction(state, t, "content_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "first"},
+			{Type: lua.STRING, Name: "second"},
+			{Type: lua.STRING, Name: "third"},
+			{Type: lua.STRING, Name: "fourth"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			sb := item.StatusBars[id]
+
+			sb.FirstColumn = args["first"].(string)
+			sb.SecondColumn = args["second"].(string)
+			sb.ThirdColumn = args["third"].(string)
+			sb.FourthColumn = args["fourth"].(string)
+		})
+
+	lib.TableFunction(state, t, "colors",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			first := item.StatusBars[id].FirstColumnColors
+			second := item.StatusBars[id].SecondColumnColors
+			third := item.StatusBars[id].ThirdColumnColors
+			fourth := item.StatusBars[id].FourthColumnColors
+
+			state.Push(lgColorGenericTable(state, first.Foreground))
+			state.Push(lgColorGenericTable(state, first.Background))
+			state.Push(lgColorGenericTable(state, second.Foreground))
+			state.Push(lgColorGenericTable(state, second.Background))
+			state.Push(lgColorGenericTable(state, third.Foreground))
+			state.Push(lgColorGenericTable(state, third.Background))
+			state.Push(lgColorGenericTable(state, fourth.Foreground))
+			state.Push(lgColorGenericTable(state, fourth.Background))
+			return 8
+		})
+
+	lib.BuilderFunction(state, t, "colors_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "first_foreground"},
+			{Type: lua.RAW_TABLE, Name: "first_background"},
+			{Type: lua.RAW_TABLE, Name: "second_foreground"},
+			{Type: lua.RAW_TABLE, Name: "second_background"},
+			{Type: lua.RAW_TABLE, Name: "third_foreground"},
+			{Type: lua.RAW_TABLE, Name: "third_background"},
+			{Type: lua.RAW_TABLE, Name: "fourth_foreground"},
+			{Type: lua.RAW_TABLE, Name: "fourth_background"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			defaultForeground := lipgloss.AdaptiveColor{
+				Light: "#000000",
+				Dark:  "#FFFFFF",
+			}
+			defaultBackground := lipgloss.AdaptiveColor{
+				Light: "#FFFFFF",
+				Dark:  "#000000",
+			}
+
+			firstForeground := lgColorGenericBuild(args["first_foreground"].(*golua.LTable))
+			if _, ok := firstForeground.(lipgloss.AdaptiveColor); !ok {
+				firstForeground = defaultForeground
+			}
+			firstBackground := lgColorGenericBuild(args["first_background"].(*golua.LTable))
+			if _, ok := firstBackground.(lipgloss.AdaptiveColor); !ok {
+				firstBackground = defaultBackground
+			}
+			secondForeground := lgColorGenericBuild(args["second_foreground"].(*golua.LTable))
+			if _, ok := secondForeground.(lipgloss.AdaptiveColor); !ok {
+				secondForeground = defaultForeground
+			}
+			secondBackground := lgColorGenericBuild(args["second_background"].(*golua.LTable))
+			if _, ok := secondBackground.(lipgloss.AdaptiveColor); !ok {
+				secondBackground = defaultBackground
+			}
+			thirdForeground := lgColorGenericBuild(args["third_foreground"].(*golua.LTable))
+			if _, ok := thirdForeground.(lipgloss.AdaptiveColor); !ok {
+				thirdForeground = defaultForeground
+			}
+			thirdBackground := lgColorGenericBuild(args["third_background"].(*golua.LTable))
+			if _, ok := thirdBackground.(lipgloss.AdaptiveColor); !ok {
+				thirdBackground = defaultBackground
+			}
+			fourthForeground := lgColorGenericBuild(args["fourth_foreground"].(*golua.LTable))
+			if _, ok := fourthForeground.(lipgloss.AdaptiveColor); !ok {
+				fourthForeground = defaultForeground
+			}
+			fourthBackground := lgColorGenericBuild(args["fourth_background"].(*golua.LTable))
+			if _, ok := fourthBackground.(lipgloss.AdaptiveColor); !ok {
+				fourthBackground = defaultBackground
+			}
+
+			firstPairs := statusbar.ColorConfig{
+				Foreground: firstForeground.(lipgloss.AdaptiveColor),
+				Background: firstBackground.(lipgloss.AdaptiveColor),
+			}
+			secondPairs := statusbar.ColorConfig{
+				Foreground: secondForeground.(lipgloss.AdaptiveColor),
+				Background: secondBackground.(lipgloss.AdaptiveColor),
+			}
+			thirdPairs := statusbar.ColorConfig{
+				Foreground: thirdForeground.(lipgloss.AdaptiveColor),
+				Background: thirdBackground.(lipgloss.AdaptiveColor),
+			}
+			fourthPairs := statusbar.ColorConfig{
+				Foreground: fourthForeground.(lipgloss.AdaptiveColor),
+				Background: fourthBackground.(lipgloss.AdaptiveColor),
+			}
+
+			sb := item.StatusBars[id]
+
+			sb.FirstColumnColors = firstPairs
+			sb.SecondColumnColors = secondPairs
+			sb.ThirdColumnColors = thirdPairs
+			sb.FourthColumnColors = fourthPairs
+		})
+
+	lib.TableFunction(state, t, "width",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StatusBars[id].Width
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "width_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StatusBars[id].Width = args["width"].(int)
+		})
+
+	lib.TableFunction(state, t, "height",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StatusBars[id].Height
+
+			state.Push(golua.LNumber(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "height_set",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "height"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StatusBars[id].Height = args["height"].(int)
+		})
+
+	lib.TableFunction(state, t, "column_first",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StatusBars[id].FirstColumn
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "column_first_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StatusBars[id].FirstColumn = args["content"].(string)
+		})
+
+	lib.TableFunction(state, t, "column_second",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StatusBars[id].SecondColumn
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "column_second_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StatusBars[id].SecondColumn = args["content"].(string)
+		})
+
+	lib.TableFunction(state, t, "column_third",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StatusBars[id].ThirdColumn
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "column_third_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StatusBars[id].ThirdColumn = args["content"].(string)
+		})
+
+	lib.TableFunction(state, t, "column_fourth",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			value := item.StatusBars[id].FourthColumn
+
+			state.Push(golua.LString(value))
+			return 1
+		})
+
+	lib.BuilderFunction(state, t, "column_fourth_set",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			item.StatusBars[id].FourthColumn = args["content"].(string)
+		})
+
+	lib.TableFunction(state, t, "column_first_color",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			colors := item.StatusBars[id].FirstColumnColors
+
+			state.Push(lgColorGenericTable(state, colors.Foreground))
+			state.Push(lgColorGenericTable(state, colors.Background))
+			return 2
+		})
+
+	lib.BuilderFunction(state, t, "column_first_color_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "foreground"},
+			{Type: lua.RAW_TABLE, Name: "background"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			defaultForeground := lipgloss.AdaptiveColor{
+				Light: "#000000",
+				Dark:  "#FFFFFF",
+			}
+			defaultBackground := lipgloss.AdaptiveColor{
+				Light: "#FFFFFF",
+				Dark:  "#000000",
+			}
+
+			foreground := lgColorGenericBuild(args["foreground"].(*golua.LTable))
+			if _, ok := foreground.(lipgloss.AdaptiveColor); !ok {
+				foreground = defaultForeground
+			}
+			background := lgColorGenericBuild(args["background"].(*golua.LTable))
+			if _, ok := background.(lipgloss.AdaptiveColor); !ok {
+				background = defaultBackground
+			}
+
+			item.StatusBars[id].FirstColumnColors = statusbar.ColorConfig{
+				Foreground: foreground.(lipgloss.AdaptiveColor),
+				Background: background.(lipgloss.AdaptiveColor),
+			}
+		})
+
+	lib.TableFunction(state, t, "column_second_color",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			colors := item.StatusBars[id].SecondColumnColors
+
+			state.Push(lgColorGenericTable(state, colors.Foreground))
+			state.Push(lgColorGenericTable(state, colors.Background))
+			return 2
+		})
+
+	lib.BuilderFunction(state, t, "column_second_color_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "foreground"},
+			{Type: lua.RAW_TABLE, Name: "background"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			defaultForeground := lipgloss.AdaptiveColor{
+				Light: "#000000",
+				Dark:  "#FFFFFF",
+			}
+			defaultBackground := lipgloss.AdaptiveColor{
+				Light: "#FFFFFF",
+				Dark:  "#000000",
+			}
+
+			foreground := lgColorGenericBuild(args["foreground"].(*golua.LTable))
+			if _, ok := foreground.(lipgloss.AdaptiveColor); !ok {
+				foreground = defaultForeground
+			}
+			background := lgColorGenericBuild(args["background"].(*golua.LTable))
+			if _, ok := background.(lipgloss.AdaptiveColor); !ok {
+				background = defaultBackground
+			}
+
+			item.StatusBars[id].SecondColumnColors = statusbar.ColorConfig{
+				Foreground: foreground.(lipgloss.AdaptiveColor),
+				Background: background.(lipgloss.AdaptiveColor),
+			}
+		})
+
+	lib.TableFunction(state, t, "column_third_color",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			colors := item.StatusBars[id].ThirdColumnColors
+
+			state.Push(lgColorGenericTable(state, colors.Foreground))
+			state.Push(lgColorGenericTable(state, colors.Background))
+			return 2
+		})
+
+	lib.BuilderFunction(state, t, "column_third_color_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "foreground"},
+			{Type: lua.RAW_TABLE, Name: "background"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			defaultForeground := lipgloss.AdaptiveColor{
+				Light: "#000000",
+				Dark:  "#FFFFFF",
+			}
+			defaultBackground := lipgloss.AdaptiveColor{
+				Light: "#FFFFFF",
+				Dark:  "#000000",
+			}
+
+			foreground := lgColorGenericBuild(args["foreground"].(*golua.LTable))
+			if _, ok := foreground.(lipgloss.AdaptiveColor); !ok {
+				foreground = defaultForeground
+			}
+			background := lgColorGenericBuild(args["background"].(*golua.LTable))
+			if _, ok := background.(lipgloss.AdaptiveColor); !ok {
+				background = defaultBackground
+			}
+
+			item.StatusBars[id].ThirdColumnColors = statusbar.ColorConfig{
+				Foreground: foreground.(lipgloss.AdaptiveColor),
+				Background: background.(lipgloss.AdaptiveColor),
+			}
+		})
+
+	lib.TableFunction(state, t, "column_fourth_color",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			program := int(t.RawGetString("program").(golua.LNumber))
+			item, err := r.CR_TEA.Item(program)
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			colors := item.StatusBars[id].FourthColumnColors
+
+			state.Push(lgColorGenericTable(state, colors.Foreground))
+			state.Push(lgColorGenericTable(state, colors.Background))
+			return 2
+		})
+
+	lib.BuilderFunction(state, t, "column_fourth_color_set",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "foreground"},
+			{Type: lua.RAW_TABLE, Name: "background"},
+		},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
+			if err != nil {
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
+			}
+			id := int(t.RawGetString("id").(golua.LNumber))
+
+			defaultForeground := lipgloss.AdaptiveColor{
+				Light: "#000000",
+				Dark:  "#FFFFFF",
+			}
+			defaultBackground := lipgloss.AdaptiveColor{
+				Light: "#FFFFFF",
+				Dark:  "#000000",
+			}
+
+			foreground := lgColorGenericBuild(args["foreground"].(*golua.LTable))
+			if _, ok := foreground.(lipgloss.AdaptiveColor); !ok {
+				foreground = defaultForeground
+			}
+			background := lgColorGenericBuild(args["background"].(*golua.LTable))
+			if _, ok := background.(lipgloss.AdaptiveColor); !ok {
+				background = defaultBackground
+			}
+
+			item.StatusBars[id].FourthColumnColors = statusbar.ColorConfig{
+				Foreground: foreground.(lipgloss.AdaptiveColor),
+				Background: background.(lipgloss.AdaptiveColor),
+			}
 		})
 
 	return t
