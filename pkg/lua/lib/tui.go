@@ -43,7 +43,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			id := r.CR_TEA.Add(&teamodels.TeaItem{})
-			t := teaTable(r, state, lib, id)
+			t := teaTable(r, lg, state, lib, id)
 
 			state.Push(t)
 			return 1
@@ -75,7 +75,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := int(program.RawGetString("id").(golua.LNumber))
 			item, err := r.CR_TEA.Item(id)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			optArg := args["opts"].(*golua.LTable)
@@ -85,7 +85,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			p := tea.NewProgram(customtea.ProgramModel{Id: id, Item: item, State: pstate, R: r, Lg: lg}, opts...)
 			_, err = p.Run()
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			pstate.Close()
@@ -107,14 +107,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			spin := spinner.New(spinner.WithSpinner(spinnerList[args["type"].(int)]))
 			id := spin.ID()
 			item.Spinners[id] = &spin
 
-			t := spinnerTable(r, lib, state, prgrm, id)
+			t := spinnerTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -135,7 +135,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			frames := args["frames"].([]any)
@@ -153,7 +153,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := spin.ID()
 			item.Spinners[id] = &spin
 
-			t := spinnerTable(r, lib, state, prgrm, id)
+			t := spinnerTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -170,14 +170,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			ta := textarea.New()
 			id := len(item.TextAreas)
 			item.TextAreas = append(item.TextAreas, &ta)
 
-			t := textareaTable(r, lib, state, prgrm, id)
+			t := textareaTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -194,14 +194,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			ti := textinput.New()
 			id := len(item.TextInputs)
 			item.TextInputs = append(item.TextInputs, &ti)
 
-			t := textinputTable(r, lib, state, prgrm, id)
+			t := textinputTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -218,14 +218,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			cu := cursor.New()
 			id := len(item.Cursors)
 			item.Cursors = append(item.Cursors, &cu)
 
-			t := cursorTable(r, lib, state, prgrm, id)
+			t := cursorTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -242,14 +242,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			fp := filepicker.New()
 			id := len(item.FilePickers)
 			item.FilePickers = append(item.FilePickers, &fp)
 
-			t := filePickerTable(r, lib, state, prgrm, id)
+			t := filePickerTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -305,7 +305,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			itemList := args["items"].([]any)
@@ -322,7 +322,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := len(item.Lists)
 			item.Lists = append(item.Lists, &li)
 
-			t := listTable(r, lib, state, prgrm, id)
+			t := listTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -339,14 +339,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			di := list.NewDefaultDelegate()
 			id := len(item.ListDelegates)
 			item.ListDelegates = append(item.ListDelegates, &di)
 
-			t := listDelegateTable(r, lib, state, prgrm, id)
+			t := listDelegateTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -390,7 +390,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			per := args["per"].(int)
@@ -408,7 +408,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := len(item.Paginators)
 			item.Paginators = append(item.Paginators, &pg)
 
-			t := paginatorTable(r, lib, state, prgrm, id)
+			t := paginatorTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -436,7 +436,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			opts := progressOptionsBuild(args["options"].(*golua.LTable))
@@ -445,7 +445,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := len(item.ProgressBars)
 			item.ProgressBars = append(item.ProgressBars, &pr)
 
-			t := progressTable(r, lib, state, prgrm, id)
+			t := progressTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -464,7 +464,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			interval := args["interval"].(int)
@@ -479,7 +479,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := sw.ID()
 			item.StopWatches[id] = &sw
 
-			t := stopwatchTable(r, lib, state, prgrm, id)
+			t := stopwatchTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -500,7 +500,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			timeout := time.Duration(args["timeout"].(int) * 1e6)
@@ -516,7 +516,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := ti.ID()
 			item.Timers[id] = &ti
 
-			t := timerTable(r, lib, state, prgrm, id)
+			t := timerTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -559,7 +559,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			opts := tableOptionsBuild(args["options"].(*golua.LTable), r)
@@ -568,7 +568,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			id := len(item.Tables)
 			item.Tables = append(item.Tables, &tb)
 
-			t := tuitableTable(r, lib, state, prgrm, id)
+			t := tuitableTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -589,7 +589,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			width := args["width"].(int)
@@ -598,7 +598,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			vp := viewport.New(width, height)
 			item.Viewports = append(item.Viewports, &vp)
 
-			t := viewportTable(r, lib, state, prgrm, id)
+			t := viewportTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -678,7 +678,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			init := args["init"].(*golua.LFunction)
@@ -689,7 +689,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			cm := teamodels.NewCustomModel(prgrm, init, update, view, state, item, customtea.CMDBuild, customtea.BuildMSG)
 			item.Customs = append(item.Customs, &cm)
 
-			t := tuicustomTable(r, lib, state, prgrm, id)
+			t := tuicustomTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -718,7 +718,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			options := args["option"].(*golua.LTable)
@@ -728,7 +728,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			ky := key.NewBinding(opts...)
 			item.KeyBindings = append(item.KeyBindings, &ky)
 
-			t := tuikeyTable(r, lib, state, prgrm, id)
+			t := tuikeyTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -765,7 +765,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 				prgrm := int(vt.RawGetString("program").(golua.LNumber))
 				item, err := r.CR_TEA.Item(prgrm)
 				if err != nil {
-					lua.Error(state, err.Error())
+					lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 				}
 				id := int(vt.RawGetString("id").(golua.LNumber))
 				blist[i] = *item.KeyBindings[id]
@@ -788,14 +788,14 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			prgrm := args["id"].(int)
 			item, err := r.CR_TEA.Item(prgrm)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			hp := help.New()
 			id := len(item.Helps)
 			item.Helps = append(item.Helps, &hp)
 
-			t := helpTable(r, lib, state, prgrm, id)
+			t := helpTable(r, lg, lib, state, prgrm, id)
 
 			state.Push(t)
 			return 1
@@ -1868,7 +1868,7 @@ const (
 	FILTERFUNC_UNSORTED
 )
 
-func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
+func teaTable(r *lua.Runner, lg *log.Logger, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
 	/// @struct Program
 	/// @prop id {int}
 	/// @method init(fn: function(id) -> any, struct<tui.CMD>)
@@ -1885,7 +1885,7 @@ func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.L
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("id").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			item.FnInit = args["fn"].(*golua.LFunction)
@@ -1899,7 +1899,7 @@ func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.L
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("id").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			item.FnUpdate = args["fn"].(*golua.LFunction)
@@ -1913,7 +1913,7 @@ func teaTable(r *lua.Runner, state *golua.LState, lib *lua.Lib, id int) *golua.L
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("id").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			item.FnView = args["fn"].(*golua.LFunction)
@@ -2077,7 +2077,7 @@ func programOptionsBuild(state *golua.LState, t *golua.LTable) []tea.ProgramOpti
 	return opts
 }
 
-func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func spinnerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Spinner
 	/// @prop program {int}
 	/// @prop id {int}
@@ -2098,7 +2098,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Spinners[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -2110,7 +2110,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		nm, cmd := item.Spinners[id].Update(*item.Msg)
@@ -2141,7 +2141,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2166,7 +2166,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2182,7 +2182,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2214,7 +2214,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2236,7 +2236,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2251,7 +2251,7 @@ func spinnerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int,
 	return t
 }
 
-func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func textareaTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct TextArea
 	/// @prop program {int}
 	/// @prop id {int}
@@ -2336,7 +2336,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.TextAreas[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -2348,7 +2348,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		nm, cmd := item.TextAreas[id].Update(*item.Msg)
@@ -2371,7 +2371,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2390,7 +2390,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2402,7 +2402,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2414,7 +2414,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2426,7 +2426,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2438,7 +2438,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2448,7 +2448,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("focused", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2461,7 +2461,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("size", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2476,7 +2476,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("width", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2489,7 +2489,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("height", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2507,7 +2507,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2522,7 +2522,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2536,7 +2536,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2550,7 +2550,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2564,7 +2564,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2574,7 +2574,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("length", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2587,7 +2587,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("line", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2600,7 +2600,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("line_count", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2617,7 +2617,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2627,7 +2627,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("value", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2644,7 +2644,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2654,7 +2654,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("line_info", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2667,7 +2667,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("prompt", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2684,7 +2684,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2696,7 +2696,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("line_numbers", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2713,7 +2713,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2725,7 +2725,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("char_end", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2742,7 +2742,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2753,7 +2753,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("char_limit", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2770,7 +2770,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2781,7 +2781,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("width_max", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2798,7 +2798,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2809,7 +2809,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("height_max", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2826,7 +2826,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2842,7 +2842,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 			ta := item.TextAreas[id]
@@ -2870,14 +2870,14 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		program := int(t.RawGetString("program").(golua.LNumber))
 		item, err := r.CR_TEA.Item(program)
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
 		ta := item.TextAreas[id]
 		cid := len(item.Cursors)
 		item.Cursors = append(item.Cursors, &ta.Cursor)
-		cu := cursorTable(r, lib, state, program, cid)
+		cu := cursorTable(r, lg, lib, state, program, cid)
 
 		state.Push(cu)
 		t.RawSetString("__cursor", cu)
@@ -2897,7 +2897,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2933,7 +2933,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 				ids[i] = start + i
 			}
 
-			kmt := textareaKeymapTable(r, lib, state, program, id, ids)
+			kmt := textareaKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -2952,7 +2952,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2974,7 +2974,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -2999,7 +2999,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3021,7 +3021,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3046,7 +3046,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3068,7 +3068,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3093,7 +3093,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3115,7 +3115,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3140,7 +3140,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3162,7 +3162,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3187,7 +3187,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3209,7 +3209,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3234,7 +3234,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3256,7 +3256,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3281,7 +3281,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3303,7 +3303,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3328,7 +3328,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3350,7 +3350,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3375,7 +3375,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3397,7 +3397,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3422,7 +3422,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3444,7 +3444,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3469,7 +3469,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3491,7 +3491,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3516,7 +3516,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3538,7 +3538,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3563,7 +3563,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3585,7 +3585,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3610,7 +3610,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3632,7 +3632,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3657,7 +3657,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3679,7 +3679,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3694,7 +3694,7 @@ func textareaTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	return t
 }
 
-func textareaKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [22]int) *golua.LTable {
+func textareaKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [22]int) *golua.LTable {
 	/// @struct TextAreaKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -3729,35 +3729,35 @@ func textareaKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, progr
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("character_backward", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("character_forward", tuikeyTable(r, lib, state, program, ids[1]))
-	t.RawSetString("delete_after_cursor", tuikeyTable(r, lib, state, program, ids[2]))
-	t.RawSetString("delete_before_cursor", tuikeyTable(r, lib, state, program, ids[3]))
-	t.RawSetString("delete_character_backward", tuikeyTable(r, lib, state, program, ids[4]))
-	t.RawSetString("delete_character_forward", tuikeyTable(r, lib, state, program, ids[5]))
-	t.RawSetString("delete_word_backward", tuikeyTable(r, lib, state, program, ids[6]))
-	t.RawSetString("delete_word_forward", tuikeyTable(r, lib, state, program, ids[7]))
-	t.RawSetString("insert_newline", tuikeyTable(r, lib, state, program, ids[8]))
-	t.RawSetString("line_end", tuikeyTable(r, lib, state, program, ids[9]))
-	t.RawSetString("line_next", tuikeyTable(r, lib, state, program, ids[10]))
-	t.RawSetString("line_previous", tuikeyTable(r, lib, state, program, ids[11]))
-	t.RawSetString("line_start", tuikeyTable(r, lib, state, program, ids[12]))
-	t.RawSetString("paste", tuikeyTable(r, lib, state, program, ids[13]))
-	t.RawSetString("word_backward", tuikeyTable(r, lib, state, program, ids[14]))
-	t.RawSetString("word_forward", tuikeyTable(r, lib, state, program, ids[15]))
-	t.RawSetString("input_begin", tuikeyTable(r, lib, state, program, ids[16]))
-	t.RawSetString("input_end", tuikeyTable(r, lib, state, program, ids[17]))
-	t.RawSetString("uppercase_word", tuikeyTable(r, lib, state, program, ids[18]))
-	t.RawSetString("lowercase_word", tuikeyTable(r, lib, state, program, ids[19]))
-	t.RawSetString("capitalize_word", tuikeyTable(r, lib, state, program, ids[20]))
-	t.RawSetString("transpose_character_backward", tuikeyTable(r, lib, state, program, ids[21]))
+	t.RawSetString("character_backward", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("character_forward", tuikeyTable(r, lg, lib, state, program, ids[1]))
+	t.RawSetString("delete_after_cursor", tuikeyTable(r, lg, lib, state, program, ids[2]))
+	t.RawSetString("delete_before_cursor", tuikeyTable(r, lg, lib, state, program, ids[3]))
+	t.RawSetString("delete_character_backward", tuikeyTable(r, lg, lib, state, program, ids[4]))
+	t.RawSetString("delete_character_forward", tuikeyTable(r, lg, lib, state, program, ids[5]))
+	t.RawSetString("delete_word_backward", tuikeyTable(r, lg, lib, state, program, ids[6]))
+	t.RawSetString("delete_word_forward", tuikeyTable(r, lg, lib, state, program, ids[7]))
+	t.RawSetString("insert_newline", tuikeyTable(r, lg, lib, state, program, ids[8]))
+	t.RawSetString("line_end", tuikeyTable(r, lg, lib, state, program, ids[9]))
+	t.RawSetString("line_next", tuikeyTable(r, lg, lib, state, program, ids[10]))
+	t.RawSetString("line_previous", tuikeyTable(r, lg, lib, state, program, ids[11]))
+	t.RawSetString("line_start", tuikeyTable(r, lg, lib, state, program, ids[12]))
+	t.RawSetString("paste", tuikeyTable(r, lg, lib, state, program, ids[13]))
+	t.RawSetString("word_backward", tuikeyTable(r, lg, lib, state, program, ids[14]))
+	t.RawSetString("word_forward", tuikeyTable(r, lg, lib, state, program, ids[15]))
+	t.RawSetString("input_begin", tuikeyTable(r, lg, lib, state, program, ids[16]))
+	t.RawSetString("input_end", tuikeyTable(r, lg, lib, state, program, ids[17]))
+	t.RawSetString("uppercase_word", tuikeyTable(r, lg, lib, state, program, ids[18]))
+	t.RawSetString("lowercase_word", tuikeyTable(r, lg, lib, state, program, ids[19]))
+	t.RawSetString("capitalize_word", tuikeyTable(r, lg, lib, state, program, ids[20]))
+	t.RawSetString("transpose_character_backward", tuikeyTable(r, lg, lib, state, program, ids[21]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3867,7 +3867,7 @@ func lineInfoTable(state *golua.LState, info *textarea.LineInfo) *golua.LTable {
 	return t
 }
 
-func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func textinputTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct TextInput
 	/// @prop program {int}
 	/// @prop id {int}
@@ -3920,7 +3920,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.TextInputs[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -3932,7 +3932,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		nm, cmd := item.TextInputs[id].Update(*item.Msg)
@@ -3962,7 +3962,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3974,7 +3974,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3986,7 +3986,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -3998,7 +3998,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4008,7 +4008,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("current_suggestion", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4021,7 +4021,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("available_suggestions", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4043,7 +4043,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4059,7 +4059,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("focused", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4072,7 +4072,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("position", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4089,7 +4089,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4099,7 +4099,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("value", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4116,7 +4116,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4130,7 +4130,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4154,7 +4154,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("prompt", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4171,7 +4171,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4181,7 +4181,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("placeholder", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4198,7 +4198,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4208,7 +4208,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("echomode", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4225,7 +4225,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4235,7 +4235,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("echo_char", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4252,7 +4252,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4262,7 +4262,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("char_limit", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4279,7 +4279,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4289,7 +4289,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("width", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4306,7 +4306,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4316,7 +4316,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("suggestions_show", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4333,7 +4333,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4351,14 +4351,14 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		program := int(t.RawGetString("program").(golua.LNumber))
 		item, err := r.CR_TEA.Item(program)
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
 		ta := item.TextInputs[id]
 		cid := len(item.Cursors)
 		item.Cursors = append(item.Cursors, &ta.Cursor)
-		cu := cursorTable(r, lib, state, program, cid)
+		cu := cursorTable(r, lg, lib, state, program, cid)
 
 		state.Push(cu)
 		t.RawSetString("__cursor", cu)
@@ -4378,7 +4378,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4408,7 +4408,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 				ids[i] = start + i
 			}
 
-			kmt := textinputKeymapTable(r, lib, state, program, id, ids)
+			kmt := textinputKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -4427,7 +4427,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4449,7 +4449,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4474,7 +4474,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4496,7 +4496,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4521,7 +4521,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4543,7 +4543,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4568,7 +4568,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4590,7 +4590,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4605,7 +4605,7 @@ func textinputTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	return t
 }
 
-func textinputKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [16]int) *golua.LTable {
+func textinputKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [16]int) *golua.LTable {
 	/// @struct TextInputKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -4634,29 +4634,29 @@ func textinputKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, prog
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("character_forward", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("character_backward", tuikeyTable(r, lib, state, program, ids[1]))
-	t.RawSetString("word_forward", tuikeyTable(r, lib, state, program, ids[2]))
-	t.RawSetString("word_backward", tuikeyTable(r, lib, state, program, ids[3]))
-	t.RawSetString("delete_word_backward", tuikeyTable(r, lib, state, program, ids[4]))
-	t.RawSetString("delete_word_forward", tuikeyTable(r, lib, state, program, ids[5]))
-	t.RawSetString("delete_after_cursor", tuikeyTable(r, lib, state, program, ids[6]))
-	t.RawSetString("delete_before_cursor", tuikeyTable(r, lib, state, program, ids[7]))
-	t.RawSetString("delete_character_backward", tuikeyTable(r, lib, state, program, ids[8]))
-	t.RawSetString("delete_character_forward", tuikeyTable(r, lib, state, program, ids[9]))
-	t.RawSetString("line_start", tuikeyTable(r, lib, state, program, ids[10]))
-	t.RawSetString("line_end", tuikeyTable(r, lib, state, program, ids[11]))
-	t.RawSetString("paste", tuikeyTable(r, lib, state, program, ids[12]))
-	t.RawSetString("suggestion_accept", tuikeyTable(r, lib, state, program, ids[13]))
-	t.RawSetString("suggestion_next", tuikeyTable(r, lib, state, program, ids[14]))
-	t.RawSetString("suggestion_prev", tuikeyTable(r, lib, state, program, ids[15]))
+	t.RawSetString("character_forward", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("character_backward", tuikeyTable(r, lg, lib, state, program, ids[1]))
+	t.RawSetString("word_forward", tuikeyTable(r, lg, lib, state, program, ids[2]))
+	t.RawSetString("word_backward", tuikeyTable(r, lg, lib, state, program, ids[3]))
+	t.RawSetString("delete_word_backward", tuikeyTable(r, lg, lib, state, program, ids[4]))
+	t.RawSetString("delete_word_forward", tuikeyTable(r, lg, lib, state, program, ids[5]))
+	t.RawSetString("delete_after_cursor", tuikeyTable(r, lg, lib, state, program, ids[6]))
+	t.RawSetString("delete_before_cursor", tuikeyTable(r, lg, lib, state, program, ids[7]))
+	t.RawSetString("delete_character_backward", tuikeyTable(r, lg, lib, state, program, ids[8]))
+	t.RawSetString("delete_character_forward", tuikeyTable(r, lg, lib, state, program, ids[9]))
+	t.RawSetString("line_start", tuikeyTable(r, lg, lib, state, program, ids[10]))
+	t.RawSetString("line_end", tuikeyTable(r, lg, lib, state, program, ids[11]))
+	t.RawSetString("paste", tuikeyTable(r, lg, lib, state, program, ids[12]))
+	t.RawSetString("suggestion_accept", tuikeyTable(r, lg, lib, state, program, ids[13]))
+	t.RawSetString("suggestion_next", tuikeyTable(r, lg, lib, state, program, ids[14]))
+	t.RawSetString("suggestion_prev", tuikeyTable(r, lg, lib, state, program, ids[15]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4730,7 +4730,7 @@ func textinputKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, prog
 	return t
 }
 
-func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func cursorTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Cursor
 	/// @prop program {int}
 	/// @prop id {int}
@@ -4755,7 +4755,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Cursors[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -4767,7 +4767,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		nm, cmd := item.Cursors[id].Update(*item.Msg)
@@ -4802,7 +4802,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4812,7 +4812,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 	t.RawSetString("mode", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4829,7 +4829,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4843,7 +4843,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4863,7 +4863,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4885,7 +4885,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4910,7 +4910,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4932,7 +4932,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -4947,7 +4947,7 @@ func cursorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 	return t
 }
 
-func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func filePickerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct FilePicker
 	/// @prop program {int}
 	/// @prop id {int}
@@ -5012,7 +5012,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.FilePickers[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -5024,7 +5024,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		nm, cmd := item.FilePickers[id].Update(*item.Msg)
@@ -5045,7 +5045,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("did_select_file", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		did, str := item.FilePickers[id].DidSelectFile(*item.Msg)
@@ -5058,7 +5058,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("did_select_disabled", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		did, str := item.FilePickers[id].DidSelectDisabledFile(*item.Msg)
@@ -5076,7 +5076,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("path", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5093,7 +5093,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5103,7 +5103,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("current_directory", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5120,7 +5120,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5130,7 +5130,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("allowed_types", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5152,7 +5152,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5167,7 +5167,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("show_perm", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5184,7 +5184,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5194,7 +5194,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("show_size", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5211,7 +5211,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5221,7 +5221,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("show_hidden", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5238,7 +5238,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5248,7 +5248,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("dir_allowed", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5265,7 +5265,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5275,7 +5275,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("file_allowed", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5292,7 +5292,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5302,7 +5302,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("file_selected", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5319,7 +5319,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5329,7 +5329,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("height", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5346,7 +5346,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5356,7 +5356,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("height_auto", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5373,7 +5373,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5383,7 +5383,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	t.RawSetString("cursor", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5400,7 +5400,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5420,7 +5420,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5443,7 +5443,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 				ids[i] = start + i
 			}
 
-			kmt := filepickerKeymapTable(r, lib, state, program, id, ids)
+			kmt := filepickerKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -5462,7 +5462,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5484,7 +5484,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5509,7 +5509,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5531,7 +5531,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5556,7 +5556,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5578,7 +5578,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5603,7 +5603,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5625,7 +5625,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5650,7 +5650,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5672,7 +5672,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5697,7 +5697,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5719,7 +5719,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5744,7 +5744,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5766,7 +5766,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5791,7 +5791,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5813,7 +5813,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5838,7 +5838,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5860,7 +5860,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5885,7 +5885,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5907,7 +5907,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5932,7 +5932,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5954,7 +5954,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -5969,7 +5969,7 @@ func filePickerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program i
 	return t
 }
 
-func filepickerKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [9]int) *golua.LTable {
+func filepickerKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [9]int) *golua.LTable {
 	/// @struct FilePickerKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -5991,22 +5991,22 @@ func filepickerKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, pro
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("goto_top", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("goto_last", tuikeyTable(r, lib, state, program, ids[1]))
-	t.RawSetString("down", tuikeyTable(r, lib, state, program, ids[2]))
-	t.RawSetString("up", tuikeyTable(r, lib, state, program, ids[3]))
-	t.RawSetString("page_up", tuikeyTable(r, lib, state, program, ids[4]))
-	t.RawSetString("page_down", tuikeyTable(r, lib, state, program, ids[5]))
-	t.RawSetString("back", tuikeyTable(r, lib, state, program, ids[6]))
-	t.RawSetString("open", tuikeyTable(r, lib, state, program, ids[7]))
-	t.RawSetString("select", tuikeyTable(r, lib, state, program, ids[8]))
+	t.RawSetString("goto_top", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("goto_last", tuikeyTable(r, lg, lib, state, program, ids[1]))
+	t.RawSetString("down", tuikeyTable(r, lg, lib, state, program, ids[2]))
+	t.RawSetString("up", tuikeyTable(r, lg, lib, state, program, ids[3]))
+	t.RawSetString("page_up", tuikeyTable(r, lg, lib, state, program, ids[4]))
+	t.RawSetString("page_down", tuikeyTable(r, lg, lib, state, program, ids[5]))
+	t.RawSetString("back", tuikeyTable(r, lg, lib, state, program, ids[6]))
+	t.RawSetString("open", tuikeyTable(r, lg, lib, state, program, ids[7]))
+	t.RawSetString("select", tuikeyTable(r, lg, lib, state, program, ids[8]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6063,7 +6063,7 @@ func filepickerKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, pro
 	return t
 }
 
-func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func listTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct List
 	/// @prop program {int}
 	/// @prop id {int}
@@ -6173,7 +6173,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Lists[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -6185,7 +6185,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		li, cmd := item.Lists[id].Update(*item.Msg)
@@ -6206,7 +6206,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("cursor", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6221,7 +6221,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6233,7 +6233,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6245,7 +6245,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6257,7 +6257,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6267,7 +6267,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("pagination_show", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6284,7 +6284,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6296,7 +6296,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6306,7 +6306,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("size", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6321,7 +6321,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("width", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6334,7 +6334,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("height", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6352,7 +6352,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6367,7 +6367,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6381,7 +6381,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6391,7 +6391,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("filter_state", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6404,7 +6404,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("filter_value", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6417,7 +6417,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("filter_enabled", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6434,7 +6434,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6444,7 +6444,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("filter_show", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6461,7 +6461,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6473,7 +6473,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6483,7 +6483,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("is_filtered", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6496,7 +6496,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("filter_setting", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6513,7 +6513,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6532,7 +6532,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6577,7 +6577,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("index", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6590,7 +6590,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("items", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6609,7 +6609,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("items_visible", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6667,7 +6667,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6677,7 +6677,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	t.RawSetString("selected", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6694,7 +6694,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6708,7 +6708,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6739,7 +6739,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6756,7 +6756,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6768,7 +6768,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6785,7 +6785,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6797,7 +6797,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6816,7 +6816,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6828,7 +6828,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6845,7 +6845,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6859,7 +6859,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6875,7 +6875,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6908,7 +6908,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6929,7 +6929,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6946,7 +6946,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6966,7 +6966,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -6974,7 +6974,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			mid := len(item.TextInputs)
 			item.TextInputs = append(item.TextInputs, model)
 
-			fi := textinputTable(r, lib, state, program, mid)
+			fi := textinputTable(r, lg, lib, state, program, mid)
 			state.Push(fi)
 			t.RawSetString("__filterInput", fi)
 			return 1
@@ -6993,7 +6993,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7001,7 +7001,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			mid := len(item.Paginators)
 			item.Paginators = append(item.Paginators, model)
 
-			pg := paginatorTable(r, lib, state, program, mid)
+			pg := paginatorTable(r, lg, lib, state, program, mid)
 			state.Push(pg)
 			t.RawSetString("__paginator", pg)
 			return 1
@@ -7020,7 +7020,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7028,7 +7028,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			mid := len(item.Helps)
 			item.Helps = append(item.Helps, model)
 
-			hp := helpTable(r, lib, state, program, mid)
+			hp := helpTable(r, lg, lib, state, program, mid)
 			state.Push(hp)
 			t.RawSetString("__help", hp)
 			return 1
@@ -7039,7 +7039,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7056,7 +7056,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7076,7 +7076,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7104,7 +7104,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 				ids[i] = start + i
 			}
 
-			kmt := listKeymapTable(r, lib, state, program, id, ids)
+			kmt := listKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -7115,7 +7115,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7132,7 +7132,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7149,7 +7149,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7168,7 +7168,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7198,7 +7198,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7234,7 +7234,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7256,7 +7256,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7281,7 +7281,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7303,7 +7303,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7328,7 +7328,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7350,7 +7350,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7375,7 +7375,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7397,7 +7397,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7422,7 +7422,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7444,7 +7444,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7469,7 +7469,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7491,7 +7491,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7516,7 +7516,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7538,7 +7538,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7563,7 +7563,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7585,7 +7585,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7610,7 +7610,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7632,7 +7632,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7657,7 +7657,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7679,7 +7679,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7704,7 +7704,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7726,7 +7726,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7751,7 +7751,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7773,7 +7773,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7798,7 +7798,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7820,7 +7820,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7845,7 +7845,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7867,7 +7867,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7892,7 +7892,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7914,7 +7914,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7939,7 +7939,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7961,7 +7961,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7980,7 +7980,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -7993,7 +7993,7 @@ func listTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 	return t
 }
 
-func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
+func listDelegateTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
 	/// @struct ListDelegate
 	/// @prop program {int}
 	/// @prop id {int}
@@ -8032,7 +8032,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8049,7 +8049,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8063,7 +8063,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8089,7 +8089,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8121,7 +8121,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8159,7 +8159,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8176,7 +8176,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8189,7 +8189,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8206,7 +8206,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8226,7 +8226,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8248,7 +8248,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8273,7 +8273,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8295,7 +8295,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8320,7 +8320,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8342,7 +8342,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8367,7 +8367,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8389,7 +8389,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8414,7 +8414,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8436,7 +8436,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8461,7 +8461,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8483,7 +8483,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8508,7 +8508,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8530,7 +8530,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8545,7 +8545,7 @@ func listDelegateTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program
 	return t
 }
 
-func listKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [14]int) *golua.LTable {
+func listKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [14]int) *golua.LTable {
 	/// @struct ListKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -8572,27 +8572,27 @@ func listKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, 
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("cursor_up", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("cursor_down", tuikeyTable(r, lib, state, program, ids[1]))
-	t.RawSetString("page_next", tuikeyTable(r, lib, state, program, ids[2]))
-	t.RawSetString("page_prev", tuikeyTable(r, lib, state, program, ids[3]))
-	t.RawSetString("goto_start", tuikeyTable(r, lib, state, program, ids[4]))
-	t.RawSetString("goto_end", tuikeyTable(r, lib, state, program, ids[5]))
-	t.RawSetString("filter", tuikeyTable(r, lib, state, program, ids[6]))
-	t.RawSetString("filter_clear", tuikeyTable(r, lib, state, program, ids[7]))
-	t.RawSetString("filter_cancel", tuikeyTable(r, lib, state, program, ids[8]))
-	t.RawSetString("filter_accept", tuikeyTable(r, lib, state, program, ids[9]))
-	t.RawSetString("show_full_help", tuikeyTable(r, lib, state, program, ids[10]))
-	t.RawSetString("close_full_help", tuikeyTable(r, lib, state, program, ids[11]))
-	t.RawSetString("quit", tuikeyTable(r, lib, state, program, ids[12]))
-	t.RawSetString("force_quit", tuikeyTable(r, lib, state, program, ids[13]))
+	t.RawSetString("cursor_up", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("cursor_down", tuikeyTable(r, lg, lib, state, program, ids[1]))
+	t.RawSetString("page_next", tuikeyTable(r, lg, lib, state, program, ids[2]))
+	t.RawSetString("page_prev", tuikeyTable(r, lg, lib, state, program, ids[3]))
+	t.RawSetString("goto_start", tuikeyTable(r, lg, lib, state, program, ids[4]))
+	t.RawSetString("goto_end", tuikeyTable(r, lg, lib, state, program, ids[5]))
+	t.RawSetString("filter", tuikeyTable(r, lg, lib, state, program, ids[6]))
+	t.RawSetString("filter_clear", tuikeyTable(r, lg, lib, state, program, ids[7]))
+	t.RawSetString("filter_cancel", tuikeyTable(r, lg, lib, state, program, ids[8]))
+	t.RawSetString("filter_accept", tuikeyTable(r, lg, lib, state, program, ids[9]))
+	t.RawSetString("show_full_help", tuikeyTable(r, lg, lib, state, program, ids[10]))
+	t.RawSetString("close_full_help", tuikeyTable(r, lg, lib, state, program, ids[11]))
+	t.RawSetString("quit", tuikeyTable(r, lg, lib, state, program, ids[12]))
+	t.RawSetString("force_quit", tuikeyTable(r, lg, lib, state, program, ids[13]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8658,7 +8658,7 @@ func listKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, 
 	return t
 }
 
-func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func paginatorTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Paginator
 	/// @prop program {int}
 	/// @prop id {int}
@@ -8693,7 +8693,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Paginators[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -8705,7 +8705,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		pg, cmd := item.Paginators[id].Update(*item.Msg)
@@ -8731,7 +8731,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8747,7 +8747,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8759,7 +8759,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8774,7 +8774,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8790,7 +8790,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8806,7 +8806,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8824,7 +8824,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8840,7 +8840,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8857,7 +8857,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8870,7 +8870,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8887,7 +8887,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8900,7 +8900,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8917,7 +8917,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8930,7 +8930,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8947,7 +8947,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8960,7 +8960,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8980,7 +8980,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -8994,7 +8994,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9011,7 +9011,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9031,7 +9031,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9047,7 +9047,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 				ids[i] = start + i
 			}
 
-			kmt := paginatorKeymapTable(r, lib, state, program, id, ids)
+			kmt := paginatorKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -9056,7 +9056,7 @@ func paginatorTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	return t
 }
 
-func paginatorKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [2]int) *golua.LTable {
+func paginatorKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [2]int) *golua.LTable {
 	/// @struct PaginatorKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -9071,15 +9071,15 @@ func paginatorKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, prog
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("page_prev", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("page_next", tuikeyTable(r, lib, state, program, ids[1]))
+	t.RawSetString("page_prev", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("page_next", tuikeyTable(r, lg, lib, state, program, ids[1]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9272,7 +9272,7 @@ func progressOptionsBuild(t *golua.LTable) []progress.Option {
 	return opts
 }
 
-func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func progressTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Progress
 	/// @prop program {int}
 	/// @prop id {int}
@@ -9310,7 +9310,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.ProgressBars[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -9327,7 +9327,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 
 			str := item.ProgressBars[int(t.RawGetString("id").(golua.LNumber))].ViewAs(args["percent"].(float64))
@@ -9339,7 +9339,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		pb, cmd := item.ProgressBars[id].Update(*item.Msg)
@@ -9364,7 +9364,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9416,7 +9416,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9433,7 +9433,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9446,7 +9446,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9463,7 +9463,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9476,7 +9476,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9494,7 +9494,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9507,7 +9507,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9524,7 +9524,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9537,7 +9537,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9554,7 +9554,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9567,7 +9567,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9584,7 +9584,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9597,7 +9597,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9614,7 +9614,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9627,7 +9627,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9644,7 +9644,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9664,7 +9664,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9686,7 +9686,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9701,7 +9701,7 @@ func progressTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	return t
 }
 
-func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func stopwatchTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct StopWatch
 	/// @prop program {int}
 	/// @prop id {int}
@@ -9724,7 +9724,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.StopWatches[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -9736,7 +9736,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		sw, cmd := item.StopWatches[id].Update(*item.Msg)
@@ -9796,7 +9796,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9812,7 +9812,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9828,7 +9828,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9845,7 +9845,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9855,7 +9855,7 @@ func stopwatchTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program in
 	return t
 }
 
-func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func timerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Timer
 	/// @prop program {int}
 	/// @prop id {int}
@@ -9880,7 +9880,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Timers[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -9892,7 +9892,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		ti, cmd := item.Timers[id].Update(*item.Msg)
@@ -9952,7 +9952,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9968,7 +9968,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -9984,7 +9984,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10001,7 +10001,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10014,7 +10014,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10031,7 +10031,7 @@ func timerTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, i
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10202,7 +10202,7 @@ func tableOptionsBuild(t *golua.LTable, r *lua.Runner) []table.Option {
 	return opts
 }
 
-func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func tuitableTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Table
 	/// @prop program {int}
 	/// @prop id {int}
@@ -10242,7 +10242,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Tables[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -10254,7 +10254,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		ti, cmd := item.Tables[id].Update(*item.Msg)
@@ -10277,7 +10277,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10290,7 +10290,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10305,7 +10305,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10317,7 +10317,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10329,7 +10329,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10341,7 +10341,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10355,7 +10355,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10369,7 +10369,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10382,7 +10382,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10399,7 +10399,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10412,7 +10412,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10432,7 +10432,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10457,7 +10457,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10481,7 +10481,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10509,7 +10509,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10522,7 +10522,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10543,7 +10543,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10559,7 +10559,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10576,7 +10576,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10590,7 +10590,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10610,7 +10610,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10632,7 +10632,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 				ids[i] = start + i
 			}
 
-			kmt := tableKeymapTable(r, lib, state, program, id, ids)
+			kmt := tableKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -10651,7 +10651,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10659,7 +10659,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			mid := len(item.Helps)
 			item.Helps = append(item.Helps, model)
 
-			hp := helpTable(r, lib, state, program, mid)
+			hp := helpTable(r, lg, lib, state, program, mid)
 			state.Push(hp)
 			t.RawSetString("__help", hp)
 			return 1
@@ -10671,7 +10671,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10690,7 +10690,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10714,7 +10714,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10724,7 +10724,7 @@ func tuitableTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	return t
 }
 
-func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [8]int) *golua.LTable {
+func tableKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [8]int) *golua.LTable {
 	/// @struct TableKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -10745,21 +10745,21 @@ func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program,
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("line_up", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("line_down", tuikeyTable(r, lib, state, program, ids[1]))
-	t.RawSetString("page_up", tuikeyTable(r, lib, state, program, ids[2]))
-	t.RawSetString("page_down", tuikeyTable(r, lib, state, program, ids[3]))
-	t.RawSetString("half_page_up", tuikeyTable(r, lib, state, program, ids[4]))
-	t.RawSetString("half_page_down", tuikeyTable(r, lib, state, program, ids[5]))
-	t.RawSetString("goto_top", tuikeyTable(r, lib, state, program, ids[6]))
-	t.RawSetString("goto_bottom", tuikeyTable(r, lib, state, program, ids[7]))
+	t.RawSetString("line_up", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("line_down", tuikeyTable(r, lg, lib, state, program, ids[1]))
+	t.RawSetString("page_up", tuikeyTable(r, lg, lib, state, program, ids[2]))
+	t.RawSetString("page_down", tuikeyTable(r, lg, lib, state, program, ids[3]))
+	t.RawSetString("half_page_up", tuikeyTable(r, lg, lib, state, program, ids[4]))
+	t.RawSetString("half_page_down", tuikeyTable(r, lg, lib, state, program, ids[5]))
+	t.RawSetString("goto_top", tuikeyTable(r, lg, lib, state, program, ids[6]))
+	t.RawSetString("goto_bottom", tuikeyTable(r, lg, lib, state, program, ids[7]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10812,7 +10812,7 @@ func tableKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program,
 	return t
 }
 
-func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func viewportTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Viewport
 	/// @prop program {int}
 	/// @prop id {int}
@@ -10860,7 +10860,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Viewports[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -10872,7 +10872,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	t.RawSetString("update", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		vp, cmd := item.Viewports[id].Update(*item.Msg)
@@ -10896,7 +10896,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10917,7 +10917,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10938,7 +10938,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10959,7 +10959,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10980,7 +10980,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -10996,7 +10996,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11012,7 +11012,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11033,7 +11033,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11056,7 +11056,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11079,7 +11079,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11100,7 +11100,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11116,7 +11116,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11132,7 +11132,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11148,7 +11148,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11165,7 +11165,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11179,7 +11179,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11193,7 +11193,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11206,7 +11206,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11222,7 +11222,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11238,7 +11238,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11255,7 +11255,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11268,7 +11268,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11285,7 +11285,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11298,7 +11298,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11315,7 +11315,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11329,7 +11329,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11342,7 +11342,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11359,7 +11359,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11372,7 +11372,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11389,7 +11389,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11409,7 +11409,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11429,7 +11429,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 				ids[i] = start + i
 			}
 
-			kmt := viewportKeymapTable(r, lib, state, program, id, ids)
+			kmt := viewportKeymapTable(r, lg, lib, state, program, id, ids)
 			t.RawSetString("__keymap", kmt)
 			state.Push(kmt)
 			return 1
@@ -11448,7 +11448,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11470,7 +11470,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11485,7 +11485,7 @@ func viewportTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int
 	return t
 }
 
-func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int, ids [6]int) *golua.LTable {
+func viewportKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int, ids [6]int) *golua.LTable {
 	/// @struct ViewportKeymap
 	/// @prop program {int}
 	/// @prop id {int}
@@ -11504,19 +11504,19 @@ func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, progr
 	t.RawSetString("program", golua.LNumber(program))
 	t.RawSetString("id", golua.LNumber(id))
 
-	t.RawSetString("page_down", tuikeyTable(r, lib, state, program, ids[0]))
-	t.RawSetString("page_up", tuikeyTable(r, lib, state, program, ids[1]))
-	t.RawSetString("page_up_half", tuikeyTable(r, lib, state, program, ids[2]))
-	t.RawSetString("page_down_half", tuikeyTable(r, lib, state, program, ids[3]))
-	t.RawSetString("down", tuikeyTable(r, lib, state, program, ids[4]))
-	t.RawSetString("up", tuikeyTable(r, lib, state, program, ids[5]))
+	t.RawSetString("page_down", tuikeyTable(r, lg, lib, state, program, ids[0]))
+	t.RawSetString("page_up", tuikeyTable(r, lg, lib, state, program, ids[1]))
+	t.RawSetString("page_up_half", tuikeyTable(r, lg, lib, state, program, ids[2]))
+	t.RawSetString("page_down_half", tuikeyTable(r, lg, lib, state, program, ids[3]))
+	t.RawSetString("down", tuikeyTable(r, lg, lib, state, program, ids[4]))
+	t.RawSetString("up", tuikeyTable(r, lg, lib, state, program, ids[5]))
 
 	lib.BuilderFunction(state, t, "default",
 		[]lua.Arg{},
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11568,7 +11568,7 @@ func viewportKeymapTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, progr
 	return t
 }
 
-func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
+func tuicustomTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program, id int) *golua.LTable {
 	/// @struct Custom
 	/// @prop program {int}
 	/// @prop id {int}
@@ -11584,7 +11584,7 @@ func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, i
 	t.RawSetString("init", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 		id := int(t.RawGetString("id").(golua.LNumber))
 		cmd := item.Customs[id].Init()
@@ -11604,7 +11604,7 @@ func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, i
 	t.RawSetString("view", state.NewFunction(func(state *golua.LState) int {
 		item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 		if err != nil {
-			lua.Error(state, err.Error())
+			lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 		}
 
 		str := item.Customs[int(t.RawGetString("id").(golua.LNumber))].View()
@@ -11620,7 +11620,7 @@ func tuicustomTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program, i
 		func(state *golua.LState, args map[string]any) int {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11738,7 +11738,7 @@ func keyOptionsBuild(t *golua.LTable) []key.BindingOpt {
 	return opts
 }
 
-func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func tuikeyTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct KeyBinding
 	/// @prop program {int}
 	/// @prop id {int}
@@ -11768,7 +11768,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11785,7 +11785,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11798,7 +11798,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11817,7 +11817,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11830,7 +11830,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11852,7 +11852,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11871,7 +11871,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11881,7 +11881,7 @@ func tuikeyTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, 
 	return t
 }
 
-func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
+func helpTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState, program int, id int) *golua.LTable {
 	/// @struct Help
 	/// @prop program {int}
 	/// @prop id {int}
@@ -11926,7 +11926,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -11976,7 +11976,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12001,7 +12001,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12029,7 +12029,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12046,7 +12046,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12059,7 +12059,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12076,7 +12076,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12089,7 +12089,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12106,7 +12106,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12119,7 +12119,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12136,7 +12136,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12149,7 +12149,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12166,7 +12166,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12186,7 +12186,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12208,7 +12208,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12233,7 +12233,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12255,7 +12255,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12280,7 +12280,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12302,7 +12302,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12327,7 +12327,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12349,7 +12349,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12374,7 +12374,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12396,7 +12396,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12421,7 +12421,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12443,7 +12443,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12468,7 +12468,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 			program := int(t.RawGetString("program").(golua.LNumber))
 			item, err := r.CR_TEA.Item(program)
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
@@ -12490,7 +12490,7 @@ func helpTable(r *lua.Runner, lib *lua.Lib, state *golua.LState, program int, id
 		func(state *golua.LState, t *golua.LTable, args map[string]any) {
 			item, err := r.CR_TEA.Item(int(t.RawGetString("program").(golua.LNumber)))
 			if err != nil {
-				lua.Error(state, err.Error())
+				lua.Error(state, lg.Append(err.Error(), log.LEVEL_ERROR))
 			}
 			id := int(t.RawGetString("id").(golua.LNumber))
 
