@@ -1392,6 +1392,19 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_zero() -> struct<image.ColorZERO>
+	/// @returns {struct<image.ColorZERO>}
+	lib.CreateFunction(tab, "color_zero",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorZERO
+			/// @prop type {string<image.ColorType>}
+
+			t := imageutil.ZeroColorTable(state)
+			state.Push(t)
+			return 1
+		})
+
 	/// @func color_to_rgb(color) -> struct<image.ColorRGBA>
 	/// @arg color {struct<image.Color>}
 	/// @returns {struct<image.ColorRGBA>}
@@ -2081,6 +2094,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @const COLOR_TYPE_ALPHA16
 	/// @const COLOR_TYPE_CMYK
 	/// @const COLOR_TYPE_CMYKA
+	/// @const COLOR_TYPE_ZERO
 	tab.RawSetString("COLOR_TYPE_RGBA", golua.LString(imageutil.COLOR_TYPE_RGBA))
 	tab.RawSetString("COLOR_TYPE_HSVA", golua.LString(imageutil.COLOR_TYPE_HSVA))
 	tab.RawSetString("COLOR_TYPE_HSLA", golua.LString(imageutil.COLOR_TYPE_HSLA))
@@ -2092,4 +2106,5 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLOR_TYPE_ALPHA16", golua.LString(imageutil.COLOR_TYPE_ALPHA16))
 	tab.RawSetString("COLOR_TYPE_CMYK", golua.LString(imageutil.COLOR_TYPE_CMYK))
 	tab.RawSetString("COLOR_TYPE_CMYKA", golua.LString(imageutil.COLOR_TYPE_CMYKA))
+	tab.RawSetString("COLOR_TYPE_ZERO", golua.LString(imageutil.COLOR_TYPE_ZERO))
 }
