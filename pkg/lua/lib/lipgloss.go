@@ -514,12 +514,8 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			sid := style.RawGetString("id").(golua.LNumber)
 
 			ss, _ := r.CR_LIP.Item(int(sid))
-			inds := make([]int, len(str))
-			for i := range inds {
-				inds[i] = i
-			}
 
-			result := lipgloss.StyleRunes(str, inds, *ss.Style, lipgloss.NewStyle())
+			result := ss.Style.Render(str)
 
 			state.Push(golua.LString(result))
 			return 1
@@ -927,6 +923,7 @@ func whitespaceOptionBuild(t *golua.LTable) []lipgloss.WhitespaceOption {
 func lipglossStyleTable(state *golua.LState, lib *lua.Lib, r *lua.Runner, id int) *golua.LTable {
 	/// @struct Style
 	/// @prop id {int} - The ID of the style.
+	/// @method render(string...) -> string
 	/// @method align() -> float<lipgloss.Position>, float<lipgloss.Position>
 	/// @method align_set(hpos float<lipgloss.Position>, vpos float<lipgloss.Position>) -> self
 	/// @method align_unset() -> self
@@ -1069,6 +1066,23 @@ func lipglossStyleTable(state *golua.LState, lib *lua.Lib, r *lua.Runner, id int
 	t := state.NewTable()
 
 	t.RawSetString("id", golua.LNumber(id))
+
+	lib.TableFunction(state, t, "render",
+		[]lua.Arg{
+			lua.ArgVariadic("strs", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, args map[string]any) int {
+			item, _ := r.CR_LIP.Item(int(t.RawGetString("id").(golua.LNumber)))
+
+			strs := args["strs"].([]any)
+			strList := make([]string, len(strs))
+			for i, v := range strs {
+				strList[i] = v.(string)
+			}
+
+			state.Push(golua.LString(item.Style.Render(strList...)))
+			return 1
+		})
 
 	lib.TableFunction(state, t, "align",
 		[]lua.Arg{},
