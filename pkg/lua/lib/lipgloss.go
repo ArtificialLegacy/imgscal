@@ -2,9 +2,11 @@ package lib
 
 import (
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/crazy3lf/colorconv"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -135,6 +137,21 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_rgb(col) -> struct<lipgloss.Color>
+	/// @arg col {struct<image.Color>}
+	/// @returns {struct<lipgloss.Color>}
+	lib.CreateFunction(tab, "color_rgb",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "col"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r, g, b, _ := imageutil.ColorTableToRGBA(args["col"].(*golua.LTable))
+			col := lgColorTable(state, colorconv.RGBToHex(r, g, b))
+
+			state.Push(col)
+			return 1
+		})
+
 	/// @func color_none() -> struct<lipgloss.ColorNone>
 	/// @returns {struct<lipgloss.ColorNone>}
 	lib.CreateFunction(tab, "color_none",
@@ -171,6 +188,24 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			col := lgColorAdaptiveTable(state, args["light"].(string), args["dark"].(string))
+
+			state.Push(col)
+			return 1
+		})
+
+	/// @func color_adaptive_rgb(light, dark) -> struct<lipgloss.ColorAdaptive>
+	/// @arg light {struct<image.Color>}
+	/// @arg dark {struct<image.Color>}
+	/// @returns {struct<lipgloss.ColorAdaptive>}
+	lib.CreateFunction(tab, "color_adaptive_rgb",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "light"},
+			{Type: lua.RAW_TABLE, Name: "dark"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			rl, gl, bl, _ := imageutil.ColorTableToRGBA(args["light"].(*golua.LTable))
+			rd, gd, bd, _ := imageutil.ColorTableToRGBA(args["dark"].(*golua.LTable))
+			col := lgColorAdaptiveTable(state, colorconv.RGBToHex(rl, gl, bl), colorconv.RGBToHex(rd, gd, bd))
 
 			state.Push(col)
 			return 1
