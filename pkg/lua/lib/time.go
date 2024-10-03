@@ -72,6 +72,36 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func fps_to_ms(fps) -> int
+	/// @arg fps {int}
+	/// @returns {int}
+	lib.CreateFunction(tab, "fps_to_ms",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "fps"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fps := args["fps"].(int)
+			ms := (time.Second / time.Duration(fps)) / time.Millisecond
+
+			state.Push(golua.LNumber(ms))
+			return 1
+		})
+
+	/// @func ms_to_fps(ms) -> int
+	/// @arg ms {int}
+	/// @returns {int}
+	lib.CreateFunction(tab, "ms_to_fps",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "ms"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ms := args["ms"].(int)
+			fps := time.Second / (time.Duration(ms) * time.Millisecond)
+
+			state.Push(golua.LNumber(fps))
+			return 1
+		})
+
 	/// @constants Weekdays
 	/// @const WEEKDAY_SUNDAY
 	/// @const WEEKDAY_MONDAY
