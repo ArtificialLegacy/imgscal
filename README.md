@@ -86,6 +86,5 @@ make log > latest.txt
 * When a lua panic occurs outside of the `gui.window_run()` loop, it may cause the window to not close until the process is closed.
   * Looking for a solution as calling `.Close()` on an already closed window causes GLFW to break until the process is restarted, and there is no publically exported field to check if a window is active.
 * It is currently possible to deadlock in certain circumstances.
-  * Passing the same collection item twice into a function that schedules on it. e.g. `image.draw()`
   * Calling a function that schedules on a collection item within a function already running for that
     collection item. e.g. Calling `image.size()` within the callback of `image.map()` for the same images.
