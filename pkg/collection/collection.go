@@ -204,10 +204,27 @@ func (c *Collection[T]) ItemExists(id int) bool {
 	return !item.collect && !item.cleaned && !item.failed
 }
 
+func (c *Collection[T]) ScheduleAdd(name string, lg *log.Logger, tl, tn string, fn func(i *Item[T])) int {
+	chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+	lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+	id := c.AddItem(&chLog)
+
+	c.Schedule(id, &Task[T]{
+		Lib:  tl,
+		Name: tn,
+		Fn: func(i *Item[T]) {
+			fn(i)
+		},
+	})
+
+	return id
+}
+
 func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	wait := make(chan struct{}, 2)
 
-	if id < 0 && id >= len(c.items) {
+	if !c.IDValid(id) {
 		c.lg.Append(fmt.Sprintf("invald item index: %d range of 0-%d", id, len(c.items)), log.LEVEL_WARN)
 		if tk.Fail != nil {
 			tk.Fail(nil)
@@ -236,13 +253,124 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	if item.failed {
 		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id), log.LEVEL_WARN)
 		task.Fail(item)
-		wait <- struct{}{}
 		return wait
 	}
 
 	item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_VERBOSE)
 	c.wg.Add(1)
 	item.TaskQueue <- task
+
+	return wait
+}
+
+func (c *Collection[T]) IDValid(id int) bool {
+	return id >= 0 && id < len(c.items)
+}
+
+func (c *Collection[T]) SchedulePipe(id1, id2 int, tk1, tk2 *Task[T]) <-chan struct{} {
+	wait := make(chan struct{}, 2)
+
+	if !c.IDValid(id1) || !c.IDValid(id2) {
+		c.lg.Append(fmt.Sprintf("invald item index: (1: %d) (2: %d) range of 0-%d", id1, id2, len(c.items)), log.LEVEL_WARN)
+		if tk1.Fail != nil {
+			tk1.Fail(nil)
+		}
+		if tk2.Fail != nil {
+			tk2.Fail(nil)
+		}
+		wait <- struct{}{}
+		return wait
+	}
+
+	if id1 != id2 {
+		ready := make(chan struct{}, 2)
+		finished := make(chan struct{}, 2)
+
+		item1 := c.items[id1]
+		item2 := c.items[id2]
+
+		if item1.failed || item2.failed {
+			if item1.failed {
+				item1.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id1), log.LEVEL_WARN)
+			} else {
+				item2.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id2), log.LEVEL_WARN)
+			}
+			tk1.Fail(item1)
+			tk2.Fail(item2)
+			wait <- struct{}{}
+			return wait
+		}
+
+		task1 := &Task[T]{
+			Lib:  tk1.Lib,
+			Name: tk1.Name,
+			Fn: func(i *Item[T]) {
+				tk1.Fn(i)
+				ready <- struct{}{}
+				<-finished
+			},
+			Fail: func(i *Item[T]) {
+				if tk1.Fail != nil {
+					tk1.Fail(i)
+				}
+				ready <- struct{}{}
+			},
+		}
+		task2 := &Task[T]{
+			Lib:  tk2.Lib,
+			Name: tk2.Name,
+			Fn: func(i *Item[T]) {
+				<-ready
+				tk2.Fn(i)
+				finished <- struct{}{}
+				wait <- struct{}{}
+			},
+			Fail: func(i *Item[T]) {
+				if tk2.Fail != nil {
+					tk2.Fail(i)
+				}
+				finished <- struct{}{}
+				wait <- struct{}{}
+			},
+		}
+
+		item1.Lg.Append(fmt.Sprintf("task scheduled for %d", id1), log.LEVEL_VERBOSE)
+		item2.Lg.Append(fmt.Sprintf("task scheduled for %d", id2), log.LEVEL_VERBOSE)
+		c.wg.Add(2)
+		item1.TaskQueue <- task1
+		item2.TaskQueue <- task2
+	} else {
+		item := c.items[id1]
+
+		if item.failed {
+			item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id1), log.LEVEL_WARN)
+			tk1.Fail(item)
+			wait <- struct{}{}
+			return wait
+		}
+
+		task := &Task[T]{
+			Lib:  tk1.Lib,
+			Name: tk1.Name,
+			Fn: func(i *Item[T]) {
+				tk1.Fn(i)
+				tk2.Fn(i)
+			},
+			Fail: func(i *Item[T]) {
+				if tk1.Fail != nil {
+					tk1.Fail(i)
+				}
+				if tk2.Fail != nil {
+					tk2.Fail(i)
+				}
+				wait <- struct{}{}
+			},
+		}
+
+		item.Lg.Append(fmt.Sprintf("task scheduled for %d", id1), log.LEVEL_VERBOSE)
+		c.wg.Add(1)
+		item.TaskQueue <- task
+	}
 
 	return wait
 }
