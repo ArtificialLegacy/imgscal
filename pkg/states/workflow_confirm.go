@@ -31,6 +31,8 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	var answer string
 
 	if !autoConfirm {
+		cli.Clear()
+
 		fmt.Printf("\n%s%s%s [%s] by %s.\n", cli.COLOR_BOLD, workflow.Name, cli.COLOR_RESET, workflow.Version, workflow.Author)
 		fmt.Printf("%s%s%s\n\n", configPathColor, pth, cli.COLOR_RESET)
 		fmt.Printf("%s\n\n", workflow.Desc)
@@ -44,7 +46,6 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 				Fallback:  "y",
 			},
 		)
-
 		if err != nil {
 			return fmt.Errorf("confirmation aborted from err during prompt: %s", err)
 		}

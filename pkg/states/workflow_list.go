@@ -8,7 +8,12 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
+
+var wflist_style = lipgloss.NewStyle().Margin(1, 2)
 
 func WorkflowList(sm *statemachine.StateMachine) error {
 	cli.Clear()
@@ -41,32 +46,43 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 	options := []string{}
 	optionsWorkflows := []*workflow.Workflow{}
 	optionsPaths := []string{}
+	listOptions := []list.Item{}
 
+	i := 0
 	for _, w := range *workflows {
 		starUsed := false
 		for s, ws := range w.Workflows {
+			optName := ""
 			if s == "*" {
 				if starUsed {
 					continue
 				}
 				starUsed = true
-				options = append(options, w.Name)
+				optName = w.Name
 			} else {
-				options = append(options, w.Name+"/"+s)
+				optName = w.Name + "/" + s
 			}
+			options = append(options, optName)
 			optionsWorkflows = append(optionsWorkflows, w)
 			optionsPaths = append(optionsPaths, path.Join(path.Dir(w.Base), ws))
+			listOptions = append(listOptions, wflist_item{index: i, title: fmt.Sprintf("%s (%s)", optName, w.Version), desc: fmt.Sprintf("Author: %s", w.Author)})
+			i++
 		}
 	}
 
-	options = append(options, fmt.Sprintf("%sReturn%s", cli.COLOR_RED, cli.COLOR_RESET))
+	result := 0
 
-	result, err := cli.SelectMenu(fmt.Sprintf("Select %sworkflow%s to run.", cli.COLOR_BOLD, cli.COLOR_RESET), options)
-	if err != nil {
-		return err
+	m := wflist_model{list: list.New(listOptions, list.NewDefaultDelegate(), 0, 0), selected: &result}
+	m.list.Title = "Select Workflow:"
+
+	p := tea.NewProgram(m)
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Failed to run workflow selection list: %s\n", err)
+		sm.SetState(STATE_EXIT)
+		return nil
 	}
 
-	if result == len(options)-1 {
+	if result == -1 {
 		sm.SetState(STATE_MAIN)
 	} else {
 		WorkflowConfirmEnter(sm, WorkflowConfirmData{
@@ -77,4 +93,54 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 	}
 
 	return nil
+}
+
+type wflist_item struct {
+	title, desc string
+	index       int
+}
+
+func (i wflist_item) Title() string       { return i.title }
+func (i wflist_item) Description() string { return i.desc }
+func (i wflist_item) FilterValue() string { return i.title }
+
+type wflist_model struct {
+	list     list.Model
+	selected *int
+}
+
+func (m wflist_model) Init() tea.Cmd {
+	return nil
+}
+
+func (m wflist_model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			result := m.list.SelectedItem()
+			*m.selected = result.(wflist_item).index
+			return m, tea.Quit
+		case "q":
+			fallthrough
+		case "ctrl+c":
+			*m.selected = -1
+			return m, tea.Quit
+		}
+
+	case tea.QuitMsg:
+		*m.selected = -1
+
+	case tea.WindowSizeMsg:
+		h, v := wflist_style.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
+	}
+
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
+}
+
+func (m wflist_model) View() string {
+	return wflist_style.Render(m.list.View())
 }

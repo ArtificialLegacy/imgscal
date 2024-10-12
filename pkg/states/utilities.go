@@ -8,6 +8,9 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/config"
 	"github.com/ArtificialLegacy/imgscal/pkg/statemachine"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -16,18 +19,31 @@ const (
 	UTILITIES_OPTION_BACK
 )
 
-var utilitiesOptions = []string{
-	UTILITIES_OPTION_CONFIG: "View Config",
-	UTILITIES_OPTION_RMLogs: "Delete Logs",
-	UTILITIES_OPTION_BACK:   fmt.Sprintf("%sReturn%s", cli.COLOR_RED, cli.COLOR_RESET),
-}
+var utilities_style = lipgloss.NewStyle().MarginTop(2).MarginBottom(2)
 
 func Utilities(sm *statemachine.StateMachine) error {
 	cli.Clear()
 
-	result, err := cli.SelectMenu("Utilities", utilitiesOptions)
-	if err != nil {
-		return err
+	result := -1
+
+	options := []list.Item{
+		utilities_item{index: UTILITIES_OPTION_CONFIG, title: "View Config"},
+		utilities_item{index: UTILITIES_OPTION_RMLogs, title: "Delete Logs"},
+		utilities_item{index: UTILITIES_OPTION_BACK, title: "Back"},
+	}
+
+	delegate := list.NewDefaultDelegate()
+	delegate.ShowDescription = false
+
+	m := utilities_model{list: list.New(options, delegate, 0, 0), selected: &result}
+	m.list.Title = "ImgScal Utilities"
+	m.list.SetShowStatusBar(false)
+
+	p := tea.NewProgram(m)
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Failed to run the utilities menu: %s\n", err)
+		sm.SetState(STATE_EXIT)
+		return nil
 	}
 
 	switch result {
@@ -38,18 +54,19 @@ func Utilities(sm *statemachine.StateMachine) error {
 		removeLogs(sm.Config)
 
 	case UTILITIES_OPTION_BACK:
-		sm.SetState(STATE_MAIN)
-
+		fallthrough
 	default:
-		panic(fmt.Sprintf("UTILITIES_OPTION %d is not handled.", result))
+		sm.SetState(STATE_MAIN)
 	}
 
 	return nil
 }
 
-const configPathColor = "\u001b[38;5;240m\u001b[4m"
-const configTrueColor = "\u001b[38;5;195m"
-const configFalseColor = "\u001b[38;5;209m"
+const (
+	configPathColor  = "\u001b[38;5;240m\u001b[4m"
+	configTrueColor  = "\u001b[38;5;195m"
+	configFalseColor = "\u001b[38;5;209m"
+)
 
 func viewConfig(cfg *config.Config) {
 	cli.Clear()
@@ -61,32 +78,80 @@ func viewConfig(cfg *config.Config) {
 
 	cfgPath := path.Join(cfgDir, "imgscal", "config.json")
 
-	var dlColor = configFalseColor
+	dlColor := configFalseColor
 	if cfg.DisableLogs {
 		dlColor = configTrueColor
 	}
-	var acColor = configFalseColor
+	acColor := configFalseColor
 	if cfg.AlwaysConfirm {
 		acColor = configTrueColor
 	}
 
-	fmt.Printf("%sImgScal Config%s v%s\n", cli.COLOR_BOLD, cli.COLOR_RESET, cfg.ConfigVersion)
-	fmt.Printf("%s%s%s\n\n", configPathColor, cfgPath, cli.COLOR_RESET)
+	fmt.Printf("\n\n  %sImgScal Config%s v%s\n", cli.COLOR_BOLD, cli.COLOR_RESET, cfg.ConfigVersion)
+	fmt.Printf("  %s%s%s\n\n", configPathColor, cfgPath, cli.COLOR_RESET)
 
-	fmt.Printf("config_directory:   %s%s%s\n", configPathColor, cfg.ConfigDirectory, cli.COLOR_RESET)
-	fmt.Printf("workflow_directory: %s%s%s\n", configPathColor, cfg.WorkflowDirectory, cli.COLOR_RESET)
-	fmt.Printf("log_directory:      %s%s%s\n", configPathColor, cfg.LogDirectory, cli.COLOR_RESET)
-	fmt.Printf("output_directory:   %s%s%s\n", configPathColor, cfg.OutputDirectory, cli.COLOR_RESET)
-	fmt.Printf("disable_logs:       %s%t%s\n", dlColor, cfg.DisableLogs, cli.COLOR_RESET)
-	fmt.Printf("always_confirm:     %s%t%s\n\n", acColor, cfg.AlwaysConfirm, cli.COLOR_RESET)
+	cfgFields := []string{
+		"config_directory",
+		"workflow_directory",
+		"log_directory",
+		"output_directory",
+		"plugin_directory",
+		"disable_logs",
+		"always_confirm",
+	}
+
+	pathStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Underline(true)
+
+	cfgValues := []string{
+		pathStyle.Render(cfg.ConfigDirectory),
+		pathStyle.Render(cfg.WorkflowDirectory),
+		pathStyle.Render(cfg.LogDirectory),
+		pathStyle.Render(cfg.OutputDirectory),
+		pathStyle.Render(cfg.PluginDirectory),
+		fmt.Sprintf("%s%t%s", dlColor, cfg.DisableLogs, cli.COLOR_RESET),
+		fmt.Sprintf("%s%t%s", acColor, cfg.AlwaysConfirm, cli.COLOR_RESET),
+	}
+
+	strFields := ""
+	for i, s := range cfgFields {
+		if strFields == "" {
+			strFields = lipgloss.JoinVertical(lipgloss.Left, s)
+		} else {
+			strFields = lipgloss.JoinVertical(lipgloss.Left, strFields, s)
+		}
+
+		if i < len(cfgFields)-1 {
+			strFields = lipgloss.JoinVertical(lipgloss.Left, strFields, "")
+		}
+	}
+
+	strValues := ""
+	for i, s := range cfgValues {
+		if strValues == "" {
+			strValues = lipgloss.JoinVertical(lipgloss.Left, s)
+		} else {
+			strValues = lipgloss.JoinVertical(lipgloss.Left, strValues, s)
+		}
+
+		if i < len(cfgValues)-1 {
+			strValues = lipgloss.JoinVertical(lipgloss.Left, strValues, "")
+		}
+	}
+
+	str := lipgloss.JoinHorizontal(lipgloss.Top, strFields, "  ", strValues)
+
+	fmt.Print(lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).MarginLeft(2).Padding(1, 2).Render(str))
+	fmt.Print("\n\n    ")
 
 	cli.Question("Press any key to continue...", cli.QuestionOptions{})
 }
 
-const logWarningColor = "\u001b[38;5;209m"
-const logNameColor = "\u001b[38;5;240m"
-const logDisplayLimit = 20
-const logAdditionalColor = "\u001b[38;5;248m"
+const (
+	logWarningColor    = "\u001b[38;5;209m"
+	logNameColor       = "\u001b[38;5;240m"
+	logDisplayLimit    = 20
+	logAdditionalColor = "\u001b[38;5;248m"
+)
 
 func removeLogs(cfg *config.Config) {
 	cli.Clear()
@@ -139,7 +204,6 @@ func removeLogs(cfg *config.Config) {
 			Fallback:  "n",
 		},
 	)
-
 	if err != nil {
 		panic(fmt.Sprintf("error with result received from question! (%s)", err))
 	}
@@ -155,4 +219,54 @@ func removeLogs(cfg *config.Config) {
 		fmt.Printf("\n%s%s!%s All log files deleted.\n\n", cli.COLOR_BOLD, logWarningColor, cli.COLOR_RESET)
 		cli.Question("Press any key to continue...", cli.QuestionOptions{})
 	}
+}
+
+type utilities_item struct {
+	title, desc string
+	index       int
+}
+
+func (i utilities_item) Title() string       { return i.title }
+func (i utilities_item) Description() string { return i.desc }
+func (i utilities_item) FilterValue() string { return i.title }
+
+type utilities_model struct {
+	list     list.Model
+	selected *int
+}
+
+func (m utilities_model) Init() tea.Cmd {
+	return nil
+}
+
+func (m utilities_model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			result := m.list.SelectedItem()
+			*m.selected = result.(utilities_item).index
+			return m, tea.Quit
+		case "q":
+			fallthrough
+		case "ctrl+c":
+			*m.selected = -1
+			return m, tea.Quit
+		}
+
+	case tea.QuitMsg:
+		*m.selected = -1
+
+	case tea.WindowSizeMsg:
+		h, v := utilities_style.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
+	}
+
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
+}
+
+func (m utilities_model) View() string {
+	return utilities_style.Render(m.list.View())
 }
