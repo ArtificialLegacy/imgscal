@@ -16,7 +16,7 @@ const (
 	MAIN_MENU_OPTION_EXIT
 )
 
-var main_style = lipgloss.NewStyle().MarginTop(2).MarginBottom(2)
+var main_style = lipgloss.NewStyle().Margin(1, 2)
 
 func MainMenu(sm *statemachine.StateMachine) error {
 	cli.Clear()

@@ -46,7 +46,7 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 	options := []string{}
 	optionsWorkflows := []*workflow.Workflow{}
 	optionsPaths := []string{}
-	listOptions := []list.Item{}
+	listOptions := []list.Item{wflist_item{index: -1, title: fmt.Sprintf("%s%sBack%s", cli.COLOR_BOLD, cli.COLOR_RED, cli.COLOR_RESET), desc: "<- Return to the previous menu."}}
 
 	i := 0
 	for _, w := range *workflows {
@@ -74,6 +74,7 @@ func WorkflowList(sm *statemachine.StateMachine) error {
 
 	m := wflist_model{list: list.New(listOptions, list.NewDefaultDelegate(), 0, 0), selected: &result}
 	m.list.Title = "Select Workflow:"
+	m.list.SetShowStatusBar(false)
 
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
