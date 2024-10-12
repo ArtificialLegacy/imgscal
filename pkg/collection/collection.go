@@ -117,6 +117,7 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 				}
 				i.Lg.Append(fmt.Sprintf("drained task %d from item [%T]", c, i.Self), log.LEVEL_WARN)
 			}
+			i.Lg.Close()
 		}
 	}()
 
@@ -134,6 +135,7 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 
 		if i.cleaned {
 			i.Lg.Append(fmt.Sprintf("item [%T] cleaned", i.Self), log.LEVEL_INFO)
+			i.Lg.Close()
 			break
 		}
 	}
@@ -409,19 +411,8 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 }
 
 func (c *Collection[T]) CollectAll() {
-	for id, i := range c.items {
-		if i.collect {
-			continue
-		}
-
-		i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
-		i.Lg.Close()
-
-		if c.onCollect != nil {
-			c.onCollect(i)
-		}
-		i.Self = nil
-		i.cleaned = true
+	for id := range c.items {
+		c.Collect(id)
 	}
 }
 
@@ -435,7 +426,6 @@ func (c *Collection[T]) Collect(id int) {
 		Name: "collect",
 		Fn: func(i *Item[T]) {
 			i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
-			i.Lg.Close()
 
 			if c.onCollect != nil {
 				c.onCollect(i)

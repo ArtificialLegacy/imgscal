@@ -180,6 +180,7 @@ func (l *Logger) Close() {
 		if err != nil {
 			return
 		}
+		defer f.Close()
 
 		b, err := os.ReadFile(path.Join(l.dir, l.logFile))
 		if err != nil {
