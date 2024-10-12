@@ -91,7 +91,7 @@ func (r *Runner) Run(file string, plugins PluginMap) error {
 	r.Dir = path.Dir(file)
 
 	pkg := r.State.GetField(r.State.Get(lua.EnvironIndex), "package")
-	r.State.SetField(pkg, "path", lua.LString(r.Dir+"/?.lua"))
+	r.State.SetField(pkg, "path", lua.LString(fmt.Sprintf("%s/?.lua;%s/?.lua;%s/?/?.lua", r.Dir, r.Config.PluginDirectory, r.Config.PluginDirectory)))
 
 	lua.OpenBase(r.State)
 	lua.OpenMath(r.State)
