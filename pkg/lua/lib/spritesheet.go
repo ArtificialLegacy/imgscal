@@ -386,11 +386,12 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func extract(id, name, spritesheet_in, spritesheet_out) -> int<collection.IMAGE>
+	/// @func extract(id, name, spritesheet_in, spritesheet_out, nocopy?) -> int<collection.IMAGE>
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg name {string}
 	/// @arg spritesheet_in {struct<spritesheet.Spritesheet>} - The spritesheet related to the source image.
 	/// @arg spritesheet_out {struct<spritesheet.Spritesheet>} - The spritesheet related to the returned image.
+	/// @arg? nocopy {bool}
 	/// @returns {int<collection.IMAGE>}
 	/// @desc
 	/// Note it is more efficient to exclude frames using index and count
@@ -429,6 +430,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				{Type: lua.INT, Name: "hsep", Optional: true},
 				{Type: lua.INT, Name: "vsep", Optional: true},
 			}},
+			{Type: lua.BOOL, Name: "nocopy", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var encoding imageutil.ImageEncoding
@@ -459,7 +461,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 					hsep := sheet["hsep"].(int)
 					vsep := sheet["vsep"].(int)
 
-					imgs = imageutil.SpritesheetToFrames(i.Self.Image, false, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+					imgs = imageutil.SpritesheetToFrames(i.Self.Image, args["nocopy"].(bool), count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
 
 					encoding = i.Self.Encoding
 					model = i.Self.Model
