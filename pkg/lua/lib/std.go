@@ -77,23 +77,23 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func fmt(str, values) -> string
+	/// @func fmt(str, values...) -> string
 	/// @arg str {string}
-	/// @arg values {[]any} - The value in each index should be compatible with the Go fmt string provided.
+	/// @arg values {any...}
 	/// @returns {string}
 	lib.CreateFunction(tab, "fmt",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "str"},
-			{Type: lua.RAW_TABLE, Name: "values"},
+			lua.ArgVariadic("values", lua.ArrayType{Type: lua.ANY}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			v := []any{}
-			values := args["values"].(*golua.LTable)
-			for i := range values.Len() {
-				v = append(v, state.GetTable(values, golua.LNumber(i+1)))
+			values := args["values"].([]any)
+			valueList := make([]any, len(values))
+			for i, v := range values {
+				valueList[i] = lua.GetValue(v.(golua.LValue))
 			}
 
-			format := fmt.Sprintf(args["str"].(string), v...)
+			format := fmt.Sprintf(args["str"].(string), valueList...)
 			state.Push(golua.LString(format))
 			return 1
 		})

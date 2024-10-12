@@ -20,6 +20,7 @@ dev:
 	make install-examples
 	make start
 
+.PHONY: doc
 doc:
 	go run ./cmd/doc
 

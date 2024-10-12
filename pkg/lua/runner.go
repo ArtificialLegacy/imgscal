@@ -16,6 +16,7 @@ import (
 	"github.com/ArtificialLegacy/gm-proj-tool/yyp"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/config"
+	teamodels "github.com/ArtificialLegacy/imgscal/pkg/custom_tea/models"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	"github.com/akamensky/argparse"
@@ -48,6 +49,8 @@ type Runner struct {
 	CR_WIN *collection.Crate[giu.MasterWindow]
 	CR_REF *collection.Crate[collection.RefItem[any]]
 	CR_GMP *collection.Crate[yyp.Project]
+	CR_TEA *collection.Crate[teamodels.TeaItem]
+	CR_LIP *collection.Crate[collection.StyleItem]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -71,6 +74,8 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),
 		CR_REF: collection.NewCrate[collection.RefItem[any]](),
 		CR_GMP: collection.NewCrate[yyp.Project](),
+		CR_TEA: collection.NewCrate[teamodels.TeaItem](),
+		CR_LIP: collection.NewCrate[collection.StyleItem](),
 	}
 }
 
@@ -86,7 +91,7 @@ func (r *Runner) Run(file string, plugins PluginMap) error {
 	r.Dir = path.Dir(file)
 
 	pkg := r.State.GetField(r.State.Get(lua.EnvironIndex), "package")
-	r.State.SetField(pkg, "path", lua.LString(r.Dir+"/?.lua"))
+	r.State.SetField(pkg, "path", lua.LString(fmt.Sprintf("%s/?.lua;%s/?.lua;%s/?/?.lua", r.Dir, r.Config.PluginDirectory, r.Config.PluginDirectory)))
 
 	lua.OpenBase(r.State)
 	lua.OpenMath(r.State)
@@ -472,13 +477,13 @@ func (l *Lib) ParseArgs(state *lua.LState, name string, args []Arg, ln, level in
 				}
 
 				argMap[a.Name] = m
+				count++
 			} else if a.Optional {
 				argMap[a.Name] = l.getDefault(a, state)
 			} else {
 				state.ArgError(i, l.Lg.Append(fmt.Sprintf("invalid variadic provided to %s (non-optional variadics require at least 1 value): %+v", a.Name, v), log.LEVEL_ERROR))
 			}
 
-			count++
 			return argMap, count
 		}
 
@@ -542,8 +547,8 @@ func Error(state *lua.LState, err string) {
 	state.Error(lua.LString(err), 0)
 }
 
-func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
-	l.State.SetField(lib, name, l.State.NewFunction(func(state *lua.LState) int {
+func (l *Lib) CreateFunction(lib *lua.LTable, name string, args []Arg, fn func(state *lua.LState, d TaskData, args map[string]any) int) {
+	lib.RawSetString(name, l.State.NewFunction(func(state *lua.LState) int {
 		l.Lg.Append(fmt.Sprintf("%s.%s called.", l.Lib, name), log.LEVEL_VERBOSE)
 
 		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
@@ -552,6 +557,17 @@ func (l *Lib) CreateFunction(lib lua.LValue, name string, args []Arg, fn func(st
 		ret := fn(state, TaskData{Lib: l.Lib, Name: name}, argMap)
 
 		l.Lg.Append(fmt.Sprintf("%s.%s finished.", l.Lib, name), log.LEVEL_VERBOSE)
+		return ret
+	}))
+}
+
+func (l *Lib) TableFunction(state *lua.LState, t *lua.LTable, name string, args []Arg, fn func(state *lua.LState, args map[string]any) int) {
+	t.RawSetString(name, state.NewFunction(func(state *lua.LState) int {
+		argMap, c := l.ParseArgs(state, name, args, state.GetTop(), 0)
+		state.Pop(c)
+
+		ret := fn(state, argMap)
+
 		return ret
 	}))
 }
@@ -618,6 +634,9 @@ func CreateValue(value any, state *lua.LState) lua.LValue {
 func GetValue(value lua.LValue) any {
 	switch v := value.(type) {
 	case lua.LNumber:
+		if float64(v) == float64(int(v)) {
+			return int(v)
+		}
 		return float64(v)
 	case lua.LBool:
 		return bool(v)

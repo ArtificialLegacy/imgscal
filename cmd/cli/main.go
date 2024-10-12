@@ -107,6 +107,14 @@ func main() {
 		}
 	}
 
+	_, err = os.Stat(sm.Config.PluginDirectory)
+	if err != nil {
+		err := os.MkdirAll(sm.Config.PluginDirectory, 0o777)
+		if err != nil {
+			panic(fmt.Sprintf("failed to make plugin directory! (%s)", err))
+		}
+	}
+
 	if len(os.Args) > 1 {
 		pth := os.Args[1]
 		sm.CliMode = true

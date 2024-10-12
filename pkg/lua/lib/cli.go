@@ -241,6 +241,60 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func string_image(id, double?, alpha?) -> string
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	/// @arg? alpha {int} - Remove pixels with an alpha below this value.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "string_image",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "double", Optional: true},
+			{Type: lua.INT, Name: "alpha", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := args["id"].(int)
+			double := args["double"].(bool)
+			alpha := args["alpha"].(int)
+
+			result := ""
+
+			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					boundsMin := i.Self.Image.Bounds().Min
+					boundsMax := i.Self.Image.Bounds().Max
+
+					for y := boundsMin.Y; y < boundsMax.Y; y++ {
+						for x := boundsMin.X; x < boundsMax.X; x++ {
+							col := imageutil.GetColor(i.Self.Image, state, x, y)
+							r, g, b, a := imageutil.ColorTableToRGBA(col)
+							color := trueColorBg(int(r), int(g), int(b))
+
+							if int(a) < alpha {
+								color = string(cli.COLOR_RESET)
+							}
+
+							if double {
+								result += fmt.Sprintf("%s  ", color)
+							} else {
+								result += fmt.Sprintf("%s ", color)
+							}
+						}
+						if y < boundsMax.Y-1 {
+							result += fmt.Sprintln(cli.COLOR_RESET)
+						}
+					}
+					result += fmt.Sprint(cli.COLOR_RESET)
+				},
+			})
+
+			state.Push(golua.LString(result))
+			return 1
+		})
+
 	/// @func print_image_size(id, width, height, double?, alpha?)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg width {int} - The width of the image.
@@ -265,7 +319,6 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-
 					g := gift.New(gift.Resize(args["width"].(int), args["height"].(int), gift.NearestNeighborResampling))
 					newBounds := g.Bounds(i.Self.Image.Bounds())
 					dst := imageutil.NewImage(newBounds.Dx(), newBounds.Dy(), i.Self.Model)
@@ -276,7 +329,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 					for y := boundsMin.Y; y < boundsMax.Y; y++ {
 						for x := boundsMin.X; x < boundsMax.X; x++ {
-							col := imageutil.GetColor(i.Self.Image, state, x, y)
+							col := imageutil.GetColor(dst, state, x, y)
 							r, g, b, a := imageutil.ColorTableToRGBA(col)
 							color := trueColorBg(int(r), int(g), int(b))
 
@@ -297,6 +350,67 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			})
 
 			return 0
+		})
+
+	/// @func string_image_size(id, width, height, double?, alpha?) -> string
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg width {int} - The width of the image.
+	/// @arg height {int} - The height of the image.
+	/// @arg? double {bool} - If true, use 2 characters per pixel.
+	/// @arg? alpha {int} - Remove pixels with an alpha below this value.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "string_image_size",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.BOOL, Name: "double", Optional: true},
+			{Type: lua.INT, Name: "alpha", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := args["id"].(int)
+			double := args["double"].(bool)
+			alpha := args["alpha"].(int)
+
+			result := ""
+
+			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					g := gift.New(gift.Resize(args["width"].(int), args["height"].(int), gift.NearestNeighborResampling))
+					newBounds := g.Bounds(i.Self.Image.Bounds())
+					dst := imageutil.NewImage(newBounds.Dx(), newBounds.Dy(), i.Self.Model)
+					g.Draw(imageutil.ImageGetDraw(dst), i.Self.Image)
+
+					boundsMin := dst.Bounds().Min
+					boundsMax := dst.Bounds().Max
+
+					for y := boundsMin.Y; y < boundsMax.Y; y++ {
+						for x := boundsMin.X; x < boundsMax.X; x++ {
+							col := imageutil.GetColor(dst, state, x, y)
+							r, g, b, a := imageutil.ColorTableToRGBA(col)
+							color := trueColorBg(int(r), int(g), int(b))
+
+							if int(a) < alpha {
+								color = string(cli.COLOR_RESET)
+							}
+
+							if double {
+								result += fmt.Sprintf("%s  ", color)
+							} else {
+								result += fmt.Sprintf("%s ", color)
+							}
+						}
+						result += fmt.Sprintln(cli.COLOR_RESET)
+					}
+					result += fmt.Sprint(cli.COLOR_RESET)
+				},
+			})
+
+			state.Push(golua.LString(result))
+			return 1
 		})
 
 	/// @func print_color(c, double?)

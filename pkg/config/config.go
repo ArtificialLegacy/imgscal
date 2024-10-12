@@ -4,7 +4,7 @@ import (
 	"path"
 )
 
-const CONFIG_VERSION = "0.1.1"
+const CONFIG_VERSION = "0.2.0"
 
 type Config struct {
 	ConfigVersion     string `json:"config_version"`
@@ -12,6 +12,7 @@ type Config struct {
 	WorkflowDirectory string `json:"workflow_directory"`
 	OutputDirectory   string `json:"output_directory"`
 	LogDirectory      string `json:"log_directory"`
+	PluginDirectory   string `json:"plugin_directory"`
 	DisableLogs       bool   `json:"disable_logs"`
 	AlwaysConfirm     bool   `json:"always_confirm"`
 }
@@ -27,6 +28,7 @@ func NewConfigWithDefaults(homeDir string) *Config {
 		WorkflowDirectory: path.Join(homeDir, "imgscal", "workflow"),
 		LogDirectory:      path.Join(homeDir, "imgscal", "log"),
 		OutputDirectory:   path.Join(homeDir, "imgscal", "output"),
+		PluginDirectory:   path.Join(homeDir, "imgscal", "plugin"),
 		DisableLogs:       false,
 		AlwaysConfirm:     false,
 	}

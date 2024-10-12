@@ -36,46 +36,33 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			imgReady := make(chan struct{}, 2)
-			imgFinished := make(chan struct{}, 2)
-
 			var img image.Image
-
-			r.IC.Schedule(args["id1"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					img = i.Self.Image
-					imgReady <- struct{}{}
-					<-imgFinished
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgReady <- struct{}{}
-				},
-			})
-
 			scheduledState, _ := state.NewThread()
 
-			r.IC.Schedule(args["id2"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					<-imgReady
-
-					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
-					if args["disableParallelization"].(bool) {
-						g.SetParallelization(false)
-					}
-					g.Draw(imageutil.ImageGetDraw(i.Self.Image), img)
-
-					scheduledState.Close()
-					imgFinished <- struct{}{}
+			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
 				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					scheduledState.Close()
-					imgFinished <- struct{}{}
-				},
-			})
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
+						if args["disableParallelization"].(bool) {
+							g.SetParallelization(false)
+						}
+						g.Draw(imageutil.ImageGetDraw(i.Self.Image), img)
+
+						scheduledState.Close()
+					},
+					Fail: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState.Close()
+					},
+				})
 
 			return 0
 		})
@@ -99,47 +86,34 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			imgReady := make(chan struct{}, 2)
-			imgFinished := make(chan struct{}, 2)
-
 			var img image.Image
-
-			r.IC.Schedule(args["id1"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					img = i.Self.Image
-					imgReady <- struct{}{}
-					<-imgFinished
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgReady <- struct{}{}
-				},
-			})
-
 			scheduledState, _ := state.NewThread()
 
-			r.IC.Schedule(args["id2"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					<-imgReady
-
-					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
-					pt := imageutil.TableToPoint(args["point"].(*golua.LTable))
-					if args["disableParallelization"].(bool) {
-						g.SetParallelization(false)
-					}
-					g.DrawAt(imageutil.ImageGetDraw(i.Self.Image), img, pt, gift.Operator(args["op"].(int)))
-
-					scheduledState.Close()
-					imgFinished <- struct{}{}
+			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
 				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					scheduledState.Close()
-					imgFinished <- struct{}{}
-				},
-			})
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
+						pt := imageutil.TableToPoint(args["point"].(*golua.LTable))
+						if args["disableParallelization"].(bool) {
+							g.SetParallelization(false)
+						}
+						g.DrawAt(imageutil.ImageGetDraw(i.Self.Image), img, pt, gift.Operator(args["op"].(int)))
+
+						scheduledState.Close()
+					},
+					Fail: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState.Close()
+					},
+				})
 
 			return 0
 		})
@@ -165,50 +139,37 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "disableParallelization", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			imgReady := make(chan struct{}, 2)
-			imgFinished := make(chan struct{}, 2)
-
 			var img image.Image
-
-			r.IC.Schedule(args["id1"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					img = i.Self.Image
-					imgReady <- struct{}{}
-					<-imgFinished
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgReady <- struct{}{}
-				},
-			})
-
 			scheduledState, _ := state.NewThread()
 
-			r.IC.Schedule(args["id2"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					<-imgReady
-
-					g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
-					if args["disableParallelization"].(bool) {
-						g.SetParallelization(false)
-					}
-					g.DrawAt(
-						imageutil.ImageGetDraw(i.Self.Image), img,
-						image.Point{X: args["x"].(int), Y: args["y"].(int)},
-						gift.Operator(args["op"].(int)),
-					)
-
-					scheduledState.Close()
-					imgFinished <- struct{}{}
+			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
 				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					scheduledState.Close()
-					imgFinished <- struct{}{}
-				},
-			})
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
+						if args["disableParallelization"].(bool) {
+							g.SetParallelization(false)
+						}
+						g.DrawAt(
+							imageutil.ImageGetDraw(i.Self.Image), img,
+							image.Point{X: args["x"].(int), Y: args["y"].(int)},
+							gift.Operator(args["op"].(int)),
+						)
+
+						scheduledState.Close()
+					},
+					Fail: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState.Close()
+					},
+				})
 
 			return 0
 		})

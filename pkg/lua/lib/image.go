@@ -188,6 +188,20 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func remove(id)
+	/// @arg id {int<collection.IMAGE>}
+	/// @desc
+	/// Removes the image from the collection.
+	/// This is a shortcut for collection.collect(collection.IMAGE, id).
+	lib.CreateFunction(tab, "remove",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.IC.Collect(args["id"].(int))
+			return 0
+		})
+
 	/// @func name(id, name)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg name {string} - The new name to use for the image, not including the file extension.
@@ -1378,6 +1392,19 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func color_zero() -> struct<image.ColorZERO>
+	/// @returns {struct<image.ColorZERO>}
+	lib.CreateFunction(tab, "color_zero",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct ColorZERO
+			/// @prop type {string<image.ColorType>}
+
+			t := imageutil.ZeroColorTable(state)
+			state.Push(t)
+			return 1
+		})
+
 	/// @func color_to_rgb(color) -> struct<image.ColorRGBA>
 	/// @arg color {struct<image.Color>}
 	/// @returns {struct<image.ColorRGBA>}
@@ -1704,48 +1731,35 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "height", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			imgReady := make(chan struct{}, 2)
-			imgFinished := make(chan struct{}, 2)
-
 			var img image.Image
 
-			r.IC.Schedule(args["src"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					img = i.Self.Image
-					imgReady <- struct{}{}
-					<-imgFinished
+			r.IC.SchedulePipe(args["src"].(int), args["id"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
 				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgReady <- struct{}{}
-				},
-			})
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+						y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+						width := args["width"].(int)
+						height := args["height"].(int)
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					<-imgReady
-					x := args["x"].(int) + i.Self.Image.Bounds().Min.X
-					y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
-					width := args["width"].(int)
-					height := args["height"].(int)
+						if width == 0 {
+							width = i.Self.Image.Bounds().Dx() - args["x"].(int)
+						}
+						if height == 0 {
+							height = i.Self.Image.Bounds().Dy() - args["y"].(int)
+						}
 
-					if width == 0 {
-						width = i.Self.Image.Bounds().Dx() - args["x"].(int)
-					}
-					if height == 0 {
-						height = i.Self.Image.Bounds().Dy() - args["y"].(int)
-					}
-
-					imageutil.Draw(i.Self.Image, img, x, y, width, height)
-					imgFinished <- struct{}{}
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgFinished <- struct{}{}
-				},
-			})
+						imageutil.Draw(i.Self.Image, img, x, y, width, height)
+					},
+				})
 
 			return 0
 		})
@@ -2067,6 +2081,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	/// @const COLOR_TYPE_ALPHA16
 	/// @const COLOR_TYPE_CMYK
 	/// @const COLOR_TYPE_CMYKA
+	/// @const COLOR_TYPE_ZERO
 	tab.RawSetString("COLOR_TYPE_RGBA", golua.LString(imageutil.COLOR_TYPE_RGBA))
 	tab.RawSetString("COLOR_TYPE_HSVA", golua.LString(imageutil.COLOR_TYPE_HSVA))
 	tab.RawSetString("COLOR_TYPE_HSLA", golua.LString(imageutil.COLOR_TYPE_HSLA))
@@ -2078,4 +2093,5 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLOR_TYPE_ALPHA16", golua.LString(imageutil.COLOR_TYPE_ALPHA16))
 	tab.RawSetString("COLOR_TYPE_CMYK", golua.LString(imageutil.COLOR_TYPE_CMYK))
 	tab.RawSetString("COLOR_TYPE_CMYKA", golua.LString(imageutil.COLOR_TYPE_CMYKA))
+	tab.RawSetString("COLOR_TYPE_ZERO", golua.LString(imageutil.COLOR_TYPE_ZERO))
 }

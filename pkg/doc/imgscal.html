@@ -209,7 +209,7 @@
 
             <p>
                 Lua files that are not entry points can be loaded as modules within the <code><span class="purple">main</span></code> function.
-                The lua path for module loading is defined to the working directory of the entry point.
+                There are two locations that are used by the lua module loader: the working directory of the workflow, and then the plugin directory defined in the config file.
             </p>
 <pre>
 example/
@@ -227,6 +227,19 @@ example/
          <p>
             The gui example contains a module <code><span class="white">widget.lua</span></code> that is loaded by both
             <code><span class="white">filter.lua</span></code> and <code><span class="white">noise.lua</span></code>.
+        </p>
+        <p>
+            When loading a module from the plugin directory, it will also check for a path in a directory of the same name as the module.<br>
+            So <code><span class="white"><span class="pink">local</span> mymodule = <span class="purple">require</span>(<span class="green">"mymodule"</span>)</span></code>
+            would check in both:
+            <ul>
+                <li>
+                    <code><span class="white">plugin/mymodule.lua</span></code>
+                </li>
+                <li>
+                    <code><span class="white">plugin/mymodule/mymodule.lua</span></code>
+                </li>
+            </ul>
         </p>
         </figure>
     </details>
@@ -273,6 +286,7 @@ example/
     <span class="yellow">"workflow_directory"</span>: <span class="green">"%HOME%/imgscal/workflow"</span>,
     <span class="yellow">"output_directory"</span>: <span class="green">"%HOME%/imgscal/output"</span>,
     <span class="yellow">"log_directory"</span>: <span class="green">"%HOME%/imgscal/log"</span>,
+    <span class="yellow">"plugin_directory"</span>: <span class="green">"%HOME%/imgscal/plugin"</span>,
     <span class="yellow">"disable_logs"</span>: <span class="cyan">false</span>,
     <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>
 }</pre>
@@ -329,6 +343,10 @@ example/
                         The most recently generated log also gets saved as <code class="field">@latest.txt</code>.
                     </li>
                 </ul>
+            </li>
+            <li>
+                <code class="field">plugin_directory</code>
+                - This directory is used as a secondary path when calling <code class="import">require()</code>. 
             </li>
             <li>
                 <code class="field">disable_logs</code>

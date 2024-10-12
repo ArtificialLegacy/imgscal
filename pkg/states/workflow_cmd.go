@@ -17,9 +17,14 @@ func WorkflowCMDEnter(sm *statemachine.StateMachine, name string) {
 func WorkflowCMD(sm *statemachine.StateMachine) error {
 	name := sm.Data.(string)
 
-	wf, _, err := workflow.WorkflowList(sm.Config.WorkflowDirectory)
+	wf, errlist, err := workflow.WorkflowList(sm.Config.WorkflowDirectory)
 	if err != nil {
 		fmt.Printf("failed to scan for workflows: %s\n", err)
+		sm.SetState(STATE_EXIT)
+		return err
+	}
+	if len(*errlist) > 0 {
+		fmt.Printf("failed to scan for workflows: %+v\n", *errlist)
 		sm.SetState(STATE_EXIT)
 		return err
 	}

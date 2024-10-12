@@ -45,55 +45,37 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "img2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			img1 := args["img1"].(int)
-			img2 := args["img2"].(int)
-
 			var img image.Image
 
-			imgReady := make(chan struct{}, 2)
-			imgFinished := make(chan struct{}, 2)
-
-			r.IC.Schedule(img2, &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					if i.Self.Model == imageutil.MODEL_GRAY {
-						img = i.Self.Image
-						imgReady <- struct{}{}
-						<-imgFinished
-					} else {
-						img = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
-						imgReady <- struct{}{}
-					}
+			r.IC.SchedulePipe(args["img2"].(int), args["img1"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						if i.Self.Model == imageutil.MODEL_GRAY {
+							img = i.Self.Image
+						} else {
+							img = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
+						}
+					},
 				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgReady <- struct{}{}
-				},
-			})
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						imgCopy := i.Self.Image
+						if i.Self.Model != imageutil.MODEL_GRAY {
+							imgCopy = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
+						}
 
-			r.IC.Schedule(img1, &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					imgCopy := i.Self.Image
-					if i.Self.Model != imageutil.MODEL_GRAY {
-						imgCopy = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
-					}
-
-					<-imgReady
-
-					iOut, err := blend.AddGray(imgCopy.(*image.Gray), img.(*image.Gray))
-					if err != nil {
-						state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blend images: %s", err), log.LEVEL_ERROR)), 0)
-					}
-					i.Self.Image = iOut
-					i.Self.Model = imageutil.MODEL_GRAY
-					imgFinished <- struct{}{}
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgFinished <- struct{}{}
-				},
-			})
+						iOut, err := blend.AddGray(imgCopy.(*image.Gray), img.(*image.Gray))
+						if err != nil {
+							state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blend images: %s", err), log.LEVEL_ERROR)), 0)
+						}
+						i.Self.Image = iOut
+						i.Self.Model = imageutil.MODEL_GRAY
+					},
+				})
 
 			return 0
 		})
@@ -113,58 +95,40 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "weight2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			img1 := args["img1"].(int)
-			img2 := args["img2"].(int)
-
 			weight1 := args["weight1"].(float64)
 			weight2 := args["weight2"].(float64)
 
 			var img image.Image
 
-			imgReady := make(chan struct{}, 2)
-			imgFinished := make(chan struct{}, 2)
-
-			r.IC.Schedule(img2, &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					if i.Self.Model == imageutil.MODEL_GRAY {
-						img = i.Self.Image
-						imgReady <- struct{}{}
-						<-imgFinished
-					} else {
-						img = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
-						imgReady <- struct{}{}
-					}
+			r.IC.SchedulePipe(args["img2"].(int), args["img1"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						if i.Self.Model == imageutil.MODEL_GRAY {
+							img = i.Self.Image
+						} else {
+							img = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
+						}
+					},
 				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgReady <- struct{}{}
-				},
-			})
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						imgCopy := i.Self.Image
+						if i.Self.Model != imageutil.MODEL_GRAY {
+							imgCopy = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
+						}
 
-			r.IC.Schedule(img1, &collection.Task[collection.ItemImage]{
-				Lib:  d.Lib,
-				Name: d.Name,
-				Fn: func(i *collection.Item[collection.ItemImage]) {
-					imgCopy := i.Self.Image
-					if i.Self.Model != imageutil.MODEL_GRAY {
-						imgCopy = imageutil.CopyImage(i.Self.Image, imageutil.MODEL_GRAY)
-					}
-
-					<-imgReady
-
-					iOut, err := blend.AddGrayWeighted(imgCopy.(*image.Gray), weight1, img.(*image.Gray), weight2)
-					if err != nil {
-						state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blend images: %s", err), log.LEVEL_ERROR)), 0)
-					}
-					i.Self.Image = iOut
-					i.Self.Model = imageutil.MODEL_GRAY
-					imgFinished <- struct{}{}
-				},
-				Fail: func(i *collection.Item[collection.ItemImage]) {
-					imgFinished <- struct{}{}
-				},
-			})
+						iOut, err := blend.AddGrayWeighted(imgCopy.(*image.Gray), weight1, img.(*image.Gray), weight2)
+						if err != nil {
+							state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blend images: %s", err), log.LEVEL_ERROR)), 0)
+						}
+						i.Self.Image = iOut
+						i.Self.Model = imageutil.MODEL_GRAY
+					},
+				})
 
 			return 0
 		})

@@ -140,6 +140,7 @@ const (
 	COLOR_TYPE_ALPHA16 string = "alpha16"
 	COLOR_TYPE_CMYKA   string = "cmyka"
 	COLOR_TYPE_CMYK    string = "cmyk"
+	COLOR_TYPE_ZERO    string = "zero"
 )
 
 func RGBAColorToColorTable(state *golua.LState, rgba *color.RGBA) *golua.LTable {
@@ -255,6 +256,13 @@ func CMYKToColorTable(state *golua.LState, cyan, magenta, yellow, key int) *golu
 	t.RawSetString("magenta", golua.LNumber(magenta))
 	t.RawSetString("yellow", golua.LNumber(yellow))
 	t.RawSetString("key", golua.LNumber(key))
+
+	return t
+}
+
+func ZeroColorTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+	t.RawSetString("type", golua.LString(COLOR_TYPE_ZERO))
 
 	return t
 }
@@ -416,6 +424,9 @@ func ColorTableToRGBA(t *golua.LTable) (uint8, uint8, uint8, uint8) {
 		cc, cm, cy, ck := ParseCMYKTable(t)
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		return cr, cg, cb, 255
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0, 0, 0
 	}
 
 	return 0, 0, 0, 0
@@ -485,6 +496,9 @@ func ColorTableToHSVA(t *golua.LTable) (float64, float64, float64, uint8) {
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		ch, cs, cv := colorconv.RGBToHSV(cr, cg, cb)
 		return ch, cs, cv, 255
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0, 0, 0
 	}
 
 	return 0, 0, 0, 0
@@ -553,6 +567,9 @@ func ColorTableToHSLA(t *golua.LTable) (float64, float64, float64, uint8) {
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		ch, cs, cl := colorconv.RGBToHSL(cr, cg, cb)
 		return ch, cs, cl, 255
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0, 0, 0
 	}
 
 	return 0, 0, 0, 0
@@ -623,6 +640,9 @@ func ColorTableToGrayA(t *golua.LTable) (uint8, uint8) {
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		g := colorconv.RGBToGrayAverage(cr, cg, cb)
 		return g.Y, 255
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0
 	}
 
 	return 0, 0
@@ -692,6 +712,9 @@ func ColorTableToGrayA16(t *golua.LTable) (uint16, uint16) {
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		g := colorconv.RGBToGrayAverage(cr, cg, cb)
 		return Color8BitTo16Bit(g.Y), 65535
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0
 	}
 
 	return 0, 0
@@ -758,6 +781,9 @@ func ColorTableToGray(t *golua.LTable) uint8 {
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		g := colorconv.RGBToGrayAverage(cr, cg, cb)
 		return g.Y
+
+	case COLOR_TYPE_ZERO:
+		return 0
 	}
 
 	return 0
@@ -824,6 +850,9 @@ func ColorTableToGray16(t *golua.LTable) uint16 {
 		cr, cg, cb := color.CMYKToRGB(cc, cm, cy, ck)
 		g := colorconv.RGBToGrayAverage(cr, cg, cb)
 		return Color8BitTo16Bit(g.Y)
+
+	case COLOR_TYPE_ZERO:
+		return 0
 	}
 
 	return 0
@@ -872,6 +901,9 @@ func ColorTableToAlpha(t *golua.LTable) uint8 {
 
 	case COLOR_TYPE_CMYK:
 		return 255
+
+	case COLOR_TYPE_ZERO:
+		return 0
 	}
 
 	return 0
@@ -920,6 +952,9 @@ func ColorTableToAlpha16(t *golua.LTable) uint16 {
 
 	case COLOR_TYPE_CMYK:
 		return 65535
+
+	case COLOR_TYPE_ZERO:
+		return 0
 	}
 
 	return 0
@@ -991,6 +1026,9 @@ func ColorTableToCMYKA(t *golua.LTable) (uint8, uint8, uint8, uint8, uint8) {
 	case COLOR_TYPE_CMYK:
 		cc, cm, cy, ck := ParseCMYKTable(t)
 		return cc, cm, cy, ck, 255
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0, 0, 0, 0
 	}
 
 	return 0, 0, 0, 0, 0
@@ -1059,6 +1097,9 @@ func ColorTableToCMYK(t *golua.LTable) (uint8, uint8, uint8, uint8) {
 	case COLOR_TYPE_CMYK:
 		cc, cm, cy, ck := ParseCMYKTable(t)
 		return cc, cm, cy, ck
+
+	case COLOR_TYPE_ZERO:
+		return 0, 0, 0, 0
 	}
 
 	return 0, 0, 0, 0

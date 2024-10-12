@@ -8,6 +8,7 @@ import (
 
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/tailscale/hujson"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -203,6 +204,24 @@ func RegisterJSON(r *lua.Runner, lg *log.Logger) {
 			}
 
 			state.Push(golua.LString(b))
+			return 1
+		})
+
+	/// @func standardize(str) -> string
+	/// @arg str {string} - JSON data as a string.
+	/// @returns {string} - The same JSON but with non-standard features removed.
+	lib.CreateFunction(tab, "standardize",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "str"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			value := args["str"].(string)
+			vout, err := hujson.Standardize([]byte(value))
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to standardize JSON: %s", log.LEVEL_ERROR, err))
+			}
+
+			state.Push(golua.LString(vout))
 			return 1
 		})
 }

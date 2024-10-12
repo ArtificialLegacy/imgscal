@@ -1,6 +1,10 @@
 package collection
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 type CrateItem[T any] struct {
 	Self *T
@@ -10,9 +14,13 @@ type RefItem[T any] struct {
 	Value T
 }
 
+type StyleItem struct {
+	Style *lipgloss.Style
+}
+
 type Crate[T any] struct {
-	Items []*CrateItem[T]
 	clean func(i *CrateItem[T])
+	Items []*CrateItem[T]
 }
 
 func NewCrate[T any, C CrateItem[T]]() *Crate[T] {
