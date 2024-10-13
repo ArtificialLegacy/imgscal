@@ -1,3 +1,5 @@
+---@diagnostic disable:lowercase-global
+
 function help(info)
 	return [[
 Usage:

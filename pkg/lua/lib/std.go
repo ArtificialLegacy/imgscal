@@ -121,7 +121,7 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func call_thread(func)
-	/// @arg func {function} - The function to call in a new thread.
+	/// @arg func {function()} - The function to call in a new thread.
 	/// @desc
 	/// This function will call the provided function in a new thread, unlike tasks there is no control over the thread.
 	/// There is also no guarantee that the thread will finish before the script ends.

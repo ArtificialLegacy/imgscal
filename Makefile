@@ -24,6 +24,10 @@ dev:
 doc:
 	go run ./cmd/doc
 
+.PHONY: types
+types:
+	go run ./cmd/types
+
 .PHONY: log
 log:
 	go run ./cmd/log

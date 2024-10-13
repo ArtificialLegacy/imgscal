@@ -386,7 +386,7 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func whitespace_option() -> struct<lipgloss.WhitespaceOption>
-	/// @returns {lipgloss.WhitespaceOption}
+	/// @returns {struct<lipgloss.WhitespaceOption>}
 	lib.CreateFunction(tab, "whitespace_option",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -556,7 +556,7 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Position
+	/// @constants Position {float}
 	/// @const POSITION_TOP
 	/// @const POSITION_BOTTOM
 	/// @const POSITION_CENTER
@@ -568,7 +568,7 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("POSITION_LEFT", golua.LNumber(0.0))
 	tab.RawSetString("POSITION_RIGHT", golua.LNumber(1.0))
 
-	/// @constants ColorType
+	/// @constants ColorType {int}
 	/// @const COLOR
 	/// @const COLOR_NONE
 	/// @const COLOR_ANSI
@@ -582,7 +582,7 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLOR_COMPLETE", golua.LNumber(LG_COLOR_COMPLETE))
 	tab.RawSetString("COLOR_COMPLETEADAPTIVE", golua.LNumber(LG_COLOR_COMPLETEADAPTIVE))
 
-	/// @constants Special
+	/// @constants Special {int}
 	/// @const NOTAB_CONVERSION
 	tab.RawSetString("NOTAB_CONVERSION", golua.LNumber(lipgloss.NoTabConversion))
 }
@@ -634,7 +634,7 @@ func lgColorGenericTable(state *golua.LState, c lipgloss.TerminalColor) *golua.L
 }
 
 func lgColorGenericBuild(t *golua.LTable) lipgloss.TerminalColor {
-	/// @struct ColorAny
+	/// @interface ColorAny
 	/// @prop type {int<lipgloss.ColorType>} - The type of color.
 
 	typ := t.RawGetString("type")
@@ -897,9 +897,9 @@ func lgBorderBuild(t *golua.LTable) lipgloss.Border {
 
 func whitespaceOptionTable(state *golua.LState, lib *lua.Lib) *golua.LTable {
 	/// @struct WhitespaceOption
-	/// @method foreground(color struct<lipgloss.ColorAny>) -> self
-	/// @method background(color struct<lipgloss.ColorAny>) -> self
-	/// @method chars(string) -> self
+	/// @method foreground(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method background(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method chars(self, string) -> self
 
 	t := state.NewTable()
 
@@ -960,143 +960,143 @@ func lipglossStyleTable(state *golua.LState, lib *lua.Lib, r *lua.Runner, id int
 	/// @prop id {int} - The ID of the style.
 	/// @method render(string...) -> string
 	/// @method align() -> float<lipgloss.Position>, float<lipgloss.Position>
-	/// @method align_set(hpos float<lipgloss.Position>, vpos float<lipgloss.Position>) -> self
-	/// @method align_unset() -> self
+	/// @method align_set(self, hpos float<lipgloss.Position>, vpos float<lipgloss.Position>) -> self
+	/// @method align_unset(self) -> self
 	/// @method align_horizontal() -> float<lipgloss.Position>
-	/// @method align_horizontal_set(hpos float<lipgloss.Position>) -> self
-	/// @method align_horizontal_unset() -> self
+	/// @method align_horizontal_set(self, hpos float<lipgloss.Position>) -> self
+	/// @method align_horizontal_unset(self) -> self
 	/// @method align_vertical() -> float<lipgloss.Position>
-	/// @method align_vertical_set(vpos float<lipgloss.Position>) -> self
-	/// @method align_vertical_unset() -> self
+	/// @method align_vertical_set(self, vpos float<lipgloss.Position>) -> self
+	/// @method align_vertical_unset(self) -> self
 	/// @method blink() -> bool
-	/// @method blink_set(enabled bool) -> self
-	/// @method blink_unset() -> self
+	/// @method blink_set(self, enabled bool) -> self
+	/// @method blink_unset(self) -> self
 	/// @method bold() -> bool
-	/// @method bold_set(enabled bool) -> self
-	/// @method bold_unset() -> self
+	/// @method bold_set(self, enabled bool) -> self
+	/// @method bold_unset(self) -> self
 	/// @method faint() -> bool
-	/// @method faint_set(enabled bool) -> self
-	/// @method faint_unset() -> self
+	/// @method faint_set(self, enabled bool) -> self
+	/// @method faint_unset(self) -> self
 	/// @method italic() -> bool
-	/// @method italic_set(enabled bool) -> self
-	/// @method italic_unset() -> self
+	/// @method italic_set(self, enabled bool) -> self
+	/// @method italic_unset(self) -> self
 	/// @method underline() -> bool
-	/// @method underline_set(enabled bool) -> self
-	/// @method underline_unset() -> self
+	/// @method underline_set(self, enabled bool) -> self
+	/// @method underline_unset(self) -> self
 	/// @method underline_spaces() -> bool
-	/// @method underline_spaces_set(enabled bool) -> self
-	/// @method underline_spaces_unset() -> self
+	/// @method underline_spaces_set(self, enabled bool) -> self
+	/// @method underline_spaces_unset(self) -> self
 	/// @method strikethrough() -> bool
-	/// @method strikethrough_set(enabled bool) -> self
-	/// @method strikethrough_unset() -> self
+	/// @method strikethrough_set(self, enabled bool) -> self
+	/// @method strikethrough_unset(self) -> self
 	/// @method strikethrough_spaces() -> bool
-	/// @method strikethrough_spaces_set(enabled bool) -> self
-	/// @method strikethrough_spaces_unset() -> self
+	/// @method strikethrough_spaces_set(self, enabled bool) -> self
+	/// @method strikethrough_spaces_unset(self) -> self
 	/// @method reverse() -> bool
-	/// @method reverse_set(enabled bool) -> self
-	/// @method reverse_unset() -> self
+	/// @method reverse_set(self, enabled bool) -> self
+	/// @method reverse_unset(self) -> self
 	/// @method foreground() -> struct<lipgloss.ColorAny>
-	/// @method foreground_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method foreground_unset() -> self
+	/// @method foreground_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method foreground_unset(self) -> self
 	/// @method background() -> struct<lipgloss.ColorAny>
-	/// @method background_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method background_unset() -> self
+	/// @method background_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method background_unset(self) -> self
 	/// @method inline() -> bool
-	/// @method inline_set(enabled bool) -> self
-	/// @method inline_unset() -> self
+	/// @method inline_set(self, enabled bool) -> self
+	/// @method inline_unset(self) -> self
 	/// @method width() -> int
-	/// @method width_set(width int) -> self
-	/// @method width_unset() -> self
+	/// @method width_set(self, width int) -> self
+	/// @method width_unset(self) -> self
 	/// @method height() -> int
-	/// @method height_set(height int) -> self
-	/// @method height_unset() -> self
+	/// @method height_set(self, height int) -> self
+	/// @method height_unset(self) -> self
 	/// @method width_max() -> int
-	/// @method width_max_set(width int) -> self
-	/// @method width_max_unset() -> self
+	/// @method width_max_set(self, width int) -> self
+	/// @method width_max_unset(self) -> self
 	/// @method height_max() -> int
-	/// @method height_max_set(height int) -> self
-	/// @method height_max_unset() -> self
+	/// @method height_max_set(self, height int) -> self
+	/// @method height_max_unset(self) -> self
 	/// @method tab_width() -> int
-	/// @method tab_width_set(width int) -> self
-	/// @method tab_width_unset() -> self
+	/// @method tab_width_set(self, width int) -> self
+	/// @method tab_width_unset(self) -> self
 	/// @method border() -> struct<lipgloss.Border>, bool, bool, bool, bool
-	/// @method border_set(border struct<lipgloss.Border>, sides bool...) -> self
-	/// @method border_unset() -> self
-	/// @method border_foreground_set(color struct<lipgloss.ColorAny>...) -> self
-	/// @method border_background_set(color struct<lipgloss.ColorAny>...) -> self
+	/// @method border_set(self, border struct<lipgloss.Border>, sides bool...) -> self
+	/// @method border_unset(self) -> self
+	/// @method border_foreground_set(self, color struct<lipgloss.ColorAny>...) -> self
+	/// @method border_background_set(self, color struct<lipgloss.ColorAny>...) -> self
 	/// @method border_style() -> struct<lipgloss.Border>
-	/// @method border_style_set(border struct<lipgloss.Border>) -> self
-	/// @method border_style_unset() -> self
+	/// @method border_style_set(self, border struct<lipgloss.Border>) -> self
+	/// @method border_style_unset(self) -> self
 	/// @method border_top() -> bool
-	/// @method border_top_set(enabled bool) -> self
-	/// @method border_top_unset() -> self
+	/// @method border_top_set(self, enabled bool) -> self
+	/// @method border_top_unset(self) -> self
 	/// @method border_top_foreground() -> struct<lipgloss.ColorAny>
-	/// @method border_top_foreground_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_top_foreground_unset() -> self
+	/// @method border_top_foreground_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_top_foreground_unset(self) -> self
 	/// @method border_top_background() -> struct<lipgloss.ColorAny>
-	/// @method border_top_background_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_top_background_unset() -> self
+	/// @method border_top_background_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_top_background_unset(self) -> self
 	/// @method border_bottom() -> bool
-	/// @method border_bottom_set(enabled bool) -> self
-	/// @method border_bottom_unset() -> self
+	/// @method border_bottom_set(self, enabled bool) -> self
+	/// @method border_bottom_unset(self) -> self
 	/// @method border_bottom_foreground() -> struct<lipgloss.ColorAny>
-	/// @method border_bottom_foreground_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_bottom_foreground_unset() -> self
+	/// @method border_bottom_foreground_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_bottom_foreground_unset(self) -> self
 	/// @method border_bottom_background() -> struct<lipgloss.ColorAny>
-	/// @method border_bottom_background_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_bottom_background_unset() -> self
+	/// @method border_bottom_background_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_bottom_background_unset(self) -> self
 	/// @method border_left() -> bool
-	/// @method border_left_set(enabled bool) -> self
-	/// @method border_left_unset() -> self
+	/// @method border_left_set(self, enabled bool) -> self
+	/// @method border_left_unset(self) -> self
 	/// @method border_left_foreground() -> struct<lipgloss.ColorAny>
-	/// @method border_left_foreground_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_left_foreground_unset() -> self
+	/// @method border_left_foreground_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_left_foreground_unset(self) -> self
 	/// @method border_left_background() -> struct<lipgloss.ColorAny>
-	/// @method border_left_background_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_left_background_unset() -> self
+	/// @method border_left_background_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_left_background_unset(self) -> self
 	/// @method border_right() -> bool
-	/// @method border_right_set(enabled bool) -> self
-	/// @method border_right_unset() -> self
+	/// @method border_right_set(self, enabled bool) -> self
+	/// @method border_right_unset(self) -> self
 	/// @method border_right_foreground() -> struct<lipgloss.ColorAny>
-	/// @method border_right_foreground_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_right_foreground_unset() -> self
+	/// @method border_right_foreground_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_right_foreground_unset(self) -> self
 	/// @method border_right_background() -> struct<lipgloss.ColorAny>
-	/// @method border_right_background_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method border_right_background_unset() -> self
+	/// @method border_right_background_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method border_right_background_unset(self) -> self
 	/// @method margin() -> int, int, int, int
-	/// @method margin_set(sides int...) -> self
-	/// @method margin_unset() -> self
+	/// @method margin_set(self, sides int...) -> self
+	/// @method margin_unset(self) -> self
 	/// @method margin_top() -> int
-	/// @method margin_top_set(size int) -> self
-	/// @method margin_top_unset() -> self
+	/// @method margin_top_set(self, size int) -> self
+	/// @method margin_top_unset(self) -> self
 	/// @method margin_bottom() -> int
-	/// @method margin_bottom_set(size int) -> self
-	/// @method margin_bottom_unset() -> self
+	/// @method margin_bottom_set(self, size int) -> self
+	/// @method margin_bottom_unset(self) -> self
 	/// @method margin_left() -> int
-	/// @method margin_left_set(size int) -> self
-	/// @method margin_left_unset() -> self
+	/// @method margin_left_set(self, size int) -> self
+	/// @method margin_left_unset(self) -> self
 	/// @method margin_right() -> int
-	/// @method margin_right_set(size int) -> self
-	/// @method margin_right_unset() -> self
-	/// @method margin_background_set(color struct<lipgloss.ColorAny>) -> self
-	/// @method margin_background_unset() -> self
+	/// @method margin_right_set(self, size int) -> self
+	/// @method margin_right_unset(self) -> self
+	/// @method margin_background_set(self, color struct<lipgloss.ColorAny>) -> self
+	/// @method margin_background_unset(self) -> self
 	/// @method padding() -> int, int, int, int
-	/// @method padding_set(sides int...) -> self
-	/// @method padding_unset() -> self
+	/// @method padding_set(self, sides int...) -> self
+	/// @method padding_unset(self) -> self
 	/// @method padding_top() -> int
-	/// @method padding_top_set(size int) -> self
-	/// @method padding_top_unset() -> self
+	/// @method padding_top_set(self, size int) -> self
+	/// @method padding_top_unset(self) -> self
 	/// @method padding_bottom() -> int
-	/// @method padding_bottom_set(size int) -> self
-	/// @method padding_bottom_unset() -> self
+	/// @method padding_bottom_set(self, size int) -> self
+	/// @method padding_bottom_unset(self) -> self
 	/// @method padding_left() -> int
-	/// @method padding_left_set(size int) -> self
-	/// @method padding_left_unset() -> self
+	/// @method padding_left_set(self, size int) -> self
+	/// @method padding_left_unset(self) -> self
 	/// @method padding_right() -> int
-	/// @method padding_right_set(size int) -> self
-	/// @method padding_right_unset() -> self
-	/// @method transform_set(transform func(string) -> string) -> self
-	/// @method transform_unset() -> self
+	/// @method padding_right_set(self, size int) -> self
+	/// @method padding_right_unset(self) -> self
+	/// @method transform_set(self, transform func(string) -> string) -> self
+	/// @method transform_unset(self) -> self
 
 	t := state.NewTable()
 

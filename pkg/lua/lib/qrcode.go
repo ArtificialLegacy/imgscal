@@ -389,7 +389,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Recovery Levels
+	/// @constants Recovery {int}
 	/// @const RECOVERY_LOW
 	/// @const RECOVERY_MEDIUM
 	/// @const RECOVERY_HIGH

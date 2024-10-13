@@ -996,7 +996,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "cmd_none",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct CMD
+			/// @interface CMD
 			/// @prop cmd {int} - The command type.
 
 			/// @struct CMDNone
@@ -1255,7 +1255,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func cmd_every(duration, fn) -> struct<tui.CMDEvery>
 	/// @arg duration {int} - Time in ms.
-	/// @arg fn {function(ms) -> any}
+	/// @arg fn {function(ms int) -> any}
 	/// @returns {struct<tui.CMDEvery>}
 	lib.CreateFunction(tab, "cmd_every",
 		[]lua.Arg{
@@ -1266,7 +1266,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			/// @struct CMDEvery
 			/// @prop cmd {int} - The command type.
 			/// @prop duration {int} - Time in ms.
-			/// @prop fn {function(ms) -> any} - The function to call.
+			/// @prop fn {function(ms int) -> any} - The function to call.
 
 			state.Push(customtea.CMDEvery(state, args["duration"].(int), args["fn"].(*golua.LFunction)))
 			return 1
@@ -1274,7 +1274,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func cmd_tick(duration, fn) -> struct<tui.CMDTick>
 	/// @arg duration {int} - Time in ms.
-	/// @arg fn {function(ms) -> any}
+	/// @arg fn {function(ms int) -> any}
 	/// @returns {struct<tui.CMDTick>}
 	lib.CreateFunction(tab, "cmd_tick",
 		[]lua.Arg{
@@ -1285,7 +1285,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 			/// @struct CMDTick
 			/// @prop cmd {int} - The command type.
 			/// @prop duration {int} - Time in ms.
-			/// @prop fn {function(ms) -> any} - The function to call.
+			/// @prop fn {function(ms int) -> any} - The function to call.
 
 			state.Push(customtea.CMDTick(state, args["duration"].(int), args["fn"].(*golua.LFunction)))
 			return 1
@@ -1499,7 +1499,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @prop id {int} - The image id.
 	/// @prop filename {string} - The filename.
 
-	/// @constants Command
+	/// @constants CMD {int}
 	/// @const CMD_NONE
 	/// @const CMD_STORED
 	/// @const CMD_BATCH
@@ -1609,7 +1609,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("CMD_IMAGESIZE", golua.LNumber(customtea.CMD_IMAGESIZE))
 	tab.RawSetString("CMD_IMAGEFILE", golua.LNumber(customtea.CMD_IMAGEFILE))
 
-	/// @struct MSG
+	/// @interface MSG
 	/// @prop msg {int} - The message type.
 
 	/// @struct MSGNone
@@ -1697,7 +1697,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @prop button {int<tui.MouseButton>} - The mouse button.
 	/// @prop is_wheel {bool} - Whether the event is a wheel event.
 
-	/// @constants Message
+	/// @constants MSG {int}
 	/// @const MSG_NONE
 	/// @const MSG_BLUR
 	/// @const MSG_FOCUS
@@ -1735,7 +1735,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MSG_TIMERTIMEOUT", golua.LNumber(customtea.MSG_TIMERTIMEOUT))
 	tab.RawSetString("MSG_LUA", golua.LNumber(customtea.MSG_LUA))
 
-	/// @constants Spinners
+	/// @constants Spinner {int}
 	/// @const SPINNER_LINE
 	/// @const SPINNER_DOT
 	/// @const SPINNER_MINIDOT
@@ -1761,7 +1761,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("SPINNER_HAMBURGER", golua.LNumber(SPINNER_HAMBURGER))
 	tab.RawSetString("SPINNER_ELLIPSIS", golua.LNumber(SPINNER_ELLIPSIS))
 
-	/// @constants Text Input Echo Mode
+	/// @constants EchoMode {int}
 	/// @const ECHO_NORMAL
 	/// @const ECHO_PASSWORD
 	/// @const ECHO_NONE
@@ -1769,7 +1769,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ECHO_PASSWORD", golua.LNumber(textinput.EchoPassword))
 	tab.RawSetString("ECHO_NONE", golua.LNumber(textinput.EchoNone))
 
-	/// @constants Cursor Mode
+	/// @constants CursorMode {int}
 	/// @const CURSOR_BLINK
 	/// @const CURSOR_STATIC
 	/// @const CURSOR_HIDE
@@ -1777,7 +1777,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("CURSOR_STATIC", golua.LNumber(cursor.CursorStatic))
 	tab.RawSetString("CURSOR_HIDE", golua.LNumber(cursor.CursorHide))
 
-	/// @constants List Filter State
+	/// @constants FilterState {int}
 	/// @const FILTERSTATE_UNFILTERED
 	/// @const FILTERSTATE_FILTERING
 	/// @const FILTERSTATE_APPLIED
@@ -1785,19 +1785,19 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FILTERSTATE_FILTERING", golua.LNumber(list.Filtering))
 	tab.RawSetString("FILTERSTATE_APPLIED", golua.LNumber(list.FilterApplied))
 
-	/// @constants Paginator Types
+	/// @constants PaginatorType {int}
 	/// @const PAGINATOR_ARABIC
 	/// @const PAGINATOR_DOT
 	tab.RawSetString("PAGINATOR_ARABIC", golua.LNumber(paginator.Arabic))
 	tab.RawSetString("PAGINATOR_DOT", golua.LNumber(paginator.Dots))
 
-	/// @constants Filter Functions
+	/// @constants FilterFunc {int}
 	/// @const FILTERFUNC_DEFAULT
 	/// @const FILTERFUNC_UNSORTED
 	tab.RawSetString("FILTERFUNC_DEFAULT", golua.LNumber(FILTERFUNC_DEFAULT))
 	tab.RawSetString("FILTERFUNC_UNSORTED", golua.LNumber(FILTERFUNC_UNSORTED))
 
-	/// @constants Mouse Actions
+	/// @constants MouseAction {int}
 	/// @const MOUSE_PRESS
 	/// @const MOUSE_RELEASE
 	/// @const MOUSE_MOTION
@@ -1805,7 +1805,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MOUSE_RELEASE", golua.LNumber(tea.MouseActionRelease))
 	tab.RawSetString("MOUSE_MOTION", golua.LNumber(tea.MouseActionMotion))
 
-	/// @constants Mouse Buttons
+	/// @constants MouseButton {int}
 	/// @const MOUSEBUTTON_NONE
 	/// @const MOUSEBUTTON_LEFT
 	/// @const MOUSEBUTTON_MIDDLE
@@ -1831,7 +1831,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MOUSEBUTTON_10", golua.LNumber(tea.MouseButton10))
 	tab.RawSetString("MOUSEBUTTON_11", golua.LNumber(tea.MouseButton11))
 
-	/// @constants Keys
+	/// @constants Key {int}
 	/// @const KEY_NULL
 	/// @const KEY_BREAK
 	/// @const KEY_ENTER
@@ -2062,9 +2062,9 @@ const (
 func teaTable(r *lua.Runner, lg *log.Logger, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
 	/// @struct Program
 	/// @prop id {int}
-	/// @method init(fn: function(id) -> any, struct<tui.CMD>)
-	/// @method update(fn: function(data: any, msg: struct<tui.MSG>) -> struct<tui.CMD>)
-	/// @method view(fn: function(data: any) -> string)
+	/// @method init(self, function(id int<collection.CRATE_TEA>) -> any, struct<tui.CMD>) -> self
+	/// @method update(self, function(data any, struct<tui.MSG>) -> struct<tui.CMD>) -> self
+	/// @method view(self, function(data any) -> string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("id", golua.LNumber(id))
@@ -2116,15 +2116,15 @@ func teaTable(r *lua.Runner, lg *log.Logger, state *golua.LState, lib *lua.Lib, 
 
 func programOptions(lib *lua.Lib, state *golua.LState) *golua.LTable {
 	/// @struct ProgramOptions
-	/// @method ansi_compressor() -> self
-	/// @method alt_screen() -> self
-	/// @method fps(fps: int) -> self
-	/// @method filter(filter: function(msg: struct<tui.MSG>) -> bool) -> self
-	/// @method input_tty() -> self
-	/// @method mouse_all_motion() -> self
-	/// @method mouse_cell_motion() -> self
-	/// @method report_focus() -> self
-	/// @method no_bracketed_paste() -> self
+	/// @method ansi_compressor(self) -> self
+	/// @method alt_screen(self) -> self
+	/// @method fps(self, fps int) -> self
+	/// @method filter(self, filter function(msg struct<tui.MSG>) -> bool) -> self
+	/// @method input_tty(self) -> self
+	/// @method mouse_all_motion(self) -> self
+	/// @method mouse_cell_motion(self) -> self
+	/// @method report_focus(self) -> self
+	/// @method no_bracketed_paste(self) -> self
 
 	t := state.NewTable()
 
@@ -2276,10 +2276,10 @@ func spinnerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSta
 	/// @method update() -> struct<tui.CMD>
 	/// @method tick() -> struct<tui.CMDSpinnerTick>
 	/// @method spinner() -> []string, int
-	/// @method spinner_set(from: int) -> self
-	/// @method spinner_set_custom(frames: []string, fps: int) -> self
+	/// @method spinner_set(self, from int) -> self
+	/// @method spinner_set_custom(self, frames []string, fps int) -> self
 	/// @method style() -> struct<lipgloss.Style>
-	/// @method style_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -2448,76 +2448,76 @@ func textareaTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 	/// @prop id {int}
 	/// @method view() -> string
 	/// @method update() -> struct<tui.CMD>
-	/// @method reset() -> self
+	/// @method reset(self) -> self
 	/// @method focus() -> struct<tui.CMDTextAreaFocus>
-	/// @method blur() -> self
-	/// @method cursor_down() -> self
-	/// @method cursor_end() -> self
-	/// @method cursor_up() -> self
-	/// @method cursor_down() -> self
+	/// @method blur(self) -> self
+	/// @method cursor_down(self) -> self
+	/// @method cursor_end(self) -> self
+	/// @method cursor_up(self) -> self
+	/// @method cursor_down(self) -> self
 	/// @method focused() -> bool
 	/// @method size() -> int, int
 	/// @method width() -> int
 	/// @method height() -> int
-	/// @method size_set(width int, height int) -> self
-	/// @method width_set(width int) -> self
-	/// @method height_set(height int) -> self
-	/// @method insert_rune(rune int) -> self
-	/// @method insert_string(str string) -> self
+	/// @method size_set(self, width int, height int) -> self
+	/// @method width_set(self, width int) -> self
+	/// @method height_set(self, height int) -> self
+	/// @method insert_rune(self, rune int) -> self
+	/// @method insert_string(self, str string) -> self
 	/// @method length() -> int
 	/// @method line() -> int
 	/// @method line_count() -> int
-	/// @method cursor_set(col: int) -> self
+	/// @method cursor_set(self, col int) -> self
 	/// @method value() -> string
-	/// @method value_set(str: string)
+	/// @method value_set(str string)
 	/// @method line_info() -> struct<tui.LineInfo>
 	/// @method prompt() -> string
-	/// @method prompt_set(str: string) -> self
+	/// @method prompt_set(self, str string) -> self
 	/// @method line_numbers() -> bool
-	/// @method line_numbers_set(enabled: bool) -> self
+	/// @method line_numbers_set(self, enabled bool) -> self
 	/// @method char_end() -> int
-	/// @method char_end_set(rune: int) -> self
+	/// @method char_end_set(self, rune int) -> self
 	/// @method char_limit() -> int
-	/// @method char_limit_set(limit: int) -> self
+	/// @method char_limit_set(self, limit int) -> self
 	/// @method width_max() -> int
-	/// @method width_max_set(width: int) -> self
+	/// @method width_max_set(self, width int) -> self
 	/// @method height_max() -> int
-	/// @method height_max_set(height: int) -> self
-	/// @method prompt_func(width: int, fn: function(lineIndex: int) -> string) -> self
+	/// @method height_max_set(self, height int) -> self
+	/// @method prompt_func(self, width int, fn function(lineIndex int) -> string) -> self
 	/// @method cursor() -> struct<tui.Cursor>
 	/// @method keymap() -> struct<tui.TextAreaKeymap>
 	/// @method style_focus_base() -> struct<lipgloss.Style>
-	/// @method style_focus_base_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_base_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_base() -> struct<lipgloss.Style>
-	/// @method style_blur_base_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_base_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_cursor_line() -> struct<lipgloss.Style>
-	/// @method style_focus_cursor_line_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_cursor_line_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_cursor_line() -> struct<lipgloss.Style>
-	/// @method style_blur_cursor_line_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_cursor_line_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_cursor_line_number() -> struct<lipgloss.Style>
-	/// @method style_focus_cursor_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_cursor_line_number_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_cursor_line_number() -> struct<lipgloss.Style>
-	/// @method style_blur_cursor_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_cursor_line_number_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_buffer_end() -> struct<lipgloss.Style>
-	/// @method style_focus_buffer_end_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_buffer_end_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_buffer_end() -> struct<lipgloss.Style>
-	/// @method style_blur_buffer_end_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_buffer_end_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_line_number() -> struct<lipgloss.Style>
-	/// @method style_focus_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_line_number_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_line_number() -> struct<lipgloss.Style>
-	/// @method style_blur_line_number_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_line_number_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_placeholder() -> struct<lipgloss.Style>
-	/// @method style_focus_placeholder_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_placeholder_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_placeholder() -> struct<lipgloss.Style>
-	/// @method style_blur_placeholder_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_placeholder_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_prompt() -> struct<lipgloss.Style>
-	/// @method style_focus_prompt_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_prompt_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_prompt() -> struct<lipgloss.Style>
-	/// @method style_blur_prompt_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_prompt_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_focus_text() -> struct<lipgloss.Style>
-	/// @method style_focus_text_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_focus_text_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_blur_text() -> struct<lipgloss.Style>
-	/// @method style_blur_text_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_blur_text_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -3911,7 +3911,7 @@ func textareaKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *gol
 	/// @prop lowercase_word {struct<tui.KeyBinding>}
 	/// @prop capitalize_word {struct<tui.KeyBinding>}
 	/// @prop transpose_character_backward {struct<tui.KeyBinding>}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -4065,43 +4065,43 @@ func textinputTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LS
 	/// @method view() -> string
 	/// @method update() -> struct<tea.Cmd>
 	/// @method focus() -> struct<tea.CmdTextInputFocus>
-	/// @method reset() -> self
-	/// @method blur() -> self
-	/// @method cursor_start() -> self
-	/// @method cursor_end() -> self
+	/// @method reset(self) -> self
+	/// @method blur(self) -> self
+	/// @method cursor_start(self) -> self
+	/// @method cursor_end(self) -> self
 	/// @method current_suggestion() -> string
 	/// @method available_suggestions() -> []string
-	/// @method suggestions_set(suggestions: []string) -> self
+	/// @method suggestions_set(self, suggestions []string) -> self
 	/// @method focused() -> bool
 	/// @method position() -> int
-	/// @method position_set(pos: int) -> self
+	/// @method position_set(self, pos int) -> self
 	/// @method value() -> string
-	/// @method value_set(val: string) -> self
-	/// @method validate(fn: func(string) -> bool, string) -> self
+	/// @method value_set(self, val string) -> self
+	/// @method validate(self, fn func(string) -> bool, string) -> self
 	/// @method prompt() -> string
-	/// @method prompt_set(string) -> self
+	/// @method prompt_set(self, string) -> self
 	/// @method placeholder() -> string
-	/// @method placeholder_set(string) -> self
+	/// @method placeholder_set(self, string) -> self
 	/// @method echomode() -> int<tui.EchoMode>
-	/// @method echomode_set(int<tui.EchoMode>) -> self
+	/// @method echomode_set(self, int<tui.EchoMode>) -> self
 	/// @method echo_char() -> int
-	/// @method echo_char_set(rune: int) -> self
+	/// @method echo_char_set(self, rune int) -> self
 	/// @method char_limit() -> int
-	/// @method char_limit_set(int) -> self
+	/// @method char_limit_set(self, int) -> self
 	/// @method width() -> int
-	/// @method width_set(int) -> self
+	/// @method width_set(self, int) -> self
 	/// @method suggestions_show() -> bool
-	/// @method suggestions_show_set(bool) -> self
+	/// @method suggestions_show_set(self, bool) -> self
 	/// @method cursor() -> struct<tui.Cursor>
 	/// @method keymap() -> struct<TextInputKeymap>
 	/// @method style_prompt() -> struct<lipgloss.Style>
-	/// @method style_prompt_set(struct<lipgloss.Style>) -> self
+	/// @method style_prompt_set(self, struct<lipgloss.Style>) -> self
 	/// @method style_text() -> struct<lipgloss.Style>
-	/// @method style_text_set(struct<lipgloss.Style>) -> self
+	/// @method style_text_set(self, struct<lipgloss.Style>) -> self
 	/// @method style_placeholder() -> struct<lipgloss.Style>
-	/// @method style_placeholder_set(struct<lipgloss.Style>) -> self
+	/// @method style_placeholder_set(self, struct<lipgloss.Style>) -> self
 	/// @method style_completion() -> struct<lipgloss.Style>
-	/// @method style_completion_set(struct<lipgloss.Style>) -> self
+	/// @method style_completion_set(self, struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -4816,7 +4816,7 @@ func textinputKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *go
 	/// @prop suggestion_accept {struct<tui.KeyBinding>}
 	/// @prop suggestion_next {struct<tui.KeyBinding>}
 	/// @prop suggestion_prev {struct<tui.KeyBinding>}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -4929,14 +4929,14 @@ func cursorTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LStat
 	/// @method update() -> struct<tui.CMD>
 	/// @method blink() -> struct<tui.CMDBlink>
 	/// @method focus() -> struct<tui.CMDCursorFocus>
-	/// @method blur() -> self
+	/// @method blur(self) -> self
 	/// @method mode() -> int<tui.CursorMode>
-	/// @method mode_set(mode: int<tui.CursorMode>) -> self
-	/// @method char_set(str: string) -> self
+	/// @method mode_set(self, mode int<tui.CursorMode>) -> self
+	/// @method char_set(self, str string) -> self
 	/// @method style() -> struct<lipgloss.Style>
-	/// @method style_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_text() -> struct<lipgloss.Style>
-	/// @method style_text_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_text_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -5148,52 +5148,52 @@ func filePickerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.L
 	/// @method did_select_disabled() -> bool, string
 	/// @method init() -> struct<tui.CMDFilePickerInit>
 	/// @method path() -> string
-	/// @method path_set(path: string) -> self
+	/// @method path_set(self, path string) -> self
 	/// @method current_directory() -> string
-	/// @method current_directory_set(dir: string) -> self
+	/// @method current_directory_set(self, dir string) -> self
 	/// @method allowed_types() -> []string
-	/// @method allowed_types_set(types: []string) -> self
+	/// @method allowed_types_set(self, types []string) -> self
 	/// @method show_perm() -> bool
-	/// @method show_perm_set(show: bool) -> self
+	/// @method show_perm_set(self, show bool) -> self
 	/// @method show_size() -> bool
-	/// @method show_size_set(show: bool) -> self
+	/// @method show_size_set(self, show bool) -> self
 	/// @method show_hidden() -> bool
-	/// @method show_hidden_set(show: bool) -> self
+	/// @method show_hidden_set(self, show bool) -> self
 	/// @method dir_allowed() -> bool
-	/// @method dir_allowed_set(allowed: bool) -> self
+	/// @method dir_allowed_set(self, allowed bool) -> self
 	/// @method file_allowed() -> bool
-	/// @method file_allowed_set(allowed: bool) -> self
+	/// @method file_allowed_set(self, allowed bool) -> self
 	/// @method file_selected() -> string
-	/// @method file_selected_set(file: string) -> self
+	/// @method file_selected_set(self, file string) -> self
 	/// @method height() -> int
-	/// @method height_set(height: int) -> self
+	/// @method height_set(self, height int) -> self
 	/// @method height_auto() -> bool
-	/// @method height_auto_set(auto: bool) -> self
+	/// @method height_auto_set(self, auto bool) -> self
 	/// @method cursor() -> string
-	/// @method cursor_set(cursor: string) -> self
+	/// @method cursor_set(self, cursor string) -> self
 	/// @method keymap() -> struct<tui.FilePickerKeymap>
 	/// @method style_cursor() -> struct<lipgloss.Style>
-	/// @method style_cursor_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_cursor_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_cursor_disabled() -> struct<lipgloss.Style>
-	/// @method style_cursor_disabled_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_cursor_disabled_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_symlink() -> struct<lipgloss.Style>
-	/// @method style_symlink_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_symlink_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_directory() -> struct<lipgloss.Style>
-	/// @method style_directory_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_directory_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_directory_empty() -> struct<lipgloss.Style>
-	/// @method style_directory_empty_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_directory_empty_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_file() -> struct<lipgloss.Style>
-	/// @method style_file_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_file_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_file_size() -> struct<lipgloss.Style>
-	/// @method style_file_size_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_file_size_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_file_disabled() -> struct<lipgloss.Style>
-	/// @method style_file_disabled_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_file_disabled_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_permission() -> struct<lipgloss.Style>
-	/// @method style_permission_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_permission_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_selected() -> struct<lipgloss.Style>
-	/// @method style_selected_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_selected_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_selected_disabled() -> struct<lipgloss.Style>
-	/// @method style_selected_disabled_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_selected_disabled_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -6173,7 +6173,7 @@ func filepickerKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *g
 	/// @prop back {struct<tui.KeyBinding>}
 	/// @prop open {struct<tui.KeyBinding>}
 	/// @prop select {struct<tui.KeyBinding>}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -6261,100 +6261,100 @@ func listTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState,
 	/// @method view() -> string
 	/// @method update() -> struct<tui.CMD>
 	/// @method cursor() -> int
-	/// @method cursor_up() -> self
-	/// @method cursor_down() -> self
-	/// @method page_next() -> self
-	/// @method page_prev() -> self
+	/// @method cursor_up(self) -> self
+	/// @method cursor_down(self) -> self
+	/// @method page_next(self) -> self
+	/// @method page_prev(self) -> self
 	/// @method pagination_show() -> bool
-	/// @method pagination_show_set(enabled: bool) -> self
-	/// @method disable_quit() -> self
+	/// @method pagination_show_set(self, enabled bool) -> self
+	/// @method disable_quit(self) -> self
 	/// @method size() -> int, int
 	/// @method width() -> int
 	/// @method height() -> int
-	/// @method size_set(width: int, height: int) -> self
-	/// @method width_set(width: int) -> self
-	/// @method height_set(height: int) -> self
+	/// @method size_set(self, width int, height int) -> self
+	/// @method width_set(self, width int) -> self
+	/// @method height_set(self, height int) -> self
 	/// @method filter_state() -> int<tui.FilterState>
 	/// @method filter_value() -> string
 	/// @method filter_enabled() -> bool
-	/// @method filter_enabled_set(enabled: bool) -> self
+	/// @method filter_enabled_set(self, enabled bool) -> self
 	/// @method filter_show() -> bool
-	/// @method filter_show_set(enabled: bool) -> self
-	/// @method filter_reset() -> self
+	/// @method filter_show_set(self, enabled bool) -> self
+	/// @method filter_reset(self) -> self
 	/// @method is_filtered() -> bool
 	/// @method filter_setting() -> bool
-	/// @method filter_func(fn: int<tui.FilterFunc>) -> self
-	/// @method filter_func_custom(fn: function(string, []string) -> []struct<tui.ListFilterRank>) -> self
+	/// @method filter_func(self, fn int<tui.FilterFunc>) -> self
+	/// @method filter_func_custom(self, fn function(string, []string) -> []struct<tui.ListFilterRank>) -> self
 	/// @method index() -> int
 	/// @method items() -> []struct<tui.ListItem>
 	/// @method items_visible() -> []struct<tui.ListItem>
-	/// @method items_set(items: []struct<tui.ListItem>) -> self
-	/// @method item_insert(index: int, item: struct<tui.ListItem>) -> self
-	/// @method item_set(index: int, item: struct<tui.ListItem>) -> self
-	/// @method item_remove(index: int) -> self
+	/// @method items_set(self, items []struct<tui.ListItem>) -> self
+	/// @method item_insert(self, index int, item struct<tui.ListItem>) -> self
+	/// @method item_set(self, index int, item struct<tui.ListItem>) -> self
+	/// @method item_remove(self, index int) -> self
 	/// @method selected() -> struct<tui.ListItem>
-	/// @method select(index: int) -> self
-	/// @method matches(index: int) -> []int
+	/// @method select(self, index int) -> self
+	/// @method matches(index int) -> []int
 	/// @method status_message() -> struct<tui.CMDListStatusMessage>
 	/// @method status_message_lifetime() -> int
-	/// @method status_message_lifetime_set(ms: int) -> self
+	/// @method status_message_lifetime_set(self, ms int) -> self
 	/// @method statusbar_show() -> bool
-	/// @method statusbar_show_set(enabled: bool) -> self
+	/// @method statusbar_show_set(self, enabled bool) -> self
 	/// @method statusbar_item_name() -> string, string
-	/// @method statusbar_item_name_set(singular: string, plural: string) -> self
+	/// @method statusbar_item_name_set(self, singular string, plural string) -> self
 	/// @method title_show() -> bool
-	/// @method title_show_set(enabled: bool) -> self
-	/// @method spinner_set(from: int<tui.SpinnerType>) -> self
-	/// @method spinner_set_custom(frames: []string, fps: int) -> self
+	/// @method title_show_set(self, enabled bool) -> self
+	/// @method spinner_set(self, from int<tui.SpinnerType>) -> self
+	/// @method spinner_set_custom(self, frames []string, fps int) -> self
 	/// @method spinner_start() -> struct<tui.CMDListSpinnerStart>
-	/// @method spinner_stop() -> self
+	/// @method spinner_stop(self) -> self
 	/// @method spinner_toggle() -> struct<tui.CMDListSpinnerToggle>
 	/// @method infinite_scroll() -> bool
-	/// @method infinite_scroll_set(enabled: bool) -> self
+	/// @method infinite_scroll_set(self, enabled bool) -> self
 	/// @method filter_input() -> struct<tui.TextInput>
 	/// @method paginator() -> struct<tui.Paginator>
 	/// @method help() -> struct<tui.Help>
 	/// @method help_show() -> bool
-	/// @method help_show_set(enabled: bool) -> self
+	/// @method help_show_set(self, enabled bool) -> self
 	/// @method keymap() -> struct<tui.ListKeymap>
 	/// @method view_help() -> string
 	/// @method view_help_short() -> string
 	/// @method view_help_full() -> string
-	/// @method help_short_additional(function() -> []struct<tui.KeyBinding>) -> self
-	/// @method help_full_additional(function() -> [][]struct<tui.KeyBinding>) -> self
+	/// @method help_short_additional(self, function() -> []struct<tui.KeyBinding>) -> self
+	/// @method help_full_additional(self, function() -> [][]struct<tui.KeyBinding>) -> self
 	/// @method style_titlebar() -> struct<lipgloss.Style>
-	/// @method style_titlebar_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_titlebar_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_title() -> struct<lipgloss.Style>
-	/// @method style_title_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_title_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_spinner() -> struct<lipgloss.Style>
-	/// @method style_spinner_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_spinner_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_filter_prompt() -> struct<lipgloss.Style>
-	/// @method style_filter_prompt_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_filter_prompt_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_filter_cursor() -> struct<lipgloss.Style>
-	/// @method style_filter_cursor_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_filter_cursor_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_filter_char_match() -> struct<lipgloss.Style>
-	/// @method style_filter_char_match_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_filter_char_match_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_statusbar() -> struct<lipgloss.Style>
-	/// @method style_statusbar_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_statusbar_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_status_empty() -> struct<lipgloss.Style>
-	/// @method style_status_empty_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_status_empty_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_statusbar_filter_active() -> struct<lipgloss.Style>
-	/// @method style_statusbar_filter_active_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_statusbar_filter_active_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_statusbar_filter_count() -> struct<lipgloss.Style>
-	/// @method style_statusbar_filter_count_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_statusbar_filter_count_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_no_items() -> struct<lipgloss.Style>
-	/// @method style_no_items_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_no_items_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_help() -> struct<lipgloss.Style>
-	/// @method style_help_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_help_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_pagination() -> struct<lipgloss.Style>
-	/// @method style_pagination_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_pagination_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_pagination_dot_active() -> struct<lipgloss.Style>
-	/// @method style_pagination_dot_active_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_pagination_dot_active_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_pagination_dot_inactive() -> struct<lipgloss.Style>
-	/// @method style_pagination_dot_inactive_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_pagination_dot_inactive_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_divider_dot() -> struct<lipgloss.Style>
-	/// @method style_divider_dot_set(style: struct<lipgloss.Style>) -> self
-	/// @method delegate_set(delegate: struct<tui.ListDelegate>) -> self
+	/// @method style_divider_dot_set(self, style struct<lipgloss.Style>) -> self
+	/// @method delegate_set(self, delegate struct<tui.ListDelegate>) -> self
 
 	t := state.NewTable()
 
@@ -8189,28 +8189,28 @@ func listDelegateTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua
 	/// @prop program {int}
 	/// @prop id {int}
 	/// @method show_description() -> bool
-	/// @method show_description_set(enabled: bool) -> self
-	/// @method update_func(fn: function(msg: struct<tui.MSG>) -> struct<tui.CMD>) -> self
-	/// @method short_help_func(fn: function() -> []struct<tui.KeyBinding>) -> self
-	/// @method full_help_func(fn: function() -> [][]struct<tui.KeyBinding>) -> self
+	/// @method show_description_set(self, enabled bool) -> self
+	/// @method update_func(self, fn function(msg struct<tui.MSG>) -> struct<tui.CMD>) -> self
+	/// @method short_help_func(self, fn function() -> []struct<tui.KeyBinding>) -> self
+	/// @method full_help_func(self, fn function() -> [][]struct<tui.KeyBinding>) -> self
 	/// @method height() -> int
-	/// @method height_set(height: int) -> self
+	/// @method height_set(self, height int) -> self
 	/// @method spacing() -> int
-	/// @method spacing_set(spacing: int) -> self
+	/// @method spacing_set(self, spacing int) -> self
 	/// @method style_title_normal() -> struct<tui.Style>
-	/// @method style_title_normal_set(style: struct<tui.Style>) -> self
+	/// @method style_title_normal_set(self, style struct<tui.Style>) -> self
 	/// @method style_title_selected() -> struct<tui.Style>
-	/// @method style_title_selected_set(style: struct<tui.Style>) -> self
+	/// @method style_title_selected_set(self, style struct<tui.Style>) -> self
 	/// @method style_title_dimmed() -> struct<tui.Style>
-	/// @method style_title_dimmed_set(style: struct<tui.Style>) -> self
+	/// @method style_title_dimmed_set(self, style struct<tui.Style>) -> self
 	/// @method style_desc_normal() -> struct<tui.Style>
-	/// @method style_desc_normal_set(style: struct<tui.Style>) -> self
+	/// @method style_desc_normal_set(self, style struct<tui.Style>) -> self
 	/// @method style_desc_selected() -> struct<tui.Style>
-	/// @method style_desc_selected_set(style: struct<tui.Style>) -> self
+	/// @method style_desc_selected_set(self, style struct<tui.Style>) -> self
 	/// @method style_desc_dimmed() -> struct<tui.Style>
-	/// @method style_desc_dimmed_set(style: struct<tui.Style>) -> self
+	/// @method style_desc_dimmed_set(self, style struct<tui.Style>) -> self
 	/// @method style_filter_match() -> struct<tui.Style>
-	/// @method style_filter_match_set(style: struct<tui.Style>) -> self
+	/// @method style_filter_match_set(self, style struct<tui.Style>) -> self
 
 	t := state.NewTable()
 
@@ -8754,7 +8754,7 @@ func listKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.L
 	/// @prop close_full_help {struct<tui.KeyBinding>}
 	/// @prop quit {struct<tui.KeyBinding>}
 	/// @prop force_quit {struct<tui.KeyBinding>}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -8855,25 +8855,25 @@ func paginatorTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LS
 	/// @prop id {int}
 	/// @method view() -> string
 	/// @method update() -> struct<tui.CMD>
-	/// @method slice_bounds(length: int) -> int, int
-	/// @method page_next() -> self
-	/// @method page_prev() -> self
-	/// @method page_items(total: int) -> int
+	/// @method slice_bounds(length int) -> int, int
+	/// @method page_next(self) -> self
+	/// @method page_prev(self) -> self
+	/// @method page_items(total int) -> int
 	/// @method page_on_first() -> bool
 	/// @method page_on_last() -> bool
-	/// @method total_pages_set(items: int) -> self
+	/// @method total_pages_set(self, items int) -> self
 	/// @method type() -> int<tui.PaginatorType>
-	/// @method type_set(t: int<tui.PaginatorType>) -> self
+	/// @method type_set(self, t int<tui.PaginatorType>) -> self
 	/// @method page() -> int
-	/// @method page_set(p: int) -> self
+	/// @method page_set(self, p int) -> self
 	/// @method page_per() -> int
-	/// @method page_per_set(p: int) -> self
+	/// @method page_per_set(self, p int) -> self
 	/// @method page_total() -> int
-	/// @method page_total_set(p: int) -> self
+	/// @method page_total_set(self, p int) -> self
 	/// @method format_dot() -> string, string
-	/// @method format_dot_set(active: string, inactive: string) -> self
+	/// @method format_dot_set(self, active string, inactive string) -> self
 	/// @method format_arabic() -> string
-	/// @method format_arabic_set(f: string) -> self
+	/// @method format_arabic_set(self, f string) -> self
 	/// @method keymap() -> struct<tui.PaginatorKeymap>
 
 	t := state.NewTable()
@@ -9253,7 +9253,7 @@ func paginatorKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *go
 	/// @prop id {int}
 	/// @prop page_prev {struct<tui.KeyBinding>}
 	/// @prop page_next {struct<tui.KeyBinding>}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -9320,14 +9320,14 @@ const (
 
 func progressOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
 	/// @struct ProgressOptions
-	/// @method width(width: int) -> self
-	/// @method gradient_default() -> self
-	/// @method gradient_default_scaled() -> self
-	/// @method gradient(colorA: string, colorB: string) -> self
-	/// @method gradient_scaled(colorA: string, colorB: string) -> self
-	/// @method solid(colorA: string) -> self
-	/// @method fill_char(full: int, empty: int) -> self
-	/// @method spring_options(freq: float, damp: float) -> self
+	/// @method width(self, width int) -> self
+	/// @method gradient_default(self) -> self
+	/// @method gradient_default_scaled(self) -> self
+	/// @method gradient(self, colorA string, colorB string) -> self
+	/// @method gradient_scaled(self, colorA string, colorB string) -> self
+	/// @method solid(self, colorA string) -> self
+	/// @method fill_char(self, full int, empty int) -> self
+	/// @method spring_options(self, freq float, damp float) -> self
 
 	t := state.NewTable()
 
@@ -9468,30 +9468,30 @@ func progressTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 	/// @prop program {int}
 	/// @prop id {int}
 	/// @method view() -> string
-	/// @method view_as(percent: float) -> string
+	/// @method view_as(percent float) -> string
 	/// @method update() -> struct<tui.CMD>
 	/// @method percent() -> float
-	/// @method percent_set(percent: float) -> struct<tui.CMDProgressSet>
-	/// @method percent_dec(percent: float) -> struct<tui.CMDProgressDec>
-	/// @method percent_inc(percent: float) -> struct<tui.CMDProgressInc>
+	/// @method percent_set(percent float) -> struct<tui.CMDProgressSet>
+	/// @method percent_dec(percent float) -> struct<tui.CMDProgressDec>
+	/// @method percent_inc(percent float) -> struct<tui.CMDProgressInc>
 	/// @method percent_show() -> bool
-	/// @method percent_show_set(enabled: bool) -> self
+	/// @method percent_show_set(self, enabled bool) -> self
 	/// @method percent_format() -> string
-	/// @method percent_format_set(format: string) -> self
+	/// @method percent_format_set(self, format string) -> self
 	/// @method is_animating() -> bool
-	/// @method spring_options(freq: float, damp: float) -> self
+	/// @method spring_options(self, freq float, damp float) -> self
 	/// @method width() -> int
-	/// @method width_set(width: int) -> self
+	/// @method width_set(self, width int) -> self
 	/// @method full() -> int
-	/// @method full_set(rune: int) -> self
+	/// @method full_set(self, rune int) -> self
 	/// @method full_color() -> string
-	/// @method full_color_set(color: string) -> self
+	/// @method full_color_set(self, color string) -> self
 	/// @method empty() -> int
-	/// @method empty_set(rune: int) -> self
+	/// @method empty_set(self, rune int) -> self
 	/// @method empty_color() -> string
-	/// @method empty_color_set(color: string) -> self
+	/// @method empty_color_set(self, color string) -> self
 	/// @method style_percentage() -> struct<lipgloss.Style>
-	/// @method style_percentage_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_percentage_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -9905,7 +9905,7 @@ func stopwatchTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LS
 	/// @method elapsed() -> int
 	/// @method running() -> bool
 	/// @method interval() -> int
-	/// @method interval_set(ms: int) -> self
+	/// @method interval_set(self, ms int) -> self
 
 	t := state.NewTable()
 
@@ -10059,9 +10059,9 @@ func timerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState
 	/// @method running() -> bool
 	/// @method timed_out() -> bool
 	/// @method timeout() -> int
-	/// @method timeout_set(ms: int) -> self
+	/// @method timeout_set(self, ms int) -> self
 	/// @method interval() -> int
-	/// @method interval_set(ms: int) -> self
+	/// @method interval_set(self, ms int) -> self
 
 	t := state.NewTable()
 
@@ -10234,12 +10234,12 @@ func timerTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState
 
 func tableOptionsTable(lib *lua.Lib, state *golua.LState) *golua.LTable {
 	/// @struct TableOptions
-	/// @method focused(focused: bool) -> self
-	/// @method width(width: int) -> self
-	/// @method height(height: int) -> self
-	/// @method columns(cols: struct<tui.TableColumn>) -> self
-	/// @method rows(rows: [][]string) -> self
-	/// @method styles(header: struct<lipgloss.Style>, cell: struct<lipgloss.Style>, selected: struct<lipgloss.Style>) -> self
+	/// @method focused(self, focused bool) -> self
+	/// @method width(self, width int) -> self
+	/// @method height(self, height int) -> self
+	/// @method columns(self, cols struct<tui.TableColumn>) -> self
+	/// @method rows(self, rows [][]string) -> self
+	/// @method styles(self, header struct<lipgloss.Style>, cell struct<lipgloss.Style>, selected struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -10399,31 +10399,31 @@ func tuitableTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 	/// @prop id {int}
 	/// @method view() -> string
 	/// @method update() -> struct<tui.CMD>
-	/// @method update_viewport() -> self
+	/// @method update_viewport(self) -> self
 	/// @method focused() -> bool
-	/// @method focus() -> self
-	/// @method blur() -> self
-	/// @method goto_top() -> self
-	/// @method goto_bottom() -> self
-	/// @method move_up(n: int) -> self
-	/// @method move_down(n: int) -> self
+	/// @method focus(self) -> self
+	/// @method blur(self) -> self
+	/// @method goto_top(self) -> self
+	/// @method goto_bottom(self) -> self
+	/// @method move_up(self, n int) -> self
+	/// @method move_down(self, n int) -> self
 	/// @method cursor() -> int
-	/// @method cursor_set(n: int) -> self
+	/// @method cursor_set(self, n int) -> self
 	/// @method columns() -> []struct<tui.TableColumn>
 	/// @method rows() -> [][]string
-	/// @method columns_set(cols: []struct<tui.TableColumn>) -> self
-	/// @method rows_set(rows: [][]string) -> self
-	/// @method from_values(value: string, separator: string) -> self
+	/// @method columns_set(self, cols []struct<tui.TableColumn>) -> self
+	/// @method rows_set(self, rows [][]string) -> self
+	/// @method from_values(self, value string, separator string) -> self
 	/// @method row_selected() -> []string
 	/// @method width() -> int
 	/// @method height() -> int
-	/// @method width_set(width: int) -> self
-	/// @method height_set(height: int) -> self
+	/// @method width_set(self, width int) -> self
+	/// @method height_set(self, height int) -> self
 	/// @method keymap() -> struct<tui.TableKeymap>
 	/// @method help() -> struct<tui.Help>
 	/// @method help_view() -> string
-	/// @method styles(header: struct<lipgloss.Style>, cell: struct<lipgloss.Style>, selected: struct<lipgloss.Style>) -> self
-	/// @method styles_default() -> self
+	/// @method styles(self, header struct<lipgloss.Style>, cell struct<lipgloss.Style>, selected struct<lipgloss.Style>) -> self
+	/// @method styles_default(self) -> self
 
 	t := state.NewTable()
 
@@ -10927,7 +10927,7 @@ func tableKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.
 	/// @prop half_page_down {int}
 	/// @prop goto_top {int}
 	/// @prop goto_bottom {int}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -11023,25 +11023,25 @@ func viewportTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 	/// @method scroll_percent() -> float
 	/// @method width() -> int
 	/// @method height() -> int
-	/// @method width_set(width: int) -> self
-	/// @method height_set(height: int) -> self
-	/// @method content_set(content: string) -> self
+	/// @method width_set(self, width int) -> self
+	/// @method height_set(self, height int) -> self
+	/// @method content_set(self, content string) -> self
 	/// @method line_count_total() -> int
 	/// @method line_count_visible() -> int
 	/// @method mouse_wheel_enabled() -> bool
-	/// @method mouse_wheel_enabled_set(enabled: bool) -> self
+	/// @method mouse_wheel_enabled_set(self, enabled bool) -> self
 	/// @method mouse_wheel_delta() -> int
-	/// @method mouse_wheel_delta_set(delta: int) -> self
+	/// @method mouse_wheel_delta_set(self, delta int) -> self
 	/// @method offset_y() -> int
-	/// @method offset_y_set(offset: int) -> self
-	/// @method offset_y_set_direct(offset: int) -> self
+	/// @method offset_y_set(self, offset int) -> self
+	/// @method offset_y_set_direct(self, offset int) -> self
 	/// @method position_y() -> int
-	/// @method position_y_set(position: int) -> self
+	/// @method position_y_set(self, position int) -> self
 	/// @method high_performance() -> bool
-	/// @method high_performance_set(enabled: bool) -> self
+	/// @method high_performance_set(self, enabled bool) -> self
 	/// @method keymap() -> struct<tui.ViewportKeymap>
 	/// @method style() -> struct<lipgloss.Style>
-	/// @method style_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -11686,7 +11686,7 @@ func viewportKeymapTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *gol
 	/// @prop page_down_half {struct<tui.KeyBinding>}
 	/// @prop down {struct<tui.KeyBinding>}
 	/// @prop up {struct<tui.KeyBinding>}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -11765,7 +11765,7 @@ func tuicustomTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LS
 	/// @prop id {int}
 	/// @method init() -> struct<tui.CMD>
 	/// @method view() -> string
-	/// @method update(values: []any?) -> struct<tui.CMD>
+	/// @method update(values []any?) -> struct<tui.CMD>
 
 	t := state.NewTable()
 
@@ -11846,9 +11846,9 @@ func tuicustomTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LS
 
 func keyOptionsTable(state *golua.LState, lib *lua.Lib) *golua.LTable {
 	/// @struct KeyOptions
-	/// @method disabled(enabled: bool) -> self
-	/// @method help(key: string, desc: string) -> self
-	/// @method keys(keys: []string) -> self
+	/// @method disabled(self, enabled bool) -> self
+	/// @method help(self, key string, desc string) -> self
+	/// @method keys(self, keys []string) -> self
 
 	t := state.NewTable()
 
@@ -11934,17 +11934,17 @@ func tuikeyTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LStat
 	/// @prop program {int}
 	/// @prop id {int}
 	/// @method enabled() -> bool
-	/// @method enabled_set(enabled: bool)
+	/// @method enabled_set(enabled bool)
 	/// @method help() -> string, string
-	/// @method help_set(key: string, desc: string)
+	/// @method help_set(key string, desc string)
 	/// @method keys() -> []string
-	/// @method keys_set(keys: []string)
-	/// @method unbind() -> self
+	/// @method keys_set(keys []string)
+	/// @method unbind(self) -> self
 
 	/// @struct Keymap
 	/// @prop program {int}
 	/// @prop id {int}
-	/// @method default() -> self
+	/// @method default(self) -> self
 	/// @method help_short() -> []struct<tui.KeyBinding>
 	/// @method help_full() -> [][]struct<tui.KeyBinding>
 
@@ -12076,33 +12076,33 @@ func helpTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState,
 	/// @struct Help
 	/// @prop program {int}
 	/// @prop id {int}
-	/// @method view(keymap: struct<tui.Keymap>) -> string
-	/// @method view_help_short(bindings: []struct<tui.KeyBinding>) -> string
-	/// @method view_help_full(groups: [][]struct<tui.KeyBinding>) -> string
+	/// @method view(keymap struct<tui.Keymap>) -> string
+	/// @method view_help_short(bindings []struct<tui.KeyBinding>) -> string
+	/// @method view_help_full(groups [][]struct<tui.KeyBinding>) -> string
 	/// @method width() -> int
-	/// @method width_set(width: int) -> self
+	/// @method width_set(self, width int) -> self
 	/// @method show_all() -> bool
-	/// @method show_all_set(show_all: bool) -> self
+	/// @method show_all_set(self, show_all bool) -> self
 	/// @method separator_short() -> string
-	/// @method separator_short_set(separator: string) -> self
+	/// @method separator_short_set(self, separator string) -> self
 	/// @method separator_full() -> string
-	/// @method separator_full_set(separator: string) -> self
+	/// @method separator_full_set(self, separator string) -> self
 	/// @method ellipsis() -> string
-	/// @method ellipsis_set(ellipsis: string) -> self
+	/// @method ellipsis_set(self, ellipsis string) -> self
 	/// @method style_ellipsis() -> struct<lipgloss.Style>
-	/// @method style_ellipsis_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_ellipsis_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_short_key() -> struct<lipgloss.Style>
-	/// @method style_short_key_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_short_key_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_short_desc() -> struct<lipgloss.Style>
-	/// @method style_short_desc_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_short_desc_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_short_separator() -> struct<lipgloss.Style>
-	/// @method style_short_separator_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_short_separator_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_full_key() -> struct<lipgloss.Style>
-	/// @method style_full_key_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_full_key_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_full_desc() -> struct<lipgloss.Style>
-	/// @method style_full_desc_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_full_desc_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_full_separator() -> struct<lipgloss.Style>
-	/// @method style_full_separator_set(style: struct<lipgloss.Style>) -> self
+	/// @method style_full_separator_set(self, style struct<lipgloss.Style>) -> self
 
 	t := state.NewTable()
 
@@ -12703,17 +12703,17 @@ func tuiimageTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 	/// @method view() -> string
 	/// @method update() -> struct<tea.CMD>
 	/// @method image_string() -> string
-	/// @method image_string_set(img: string) -> self
+	/// @method image_string_set(self, img string) -> self
 	/// @method image_file() -> string
-	/// @method image_file_set(filename: string) -> struct<tea.CMDImageFile>
-	/// @method size_set(width: int, height: int) -> struct<tea.CMDImageSize>
+	/// @method image_file_set(filename string) -> struct<tea.CMDImageFile>
+	/// @method size_set(width int, height int) -> struct<tea.CMDImageSize>
 	/// @method is_active() -> bool
-	/// @method is_active_set(enabled: bool) -> self
+	/// @method is_active_set(self, enabled bool) -> self
 	/// @method borderless() -> bool
-	/// @method borderless_set(enabled: bool) -> self
+	/// @method borderless_set(self, enabled bool) -> self
 	/// @method border_color() -> struct<lipgloss.ColorAdaptive>
-	/// @method border_color_set(color: struct<lipgloss.ColorAny>?) -> self
-	/// @method goto_top() -> self
+	/// @method border_color_set(self, color struct<lipgloss.ColorAny>?) -> self
+	/// @method goto_top(self) -> self
 	/// @method viewport() -> struct<tui.Viewport>
 
 	t := state.NewTable()
@@ -12979,29 +12979,29 @@ func statusbarTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LS
 	/// @method view() -> string
 	/// @method update() -> struct<tea.CMD>
 	/// @method content() -> string, string, string, string
-	/// @method content_set(first: string, second: string, third: string, fourth: string) -> self
+	/// @method content_set(self, first string, second string, third string, fourth string) -> self
 	/// @method colors() -> struct<lipgloss.ColorGeneric>, struct<lipgloss.ColorGeneric>, struct<lipgloss.ColorGeneric>, struct<lipgloss.ColorGeneric>
-	/// @method colors_set(first_foreground: struct<lipgloss.ColorAny>, first_background: struct<lipgloss.ColorAny>, second_foreground: struct<lipgloss.ColorAny>, second_background: struct<lipgloss.ColorAny>, third_foreground: struct<lipgloss.ColorAny>, third_background: struct<lipgloss.ColorAny>, fourth_foreground: struct<lipgloss.ColorAny>, fourth_background: struct<lipgloss.ColorAny>) -> self
+	/// @method colors_set(self, first_foreground struct<lipgloss.ColorAny>, first_background struct<lipgloss.ColorAny>, second_foreground struct<lipgloss.ColorAny>, second_background struct<lipgloss.ColorAny>, third_foreground struct<lipgloss.ColorAny>, third_background struct<lipgloss.ColorAny>, fourth_foreground struct<lipgloss.ColorAny>, fourth_background struct<lipgloss.ColorAny>) -> self
 	/// @method width() -> int
-	/// @method width_set(width: int) -> self
+	/// @method width_set(self, width int) -> self
 	/// @method height() -> int
-	/// @method height_set(height: int) -> self
+	/// @method height_set(self, height int) -> self
 	/// @method column_first() -> string
-	/// @method column_first_set(first: string) -> self
+	/// @method column_first_set(self, first string) -> self
 	/// @method column_second() -> string
-	/// @method column_second_set(second: string) -> self
+	/// @method column_second_set(self, second string) -> self
 	/// @method column_third() -> string
-	/// @method column_third_set(third: string) -> self
+	/// @method column_third_set(self, third string) -> self
 	/// @method column_fourth() -> string
-	/// @method column_fourth_set(fourth: string) -> self
+	/// @method column_fourth_set(self, fourth string) -> self
 	/// @method column_first_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
-	/// @method column_first_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_first_colors_set(self, foreground struct<lipgloss.ColorAny>, background struct<lipgloss.ColorAny>) -> self
 	/// @method column_second_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
-	/// @method column_second_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_second_colors_set(self, foreground struct<lipgloss.ColorAny>, background struct<lipgloss.ColorAny>) -> self
 	/// @method column_third_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
-	/// @method column_third_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_third_colors_set(self, foreground struct<lipgloss.ColorAny>, background struct<lipgloss.ColorAny>) -> self
 	/// @method column_fourth_colors() -> struct<lipgloss.ColorAdaptive>, struct<lipgloss.ColorAdaptive>
-	/// @method column_fourth_colors_set(foreground: struct<lipgloss.ColorAny>, background: struct<lipgloss.ColorAny>) -> self
+	/// @method column_fourth_colors_set(self, foreground struct<lipgloss.ColorAny>, background struct<lipgloss.ColorAny>) -> self
 
 	t := state.NewTable()
 

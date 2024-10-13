@@ -883,7 +883,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Embedded Assets
+	/// @constants Embedded {int}
 	/// @const  EMBEDDED_ICONCIRCLE_16x16
 	/// @const  EMBEDDED_ICONCIRCLE_32x32
 	/// @const  EMBEDDED_ICON_16x16
@@ -899,7 +899,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("EMBEDDED_ICON_192x192", golua.LNumber(EMBEDDED_ICON_192x192))
 	tab.RawSetString("EMBEDDED_ICON_512x512", golua.LNumber(EMBEDDED_ICON_512x512))
 
-	/// @constants ICO Types
+	/// @constants ICOType {int}
 	/// @const ICOTYPE_ICO
 	/// @const ICOTYPE_CUR
 	tab.RawSetString("ICOTYPE_ICO", golua.LNumber(goico.TYPE_ICO))

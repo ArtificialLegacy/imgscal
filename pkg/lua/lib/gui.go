@@ -690,8 +690,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func shortcut(key, mod, callback) -> struct<gui.Shortcut>
-	/// @arg key {gui.Key}
-	/// @arg mod {gui.Key}
+	/// @arg key {int<gui.Key>}
+	/// @arg mod {int<gui.Key>}
 	/// @arg callback {function()}
 	/// @returns {struct<gui.Shortcut>}
 	lib.CreateFunction(tab, "shortcut",
@@ -702,8 +702,8 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Shortcut
-			/// @prop key {gui.Key}
-			/// @prop mod {gui.Key}
+			/// @prop key {int<gui.Key>}
+			/// @prop mod {int<gui.Key>}
 			/// @prop callback {function()}
 
 			key := args["key"].(int)
@@ -1202,7 +1202,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func push_clip_rect(min, max, intersect)
 	/// @arg min {struct<image.Point>}
-	/// @arg max {strect<image.Point>}
+	/// @arg max {struct<image.Point>}
 	/// @arg intersect {bool}
 	lib.CreateFunction(tab, "push_clip_rect",
 		[]lua.Arg{
@@ -3429,7 +3429,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Color Picker Flags
+	/// @constants ColorEditFlags {int}
 	/// @const FLAGCOLOREDIT_NONE
 	/// @const FLAGCOLOREDIT_NOALPHA
 	/// @const FLAGCOLOREDIT_NOPICKER
@@ -3489,7 +3489,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGCOLOREDIT_PICKERMASK", golua.LNumber(FLAGCOLOREDIT_PICKERMASK))
 	tab.RawSetString("FLAGCOLOREDIT_INPUTMASK", golua.LNumber(FLAGCOLOREDIT_INPUTMASK))
 
-	/// @constants Combo Flags
+	/// @constants ComboFlags {int}
 	/// @const FLAGCOMBO_NONE
 	/// @const FLAGCOMBO_POPUPALIGNLEFT
 	/// @const FLAGCOMBO_HEIGHTSMALL
@@ -3511,7 +3511,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGCOMBO_WIDTHFITPREVIEW", golua.LNumber(FLAGCOMBO_WIDTHFITPREVIEW))
 	tab.RawSetString("FLAGCOMBO_HEIGHTMASK", golua.LNumber(FLAGCOMBO_HEIGHTMASK))
 
-	/// @constants Mouse Buttons
+	/// @constants MouseButton {int}
 	/// @const MOUSEBUTTON_LEFT
 	/// @const MOUSEBUTTON_RIGHT
 	/// @const MOUSEBUTTON_MIDDLE
@@ -3519,13 +3519,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MOUSEBUTTON_RIGHT", golua.LNumber(MOUSEBUTTON_RIGHT))
 	tab.RawSetString("MOUSEBUTTON_MIDDLE", golua.LNumber(MOUSEBUTTON_MIDDLE))
 
-	/// @constants Date Picker Labels
+	/// @constants DatePickerLabel {string}
 	/// @const DATEPICKERLABEL_MONTH
 	/// @const DATEPICKERLABEL_YEAR
 	tab.RawSetString("DATEPICKERLABEL_MONTH", golua.LString(DATEPICKERLABEL_MONTH))
 	tab.RawSetString("DATEPICKERLABEL_YEAR", golua.LString(DATEPICKERLABEL_YEAR))
 
-	/// @constants Input Text Flags
+	/// @constants InputFlag {int}
 	/// @const FLAGINPUTTEXT_NONE
 	/// @const FLAGINPUTTEXT_CHARSDECIMAL
 	/// @const FLAGINPUTTEXT_CHARSHEXADECIMAL
@@ -3571,7 +3571,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGINPUTTEXT_CALLBACKEDIT", golua.LNumber(FLAGINPUTTEXT_CALLBACKEDIT))
 	tab.RawSetString("FLAGINPUTTEXT_ESCAPECLEARSALL", golua.LNumber(FLAGINPUTTEXT_ESCAPECLEARSALL))
 
-	/// @constants Selectable Flags
+	/// @constants SelectableFlags {int}
 	/// @const FLAGSELECTABLE_NONE
 	/// @const FLAGSELECTABLE_DONTCLOSEPOPUPS
 	/// @const FLAGSELECTABLE_SPANALLCOLUMNS
@@ -3585,7 +3585,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGSELECTABLE_DISABLED", golua.LNumber(FLAGSELECTABLE_DISABLED))
 	tab.RawSetString("FLAGSELECTABLE_ALLOWOVERLAP", golua.LNumber(FLAGSELECTABLE_ALLOWOVERLAP))
 
-	/// @constants Slider Flags
+	/// @constants SliderFlags {int}
 	/// @const FLAGSLIDER_NONE
 	/// @const FLAGSLIDER_ALWAYSCLAMP
 	/// @const FLAGSLIDER_LOGARITHMIC
@@ -3599,7 +3599,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGSLIDER_NOINPUT", golua.LNumber(FLAGSLIDER_NOINPUT))
 	tab.RawSetString("FLAGSLIDER_INVALIDMASK", golua.LNumber(FLAGSLIDER_INVALIDMASK))
 
-	/// @constants Tab Bar Flags
+	/// @constants TabBarFlags {int}
 	/// @const FLAGTABBAR_NONE
 	/// @const FLAGTABBAR_REORDERABLE
 	/// @const FLAGTABBAR_AUTOSELECTNEWTABS
@@ -3623,7 +3623,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGTABBAR_FITTINGPOLICYMASK", golua.LNumber(FLAGTABBAR_FITTINGPOLICYMASK))
 	tab.RawSetString("FLAGTABBAR_FITTINGPOLICYDEFAULT", golua.LNumber(FLAGTABBAR_FITTINGPOLICYDEFAULT))
 
-	/// @constants Tab Item Flags
+	/// @constants TabItemFlags {int}
 	/// @const FLAGTABITEM_NONE
 	/// @const FLAGTABITEM_UNSAVEDOCUMENT
 	/// @const FLAGTABITEM_SETSELECTED
@@ -3645,7 +3645,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGTABITEM_TRAILING", golua.LNumber(FLAGTABITEM_TRAILING))
 	tab.RawSetString("FLAGTABITEM_NOASSUMEDCLOSURE", golua.LNumber(FLAGTABITEM_NOASSUMEDCLOSURE))
 
-	/// @constants Table Column Flags
+	/// @constants TableColumnFlags {int}
 	/// @const FLAGTABLECOLUMN_NONE
 	/// @const FLAGTABLECOLUMN_DEFAULTHIDE
 	/// @const FLAGTABLECOLUMN_DEFAULTSORT
@@ -3697,13 +3697,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGTABLECOLUMN_STATUSMASK", golua.LNumber(FLAGTABLECOLUMN_STATUSMASK))
 	tab.RawSetString("FLAGTABLECOLUMN_NODIRECTRESIZE", golua.LNumber(FLAGTABLECOLUMN_NODIRECTRESIZE))
 
-	/// @constants Table Row Flags
+	/// @constants TableRowFlags {int}
 	/// @const FLAGTABLEROW_NONE
 	/// @const FLAGTABLEROW_HEADERS
 	tab.RawSetString("FLAGTABLEROW_NONE", golua.LNumber(FLAGTABLEROW_NONE))
 	tab.RawSetString("FLAGTABLEROW_HEADERS", golua.LNumber(FLAGTABLEROW_HEADERS))
 
-	/// @constants Table Flags
+	/// @constants TableFlags {int}
 	/// @const FLAGTABLE_NONE
 	/// @const FLAGTABLE_RESIZEABLE
 	/// @const FLAGTABLE_REORDERABLE
@@ -3779,7 +3779,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN", golua.LNumber(FLAGTABLE_HIGHLIGHTHOVEREDCOLUMN))
 	tab.RawSetString("FLAGTABLE_SIZINGMASK", golua.LNumber(FLAGTABLE_SIZINGMASK))
 
-	/// @constants Directions
+	/// @constants Direction {int}
 	/// @const DIR_NONE
 	/// @const DIR_LEFT
 	/// @const DIR_RIGHT
@@ -3793,7 +3793,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("DIR_DOWN", golua.LNumber(DIR_DOWN))
 	tab.RawSetString("DIR_COUNT", golua.LNumber(DIR_COUNT))
 
-	/// @constants Tree Node Flags
+	/// @constants TreeNodeFlags {int}
 	/// @const FLAGTREENODE_NONE
 	/// @const FLAGTREENODE_SELECTED
 	/// @const FLAGTREENODE_FRAMED
@@ -3829,7 +3829,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGTREENODE_NAVLEFTJUMPSBACKHERE", golua.LNumber(FLAGTREENODE_NAVLEFTJUMPSBACKHERE))
 	tab.RawSetString("FLAGTREENODE_COLLAPSINGHEADER", golua.LNumber(FLAGTREENODE_COLLAPSINGHEADER))
 
-	/// @constants Master Window Flags
+	/// @constants MasterWindowFlags {int}
 	/// @const FLAGMASTERWINDOW_NOTRESIZABLE
 	/// @const FLAGMASTERWINDOW_MAXIMIZED
 	/// @const FLAGMASTERWINDOW_FLOATING
@@ -3841,7 +3841,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGMASTERWINDOW_FRAMELESS", golua.LNumber(FLAGMASTERWINDOW_FRAMELESS))
 	tab.RawSetString("FLAGMASTERWINDOW_TRANSPARENT", golua.LNumber(FLAGMASTERWINDOW_TRANSPARENT))
 
-	/// @constants Window Flags
+	/// @constants WindowFlags {int}
 	/// @const FLAGWINDOW_NONE
 	/// @const FLAGWINDOW_NOTITLEBAR
 	/// @const FLAGWINDOW_NORESIZE
@@ -3889,13 +3889,13 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGWINDOW_NODECORATION", golua.LNumber(FLAGWINDOW_NODECORATION))
 	tab.RawSetString("FLAGWINDOW_NOINPUTS", golua.LNumber(FLAGWINDOW_NOINPUTS))
 
-	/// @constants Split Direction
+	/// @constants SplitDirection {int}
 	/// @const SPLITDIRECTION_HORIZONTAL
 	/// @const SPLITDIRECTION_VERTICAL
 	tab.RawSetString("SPLITDIRECTION_HORIZONTAL", golua.LNumber(SPLITDIRECTION_HORIZONTAL))
 	tab.RawSetString("SPLITDIRECTION_VERTICAL", golua.LNumber(SPLITDIRECTION_VERTICAL))
 
-	/// @constants Alignment
+	/// @constants Alignment {int}
 	/// @const ALIGN_LEFT
 	/// @const ALIGN_CENTER
 	/// @const ALIGN_RIGHT
@@ -3903,7 +3903,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ALIGN_CENTER", golua.LNumber(ALIGN_CENTER))
 	tab.RawSetString("ALIGN_RIGHT", golua.LNumber(ALIGN_RIGHT))
 
-	/// @constants MSG Box Buttons
+	/// @constants MSGBoxButtons {int}
 	/// @const MSGBOXBUTTONS_YESNO
 	/// @const MSGBOXBUTTONS_OKCANCEL
 	/// @const MSGBOXBUTTONS_OK
@@ -3911,7 +3911,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MSGBOXBUTTONS_OKCANCEL", golua.LNumber(MSGBOXBUTTONS_OKCANCEL))
 	tab.RawSetString("MSGBOXBUTTONS_OK", golua.LNumber(MSGBOXBUTTONS_OK))
 
-	/// @constants Color IDs
+	/// @constants StyleColorID {int}
 	/// @const COLID_TEXT
 	/// @const COLID_TEXTDISABLED
 	/// @const COLID_WINDOWBG
@@ -4025,7 +4025,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLID_MODALWINDOWDIMBG", golua.LNumber(COLID_MODALWINDOWDIMBG))
 	tab.RawSetString("COLID_COUNT", golua.LNumber(COLID_COUNT))
 
-	/// @constants Style Var
+	/// @constants StyleVarID {int}
 	/// @const STYLEVAR_ALPHA
 	/// @const STYLEVAR_DISABLEDALPHA
 	/// @const STYLEVAR_WINDOWPADDING
@@ -4089,7 +4089,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("STYLEVAR_DOCKINGSEPARATORSIZE", golua.LNumber(STYLEVAR_DOCKINGSEPARATORSIZE))
 	tab.RawSetString("STYLEVAR_COUNT", golua.LNumber(STYLEVAR_COUNT))
 
-	/// @constants Keys
+	/// @constants Key {int}
 	/// @const KEY_NONE
 	/// @const KEY_TAB
 	/// @const KEY_LEFTARROW
@@ -4427,7 +4427,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("KEY_KEYSDATASIZE", golua.LNumber(KEY_KEYSDATASIZE))
 	tab.RawSetString("KEY_KEYSDATAOFFSET", golua.LNumber(KEY_KEYSDATAOFFSET))
 
-	/// @constants Exec Conditions
+	/// @constants Condition {int}
 	/// @const COND_NONE
 	/// @const COND_ALWAYS
 	/// @const COND_ONCE
@@ -4439,7 +4439,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COND_FIRSTUSEEVER", golua.LNumber(COND_FIRSTUSEEVER))
 	tab.RawSetString("COND_APPEARING", golua.LNumber(COND_APPEARING))
 
-	/// @constants Plot Flags
+	/// @constants PlotFlags {int}
 	/// @const FLAGPLOT_NONE
 	/// @const FLAGPLOT_NOTITLE
 	/// @const FLAGPLOT_NOLEGEND
@@ -4463,7 +4463,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGPLOT_CROSSHAIRS", golua.LNumber(FLAGPLOT_CROSSHAIRS))
 	tab.RawSetString("FLAGPLOT_CANVASONLY", golua.LNumber(FLAGPLOT_CANVASONLY))
 
-	/// @constants Plot Axis
+	/// @constants PlotAxis {int}
 	/// @const PLOTAXIS_X1
 	/// @const PLOTAXIS_X2
 	/// @const PLOTAXIS_X3
@@ -4479,7 +4479,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("PLOTAXIS_Y3", golua.LNumber(PLOTAXIS_Y3))
 	tab.RawSetString("PLOTAXIS_COUNT", golua.LNumber(PLOTAXIS_COUNT))
 
-	/// @constants Plot Axis Flags
+	/// @constants PlotAxisFlags {int}
 	/// @const FLAGPLOTAXIS_NONE
 	/// @const FLAGPLOTAXIS_NOLABEL
 	/// @const FLAGPLOTAXIS_NOGRIDLINES
@@ -4521,7 +4521,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGPLOTAXIS_NODECORATIONS", golua.LNumber(FLAGPLOTAXIS_NODECORATIONS))
 	tab.RawSetString("FLAGPLOTAXIS_AUXDEFAULT", golua.LNumber(FLAGPLOTAXIS_AUXDEFAULT))
 
-	/// @constants Plot Y Axis
+	/// @constants PlotYAxis {int}
 	/// @const PLOTYAXIS_LEFT
 	/// @const PLOTYAXIS_FIRSTONRIGHT
 	/// @const PLOTYAXIS_SECONDONRIGHT
@@ -4529,7 +4529,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("PLOTYAXIS_FIRSTONRIGHT", golua.LNumber(PLOTYAXIS_FIRSTONRIGHT))
 	tab.RawSetString("PLOTYAXIS_SECONDONRIGHT", golua.LNumber(PLOTYAXIS_SECONDONRIGHT))
 
-	/// @constants Draw Flags
+	/// @constants DrawFlags {int}
 	/// @const FLAGDRAW_NONE
 	/// @const FLAGDRAW_CLOSED
 	/// @const FLAGDRAW_ROUNDCORNERSTOPLEFT
@@ -4559,7 +4559,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGDRAW_ROUNDCORNERSDEFAULT", golua.LNumber(FLAGDRAW_ROUNDCORNERSDEFAULT))
 	tab.RawSetString("FLAGDRAW_ROUNDCORNERSMASK", golua.LNumber(FLAGDRAW_ROUNDCORNERSMASK))
 
-	/// @constants Focus Flags
+	/// @constants FocusedFlags {int}
 	/// @const FLAGFOCUS_NONE
 	/// @const FLAGFOCUS_CHILDWINDOWS
 	/// @const FLAGFOCUS_ROOTWINDOW
@@ -4575,7 +4575,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGFOCUS_DOCKHIERARCHY", golua.LNumber(FLAGFOCUS_DOCKHIERARCHY))
 	tab.RawSetString("FLAGFOCUS_ROOTANDCHILDWINDOWS", golua.LNumber(FLAGFOCUS_ROOTANDCHILDWINDOWS))
 
-	/// @constants Hover Flags
+	/// @constants HoveredFlags {int}
 	/// @const FLAGHOVERED_NONE
 	/// @const FLAGHOVERED_CHILDWINDOWS
 	/// @const FLAGHOVERED_ROOTWINDOW
@@ -4619,7 +4619,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("FLAGHOVERED_DELAYNORMAL", golua.LNumber(FLAGHOVERED_DELAYNORMAL))
 	tab.RawSetString("FLAGHOVERED_NOSHAREDDELAY", golua.LNumber(FLAGHOVERED_NOSHAREDDELAY))
 
-	/// @constants Mouse Cursors
+	/// @constants MouseCursor {int}
 	/// @const MOUSECURSOR_NONE
 	/// @const MOUSECURSOR_ARROW
 	/// @const MOUSECURSOR_TEXTINPUT
@@ -4643,7 +4643,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MOUSECURSOR_NOTALLOWED", golua.LNumber(MOUSECURSOR_NOTALLOWED))
 	tab.RawSetString("MOUSECURSOR_COUNT", golua.LNumber(MOUSECURSOR_COUNT))
 
-	/// @constants Actions
+	/// @constants Action {int}
 	/// @const ACTION_RELEASE
 	/// @const ACTION_PRESS
 	/// @const ACTION_REPEAT
@@ -4651,7 +4651,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ACTION_PRESS", golua.LNumber(ACTION_PRESS))
 	tab.RawSetString("ACTION_REPEAT", golua.LNumber(ACTION_REPEAT))
 
-	/// @constants Widget Types
+	/// @constants WidgetType {string}
 	/// @const WIDGET_LABEL
 	/// @const WIDGET_BUTTON
 	/// @const WIDGET_DUMMY
@@ -4781,7 +4781,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("WIDGET_PLOT", golua.LString(WIDGET_PLOT))
 	tab.RawSetString("WIDGET_CSS_TAG", golua.LString(WIDGET_CSS_TAG))
 
-	/// @constants Plot Types
+	/// @constants PlotType {string}
 	/// @const PLOT_BAR_H
 	/// @const PLOT_BAR
 	/// @const PLOT_LINE
@@ -4798,7 +4798,6 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("PLOT_SCATTER", golua.LString(PLOT_SCATTER))
 	tab.RawSetString("PLOT_SCATTER_XY", golua.LString(PLOT_SCATTER_XY))
 	tab.RawSetString("PLOT_CUSTOM", golua.LString(PLOT_CUSTOM))
-
 }
 
 const (
@@ -5558,8 +5557,10 @@ const (
 	PLOT_CUSTOM     = "plot_custom"
 )
 
-var buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{}
-var plotList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget{}
+var (
+	buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{}
+	plotList  = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.PlotWidget{}
+)
 
 func init() {
 	buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{
@@ -5869,7 +5870,7 @@ func checkboxTable(state *golua.LState, text string, boolref int) *golua.LTable 
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop text {string}
 	/// @prop boolref {int<ref.BOOL>}
-	/// @method on_change(callback(bool, int<ref.BOOL>))
+	/// @method on_change(function(bool, int<ref.BOOL>))
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CHECKBOX))
@@ -6164,7 +6165,7 @@ func comboTable(state *golua.LState, text, preview string, items golua.LValue, i
 	/// @prop items {[]string}
 	/// @prop i32ref {int<ref.INT32>}
 	/// @method size(width float)
-	/// @method on_change(callback(int, int<ref.INT32>))
+	/// @method on_change(function(int, int<ref.INT32>))
 	/// @method flags(flags int<gui.ComboFlags)
 
 	t := state.NewTable()
@@ -6312,7 +6313,7 @@ func datePickerTable(state *golua.LState, id string, timeref int) *golua.LTable 
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop id {string}
 	/// @prop timeref {int<ref.TIME>}
-	/// @method on_change(callback(string, int<ref.TIME>))
+	/// @method on_change(function(string, int<ref.TIME>))
 	/// @method format(format string)
 	/// @method size(width float)
 	/// @method start_of_week(day int<time.Weekday>)
@@ -6475,7 +6476,7 @@ func inputFloatTable(state *golua.LState, floatref int) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop f32ref {int<ref.FLOAT32>}
 	/// @method size(width float)
-	/// @method on_change(callback(float, int<ref.FLOAT32>))
+	/// @method on_change(function(float, int<ref.FLOAT32>))
 	/// @method format(format string)
 	/// @method flags(flags int<gui.InputFlags>)
 	/// @method label(label string)
@@ -6589,7 +6590,7 @@ func inputIntTable(state *golua.LState, intref int) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop i32ref {int<ref.INT32>}
 	/// @method size(width float)
-	/// @method on_change(callback(int, int<ref.INT32>))
+	/// @method on_change(function(int, int<ref.INT32>))
 	/// @method flags(flags int<gui.InputFlags>)
 	/// @method label(label string)
 	/// @method step_size(stepsize int)
@@ -6694,7 +6695,7 @@ func inputTextTable(state *golua.LState, strref int) *golua.LTable {
 	/// @method flags(flags int<gui.InputFlags>)
 	/// @method label(label strings)
 	/// @method autocomplete([]string)
-	/// @method callback(callback(string, int<ref.STRING>))
+	/// @method callback(function(string, int<ref.STRING>))
 	/// @method hint(hint string)
 
 	t := state.NewTable()
@@ -6817,10 +6818,10 @@ func inputMultilineTextTable(state *golua.LState, strref int) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop strref {int<ref.STRING>}
 	/// @method size(width float, height float)
-	/// @method on_change(callback(string, int<ref.STRING>))
+	/// @method on_change(function(string, int<ref.STRING>))
 	/// @method flags(flags int<gui.InputFlags>)
 	/// @method label(label string)
-	/// @method callback(callback(string, int<ref.STRING>))
+	/// @method callback(function(string, int<ref.STRING>))
 	/// @method autoscroll_to_bottom(bool)
 
 	t := state.NewTable()
@@ -7287,7 +7288,7 @@ func listBoxTable(state *golua.LState, items golua.LValue) *golua.LTable {
 	/// @method border(bool)
 	/// @method context_menu([]struct<gui.Widget>)
 	/// @method on_double_click(function(int))
-	/// @method on_menu(callback(int, string))
+	/// @method on_menu(function(int, string))
 	/// @method selected_index(int)
 	/// @method size(width float, height float)
 
@@ -8462,8 +8463,8 @@ func treeTableTable(state *golua.LState) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @method flags(flags int<gui.TableFlags>)
 	/// @method size(width float, height float)
-	/// @method columns([]TableColumn)
-	/// @method rows([]TreeTableRow)
+	/// @method columns([]struct<TableColumn>)
+	/// @method rows([]struct<TreeTableRow>)
 	/// @method freeze(col int, row int) - Can be called multiple times.
 
 	t := state.NewTable()
@@ -8861,7 +8862,7 @@ func popupBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 func splitLayoutTable(state *golua.LState, direction, floatref int, layout1 golua.LValue, layout2 golua.LValue) *golua.LTable {
 	/// @struct WidgetSplitLayout
 	/// @prop type {string<gui.WidgetType>}
-	/// @prop direction {int<gui.Direction>}
+	/// @prop direction {int<gui.SplitDirection>}
 	/// @prop floatref {int<ref.FLOAT32>}
 	/// @prop layout1 {[]struct<gui.Widget>}
 	/// @prop layout2 {[]struct<gui.Widget>}
@@ -8918,7 +8919,7 @@ func splitLayoutBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 func splitterTable(state *golua.LState, direction, floatref int) *golua.LTable {
 	/// @struct WidgetSplitter
 	/// @prop type {string<gui.WidgetType>}
-	/// @prop direction {int<gui.Direction>}
+	/// @prop direction {int<gui.SplitDirection>}
 	/// @prop floatref {int<ref.FLOAT32>}
 	/// @method size(width float, height float)
 
@@ -9721,8 +9722,8 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 	/// @prop title {string}
 	/// @method axis_limits(xmin float, xmax float, ymin float, ymax float, cond int<gui.Condition>)
 	/// @method flags(flags int<gui.PlotFlags>)
-	/// @method set_xaxis_label(axis int<gui.PlotXAxis>, label string)
-	/// @method set_yaxis_label(axis int<gui.PlotYAxis>, label string)
+	/// @method set_xaxis_label(axis int<gui.PlotAxis>, label string)
+	/// @method set_yaxis_label(axis int<gui.PlotAxis>, label string)
 	/// @method size(width float, height float)
 	/// @method x_axeflags(flags int<gui.PlotAxisFlags>)
 	/// @method xticks(ticks []struct<gui.PlotTicker>, default bool)

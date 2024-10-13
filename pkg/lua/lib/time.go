@@ -102,7 +102,7 @@ func RegisterTime(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Weekdays
+	/// @constants Weekday {int}
 	/// @const WEEKDAY_SUNDAY
 	/// @const WEEKDAY_MONDAY
 	/// @const WEEKDAY_TUESDAY

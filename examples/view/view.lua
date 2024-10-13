@@ -1,3 +1,5 @@
+---@diagnostic disable:lowercase-global
+
 function help(info)
 	return [[
 Usage:
@@ -29,7 +31,7 @@ function main()
 	cli.clear()
 
 	local img = io.decode(inPath)
-	cli.print_image(img, true)
+	_ = cli.print_image(img, true)
 
 	cli.println()
 end

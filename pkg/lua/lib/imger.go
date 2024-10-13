@@ -2082,7 +2082,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Border
+	/// @constants Border {int}
 	/// @const BORDER_CONSTANT
 	/// @const BORDER_REPLICATE
 	/// @const BORDER_REFLECT
@@ -2090,19 +2090,19 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BORDER_REPLICATE", golua.LNumber(padding.BorderReplicate))
 	tab.RawSetString("BORDER_REFLECT", golua.LNumber(padding.BorderReflect))
 
-	/// @constants Laplacian Kernel
+	/// @constants LaplacianKernel {int}
 	/// @const LAPLACIAN_K4
 	/// @const LAPLACIAN_K8
 	tab.RawSetString("LAPLACIAN_K4", golua.LNumber(edgedetection.K4))
 	tab.RawSetString("LAPLACIAN_K8", golua.LNumber(edgedetection.K8))
 
-	/// @constants Direction
+	/// @constants Direction {int}
 	/// @const DIR_HORIZONTAL
 	/// @const DIR_VERTICAL
 	tab.RawSetString("DIR_HORIZONTAL", golua.LNumber(generate.H))
 	tab.RawSetString("DIR_VERTICAL", golua.LNumber(generate.V))
 
-	/// @constants Threshold Method
+	/// @constants Threshold {int}
 	/// @const THRESHOLD_BINARY
 	/// @const THRESHOLD_BINARYINV
 	/// @const THRESHOLD_TRUNC
@@ -2114,7 +2114,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("THRESHOLD_TOZERO", golua.LNumber(threshold.ThreshToZero))
 	tab.RawSetString("THRESHOLD_TOZEROINV", golua.LNumber(threshold.ThreshToZeroInv))
 
-	/// @constants Interpolation
+	/// @constants Interpolation {int}
 	/// @const INTER_NEAREST
 	/// @const INTER_LINEAR
 	/// @const INTER_CATMULLROM
@@ -2212,10 +2212,10 @@ func kernelTable(lib *lua.Lib, state *golua.LState, lg *log.Logger, width, heigh
 	/// @method sum() -> float - Returns the sum of all elements in the kernel.
 	/// @method sum_abs() -> float - Returns the sum of the absolute values of all elements in the kernel.
 	/// @method size() -> struct<image.Point> - Returns the size of the kernel as a point.
-	/// @method at(x: int, y: int) -> float - Returns the value at the given position, or nil if out of bounds. Uses 0-based indexing, set directly to the kernel content for 1-based indexing.
-	/// @method set(x: int, y: int, value: float) -> self - Sets the value at the given position. Uses 0-based indexing, set directly to the kernel content for 1-based indexing.
-	/// @method normalize() -> self - Normalizes the kernel.
-	/// @method normalize_set(normalize: bool) -> self - Sets the normalize flag of the kernel, this normalization is only run when the kernel is built.
+	/// @method at(x int, y int) -> float - Returns the value at the given position, or nil if out of bounds. Uses 0-based indexing, set directly to the kernel content for 1-based indexing.
+	/// @method set(self, x int, y int, value float) -> self - Sets the value at the given position. Uses 0-based indexing, set directly to the kernel content for 1-based indexing.
+	/// @method normalize(self) -> self - Normalizes the kernel.
+	/// @method normalize_set(self, normalize bool) -> self - Sets the normalize flag of the kernel, this normalization is only run when the kernel is built.
 
 	// verify content size
 	if content.Len() != width {

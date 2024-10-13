@@ -1102,7 +1102,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "b"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct Color
+			/// @interface Color
 			/// @prop type {string<image.ColorType>}
 			/// @desc
 			/// Color structs are automatically converted into the needed type.
@@ -1766,7 +1766,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 	/// @func map(id, fn, invert?)
 	/// @arg id {int<collection.IMAGE>}
-	/// @arg fn {function(x int, y int, color struct<image.ColorRGBA>) -> struct<image.ColorRGBA>}
+	/// @arg fn {function(x int, y int, color struct<image.ColorRGBA>) -> struct<image.Color>}
 	/// @arg? invert {bool} - Reverses the looping order from columns to rows.
 	lib.CreateFunction(tab, "map",
 		[]lua.Arg{
@@ -2033,7 +2033,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Color Models
+	/// @constants ColorModel {int}
 	/// @const RGBA
 	/// @const RGBA64
 	/// @const NRGBA
@@ -2053,7 +2053,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MODEL_GRAY16", golua.LNumber(imageutil.MODEL_GRAY16))
 	tab.RawSetString("MODEL_CMYK", golua.LNumber(imageutil.MODEL_CMYK))
 
-	/// @constants Encodings
+	/// @constants Encoding {int}
 	/// @const ENCODING_PNG
 	/// @const ENCODING_JPEG
 	/// @const ENCODING_GIF
@@ -2069,7 +2069,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ENCODING_ICO", golua.LNumber(imageutil.ENCODING_ICO))
 	tab.RawSetString("ENCODING_CUR", golua.LNumber(imageutil.ENCODING_CUR))
 
-	/// @constants Color Types
+	/// @constants ColorType {string}
 	/// @const COLOR_TYPE_RGBA
 	/// @const COLOR_TYPE_HSVA
 	/// @const COLOR_TYPE_HSLA

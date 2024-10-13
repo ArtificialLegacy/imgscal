@@ -790,7 +790,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	/// @arg id {int<collection.CONTEXT>}
 	/// @arg x1 {float}
 	/// @arg y1 {float}
-	/// @arg x2 {flaot}
+	/// @arg x2 {float}
 	/// @arg y2 {float}
 	/// @arg x3 {float}
 	/// @arg y3 {float}
@@ -2498,13 +2498,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @constants Fill Rules
+	/// @constants FillRule {int}
 	/// @const FILLRULE_WINDING
 	/// @const FILLRULE_EVENODD
 	tab.RawSetString("FILLRULE_WINDING", golua.LNumber(gg.FillRuleWinding))
 	tab.RawSetString("FILLRULE_EVENODD", golua.LNumber(gg.FillRuleEvenOdd))
 
-	/// @constants Line Caps
+	/// @constants LineCap {int}
 	/// @const LINECAP_ROUND
 	/// @const LINECAP_BUTT
 	/// @const LINECAP_SQUARE
@@ -2512,13 +2512,13 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("LINECAP_BUTT", golua.LNumber(gg.LineCapButt))
 	tab.RawSetString("LINECAP_SQUARE", golua.LNumber(gg.LineCapSquare))
 
-	/// @constants Line Joins
+	/// @constants LineJoin {int}
 	/// @const LINEJOIN_ROUND
 	/// @const LINEJOIN_BEVEL
 	tab.RawSetString("LINEJOIN_ROUND", golua.LNumber(gg.LineJoinRound))
 	tab.RawSetString("LINEJOIN_BEVEL", golua.LNumber(gg.LineJoinBevel))
 
-	/// @constants Repeat Ops
+	/// @constants RepeatOp {int}
 	/// @const REPEAT_BOTH
 	/// @const REPEAT_X
 	/// @const REPEAT_Y
@@ -2528,7 +2528,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("REPEAT_Y", golua.LNumber(gg.RepeatY))
 	tab.RawSetString("REPEAT_NONE", golua.LNumber(gg.RepeatNone))
 
-	/// @constants Alignment
+	/// @constants Align {int}
 	/// @const ALIGN_LEFT
 	/// @const ALIGN_CENTER
 	/// @const ALIGN_RIGHT
@@ -2536,7 +2536,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ALIGN_CENTER", golua.LNumber(gg.AlignCenter))
 	tab.RawSetString("ALIGN_RIGHT", golua.LNumber(gg.AlignRight))
 
-	/// @constants Patterns
+	/// @constants PatternType {string}
 	/// @const PATTERN_SOLID
 	/// @const PATTERN_SURFACE
 	/// @const PATTERN_SURFACE_SYNC
@@ -2597,11 +2597,11 @@ func matrixTable(state *golua.LState, xx, yx, xy, yy, x0, y0 float64) *golua.LTa
 	/// @prop yy {float}
 	/// @prop x0 {float}
 	/// @prop y0 {float}
-	/// @method multiply(struct<context.Matrix>) -> self
-	/// @method rotate(angle float) -> self
-	/// @method scale(x float, y float) -> self
-	/// @method shear(x float, y float) -> self
-	/// @method translate(x float, y float) -> self
+	/// @method multiply(self, struct<context.Matrix>) -> self
+	/// @method rotate(self, angle float) -> self
+	/// @method scale(self, x float, y float) -> self
+	/// @method shear(self, x float, y float) -> self
+	/// @method translate(self, x float, y float) -> self
 	/// @method transform_point(x float, y float) -> float, float
 	/// @method transform_vector(x float, y float) -> float, float
 
@@ -2708,8 +2708,8 @@ func matrixBuild(t *golua.LTable) gg.Matrix {
 }
 
 func patternBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.Logger) gg.Pattern {
-	/// @struct Pattern
-	/// @prop type {string<context.Pattern>}
+	/// @interface Pattern
+	/// @prop type {string<context.PatternType>}
 
 	typ := t.RawGetString("type").(golua.LString)
 
@@ -2734,7 +2734,7 @@ func patternBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.L
 
 func patternSolidTable(state *golua.LState, color *golua.LTable) *golua.LTable {
 	/// @struct PatternSolid
-	/// @prop type {string<context.Pattern>}
+	/// @prop type {string<context.PatternType>}
 	/// @prop color {struct<image.Color>}
 
 	t := state.NewTable()
@@ -2755,7 +2755,7 @@ func patternSolidBuild(t *golua.LTable) gg.Pattern {
 
 func patternSurfaceTable(state *golua.LState, id, repeatOp int) *golua.LTable {
 	/// @struct PatternSurface
-	/// @prop type {string<context.Pattern>}
+	/// @prop type {string<context.PatternType>}
 	/// @prop id {int<collection.IMAGE>}
 	/// @prop repeatOp {int<context.RepeatOp>}
 
@@ -2788,7 +2788,7 @@ func patternSurfaceBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
 
 func patternSurfaceSyncTable(state *golua.LState, id, repeatOp int) *golua.LTable {
 	/// @struct PatternSurfaceSync
-	/// @prop type {string<context.Pattern>}
+	/// @prop type {string<context.PatternType>}
 	/// @prop id {int<collection.IMAGE>}
 	/// @prop repeatOp {int<context.RepeatOp>}
 
@@ -2820,7 +2820,7 @@ func patternSurfaceSyncBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
 
 func patternGradientLinearTable(state *golua.LState, x0, y0, x1, y1 float64) *golua.LTable {
 	/// @struct PatternGradientLinear
-	/// @prop type {string<context.Pattern>}
+	/// @prop type {string<context.PatternType>}
 	/// @prop x0 {float}
 	/// @prop y0 {float}
 	/// @prop x1 {float}
@@ -2875,7 +2875,7 @@ func patternGradientLinearBuild(t *golua.LTable) gg.Pattern {
 
 func patternGradientRadialTable(state *golua.LState, x0, y0, r0, x1, y1, r1 float64) *golua.LTable {
 	/// @struct PatternGradientRadial
-	/// @prop type {string<context.Pattern>}
+	/// @prop type {string<context.PatternType>}
 	/// @prop x0 {float}
 	/// @prop y0 {float}
 	/// @prop r0 {float}
@@ -2953,7 +2953,7 @@ func (p PatternCustom) ColorAt(x, y int) color.Color {
 
 func patternCustomTable(state *golua.LState, fn *golua.LFunction) *golua.LTable {
 	/// @struct PatternCustom
-	/// @prop type {string<context.Pattern>}
+	/// @prop type {string<context.PatternType>}
 	/// @prop fn {function(x int, y int) -> struct<image.ColorRGBA>}
 
 	t := state.NewTable()

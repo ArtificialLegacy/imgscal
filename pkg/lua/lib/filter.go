@@ -850,7 +850,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Anchor
+	/// @constants Anchor {int}
 	/// @const ANCHOR_CENTER
 	/// @const ANCHOR_TOPLEFT
 	/// @const ANCHOR_TOP
@@ -870,7 +870,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ANCHOR_BOTTOM", golua.LNumber(gift.BottomAnchor))
 	tab.RawSetString("ANCHOR_BOTTOMRIGHT", golua.LNumber(gift.BottomRightAnchor))
 
-	/// @constants Interpolation
+	/// @constants Interpolation {int}
 	/// @const INTERPOLATION_NEARESTNEIGHBOR
 	/// @const INTERPOLATION_LINEAR
 	/// @const INTERPOLATION_CUBIC
@@ -878,13 +878,13 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("INTERPOLATION_LINEAR", golua.LNumber(gift.LinearInterpolation))
 	tab.RawSetString("INTERPOLATION_CUBIC", golua.LNumber(gift.CubicInterpolation))
 
-	/// @constants Operators
+	/// @constants Operator {int}
 	/// @const OPERATOR_COPY
 	/// @const OPERATOR_OVER
 	tab.RawSetString("OPERATOR_COPY", golua.LNumber(gift.CopyOperator))
 	tab.RawSetString("OPERATOR_OVER", golua.LNumber(gift.OverOperator))
 
-	/// @constants Resampling
+	/// @constants Resampling {int}
 	/// @const RESAMPLING_BOX
 	/// @const RESAMPLING_CUBIC
 	/// @const RESAMPLING_LANCZOS
@@ -896,7 +896,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("RESAMPLING_LINEAR", golua.LNumber(RESAMPLING_LINEAR))
 	tab.RawSetString("RESAMPLING_NEARESTNEIGHBOR", golua.LNumber(RESAMPLING_NEARESTNEIGHBOR))
 
-	/// @constants Filter Types
+	/// @constants FilterType {string}
 	/// @const FILTER_BRIGHTNESS
 	/// @const FILTER_COLOR_BALANCE
 	/// @const FILTER_COLORIZE
@@ -1076,7 +1076,7 @@ var filters = filterList{
 }
 
 func buildFilterList(state *golua.LState, filterList filterList, t *golua.LTable) *gift.GIFT {
-	/// @struct Filter
+	/// @interface Filter
 	/// @prop type {string<filter.FilterType>}
 
 	filters := []gift.Filter{}

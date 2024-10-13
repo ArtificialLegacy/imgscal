@@ -31,7 +31,6 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "name"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-
 			name := args["name"].(string)
 
 			chLog := log.NewLogger(fmt.Sprintf("task_%s", name), lg)
@@ -55,7 +54,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func schedule(type, id, func)
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @arg func {function()}
 	/// @desc
 	/// Schedules a lua func to be called from the queue.
@@ -108,7 +107,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func wait(type, id)
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @blocking
 	lib.CreateFunction(tab, "wait",
 		[]lua.Arg{
@@ -232,7 +231,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func collect(type, id)
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @desc
 	/// Items are collected automatically at the end of execution,
 	/// but this can be used to collect early in workflows that create a large amount of items.
@@ -258,7 +257,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func exists(type, id) -> bool
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @returns {bool} - If the item exists, and has not been collected.
 	/// @desc
 	/// Note that this is non-blocking, and can return true for items that get collected soon after.
@@ -287,7 +286,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func log(type, id, msg)
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @arg msg {string}
 	lib.CreateFunction(tab, "log",
 		[]lua.Arg{
@@ -336,7 +335,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func warn(type, id, msg)
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @arg msg {string}
 	lib.CreateFunction(tab, "warn",
 		[]lua.Arg{
@@ -385,7 +384,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 	/// @func panic(type, id, msg)
 	/// @arg type {int<collection.Type>}
-	/// @arg id {int<collection.*>} - An ID from the same collection as the above type.
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
 	/// @arg msg {string}
 	/// @blocking
 	lib.CreateFunction(tab, "panic",
@@ -433,7 +432,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @constants Collection Types
+	/// @constants Type {int}
 	/// @const TASK
 	/// @const IMAGE
 	/// @const FILE

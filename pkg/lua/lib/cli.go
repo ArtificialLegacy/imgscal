@@ -772,11 +772,11 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Control
+	/// @constants Control {string}
 	/// @const RESET
 	tab.RawSetString("RESET", golua.LString(cli.COLOR_RESET))
 
-	/// @constants Text Colors
+	/// @constants TextColor {string}
 	/// @const BLACK
 	/// @const RED
 	/// @const GREEN
@@ -811,7 +811,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BRIGHT_CYAN", golua.LString(cli.COLOR_BRIGHT_CYAN))
 	tab.RawSetString("BRIGHT_WHITE", golua.LString(cli.COLOR_BRIGHT_WHITE))
 
-	/// @constants Background Colors
+	/// @constants BackgroundColor {string}
 	/// @const BACKGROUND_BLACK
 	/// @const BACKGROUND_RED
 	/// @const BACKGROUND_GREEN
@@ -846,7 +846,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BRIGHT_BACKGROUND_CYAN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_CYAN))
 	tab.RawSetString("BRIGHT_BACKGROUND_WHITE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_WHITE))
 
-	/// @constants Styles
+	/// @constants Style {string}
 	/// @const BOLD
 	/// @const UNDERLINE
 	/// @const REVERSED
@@ -854,7 +854,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
 	tab.RawSetString("REVERSED", golua.LString(cli.COLOR_REVERSED))
 
-	/// @constants Cursor
+	/// @constants Cursor {string}
 	/// @const CURSOR_HOME
 	/// @const CURSOR_LINEUP
 	/// @const CURSOR_SAVE
@@ -868,7 +868,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("CURSOR_INVISIBLE", golua.LString(cli.COLOR_CURSOR_INVISIBLE))
 	tab.RawSetString("CURSOR_VISIBLE", golua.LString(cli.COLOR_CURSOR_VISIBLE))
 
-	/// @constants Erase
+	/// @constants Erase {string}
 	/// @const ERASE_DOWN
 	/// @const ERASE_UP
 	/// @const ERASE_SCREEN
