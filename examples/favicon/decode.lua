@@ -42,4 +42,3 @@ function main()
 		io.encode(img, io.path_to(inPath))
 	end
 end
-

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/doc"
+	"github.com/ArtificialLegacy/imgscal/pkg/types"
 )
 
 const (
@@ -63,7 +64,7 @@ func main() {
 
 		for _, cn := range lib.Cns {
 			alias := strings.TrimSpace(fmt.Sprintf("%s.%s", name, cn.Group))
-			fmt.Fprintf(fs, "---@alias %s %s\n", alias, parseType(cn.Type, name))
+			fmt.Fprintf(fs, "---@alias %s %s\n", alias, types.ParseType(cn.Type, name))
 
 			entries := make([]string, len(cn.Consts))
 
@@ -109,7 +110,7 @@ func formatFunction(fs io.Writer, lib string, fn doc.Fn) {
 
 	for i, arg := range fn.Args {
 		argname := strings.TrimSpace(arg.Str)
-		if isVariadic(arg.Type) {
+		if types.IsVariadic(arg.Type) {
 			argname = "..."
 		}
 
@@ -118,7 +119,7 @@ func formatFunction(fs io.Writer, lib string, fn doc.Fn) {
 			opt = "?"
 		}
 
-		fmt.Fprintf(fs, "---@param %s%s %s %s\n", argname, opt, parseType(arg.Type, fn.Name), strings.TrimSpace(arg.Desc))
+		fmt.Fprintf(fs, "---@param %s%s %s %s\n", argname, opt, types.ParseType(arg.Type, fn.Name), strings.TrimSpace(arg.Desc))
 		argList[i] = argname
 	}
 
@@ -128,7 +129,7 @@ func formatFunction(fs io.Writer, lib string, fn doc.Fn) {
 			retdesc = fmt.Sprintf(" # %s", strings.TrimPrefix(strings.TrimSpace(ret.Str), "- "))
 		}
 
-		fmt.Fprintf(fs, "---@return %s%s\n", parseType(ret.Type, fn.Name), retdesc)
+		fmt.Fprintf(fs, "---@return %s%s\n", types.ParseType(ret.Type, fn.Name), retdesc)
 	}
 
 	if fn.Block {
@@ -151,7 +152,7 @@ func formatStruct(fs io.Writer, lib string, st doc.Struct) {
 		if prop.Desc != "" {
 			propdesc = prop.Desc
 		}
-		fmt.Fprintf(fs, "---@field %s %s%s\n", strings.TrimSpace(prop.Str), parseType(prop.Type, alias), propdesc)
+		fmt.Fprintf(fs, "---@field %s %s%s\n", strings.TrimSpace(prop.Str), types.ParseType(prop.Type, alias), propdesc)
 	}
 
 	for _, method := range st.Methods {
@@ -159,7 +160,7 @@ func formatStruct(fs io.Writer, lib string, st doc.Struct) {
 		if method.Desc != "" {
 			methoddesc = " " + method.Desc
 		}
-		fmt.Fprintf(fs, "---@field %s %s%s\n", strings.TrimSpace(method.Name), parseMethodType(method.Type, alias), methoddesc)
+		fmt.Fprintf(fs, "---@field %s %s%s\n", strings.TrimSpace(method.Name), types.ParseMethodType(method.Type, alias), methoddesc)
 	}
 
 	for _, desc := range st.Desc {
@@ -179,7 +180,7 @@ func formatInterface(fs io.Writer, lib string, it doc.Interface) {
 		if prop.Desc != "" {
 			propdesc = fmt.Sprintf(" --[[%s]]", prop.Desc)
 		}
-		pairs += fmt.Sprintf("%s: %s%s,", prop.Str, parseType(prop.Type, alias), propdesc)
+		pairs += fmt.Sprintf("%s: %s%s,", prop.Str, types.ParseType(prop.Type, alias), propdesc)
 	}
 
 	for _, method := range it.Methods {
@@ -187,7 +188,7 @@ func formatInterface(fs io.Writer, lib string, it doc.Interface) {
 		if method.Desc != "" {
 			methoddesc = fmt.Sprintf(" --[[%s]]", method.Desc)
 		}
-		pairs += fmt.Sprintf("%s: %s%s,", method.Name, parseMethodType(method.Type, alias), methoddesc)
+		pairs += fmt.Sprintf("%s: %s%s,", method.Name, types.ParseMethodType(method.Type, alias), methoddesc)
 	}
 
 	interfaceDesc := ""
@@ -196,136 +197,4 @@ func formatInterface(fs io.Writer, lib string, it doc.Interface) {
 	}
 
 	fmt.Fprintf(fs, "---@alias %s { %s }%s\n", alias, pairs, interfaceDesc)
-}
-
-var typeMap = map[string]string{
-	"int":    "integer",
-	"float":  "number",
-	"bool":   "boolean",
-	"string": "string",
-	"any":    "any",
-}
-
-func isVariadic(str string) bool {
-	return strings.HasSuffix(str, "...")
-}
-
-func parseType(str string, self string) string {
-	opt := ""
-	if strings.HasSuffix(str, "?") {
-		opt = "?"
-		str = strings.TrimSuffix(str, "?")
-	}
-
-	if str == "self" {
-		return self + opt
-	}
-
-	if strings.HasPrefix(str, "[]") {
-		return fmt.Sprintf("%s[]%s", parseType(strings.TrimPrefix(str, "[]"), self), opt)
-	}
-
-	if str == "table<any>" {
-		return "table<any, any>" + opt
-	}
-
-	if strings.HasPrefix(str, "function") {
-		return parseMethodType(str, self) + opt
-	}
-
-	if strings.HasPrefix(str, "struct") {
-		alias := strings.FieldsFunc(str, func(r rune) bool {
-			return r == '<' || r == '>'
-		})
-
-		return alias[1] + opt
-	}
-
-	for k, v := range typeMap {
-		if strings.HasPrefix(str, k) {
-			if strings.IndexByte(str, '<') != -1 {
-				alias := strings.FieldsFunc(str, func(r rune) bool {
-					return r == '<' || r == '>'
-				})
-
-				return alias[1] + opt
-			}
-
-			return v + opt
-		}
-	}
-
-	fmt.Printf("unknown type: %s [%s]\n", str, self)
-	return "any" + opt
-}
-
-func parseMethodType(str string, self string) string {
-	argStart := strings.IndexByte(str, '(')
-	argEnd := strings.LastIndexByte(str, ')')
-
-	if argEnd == -1 {
-		argEnd = len(str)
-	}
-
-	args := str[argStart+1 : argEnd]
-	argList := strings.Split(args, ", ")
-	if argStart+1 == argEnd {
-		argList = []string{}
-	}
-
-	argsFormatted := make([]string, len(argList))
-
-	for i, a := range argList {
-		split := strings.Split(a, " ")
-
-		if strings.HasPrefix(split[0], "function") || (len(split) > 1 && strings.HasPrefix(split[1], "function")) {
-			argname := fmt.Sprintf("arg%d", i)
-			if !strings.HasPrefix(split[0], "function") {
-				argname = split[0]
-				split = split[1:]
-			}
-			if isVariadic(split[len(split)-1]) {
-				argname = "..."
-			}
-
-			argsFormatted[i] = fmt.Sprintf("%s: %s", argname, parseType(strings.Join(split, " "), self))
-			continue
-		}
-
-		if len(split) == 1 {
-			argname := fmt.Sprintf("arg%d", i)
-			if isVariadic(split[0]) {
-				argname = "..."
-			}
-			argsFormatted[i] = fmt.Sprintf("%s: %s", argname, parseType(split[0], self))
-		} else if len(split) == 2 {
-			argname := split[0]
-			if isVariadic(split[0]) {
-				argname = "..."
-			}
-			argsFormatted[i] = fmt.Sprintf("%s: %s", argname, parseType(split[1], self))
-		}
-	}
-
-	retStart := strings.LastIndex(str, "->")
-	returns := str[retStart+2:]
-	if retStart == -1 {
-		returns = ""
-	}
-	retList := strings.Split(returns, ", ")
-	if retStart == -1 {
-		retList = []string{}
-	}
-
-	retFormatted := make([]string, len(retList))
-
-	for i, r := range retList {
-		retFormatted[i] = parseType(strings.TrimSpace(r), self)
-	}
-	retString := ""
-	if len(retFormatted) > 0 {
-		retString = fmt.Sprintf(": %s", strings.Join(retFormatted, ", "))
-	}
-
-	return fmt.Sprintf("fun(%s)%s", strings.Join(argsFormatted, ", "), retString)
 }

@@ -57,7 +57,7 @@ function main()
 	-- window padding used for setting the size of the child widget that wraps the image.
 	local wpx, wpy = gui.window_padding()
 
-	gui.window_run(win, function()
+	_ = gui.window_run(win, function()
 		gui.window_single():layout({
 			gui.wg_column({
 				gui.wg_align(gui.ALIGN_CENTER):to({
@@ -251,4 +251,3 @@ function wg_gen4(img, ready, seed, rnd, scale, goff, boff, normal)
 		end),
 	})
 end
-

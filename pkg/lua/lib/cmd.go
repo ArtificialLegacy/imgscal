@@ -65,7 +65,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Options
 			/// @method required(bool) -> self
-			/// @method validate(function([]string) -> string) -> self - Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.
+			/// @method validate({function([]string) -> string}) -> self - Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.
 			/// @method default(any, int<cmd.DefaultType>) -> self - The first value should match the default type given.
 
 			t := state.NewTable()

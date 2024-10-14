@@ -34,8 +34,8 @@ function main()
 
 	-- source refs
 	local srcOption = ref.new(0, ref.INT32)
-	local srcGradientStart = ref.new(image.color_rgb(0, 0, 0), ref.RGBA)
-	local srcGradientEnd = ref.new(image.color_rgb(255, 255, 255), ref.RGBA)
+	local srcGradientStart = ref.new(image.color_rgb(0, 0, 0), ref.RGBA) --[[@as ref.RGBA]]
+	local srcGradientEnd = ref.new(image.color_rgb(255, 255, 255), ref.RGBA) --[[@as ref.RGBA]]
 	local srcGradientDir = ref.new(0, ref.INT32)
 	local srcNoiseSeed = ref.new(0, ref.INT32)
 	local srcNoiseScale = ref.new(0.5, ref.FLOAT32)
@@ -139,7 +139,7 @@ function main()
 	local resizeInterp = ref.new(0, ref.INT32)
 	local resizeGray = ref.new(false, ref.BOOL)
 
-	gui.window_run(win, function()
+	_ = gui.window_run(win, function()
 		gui.window_single():layout({
 			gui.wg_align(gui.ALIGN_CENTER):to({
 				gui.wg_style():set_style_float(gui.STYLEVAR_CHILDROUNDING, 10):to({
@@ -418,7 +418,7 @@ function main()
 					end
 
 					collection.schedule(collection.IMAGE, imgDst, function()
-						collection.wait(collection.IMAGE, imgHistogram)
+						_ = collection.wait(collection.IMAGE, imgHistogram)
 						ready = true
 						gui.update()
 					end)
@@ -778,4 +778,3 @@ function wg_border(selectRef)
 		"Reflect",
 	}, selectRef)
 end
-

@@ -1702,7 +1702,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @func wg_color_edit(text, colorref) -> struct<gui.WidgetColorEdit>
 	/// @arg text {string}
-	/// @arg colorref {int<ref.COLOR>}
+	/// @arg colorref {int<ref.RGBA>}
 	/// @returns {struct<gui.WidgetColorEdit>}
 	lib.CreateFunction(tab, "wg_color_edit",
 		[]lua.Arg{
@@ -5637,7 +5637,7 @@ func init() {
 }
 
 func parseWidgets(widgetTable map[string]any, state *golua.LState, lg *log.Logger) []*golua.LTable {
-	/// @struct Widget
+	/// @interface Widget
 	/// @prop type {string<gui.WidgetType>}
 
 	wts := []*golua.LTable{}
@@ -5687,8 +5687,8 @@ func labelTable(state *golua.LState, text string) *golua.LTable {
 	/// @struct WidgetLabel
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method wrapped(bool)
-	/// @method font(int<ref.FONT>)
+	/// @method wrapped(self, bool) -> self
+	/// @method font(self, int<ref.FONT>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LABEL))
@@ -5736,9 +5736,9 @@ func buttonTable(state *golua.LState, text string) *golua.LTable {
 	/// @struct WidgetButton
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method disabled(bool)
-	/// @method size(width float, height float)
-	/// @method on_click(callback function())
+	/// @method disabled(self, bool) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method on_click(self, callback {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON))
@@ -5870,7 +5870,7 @@ func checkboxTable(state *golua.LState, text string, boolref int) *golua.LTable 
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop text {string}
 	/// @prop boolref {int<ref.BOOL>}
-	/// @method on_change(function(bool, int<ref.BOOL>))
+	/// @method on_change(self, {function(bool, int<ref.BOOL>)}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CHECKBOX))
@@ -5913,10 +5913,10 @@ func checkboxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 func childTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetChild
 	/// @prop type {string<gui.WidgetType>}
-	/// @method border(bool)
-	/// @method size(width float, height float)
-	/// @method layout(widgets []struct<gui.Widget>)
-	/// @method flags(flags int<gui.WindowFlags>)
+	/// @method border(self, bool) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method layout(self, widgets []struct<gui.Widget>) -> self
+	/// @method flags(self, flags int<gui.WindowFlags>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CHILD))
@@ -5982,10 +5982,10 @@ func colorEditTable(state *golua.LState, text string, colorref int) *golua.LTabl
 	/// @struct WidgetColorEdit
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @prop colorref {int<ref.COLOR>}
-	/// @method size(width float)
-	/// @method on_change(callback(color struct<image.Color>, int<ref.COLOR>))
-	/// @method flags(flags int<gui.ColorEditFlags>)
+	/// @prop colorref {int<ref.RGBA>}
+	/// @method size(self, width float) -> self
+	/// @method on_change(self, callback {function(color struct<image.Color>, int<ref.RGBA>)}) -> self
+	/// @method flags(self, flags int<gui.ColorEditFlags>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COLOR_EDIT))
@@ -6104,9 +6104,9 @@ func comboCustomTable(state *golua.LState, text, preview string) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop text {string}
 	/// @prop preview {string}
-	/// @method size(width float)
-	/// @method layout([]struct<gui.Widget>)
-	/// @method flags(flags int<gui.ComboFlags>)
+	/// @method size(self, width float) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
+	/// @method flags(self, flags int<gui.ComboFlags>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COMBO_CUSTOM))
@@ -6164,9 +6164,9 @@ func comboTable(state *golua.LState, text, preview string, items golua.LValue, i
 	/// @prop preview {string}
 	/// @prop items {[]string}
 	/// @prop i32ref {int<ref.INT32>}
-	/// @method size(width float)
-	/// @method on_change(function(int, int<ref.INT32>))
-	/// @method flags(flags int<gui.ComboFlags)
+	/// @method size(self, width float) -> self
+	/// @method on_change(self, {function(int, int<ref.INT32>)}) -> self
+	/// @method flags(self, flags int<gui.ComboFlags) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_COMBO))
@@ -6271,8 +6271,8 @@ func conditionBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua
 func contextMenuTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetContextMenu
 	/// @prop type {string<gui.WidgetType>}
-	/// @method mouse_button(button int<gui.MouseButton>)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method mouse_button(self, button int<gui.MouseButton>) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CONTEXT_MENU))
@@ -6313,11 +6313,11 @@ func datePickerTable(state *golua.LState, id string, timeref int) *golua.LTable 
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop id {string}
 	/// @prop timeref {int<ref.TIME>}
-	/// @method on_change(function(string, int<ref.TIME>))
-	/// @method format(format string)
-	/// @method size(width float)
-	/// @method start_of_week(day int<time.Weekday>)
-	/// @method translation(label string<gui.DatePickerLabel>, value string)
+	/// @method on_change(self, {function(string, int<ref.TIME>)}) -> self
+	/// @method format(self, format string) -> self
+	/// @method size(self, width float) -> self
+	/// @method start_of_week(self, day int<time.Weekday>) -> self
+	/// @method translation(self, label string<gui.DatePickerLabel>, value string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_DATE_PICKER))
@@ -6419,8 +6419,8 @@ func dragIntTable(state *golua.LState, text string, i32Ref, minValue, maxValue i
 	/// @prop i32ref {int<ref.INT32>}
 	/// @prop minvalue {int}
 	/// @prop maxvalue {int}
-	/// @method speed(speed float)
-	/// @method format(format string)
+	/// @method speed(self, speed float) -> self
+	/// @method format(self, format string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_DRAG_INT))
@@ -6475,13 +6475,13 @@ func inputFloatTable(state *golua.LState, floatref int) *golua.LTable {
 	/// @struct WidgetInputFloat
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop f32ref {int<ref.FLOAT32>}
-	/// @method size(width float)
-	/// @method on_change(function(float, int<ref.FLOAT32>))
-	/// @method format(format string)
-	/// @method flags(flags int<gui.InputFlags>)
-	/// @method label(label string)
-	/// @method step_size(stepsize float)
-	/// @method step_size_fast(stepsize float)
+	/// @method size(self, width float) -> self
+	/// @method on_change(self, {function(float, int<ref.FLOAT32>)}) -> self
+	/// @method format(self, format string) -> self
+	/// @method flags(self, flags int<gui.InputFlags>) -> self
+	/// @method label(self, label string) -> self
+	/// @method step_size(self, stepsize float) -> self
+	/// @method step_size_fast(self, stepsize float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_FLOAT))
@@ -6589,12 +6589,12 @@ func inputIntTable(state *golua.LState, intref int) *golua.LTable {
 	/// @struct WidgetInputInt
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop i32ref {int<ref.INT32>}
-	/// @method size(width float)
-	/// @method on_change(function(int, int<ref.INT32>))
-	/// @method flags(flags int<gui.InputFlags>)
-	/// @method label(label string)
-	/// @method step_size(stepsize int)
-	/// @method step_size_fast(stepsize int)
+	/// @method size(self, width float) -> self
+	/// @method on_change({function(int, int<ref.INT32>)}) -> self
+	/// @method flags(self, flags int<gui.InputFlags>) -> self
+	/// @method label(self, label string) -> self
+	/// @method step_size(self, stepsize int) -> self
+	/// @method step_size_fast(self, stepsize int) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_INT))
@@ -6691,12 +6691,12 @@ func inputTextTable(state *golua.LState, strref int) *golua.LTable {
 	/// @struct WidgetInputText
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop strref {int<ref.STRING>}
-	/// @method size(width float)
-	/// @method flags(flags int<gui.InputFlags>)
-	/// @method label(label strings)
-	/// @method autocomplete([]string)
-	/// @method callback(function(string, int<ref.STRING>))
-	/// @method hint(hint string)
+	/// @method size(self, width float) -> self
+	/// @method flags(self, flags int<gui.InputFlags>) -> self
+	/// @method label(self, label strings) -> self
+	/// @method autocomplete(self, []string) -> self
+	/// @method callback(self, {function(string, int<ref.STRING>)}) -> self
+	/// @method hint(self, hint string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_TEXT))
@@ -6817,12 +6817,12 @@ func inputMultilineTextTable(state *golua.LState, strref int) *golua.LTable {
 	/// @struct WidgetInputTextMultiline
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop strref {int<ref.STRING>}
-	/// @method size(width float, height float)
-	/// @method on_change(function(string, int<ref.STRING>))
-	/// @method flags(flags int<gui.InputFlags>)
-	/// @method label(label string)
-	/// @method callback(function(string, int<ref.STRING>))
-	/// @method autoscroll_to_bottom(bool)
+	/// @method size(self, width float, height float) -> self
+	/// @method on_change(self, {function(string, int<ref.STRING>)}) -> self
+	/// @method flags(self, flags int<gui.InputFlags>) -> self
+	/// @method label(self, label string) -> self
+	/// @method callback(self, {function(string, int<ref.STRING>)}) -> self
+	/// @method autoscroll_to_bottom(self, bool) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_INPUT_MULTILINE_TEXT))
@@ -6929,8 +6929,8 @@ func progressBarTable(state *golua.LState, fraction float64) *golua.LTable {
 	/// @struct WidgetProgressBar
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop fraction {float}
-	/// @method overlay(label string)
-	/// @method size(width float, height float)
+	/// @method overlay(self, label string) -> self
+	/// @method size(self, width float, height float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_PROGRESS_BAR))
@@ -7020,7 +7020,7 @@ func buttonSmallTable(state *golua.LState, text string) *golua.LTable {
 	/// @struct WidgetButtonSmall
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method on_click(callback function())
+	/// @method on_click(self, callback {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_SMALL))
@@ -7055,7 +7055,7 @@ func buttonRadioTable(state *golua.LState, text string, active bool) *golua.LTab
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
 	/// @prop active {bool}
-	/// @method on_change(function())
+	/// @method on_change(self, {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_RADIO))
@@ -7091,13 +7091,13 @@ func imageUrlTable(state *golua.LState, url string) *golua.LTable {
 	/// @struct WidgetImageURL
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop url {string}
-	/// @method on_click(function())
-	/// @method size(width float, height float)
-	/// @method timeout(timeout int)
-	/// @method layout_for_failure([]struct<gui.Widget>)
-	/// @method layout_for_loading([]struct<gui.Widget>)
-	/// @method on_failure(function())
-	/// @method on_ready(function())
+	/// @method on_click(self, {function()}) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method timeout(self, timeout int) -> self
+	/// @method layout_for_failure(self, []struct<gui.Widget>) -> self
+	/// @method layout_for_loading(self, []struct<gui.Widget>) -> self
+	/// @method on_failure(self, {function()}) -> self
+	/// @method on_ready(self, {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_IMAGE_URL))
@@ -7209,8 +7209,8 @@ func imageTable(state *golua.LState, image int, sync bool) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop image {int<collection.IMAGE>}
 	/// @prop sync {bool}
-	/// @method on_click(function())
-	/// @method size(width float, height float)
+	/// @method on_click(self, {function()}) -> self
+	/// @method size(self, width float, height float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_IMAGE))
@@ -7284,13 +7284,13 @@ func listBoxTable(state *golua.LState, items golua.LValue) *golua.LTable {
 	/// @struct WidgetListBox
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop items {[]string}
-	/// @method on_change(function(int))
-	/// @method border(bool)
-	/// @method context_menu([]struct<gui.Widget>)
-	/// @method on_double_click(function(int))
-	/// @method on_menu(function(int, string))
-	/// @method selected_index(int)
-	/// @method size(width float, height float)
+	/// @method on_change(self, {function(int)}) -> self
+	/// @method border(self, bool) -> self
+	/// @method context_menu(self, []struct<gui.Widget>) -> self
+	/// @method on_double_click(self, {function(int)}) -> self
+	/// @method on_menu(self, {function(int, string)}) -> self
+	/// @method selected_index(self, int) -> self
+	/// @method size(self, width float, height float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LIST_BOX))
@@ -7403,7 +7403,7 @@ func listBoxBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.L
 func listClipperTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetListClipper
 	/// @prop type {string<gui.WidgetType>}
-	/// @method layout([]struct<gui.Widget>)
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LIST_CLIPPER))
@@ -7431,7 +7431,7 @@ func listClipperBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 func mainMenuBarTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetMainMenuBar
 	/// @prop type {string<gui.WidgetType>}
-	/// @method layout([]struct<gui.Widget>)
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU_BAR_MAIN))
@@ -7459,7 +7459,7 @@ func mainMenuBarBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 func menuBarTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetMenuBar
 	/// @prop type {string<gui.WidgetType>}
-	/// @method layout([]struct<gui.Widget>)
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU_BAR))
@@ -7488,10 +7488,10 @@ func menuItemTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct WidgetMenuItem
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method enabled(bool)
-	/// @method on_click(function())
-	/// @method selected(bool)
-	/// @method shortcut(string)
+	/// @method enabled(self, bool) -> self
+	/// @method on_click(self, {function()}) -> self
+	/// @method selected(self, bool) -> self
+	/// @method shortcut(self, string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU_ITEM))
@@ -7558,8 +7558,8 @@ func menuTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct WidgetMenu
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method enabled(bool)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method enabled(self, bool) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MENU))
@@ -7601,11 +7601,11 @@ func selectableTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct WidgetSelectable
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method on_click(function())
-	/// @method on_double_click(function())
-	/// @method selected(bool)
-	/// @method size(width float, height float)
-	/// @method flags(flags int<gui.SelectableFlags>)
+	/// @method on_click(self, {function()}) -> self
+	/// @method on_double_click(self, {function()}) -> self
+	/// @method selected(self, bool) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method flags(self, flags int<gui.SelectableFlags>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SELECTABLE))
@@ -7692,10 +7692,10 @@ func sliderFloatTable(state *golua.LState, f32ref int, min, max float64) *golua.
 	/// @prop f32ref {int<ref.FLOAT32>}
 	/// @prop min {float}
 	/// @prop max {float}
-	/// @method on_change(function(float, int<ref.FLOAT32>))
-	/// @method label(string)
-	/// @method format(string)
-	/// @method size(width float)
+	/// @method on_change(self, {function(float, int<ref.FLOAT32>)}) -> self
+	/// @method label(self, string) -> self
+	/// @method format(self, string) -> self
+	/// @method size(self, width float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SLIDER_FLOAT))
@@ -7775,10 +7775,10 @@ func sliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTable
 	/// @prop i32ref {int<ref.INT32>}
 	/// @prop min {int}
 	/// @prop max {int}
-	/// @method on_change(function(int, int<ref.INT32>))
-	/// @method label(string)
-	/// @method format(string)
-	/// @method size(width float)
+	/// @method on_change(self, {function(int, int<ref.INT32>)}) -> self
+	/// @method label(self, string) -> self
+	/// @method format(self, string) -> self
+	/// @method size(self, width float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SLIDER_INT))
@@ -7858,11 +7858,11 @@ func vsliderIntTable(state *golua.LState, i32ref int, min, max int) *golua.LTabl
 	/// @prop i32ref {int<ref.INT32>}
 	/// @prop min {int}
 	/// @prop max {int}
-	/// @method on_change(function(int, int<ref.INT32>))
-	/// @method label(string)
-	/// @method format(string)
-	/// @method size(width float, height float)
-	/// @method flags(flags int<gui.SliderFlags>)
+	/// @method on_change(self, {function(int, int<ref.INT32>)}) -> self
+	/// @method label(self, string) -> self
+	/// @method format(self, string) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method flags(self, flags int<gui.SliderFlags>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_VSLIDER_INT))
@@ -7954,8 +7954,8 @@ func vsliderIntBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golu
 func tabbarTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetTabBar
 	/// @prop type {string<gui.WidgetType>}
-	/// @method flags(flags int<gui.TabBarFlags>)
-	/// @method tab_items([]struct<gui.TabItem>)
+	/// @method flags(self, flags int<gui.TabBarFlags>) -> self
+	/// @method tab_items(self, []struct<gui.TabItem>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TAB_BAR))
@@ -8001,9 +8001,9 @@ func tabitemTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct TabItem
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method flags(flags int<gui.TabItemFlags>)
-	/// @method is_open(bool)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method flags(self, flags int<gui.TabItemFlags>) -> self
+	/// @method is_open(self, bool) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TAB_ITEM))
@@ -8060,7 +8060,7 @@ func tooltipTable(state *golua.LState, tip string) *golua.LTable {
 	/// @struct WidgetTooltip
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop tip {string}
-	/// @method layout([]struct<gui.Widget>)
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TOOLTIP))
@@ -8091,8 +8091,8 @@ func tableColumnTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct TableColumn
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method flags(flags int<gui.TableColumnFlags>)
-	/// @method inner_width_or_weight(width float)
+	/// @method flags(self, flags int<gui.TableColumnFlags>) -> self
+	/// @method inner_width_or_weight(self, width float) -> self
 	/// @desc
 	/// Only used in table widget columns.
 
@@ -8136,9 +8136,9 @@ func tableRowTable(state *golua.LState, widgets golua.LValue) *golua.LTable {
 	/// @struct TableRow
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop widgets {[]struct<gui.Widget>}
-	/// @method flags(flags int<gui.TableRowFlags>)
-	/// @method bg_color(color struct<image.Color>)
-	/// @method min_height(height float)
+	/// @method flags(self, flags int<gui.TableRowFlags>) -> self
+	/// @method bg_color(self, color struct<image.Color>) -> self
+	/// @method min_height(self, height float) -> self
 	/// @desc
 	/// Only used in table widget rows.
 
@@ -8199,13 +8199,13 @@ func tableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 func tableTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetTable
 	/// @prop type {string<gui.WidgetType>}
-	/// @method flags(flags int<gui.TableFlags>)
-	/// @method fast_mode(bool)
-	/// @method size(width float, height float)
-	/// @method columns([]struct<gui.TableColumn>)
-	/// @method rows([]struct<gui.TableRow>)
-	/// @method inner_width(width float)
-	/// @method freeze(col int, row int) - Can be called multiple times.
+	/// @method flags(self, flags int<gui.TableFlags>) -> self
+	/// @method fast_mode(self, bool) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method columns(self, []struct<gui.TableColumn>) -> self
+	/// @method rows(self, []struct<gui.TableRow>) -> self
+	/// @method inner_width(self, width float) -> self
+	/// @method freeze(self, col int, row int) -> self - Can be called multiple times.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TABLE))
@@ -8326,7 +8326,7 @@ func buttonArrowTable(state *golua.LState, dir int) *golua.LTable {
 	/// @struct WidgetButtonArrow
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop dir {int<gui.Direction>}
-	/// @method on_click(function())
+	/// @method on_click(self, {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_ARROW))
@@ -8360,8 +8360,8 @@ func treeNodeTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct WidgetTreeNode
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method flags(flags int<gui.TreeNodeFlags>)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method flags(self, flags int<gui.TreeNodeFlags>) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TREE_NODE))
@@ -8404,8 +8404,8 @@ func treeTableRowTable(state *golua.LState, label string, widgets golua.LValue) 
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
 	/// @prop widgets {[]struct<gui.Widget>}
-	/// @method flags(flags int<gui.TreeNodeFlags>)
-	/// @method children([]struct<gui.TreeTableRow>)
+	/// @method flags(self, flags int<gui.TreeNodeFlags>) -> self
+	/// @method children(self, []struct<gui.TreeTableRow>) -> self
 	/// @desc
 	/// Only used in tree table widget rows.
 
@@ -8461,11 +8461,11 @@ func treeTableRowBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *go
 func treeTableTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetTreeTable
 	/// @prop type {string<gui.WidgetType>}
-	/// @method flags(flags int<gui.TableFlags>)
-	/// @method size(width float, height float)
-	/// @method columns([]struct<TableColumn>)
-	/// @method rows([]struct<TreeTableRow>)
-	/// @method freeze(col int, row int) - Can be called multiple times.
+	/// @method flags(self, flags int<gui.TableFlags>) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method columns(self, []struct<TableColumn>) -> self
+	/// @method rows(self, []struct<TreeTableRow>) -> self
+	/// @method freeze(self, col int, row int) -> self - Can be called multiple times.
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_TREE_TABLE))
@@ -8566,14 +8566,14 @@ func windowTable(r *lua.Runner, lg *log.Logger, state *golua.LState, single bool
 	/// @prop single {bool}
 	/// @prop menubar {bool}
 	/// @prop label {string}
-	/// @method flags(flags int<gui.WindowFlags>)
-	/// @method size(width float, height float)
-	/// @method pos(x float, y float)
-	/// @method is_open(bool)
-	/// @method bring_to_front()
-	/// @method ready(function(struct<gui.StateWindow>))
-	/// @method register_keyboard_shortcuts([]struct<gui.Shortcut>)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method flags(self, flags int<gui.WindowFlags>) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method pos(self, x float, y float) -> self
+	/// @method is_open(self, bool) -> self
+	/// @method bring_to_front(self) -> self
+	/// @method ready(self, {function(struct<gui.StateWindow>)}) -> self
+	/// @method register_keyboard_shortcuts(self, []struct<gui.Shortcut>) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_WINDOW_SINGLE))
@@ -8761,9 +8761,9 @@ func popupModalTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct WidgetPopupModel
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method flags(flags int<gui.WindowFlags>)
-	/// @method is_open(bool)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method flags(self, flags int<gui.WindowFlags>) -> self
+	/// @method is_open(self, bool) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_POPUP_MODAL))
@@ -8820,8 +8820,8 @@ func popupTable(state *golua.LState, label string) *golua.LTable {
 	/// @struct WidgetPopup
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop label {string}
-	/// @method flags(flags int<gui.WindowFlags>)
-	/// @method layout([]struct<gui.Widget>)
+	/// @method flags(self, flags int<gui.WindowFlags>) -> self
+	/// @method layout(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_POPUP))
@@ -8866,7 +8866,7 @@ func splitLayoutTable(state *golua.LState, direction, floatref int, layout1 golu
 	/// @prop floatref {int<ref.FLOAT32>}
 	/// @prop layout1 {[]struct<gui.Widget>}
 	/// @prop layout2 {[]struct<gui.Widget>}
-	/// @method border(bool)
+	/// @method border(self, bool) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_LAYOUT_SPLIT))
@@ -8921,7 +8921,7 @@ func splitterTable(state *golua.LState, direction, floatref int) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop direction {int<gui.SplitDirection>}
 	/// @prop floatref {int<ref.FLOAT32>}
-	/// @method size(width float, height float)
+	/// @method size(self, width float, height float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_SPLITTER))
@@ -8993,7 +8993,7 @@ func alignTable(state *golua.LState, at int) *golua.LTable {
 	/// @struct WidgetAlign
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop at {int<gui.Alignment>}
-	/// @method to([]struct<gui.Widget>)
+	/// @method to(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_ALIGN))
@@ -9025,8 +9025,8 @@ func msgBoxTable(state *golua.LState, title, content string) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop title {string}
 	/// @prop content {string}
-	/// @method buttons(int<gui.MSGBoxButtons>)
-	/// @method result_callback(function(bool))
+	/// @method buttons(self, int<gui.MSGBoxButtons>) -> self
+	/// @method result_callback(self, {function(bool)}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_MSG_BOX))
@@ -9093,8 +9093,8 @@ func msgBoxPrepareBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *g
 func buttonInvisibleTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetButtonInvisible
 	/// @prop type {string<gui.WidgetType>}
-	/// @method size(width float, height float)
-	/// @method on_click(function())
+	/// @method size(self, width float, height float) -> self
+	/// @method on_click(self, {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_INVISIBLE))
@@ -9142,12 +9142,12 @@ func buttonImageTable(state *golua.LState, id int, sync bool) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop id {int<collection.IMAGE>}
 	/// @prop sync {bool}
-	/// @method size(width float, height float)
-	/// @method on_click(function())
-	/// @method bg_color(struct<image.Color>)
-	/// @method tint_color(struct<image.Color>)
-	/// @method frame_padding(padding float)
-	/// @method uv(uv0 struct<image.Point>, uv1 struct<image.Point>)
+	/// @method size(self, width float, height float) -> self
+	/// @method on_click(self, {function()}) -> self
+	/// @method bg_color(self, struct<image.Color>) -> self
+	/// @method tint_color(self, struct<image.Color>) -> self
+	/// @method frame_padding(self, padding float) -> self
+	/// @method uv(self, uv0 struct<image.Point>, uv1 struct<image.Point>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_IMAGE))
@@ -9273,13 +9273,13 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 func styleTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetStyle
 	/// @prop type {string<gui.WidgetType>}
-	/// @method set_disabled(bool)
-	/// @method to([]struct<gui.Widget>)
-	/// @method set_font_size(float)
-	/// @method set_color(int<gui.StyleColorID>, struct<image.Color>)
-	/// @method set_style(int<gui.StyleVarID>, width float, height float)
-	/// @method set_style_float(int<gui.StyleVarID>, float)
-	/// @method font(int<ref.FONT>)
+	/// @method set_disabled(self, bool) -> self
+	/// @method to(self, []struct<gui.Widget>) -> self
+	/// @method set_font_size(self, float) -> self
+	/// @method set_color(self, int<gui.StyleColorID>, struct<image.Color>) -> self
+	/// @method set_style(self, int<gui.StyleVarID>, width float, height float) -> self
+	/// @method set_style_float(self, int<gui.StyleVarID>, float) -> self
+	/// @method font(self, int<ref.FONT>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_STYLE))
@@ -9437,17 +9437,17 @@ func customBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LT
 func eventHandlerTable(state *golua.LState) *golua.LTable {
 	/// @struct WidgetEvent
 	/// @prop type {string<gui.WidgetType>}
-	/// @method on_activate(function())
-	/// @method on_active(function())
-	/// @method on_deactivate(function())
-	/// @method on_hover(function())
-	/// @method on_click(int<gui.MouseButton>, function())
-	/// @method on_dclick(int<gui.MouseButton>, function())
-	/// @method on_key_down(int<gui.Key>, function())
-	/// @method on_key_pressed(int<gui.Key>, function())
-	/// @method on_key_released(int<gui.Key>, function())
-	/// @method on_mouse_down(int<gui.MouseButton>, function())
-	/// @method on_mouse_released(int<gui.MouseButton>, function())
+	/// @method on_activate(self, {function()}) -> self
+	/// @method on_active(self, {function()}) -> self
+	/// @method on_deactivate(self, {function()}) -> self
+	/// @method on_hover(self, {function()}) -> self
+	/// @method on_click(self, int<gui.MouseButton>, {function()}) -> self
+	/// @method on_dclick(self, int<gui.MouseButton>, {function()}) -> self
+	/// @method on_key_down(self, int<gui.Key>, {function()}) -> self
+	/// @method on_key_pressed(self, int<gui.Key>, {function()}) -> self
+	/// @method on_key_released(self, int<gui.Key>, {function()}) -> self
+	/// @method on_mouse_down(self, int<gui.MouseButton>, {function()}) -> self
+	/// @method on_mouse_released(self, int<gui.MouseButton>, {function()}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_EVENT_HANDLER))
@@ -9689,7 +9689,7 @@ func cssTagTable(state *golua.LState, tag string) *golua.LTable {
 	/// @struct WidgetCSSTag
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop tag {string}
-	/// @method to([]struct<gui.Widget>)
+	/// @method to(self, []struct<gui.Widget>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_CSS_TAG))
@@ -9720,16 +9720,16 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 	/// @struct WidgetPlot
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop title {string}
-	/// @method axis_limits(xmin float, xmax float, ymin float, ymax float, cond int<gui.Condition>)
-	/// @method flags(flags int<gui.PlotFlags>)
-	/// @method set_xaxis_label(axis int<gui.PlotAxis>, label string)
-	/// @method set_yaxis_label(axis int<gui.PlotAxis>, label string)
-	/// @method size(width float, height float)
-	/// @method x_axeflags(flags int<gui.PlotAxisFlags>)
-	/// @method xticks(ticks []struct<gui.PlotTicker>, default bool)
-	/// @method y_axeflags(flags1 int<gui.PlotAxisFlags>, flags2 int<gui.PlotAxisFlags>, flags3 int<gui.PlotAxisFlags>)
-	/// @method yticks(ticks []struct<gui.PlotTicker>)
-	/// @method plots([]struct<gui.Plot>)
+	/// @method axis_limits(self, xmin float, xmax float, ymin float, ymax float, cond int<gui.Condition>) -> self
+	/// @method flags(self, flags int<gui.PlotFlags>) -> self
+	/// @method set_xaxis_label(self, axis int<gui.PlotAxis>, label string) -> self
+	/// @method set_yaxis_label(self, axis int<gui.PlotAxis>, label string) -> self
+	/// @method size(self, width float, height float) -> self
+	/// @method x_axeflags(self, flags int<gui.PlotAxisFlags>) -> self
+	/// @method xticks(self, ticks []struct<gui.PlotTicker>, default bool) -> self
+	/// @method y_axeflags(self, flags1 int<gui.PlotAxisFlags>, flags2 int<gui.PlotAxisFlags>, flags3 int<gui.PlotAxisFlags>) -> self
+	/// @method yticks(self, ticks []struct<gui.PlotTicker>) -> self
+	/// @method plots(self, []struct<gui.Plot>) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_PLOT))
@@ -9843,7 +9843,7 @@ func plotTable(state *golua.LState, title string) *golua.LTable {
 }
 
 func plotBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
-	/// @struct Plot
+	/// @interface Plot
 	/// @prop type {string<gui.PlotType>}
 
 	title := t.RawGetString("title").(golua.LString)
@@ -9972,9 +9972,9 @@ func plotBarHTable(state *golua.LState, title string, data golua.LValue) *golua.
 	/// @prop type {string<gui.PlotType>}
 	/// @prop title {string}
 	/// @prop data {[]float}
-	/// @method height(height float)
-	/// @method offset(offset float)
-	/// @method shift(shift float)
+	/// @method height(self, height float) -> self
+	/// @method offset(self, offset float) -> self
+	/// @method shift(self, shift float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_BAR_H))
@@ -10037,9 +10037,9 @@ func plotBarTable(state *golua.LState, title string, data golua.LValue) *golua.L
 	/// @prop type {string<gui.PlotType>}
 	/// @prop title {string}
 	/// @prop data {[]float}
-	/// @method width(width float)
-	/// @method offset(offset float)
-	/// @method shift(shift float)
+	/// @method width(self, width float) -> self
+	/// @method offset(self, offset float) -> self
+	/// @method shift(self, shift float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_BAR))
@@ -10102,10 +10102,10 @@ func plotLineTable(state *golua.LState, title string, data golua.LValue) *golua.
 	/// @prop type {string<gui.PlotType>}
 	/// @prop title {string}
 	/// @prop data {[]float}
-	/// @method set_plot_y_axis(axis int<gui.PlotYAxis>)
-	/// @method offset(offset float)
-	/// @method x0(x0 float)
-	/// @method xscale(xscale float)
+	/// @method set_plot_y_axis(self, axis int<gui.PlotYAxis>) -> self
+	/// @method offset(self, offset float) -> self
+	/// @method x0(self, x0 float) -> self
+	/// @method xscale(self, xscale float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_LINE))
@@ -10180,8 +10180,8 @@ func plotLineXYTable(state *golua.LState, title string, xdata, ydata golua.LValu
 	/// @prop title {string}
 	/// @prop xdata {[]float}
 	/// @prop ydata {[]float}
-	/// @method set_plot_y_axis(axis int<gui.PlotYAxis>)
-	/// @method offset(offset float)
+	/// @method set_plot_y_axis(self, axis int<gui.PlotYAxis>) -> self
+	/// @method offset(self, offset float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_LINE_XY))
@@ -10244,9 +10244,9 @@ func plotPieTable(state *golua.LState, labels golua.LValue, data golua.LValue, x
 	/// @prop x {float}
 	/// @prop y {float}
 	/// @prop radius {float}
-	/// @method angle0(angle0 float)
-	/// @method label_format(format string)
-	/// @method normalize(bool)
+	/// @method angle0(self, angle0 float) -> self
+	/// @method label_format(self, format string) -> self
+	/// @method normalize(self, bool) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_PIE_CHART))
@@ -10321,9 +10321,9 @@ func plotScatterTable(state *golua.LState, title string, data golua.LValue) *gol
 	/// @prop type {string<gui.PlotType>}
 	/// @prop title {string}
 	/// @prop data {[]float}
-	/// @method offset(offset float)
-	/// @method x0(x0 float)
-	/// @method xscale(xscale float)
+	/// @method offset(self, offset float) -> self
+	/// @method x0(self, x0 float) -> self
+	/// @method xscale(self, xscale float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_SCATTER))
@@ -10387,7 +10387,7 @@ func plotScatterXYTable(state *golua.LState, title string, xdata, ydata golua.LV
 	/// @prop title {string}
 	/// @prop xdata {[]float}
 	/// @prop ydata {[]float}
-	/// @method offset(offset float)
+	/// @method offset(self, offset float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(PLOT_SCATTER_XY))

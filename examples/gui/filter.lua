@@ -237,7 +237,7 @@ function main()
 	local colorFuncAlphaValue = ref.new(0, ref.FLOAT32)
 	local colorFuncAlphaCValue = ref.new(0, ref.INT32)
 
-	gui.window_run(win, function()
+	_ = gui.window_run(win, function()
 		gui.window_single():layout({
 			gui.wg_align(gui.ALIGN_CENTER):to({
 				gui.wg_style():set_style_float(gui.STYLEVAR_CHILDROUNDING, 10):to({

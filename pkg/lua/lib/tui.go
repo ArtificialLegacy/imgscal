@@ -616,7 +616,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDViewportSync
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop id {int} - The viewport id.
 
 			t := customtea.CMDViewportSync(state, args["model"].(int))
@@ -635,7 +635,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDViewportUp
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop id {int} - The viewport id.
 			// @prop lines {[]string} - The lines to display.
 
@@ -655,7 +655,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDViewportDown
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop id {int} - The viewport id.
 			// @prop lines {[]string} - The lines to display.
 
@@ -997,10 +997,10 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @interface CMD
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			/// @struct CMDNone
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDNone(state))
 			return 1
@@ -1012,7 +1012,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDSuspend
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDSuspend(state))
 			return 1
@@ -1024,7 +1024,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDQuit
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDQuit(state))
 			return 1
@@ -1039,7 +1039,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDBatch
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop cmds {[]struct<tui.CMD>} - The commands to execute.
 
 			t := customtea.CMDBatch(state, args["cmds"].(*golua.LTable))
@@ -1057,7 +1057,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDSequence
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop cmds {[]struct<tui.CMD>} - The commands to execute.
 
 			t := customtea.CMDSequence(state, args["cmds"].(*golua.LTable))
@@ -1077,7 +1077,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDPrintf
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop format {string} - The format string.
 			/// @prop args {[]any} - The arguments to format.
 
@@ -1099,7 +1099,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDPrintln
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop args {[]any} - The arguments to print.
 
 			a := args["args"].([]any)
@@ -1120,7 +1120,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDWindowTitle
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop title {string} - The title to set.
 
 			state.Push(customtea.CMDWindowTitle(state, args["title"].(string)))
@@ -1133,7 +1133,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDWindowSize
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDWindowSize(state))
 			return 1
@@ -1145,7 +1145,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDShowCursor
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDShowCursor(state))
 			return 1
@@ -1157,7 +1157,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDHideCursor
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDHideCursor(state))
 			return 1
@@ -1169,7 +1169,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDClearScreen
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDClearScreen(state))
 			return 1
@@ -1181,7 +1181,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDClearScrollArea
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDClearScrollArea(state))
 			return 1
@@ -1200,7 +1200,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDScrollSync
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop lines {[]string} - The lines to display.
 			/// @prop top {int} - The top line.
 			/// @prop bottom {int} - The bottom line.
@@ -1222,7 +1222,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDScrollUp
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop lines {[]string} - The lines to display.
 			/// @prop top {int} - The top line.
 			/// @prop bottom {int} - The bottom line.
@@ -1244,7 +1244,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDScrollDown
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop lines {[]string} - The lines to display.
 			/// @prop top {int} - The top line.
 			/// @prop bottom {int} - The bottom line.
@@ -1264,7 +1264,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDEvery
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop duration {int} - Time in ms.
 			/// @prop fn {function(ms int) -> any} - The function to call.
 
@@ -1283,7 +1283,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDTick
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop duration {int} - Time in ms.
 			/// @prop fn {function(ms int) -> any} - The function to call.
 
@@ -1300,7 +1300,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDToggleReportFocus
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop enabled {bool} - Whether to report focus.
 
 			state.Push(customtea.CMDToggleReportFocus(state, args["enabled"].(bool)))
@@ -1316,7 +1316,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDToggleBracketedPaste
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 			/// @prop enabled {bool} - Whether to enable bracketed paste.
 
 			state.Push(customtea.CMDToggleBracketedPaste(state, args["enabled"].(bool)))
@@ -1329,7 +1329,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDDisableMouse
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDDisableMouse(state))
 			return 1
@@ -1341,7 +1341,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDEnableMouseAllMotion
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDEnableMouseAllMotion(state))
 			return 1
@@ -1353,7 +1353,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDEnableMouseCellMotion
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDEnableMouseCellMotion(state))
 			return 1
@@ -1365,7 +1365,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDEnterAltScreen
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDEnterAltScreen(state))
 			return 1
@@ -1377,129 +1377,129 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct CMDExitAltScreen
-			/// @prop cmd {int} - The command type.
+			/// @prop cmd {int<tui.CMDID>} - The command type.
 
 			state.Push(customtea.CMDExitAltScreen(state))
 			return 1
 		})
 
 	/// @struct CMDStored
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int}
 
 	/// @struct CMDSpinnerTick
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The spinner id.
 
 	/// @struct CMDTextAreaFocus
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The text area id.
 
 	/// @struct CMDTextInputFocus
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The text input id.
 
 	/// @struct CMDBlink
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The cursor id.
 
 	/// @struct CMDCursorFocus
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The cursor id.
 
 	/// @struct CMDFilePickerInit
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The file picker id.
 
 	/// @struct CMDListSetItems
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The list id.
 	/// @prop items {[]struct<tui.ListItem>} - The items to set.
 
 	/// @struct CMDListInsertItem
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The list id.
 	/// @prop index {int} - The index to insert at.
 	/// @prop item {struct<tui.ListItem>} - The item to insert.
 
 	/// @struct CMDListSetItem
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The list id.
 	/// @prop index {int} - The index to set.
 	/// @prop item {struct<tui.ListItem>} - The item to set.
 
 	/// @struct CMDListStatusMessage
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The list id.
 	/// @prop msg {string} - The message to display.
 
 	/// @struct CMDListSpinnerStart
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The list id.
 
 	/// @struct CMDListSpinnerToggle
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The list id.
 
 	/// @struct CMDProgressSet
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The progress id.
 	/// @prop percent {float} - The percentage.
 
 	/// @struct CMDProgressDec
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The progress id.
 	/// @prop percent {float} - The percentage to decrease.
 
 	/// @struct CMDProgressInc
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The progress id.
 	/// @prop percent {float} - The percentage to increase.
 
 	/// @struct CMDStopWatchStart
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct CMDStopWatchStop
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct CMDStopWatchReset
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct CMDStopWatchToggle
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct CMDTimerStart
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The timer id.
 
 	/// @struct CMDTimerInit
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The timer id.
 
 	/// @struct CMDTimerStop
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The timer id.
 
 	/// @struct CMDTimerToggle
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The timer id.
 
 	/// @struct CMDImageSize
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The image id.
 	/// @prop width {int} - The width.
 	/// @prop height {int} - The height.
 
 	/// @struct CMDImageFile
-	/// @prop cmd {int} - The command type.
+	/// @prop cmd {int<tui.CMDID>} - The command type.
 	/// @prop id {int} - The image id.
 	/// @prop filename {string} - The filename.
 
-	/// @constants CMD {int}
+	/// @constants CMDID {int}
 	/// @const CMD_NONE
 	/// @const CMD_STORED
 	/// @const CMD_BATCH
@@ -1610,75 +1610,75 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("CMD_IMAGEFILE", golua.LNumber(customtea.CMD_IMAGEFILE))
 
 	/// @interface MSG
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGNone
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGBlur
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGFocus
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGQuit
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGResume
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGSuspend
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGCursorBlink
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 
 	/// @struct MSGKey
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop key {string} - The key pressed.
 	/// @prop event {struct<tui.KeyEvent>} - The key event.
 
 	/// @struct MSGMouse
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop key {string} - The key pressed.
 	/// @prop event {struct<tui.MouseEvent>} - The mouse event.
 
 	/// @struct MSGWindowSize
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop width {int} - The width.
 	/// @prop height {int} - The height.
 
 	/// @struct MSGSpinnerTick
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The spinner id.
 
 	/// @struct MSGStopwatchReset
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct MSGStopwatchStartStop
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct MSGStopwatchTick
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The stopwatch id.
 
 	/// @struct MSGTimerStartStop
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The timer id.
 
 	/// @struct MSGTimerTimeout
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The timer id.
 
 	/// @struct MSGTimerTick
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop id {int} - The timer id.
 	/// @prop timeout {int} - If this tick is a timeout.
 
 	/// @struct MSGLua
-	/// @prop msg {int} - The message type.
+	/// @prop msg {int<tui.MSGID>} - The message type.
 	/// @prop value {any} - The value.
 
 	/// @struct KeyEvent
@@ -1697,7 +1697,7 @@ func RegisterTUI(r *lua.Runner, lg *log.Logger) {
 	/// @prop button {int<tui.MouseButton>} - The mouse button.
 	/// @prop is_wheel {bool} - Whether the event is a wheel event.
 
-	/// @constants MSG {int}
+	/// @constants MSGID {int}
 	/// @const MSG_NONE
 	/// @const MSG_BLUR
 	/// @const MSG_FOCUS
@@ -2062,9 +2062,9 @@ const (
 func teaTable(r *lua.Runner, lg *log.Logger, state *golua.LState, lib *lua.Lib, id int) *golua.LTable {
 	/// @struct Program
 	/// @prop id {int}
-	/// @method init(self, function(id int<collection.CRATE_TEA>) -> any, struct<tui.CMD>) -> self
-	/// @method update(self, function(data any, struct<tui.MSG>) -> struct<tui.CMD>) -> self
-	/// @method view(self, function(data any) -> string) -> self
+	/// @method init(self, {function(id int<collection.CRATE_TEA>) -> any, struct<tui.CMD>}) -> self
+	/// @method update(self, {function(data any, struct<tui.MSG>) -> struct<tui.CMD>}) -> self
+	/// @method view(self, {function(data any) -> string}) -> self
 
 	t := state.NewTable()
 	t.RawSetString("id", golua.LNumber(id))
@@ -2119,7 +2119,7 @@ func programOptions(lib *lua.Lib, state *golua.LState) *golua.LTable {
 	/// @method ansi_compressor(self) -> self
 	/// @method alt_screen(self) -> self
 	/// @method fps(self, fps int) -> self
-	/// @method filter(self, filter function(msg struct<tui.MSG>) -> bool) -> self
+	/// @method filter(self, filter {function(msg struct<tui.MSG>) -> bool}) -> self
 	/// @method input_tty(self) -> self
 	/// @method mouse_all_motion(self) -> self
 	/// @method mouse_cell_motion(self) -> self
@@ -2483,7 +2483,7 @@ func textareaTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LSt
 	/// @method width_max_set(self, width int) -> self
 	/// @method height_max() -> int
 	/// @method height_max_set(self, height int) -> self
-	/// @method prompt_func(self, width int, fn function(lineIndex int) -> string) -> self
+	/// @method prompt_func(self, width int, fn {function(lineIndex int) -> string}) -> self
 	/// @method cursor() -> struct<tui.Cursor>
 	/// @method keymap() -> struct<tui.TextAreaKeymap>
 	/// @method style_focus_base() -> struct<lipgloss.Style>
@@ -6284,7 +6284,7 @@ func listTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState,
 	/// @method is_filtered() -> bool
 	/// @method filter_setting() -> bool
 	/// @method filter_func(self, fn int<tui.FilterFunc>) -> self
-	/// @method filter_func_custom(self, fn function(string, []string) -> []struct<tui.ListFilterRank>) -> self
+	/// @method filter_func_custom(self, fn {function(string, []string) -> []struct<tui.ListFilterRank>}) -> self
 	/// @method index() -> int
 	/// @method items() -> []struct<tui.ListItem>
 	/// @method items_visible() -> []struct<tui.ListItem>
@@ -6320,8 +6320,8 @@ func listTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua.LState,
 	/// @method view_help() -> string
 	/// @method view_help_short() -> string
 	/// @method view_help_full() -> string
-	/// @method help_short_additional(self, function() -> []struct<tui.KeyBinding>) -> self
-	/// @method help_full_additional(self, function() -> [][]struct<tui.KeyBinding>) -> self
+	/// @method help_short_additional(self, {function() -> []struct<tui.KeyBinding>}) -> self
+	/// @method help_full_additional(self, {function() -> [][]struct<tui.KeyBinding>}) -> self
 	/// @method style_titlebar() -> struct<lipgloss.Style>
 	/// @method style_titlebar_set(self, style struct<lipgloss.Style>) -> self
 	/// @method style_title() -> struct<lipgloss.Style>
@@ -8190,9 +8190,9 @@ func listDelegateTable(r *lua.Runner, lg *log.Logger, lib *lua.Lib, state *golua
 	/// @prop id {int}
 	/// @method show_description() -> bool
 	/// @method show_description_set(self, enabled bool) -> self
-	/// @method update_func(self, fn function(msg struct<tui.MSG>) -> struct<tui.CMD>) -> self
-	/// @method short_help_func(self, fn function() -> []struct<tui.KeyBinding>) -> self
-	/// @method full_help_func(self, fn function() -> [][]struct<tui.KeyBinding>) -> self
+	/// @method update_func(self, fn {function(msg struct<tui.MSG>) -> struct<tui.CMD>}) -> self
+	/// @method short_help_func(self, fn {function() -> []struct<tui.KeyBinding>}) -> self
+	/// @method full_help_func(self, fn {function() -> [][]struct<tui.KeyBinding>}) -> self
 	/// @method height() -> int
 	/// @method height_set(self, height int) -> self
 	/// @method spacing() -> int
