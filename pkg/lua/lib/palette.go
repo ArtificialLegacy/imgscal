@@ -39,6 +39,17 @@ func RegisterPalette(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func tokyo_day() -> struct<palette.TokyoDay>
+	/// @returns {struct<palette.TokyoDay>} - The Tokyo Day color palette.
+	lib.CreateFunction(tab, "tokyo_day",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := tokyoDayTable(state)
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func gamemaker() -> struct<palette.GameMaker>
 	/// @returns {struct<palette.GameMaker>} - The GameMaker color palette.
 	lib.CreateFunction(tab, "gamemaker",
@@ -123,6 +134,45 @@ func tokyoNightTable(state *golua.LState) *golua.LTable {
 	t.RawSetString("light_orange", imageutil.RGBAToColorTable(state, 224, 175, 104, 255))
 	t.RawSetString("orange", imageutil.RGBAToColorTable(state, 255, 158, 100, 255))
 	t.RawSetString("red", imageutil.RGBAToColorTable(state, 247, 118, 142, 255))
+
+	return t
+}
+
+func tokyoDayTable(state *golua.LState) *golua.LTable {
+	/// @struct TokyoDay
+	/// @prop background {struct<image.ColorRGBA>} - The background color.
+	/// @prop terminal_black {struct<image.ColorRGBA>} - The terminal black color.
+	/// @prop comment {struct<image.ColorRGBA>} - The comment color.
+	/// @prop text {struct<image.ColorRGBA>} - The text color.
+	/// @prop foreground {struct<image.ColorRGBA>} - The foreground color.
+	/// @prop purple {struct<image.ColorRGBA>} - The purple color.
+	/// @prop blue {struct<image.ColorRGBA>} - The blue color.
+	/// @prop cyan {struct<image.ColorRGBA>} - The cyan color.
+	/// @prop dark_cyan {struct<image.ColorRGBA>} - The dark cyan color.
+	/// @prop blue_green {struct<image.ColorRGBA>} - The blue green color.
+	/// @prop green {struct<image.ColorRGBA>} - The green color.
+	/// @prop brown {struct<image.ColorRGBA>} - The brown color.
+	/// @prop orange {struct<image.ColorRGBA>} - The orange color.
+	/// @prop red_orange {struct<image.ColorRGBA>} - The red orange color.
+	/// @prop red {struct<image.ColorRGBA>} - The red color.
+
+	t := state.NewTable()
+
+	t.RawSetString("background", imageutil.RGBAToColorTable(state, 230, 231, 237, 255))
+	t.RawSetString("terminal_black", imageutil.RGBAToColorTable(state, 52, 59, 88, 255))
+	t.RawSetString("comment", imageutil.RGBAToColorTable(state, 108, 110, 117, 255))
+	t.RawSetString("text", imageutil.RGBAToColorTable(state, 64, 67, 79, 255))
+	t.RawSetString("foreground", imageutil.RGBAToColorTable(state, 52, 59, 88, 255))
+	t.RawSetString("purple", imageutil.RGBAToColorTable(state, 90, 62, 142, 255))
+	t.RawSetString("blue", imageutil.RGBAToColorTable(state, 41, 89, 170, 255))
+	t.RawSetString("cyan", imageutil.RGBAToColorTable(state, 15, 75, 110, 255))
+	t.RawSetString("dark_cyan", imageutil.RGBAToColorTable(state, 0, 108, 134, 255))
+	t.RawSetString("blue_green", imageutil.RGBAToColorTable(state, 51, 99, 92, 255))
+	t.RawSetString("green", imageutil.RGBAToColorTable(state, 56, 95, 13, 255))
+	t.RawSetString("brown", imageutil.RGBAToColorTable(state, 99, 79, 48, 255))
+	t.RawSetString("orange", imageutil.RGBAToColorTable(state, 153, 94, 21, 255))
+	t.RawSetString("red_orange", imageutil.RGBAToColorTable(state, 150, 80, 39, 255))
+	t.RawSetString("red", imageutil.RGBAToColorTable(state, 140, 67, 81, 255))
 
 	return t
 }
