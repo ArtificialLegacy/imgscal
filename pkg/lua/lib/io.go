@@ -86,11 +86,11 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGData>
+	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGDataChunk>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
 	/// @returns {int<collection.IMAGE>}
-	/// @returns {[]struct<image.PNGData>}
+	/// @returns {[]struct<image.PNGDataChunk>}
 	lib.CreateFunction(tab, "decode_png_data",
 		[]lua.Arg{
 			{Type: lua.STRING, Name: "path"},
@@ -460,7 +460,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 	/// @func encode_png_data(id, chunks, path)
 	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
-	/// @arg chunks {[]struct<image.PNGData>} - The PNG data chunks to encode with the image.
+	/// @arg chunks {[]struct<image.PNGDataChunk>} - The PNG data chunks to encode with the image.
 	/// @arg path {string} - The directory path to save the file to.
 	lib.CreateFunction(tab, "encode_png_data",
 		[]lua.Arg{

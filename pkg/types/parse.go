@@ -61,6 +61,8 @@ func IsVariadic(str string) bool {
 }
 
 func ParseType(str string, self string) string {
+	str = strings.ReplaceAll(str, ".", "_")
+
 	opt := ""
 	if strings.HasSuffix(str, "?") {
 		opt = "?"

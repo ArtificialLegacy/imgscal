@@ -62,8 +62,13 @@ func main() {
 		fmt.Fprintf(fs, "\n---@meta %s\n\n", name)
 		fmt.Fprintf(fs, "---@class %s\n", name)
 
+		for _, desc := range lib.Desc {
+			fmt.Fprintf(fs, "---%s\n", desc)
+		}
+		fmt.Fprintf(fs, "%s = {}\n\n", name)
+
 		for _, cn := range lib.Cns {
-			alias := strings.TrimSpace(fmt.Sprintf("%s.%s", name, cn.Group))
+			alias := strings.TrimSpace(fmt.Sprintf("%s_%s", name, cn.Group))
 			fmt.Fprintf(fs, "---@alias %s %s\n", alias, types.ParseType(cn.Type, name))
 
 			entries := make([]string, len(cn.Consts))
@@ -75,19 +80,18 @@ func main() {
 				if len(split) > 1 {
 					desc = " " + strings.Join(split[1:], " ")
 				}
-				fmt.Fprintf(fs, "---@alias %s.%s %s\n", name, prop, alias)
-				fmt.Fprintf(fs, "---@field %s.%s %s%s\n", name, prop, alias, desc)
+				fmt.Fprintf(fs, "---@alias %s_%s %s\n", name, prop, alias)
+				fmt.Fprintf(fs, "---@class %s\n", name)
+				fmt.Fprintf(fs, "---@field %s %s%s\n\n", prop, alias, desc)
+				fmt.Fprintf(fs, "%s.%s = nil\n\n", name, prop)
 
-				entries[i] = fmt.Sprintf("%s.%s", name, prop)
+				entries[i] = fmt.Sprintf("%s_%s", name, prop)
 			}
 
-			fmt.Fprintf(fs, "---@alias %s.* (%s)\n", alias, strings.Join(entries, " | "))
+			fmt.Fprintf(fs, "---@alias %s_* (%s)\n", alias, strings.Join(entries, " | "))
 		}
 
-		for _, desc := range lib.Desc {
-			fmt.Fprintf(fs, "---%s\n", desc)
-		}
-		fmt.Fprintf(fs, "%s = {}\n\n", name)
+		fmt.Fprintf(fs, "\n")
 
 		for _, fn := range lib.Fns {
 			formatFunction(fs, name, fn)
@@ -144,7 +148,7 @@ func formatFunction(fs io.Writer, lib string, fn doc.Fn) {
 }
 
 func formatStruct(fs io.Writer, lib string, st doc.Struct) {
-	alias := fmt.Sprintf("%s.%s", lib, st.Struct)
+	alias := fmt.Sprintf("%s_%s", lib, st.Struct)
 	fmt.Fprintf(fs, "---@class %s\n", alias)
 
 	for _, prop := range st.Props {
@@ -171,7 +175,7 @@ func formatStruct(fs io.Writer, lib string, st doc.Struct) {
 }
 
 func formatInterface(fs io.Writer, lib string, it doc.Interface) {
-	alias := fmt.Sprintf("%s.%s", lib, it.Interface)
+	alias := fmt.Sprintf("%s_%s", lib, it.Interface)
 
 	pairs := ""
 
