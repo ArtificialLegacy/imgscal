@@ -38,7 +38,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 
 			id := r.TC.AddItem(&chLog)
 
-			r.TC.Schedule(id, &collection.Task[collection.ItemTask]{
+			r.TC.Schedule(state, id, &collection.Task[collection.ItemTask]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -49,6 +49,67 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			})
 
 			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func reference(type, id) -> id
+	/// @arg type {int<collection.Type}
+	/// @arg id {int<collection.Type.*} - An ID from the same collection as the above type.
+	/// @returns {int<collection.Type.*} - ID for a new collection item from the above id.
+	/// @desc
+	/// This creates a new task queue that references the same data, this does not ensure thread safety.
+	/// The reference may also get out of sync if the original item is overridden.
+	lib.CreateFunction(tab, "reference",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := args["id"].(int)
+			var newId int
+
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				item := r.TC.Item(id)
+				if item == nil {
+					lua.Error(state, lg.Appendf("cannot create reference; invalid item id: %d", log.LEVEL_ERROR, id))
+				}
+
+				newId = r.TC.ScheduleAdd(state, item.Self.Name, lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemTask]) {
+					i.Self = item.Self
+				})
+			case collection.TYPE_IMAGE:
+				item := r.IC.Item(id)
+				if item == nil {
+					lua.Error(state, lg.Appendf("cannot create reference; invalid item id: %d", log.LEVEL_ERROR, id))
+				}
+
+				newId = r.IC.ScheduleAdd(state, item.Self.Name, lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemImage]) {
+					i.Self = item.Self
+				})
+			case collection.TYPE_CONTEXT:
+				item := r.CC.Item(id)
+				if item == nil {
+					lua.Error(state, lg.Appendf("cannot create reference; invalid item id: %d", log.LEVEL_ERROR, id))
+				}
+
+				next := r.CC.Next()
+				newId = r.CC.ScheduleAdd(state, fmt.Sprintf("context_ref%d_%d", id, next), lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemContext]) {
+					i.Self = item.Self
+				})
+			case collection.TYPE_QR:
+				item := r.QR.Item(id)
+				if item == nil {
+					lua.Error(state, lg.Appendf("cannot create reference; invalid item id: %d", log.LEVEL_ERROR, id))
+				}
+
+				next := r.QR.Next()
+				newId = r.QR.ScheduleAdd(state, fmt.Sprintf("qr_ref%d_%d", id, next), lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemQR]) {
+					i.Self = item.Self
+				})
+			}
+
+			state.Push(golua.LNumber(newId))
 			return 1
 		})
 
@@ -65,11 +126,12 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FUNC, Name: "func"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			scheduledState, _ := state.NewThread()
+			id := args["id"].(int)
 
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				scheduledState := collection.NewThread(state, id, collection.TYPE_TASK)
+				r.TC.Schedule(scheduledState, id, &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -77,7 +139,8 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				scheduledState := collection.NewThread(state, id, collection.TYPE_IMAGE)
+				r.IC.Schedule(scheduledState, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -85,7 +148,8 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				scheduledState := collection.NewThread(state, id, collection.TYPE_CONTEXT)
+				r.CC.Schedule(scheduledState, id, &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -93,7 +157,8 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				scheduledState := collection.NewThread(state, id, collection.TYPE_QR)
+				r.QR.Schedule(scheduledState, id, &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -117,25 +182,25 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				<-r.TC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemTask]) {},
 				})
 			case collection.TYPE_IMAGE:
-				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemImage]) {},
 				})
 			case collection.TYPE_CONTEXT:
-				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemContext]) {},
 				})
 			case collection.TYPE_QR:
-				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemQR]) {},
@@ -155,25 +220,25 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				<-r.TC.ScheduleAll(&collection.Task[collection.ItemTask]{
+				<-r.TC.ScheduleAll(state, &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemTask]) {},
 				})
 			case collection.TYPE_IMAGE:
-				<-r.IC.ScheduleAll(&collection.Task[collection.ItemImage]{
+				<-r.IC.ScheduleAll(state, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemImage]) {},
 				})
 			case collection.TYPE_CONTEXT:
-				<-r.CC.ScheduleAll(&collection.Task[collection.ItemContext]{
+				<-r.CC.ScheduleAll(state, &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemContext]) {},
 				})
 			case collection.TYPE_QR:
-				<-r.QR.ScheduleAll(&collection.Task[collection.ItemQR]{
+				<-r.QR.ScheduleAll(state, &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn:   func(i *collection.Item[collection.ItemQR]) {},
@@ -193,22 +258,22 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			chans := []<-chan struct{}{}
 
-			chans = append(chans, r.TC.ScheduleAll(&collection.Task[collection.ItemTask]{
+			chans = append(chans, r.TC.ScheduleAll(state, &collection.Task[collection.ItemTask]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn:   func(i *collection.Item[collection.ItemTask]) {},
 			}))
-			chans = append(chans, r.IC.ScheduleAll(&collection.Task[collection.ItemImage]{
+			chans = append(chans, r.IC.ScheduleAll(state, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn:   func(i *collection.Item[collection.ItemImage]) {},
 			}))
-			chans = append(chans, r.CC.ScheduleAll(&collection.Task[collection.ItemContext]{
+			chans = append(chans, r.CC.ScheduleAll(state, &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn:   func(i *collection.Item[collection.ItemContext]) {},
 			}))
-			chans = append(chans, r.QR.ScheduleAll(&collection.Task[collection.ItemQR]{
+			chans = append(chans, r.QR.ScheduleAll(state, &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn:   func(i *collection.Item[collection.ItemQR]) {},
@@ -244,13 +309,13 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				r.TC.Collect(args["id"].(int))
+				r.TC.Collect(state, args["id"].(int))
 			case collection.TYPE_IMAGE:
-				r.IC.Collect(args["id"].(int))
+				r.IC.Collect(state, args["id"].(int))
 			case collection.TYPE_CONTEXT:
-				r.CC.Collect(args["id"].(int))
+				r.CC.Collect(state, args["id"].(int))
 			case collection.TYPE_QR:
-				r.QR.Collect(args["id"].(int))
+				r.QR.Collect(state, args["id"].(int))
 			}
 			return 0
 		})
@@ -298,7 +363,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			msg := args["msg"].(string)
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				r.TC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -306,7 +371,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -314,7 +379,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -322,7 +387,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -347,7 +412,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			msg := args["msg"].(string)
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				r.TC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -355,7 +420,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -363,7 +428,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -371,7 +436,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -397,7 +462,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 			msg := args["msg"].(string)
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
-				<-r.TC.Schedule(args["id"].(int), &collection.Task[collection.ItemTask]{
+				<-r.TC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
@@ -405,7 +470,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_IMAGE:
-				<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+				<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -413,7 +478,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_CONTEXT:
-				<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+				<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -421,7 +486,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					},
 				})
 			case collection.TYPE_QR:
-				<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+				<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {

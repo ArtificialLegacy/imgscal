@@ -209,7 +209,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			double := args["double"].(bool)
 			alpha := args["alpha"].(int)
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -260,7 +260,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			result := ""
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -315,7 +315,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			double := args["double"].(bool)
 			alpha := args["alpha"].(int)
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -375,7 +375,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			result := ""
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {

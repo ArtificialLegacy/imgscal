@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua/lib"
@@ -41,7 +42,11 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
-	state := golua.NewState()
+	state := golua.NewState(golua.Options{
+		SkipOpenLibs: false,
+	})
+	collection.CreateContext(state)
+
 	runner := lua.NewRunner(state, &lg, sm.CliMode)
 	runner.Config = sm.Config
 	runner.Entry = name
@@ -49,6 +54,15 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	defer func() {
 		if r := recover(); r != nil {
 			lg.Append(fmt.Sprintf("panic recovered: %+v", r), log.LEVEL_ERROR)
+
+			if sm.CliMode {
+				sm.SetState(STATE_EXIT)
+			} else {
+				WorkflowFailEnter(sm, WorkflowFailData{
+					Name:  pth,
+					Error: fmt.Errorf(runner.Failed),
+				})
+			}
 		}
 
 		lg.Close()
@@ -63,11 +77,14 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	runner.CR_WIN.CleanAll()
 	runner.CR_REF.CleanAll()
+	runner.CR_GMP.CleanAll()
+	runner.CR_LIP.CleanAll()
+	runner.CR_TEA.CleanAll()
 
-	runner.TC.CollectAll()
-	runner.IC.CollectAll()
-	runner.CC.CollectAll()
-	runner.QR.CollectAll()
+	runner.TC.CollectAll(state)
+	runner.IC.CollectAll(state)
+	runner.CC.CollectAll(state)
+	runner.QR.CollectAll(state)
 
 	if runner.Failed != "" {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", runner.Failed), log.LEVEL_ERROR)

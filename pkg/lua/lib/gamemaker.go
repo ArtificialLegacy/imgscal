@@ -229,7 +229,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
 			}
 
-			sprite, err := spriteBuild(args["sprite"].(*golua.LTable), r)
+			sprite, err := spriteBuild(args["sprite"].(*golua.LTable), r, state)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to build sprite: %s", err), log.LEVEL_ERROR)), 0)
 			}
@@ -1215,7 +1215,7 @@ func spriteTable(lib *lua.Lib, state *golua.LState, name string, width, height i
 	return t
 }
 
-func spriteBuild(t *golua.LTable, r *lua.Runner) (*yyp.Sprite, error) {
+func spriteBuild(t *golua.LTable, r *lua.Runner, state *golua.LState) (*yyp.Sprite, error) {
 	name := string(t.RawGetString("name").(golua.LString))
 	width := int(t.RawGetString("width").(golua.LNumber))
 	height := int(t.RawGetString("height").(golua.LNumber))
@@ -1240,7 +1240,7 @@ func spriteBuild(t *golua.LTable, r *lua.Runner) (*yyp.Sprite, error) {
 		frames = append(frames, make([]*image.NRGBA, len(fLayers)))
 
 		for id, img := range fLayers {
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  LIB_GAMEMAKER,
 				Name: "sprite_save",
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1449,7 +1449,7 @@ func layersParse(r *lua.Runner, lg *log.Logger, state *golua.LState, parent *gol
 			ft.Append(golua.LNumber(id))
 			frames.RawSetInt(fi+1, ft)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  LIB_GAMEMAKER,
 				Name: "sprite_load",
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1731,7 +1731,7 @@ func datafileBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.
 	case DATAFILE_IMAGE:
 		var img image.Image
 		var encoding imageutil.ImageEncoding
-		<-r.IC.Schedule(int(data.(golua.LNumber)), &collection.Task[collection.ItemImage]{
+		<-r.IC.Schedule(state, int(data.(golua.LNumber)), &collection.Task[collection.ItemImage]{
 			Lib:  LIB_GAMEMAKER,
 			Name: "datafile_save",
 			Fn: func(i *collection.Item[collection.ItemImage]) {

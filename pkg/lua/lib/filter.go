@@ -37,9 +37,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState, _ := state.NewThread()
+			scheduledState := collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
 
-			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(scheduledState, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -87,9 +87,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState, _ := state.NewThread()
+			scheduledState := collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
 
-			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(scheduledState, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -140,9 +140,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState, _ := state.NewThread()
+			scheduledState := collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
 
-			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(scheduledState, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -194,7 +194,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var dstBounds image.Rectangle
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -230,7 +230,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var dstBounds image.Rectangle
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {

@@ -37,7 +37,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 
 			id := r.QR.AddItem(&chLog)
 
-			r.QR.Schedule(id, &collection.Task[collection.ItemQR]{
+			r.QR.Schedule(state, id, &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -73,7 +73,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			var img image.Image
 			imgReady := make(chan struct{}, 1)
 
-			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -92,7 +92,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -122,7 +122,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var str string
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -147,7 +147,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var str string
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -168,7 +168,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -189,7 +189,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -215,7 +215,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			bl := uint32(0)
 			al := uint32(0)
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -242,7 +242,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			bl := uint32(0)
 			al := uint32(0)
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -270,7 +270,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var active bool
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -293,7 +293,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var level qrcode.RecoveryLevel
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -316,7 +316,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var version int
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -337,7 +337,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "border", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -356,7 +356,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "content"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {
@@ -377,7 +377,7 @@ func RegisterQRCode(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var content string
 
-			<-r.QR.Schedule(args["id"].(int), &collection.Task[collection.ItemQR]{
+			<-r.QR.Schedule(state, args["id"].(int), &collection.Task[collection.ItemQR]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemQR]) {

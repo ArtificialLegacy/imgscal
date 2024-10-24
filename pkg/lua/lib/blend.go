@@ -35,7 +35,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Add)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Add)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -55,7 +55,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.ColorBurn)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.ColorBurn)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -75,7 +75,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.ColorDodge)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.ColorDodge)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -95,7 +95,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Darken)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Darken)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -115,7 +115,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Difference)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Difference)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -135,7 +135,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Divide)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Divide)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -155,7 +155,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Exclusion)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Exclusion)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -175,7 +175,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Lighten)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Lighten)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -195,7 +195,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.LinearBurn)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.LinearBurn)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -215,7 +215,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.LinearLight)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.LinearLight)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -235,7 +235,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Multiply)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Multiply)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -255,7 +255,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Normal)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Normal)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -275,7 +275,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Overlay)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Overlay)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -295,7 +295,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Screen)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Screen)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -315,7 +315,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.SoftLight)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.SoftLight)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -335,7 +335,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			id := blendImages(r, lib, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Subtract)
+			id := blendImages(r, lib, state, lg, args["bg"].(int), args["fg"].(int), args["name"].(string), d.Lib, d.Name, args["encoding"].(int), blend.Subtract)
 
 			state.Push(golua.LNumber(id))
 			return 1
@@ -362,7 +362,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 			var img image.Image
 			var blended image.Image
 
-			r.IC.SchedulePipe(args["bg"].(int), args["fg"].(int),
+			r.IC.SchedulePipe(state, args["bg"].(int), args["fg"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -383,7 +383,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 				})
 
 			name := args["name"].(string)
-			id := r.IC.ScheduleAdd(name, lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemImage]) {
+			id := r.IC.ScheduleAdd(state, name, lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemImage]) {
 				<-blendReady
 				i.Self = &collection.ItemImage{
 					Image:    blended,
@@ -398,13 +398,13 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 		})
 }
 
-func blendImages(r *lua.Runner, lib *lua.Lib, lg *log.Logger, id1, id2 int, name, dl, dn string, encoding int, fn func(image.Image, image.Image) *image.RGBA) int {
+func blendImages(r *lua.Runner, lib *lua.Lib, state *golua.LState, lg *log.Logger, id1, id2 int, name, dl, dn string, encoding int, fn func(image.Image, image.Image) *image.RGBA) int {
 	blendReady := make(chan struct{}, 2)
 
 	var img image.Image
 	var blended image.Image
 
-	r.IC.SchedulePipe(id1, id2,
+	r.IC.SchedulePipe(state, id1, id2,
 		&collection.Task[collection.ItemImage]{
 			Lib:  dl,
 			Name: dn,
@@ -424,7 +424,7 @@ func blendImages(r *lua.Runner, lib *lua.Lib, lg *log.Logger, id1, id2 int, name
 			},
 		})
 
-	id := r.IC.ScheduleAdd(name, lg, dl, dn, func(i *collection.Item[collection.ItemImage]) {
+	id := r.IC.ScheduleAdd(state, name, lg, dl, dn, func(i *collection.Item[collection.ItemImage]) {
 		<-blendReady
 		i.Self = &collection.ItemImage{
 			Image:    blended,

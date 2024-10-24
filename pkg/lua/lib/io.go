@@ -54,7 +54,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -114,7 +114,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided file is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -188,7 +188,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				id := r.IC.AddItem(&chLog)
 				ids[i] = id
 
-				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -260,7 +260,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				id := r.IC.AddItem(&chLog)
 				ids[i] = id
 
-				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -398,7 +398,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -437,7 +437,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				os.MkdirAll(args["path"].(string), 0o777)
 			}
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -474,7 +474,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				os.MkdirAll(args["path"].(string), 0o777)
 			}
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -524,7 +524,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			wg.Add(len(ids))
 
 			for ind, id := range ids {
-				r.IC.Schedule(id.(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id.(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -583,7 +583,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			wg.Add(len(ids))
 
 			for ind, id := range ids {
-				r.IC.Schedule(id.(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id.(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {

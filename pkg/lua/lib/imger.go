@@ -47,7 +47,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
 
-			r.IC.SchedulePipe(args["img2"].(int), args["img1"].(int),
+			r.IC.SchedulePipe(state, args["img2"].(int), args["img1"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -100,7 +100,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			var img image.Image
 
-			r.IC.SchedulePipe(args["img2"].(int), args["img1"].(int),
+			r.IC.SchedulePipe(state, args["img2"].(int), args["img1"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -145,7 +145,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			img := args["img"].(int)
 			value := args["value"].(int)
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -183,7 +183,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := blur.BoxGray(img, ksize, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blur image: %s", err), log.LEVEL_ERROR)), 0)
@@ -225,7 +225,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := blur.BoxGray(img, ksize, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blur image: %s", err), log.LEVEL_ERROR)), 0)
@@ -263,7 +263,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := blur.GaussianBlurGray(img, radius, sigma, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to blur image: %s", err), log.LEVEL_ERROR)), 0)
@@ -385,7 +385,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := convolution.ConvolveGray(img, kernel, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to convolve image: %s", err), log.LEVEL_ERROR)), 0)
@@ -425,7 +425,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := convolution.ConvolveGray(img, kernel, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to convolve image: %s", err), log.LEVEL_ERROR)), 0)
@@ -470,7 +470,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
 			gray := args["gray"].(bool)
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut, err := edgedetection.CannyGray(img, lower, upper, ksize)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -509,7 +509,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			ksize := uint(args["ksize"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := edgedetection.CannyGray(img, lower, upper, ksize)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -548,7 +548,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut, err := edgedetection.SobelGray(img, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -581,7 +581,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := edgedetection.SobelGray(img, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -620,7 +620,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut, err := edgedetection.HorizontalSobelGray(img, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -653,7 +653,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := edgedetection.HorizontalSobelGray(img, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -692,7 +692,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			gray := args["gray"].(bool)
 			border := padding.Border(args["border"].(int))
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut, err := edgedetection.VerticalSobelGray(img, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -725,7 +725,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := edgedetection.VerticalSobelGray(img, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -767,7 +767,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			kernel := edgedetection.LaplacianKernel(args["kernel"].(int))
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut, err := edgedetection.LaplacianGray(img, border, kernel)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -803,7 +803,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := edgedetection.LaplacianGray(img, border, kernel)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to detect edges: %s", err), log.LEVEL_ERROR)), 0)
@@ -832,7 +832,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			img := args["img"].(int)
 			gray := args["gray"].(bool)
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -881,7 +881,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			img := args["img"].(int)
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				return effects.InvertGray(img), imageutil.MODEL_GRAY
 			}, func(img *image.RGBA) (image.Image, imageutil.ColorModel) {
 				return effects.InvertRGBA(img), imageutil.MODEL_RGBA
@@ -905,7 +905,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			factor := args["factor"].(float64)
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := effects.PixelateGray(img, factor)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to pixelate image: %s", err), log.LEVEL_ERROR)), 0)
@@ -934,7 +934,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			img := args["img"].(int)
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := effects.SharpenGray(img)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to sharpen image: %s", err), log.LEVEL_ERROR)), 0)
@@ -960,7 +960,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			img := args["img"].(int)
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1007,7 +1007,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1056,7 +1056,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1103,7 +1103,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1152,7 +1152,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1192,7 +1192,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			imgReady := make(chan struct{}, 2)
 			imgFinished := make(chan struct{}, 2)
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1210,7 +1210,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1256,7 +1256,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			img := args["img"].(int)
 			to16 := args["to16"].(bool)
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1300,7 +1300,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := padding.PaddingGray(img, ksize, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to add padding to image: %s", err), log.LEVEL_ERROR)), 0)
@@ -1342,7 +1342,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := padding.PaddingGray(img, ksize, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to add padding to image: %s", err), log.LEVEL_ERROR)), 0)
@@ -1388,7 +1388,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			border := padding.Border(args["border"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := padding.PaddingGray(img, ksize, anchor, border)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to add padding to image: %s", err), log.LEVEL_ERROR)), 0)
@@ -1423,7 +1423,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			method := threshold.Method(args["method"].(int))
 			to16 := args["to16"].(bool)
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1475,7 +1475,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			img := args["img"].(int)
 			method := threshold.Method(args["method"].(int))
 
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1518,7 +1518,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			resizeToFit := args["resizeToFit"].(bool)
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := transform.RotateGray(img, angle, anchor, resizeToFit)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to rotate image: %s", err), log.LEVEL_ERROR)), 0)
@@ -1558,7 +1558,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			resizeToFit := args["resizeToFit"].(bool)
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := transform.RotateGray(img, angle, anchor, resizeToFit)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to rotate image: %s", err), log.LEVEL_ERROR)), 0)
@@ -1596,7 +1596,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			inter := resize.Interpolation(args["inter"].(int))
 			gray := args["gray"].(bool)
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut, err := resize.ResizeGray(img, scalex, scaley, inter)
 				if err != nil {
 					state.Error(golua.LString(lg.Append(fmt.Sprintf("Failed to resize image: %s", err), log.LEVEL_ERROR)), 0)
@@ -1640,7 +1640,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			scale.X *= 256
 			scale.Y *= 256
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut := histogram.DrawHistogramGray(img, scale)
 				return iOut
 			}, func(img *image.RGBA) image.Image {
@@ -1682,7 +1682,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			scale.X *= 256
 			scale.Y *= 256
 
-			id := imgerFilterNew(r, lg, d, img, name, encoding, gray, func(img *image.Gray) image.Image {
+			id := imgerFilterNew(r, lg, d, state, img, name, encoding, gray, func(img *image.Gray) image.Image {
 				iOut := histogram.DrawHistogramGray(img, scale)
 				return iOut
 			}, func(img *image.RGBA) image.Image {
@@ -1715,7 +1715,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			scale.X *= 256
 			scale.Y *= 256
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut := histogram.DrawHistogramGray(img, scale)
 				return iOut, imageutil.MODEL_GRAY
 			}, func(img *image.RGBA) (image.Image, imageutil.ColorModel) {
@@ -1749,7 +1749,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			scale.X *= 256
 			scale.Y *= 256
 
-			imgerFilter(r, d, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
+			imgerFilter(r, d, state, img, gray, func(img *image.Gray) (image.Image, imageutil.ColorModel) {
 				iOut := histogram.DrawHistogramGray(img, scale)
 				return iOut, imageutil.MODEL_GRAY
 			}, func(img *image.RGBA) (image.Image, imageutil.ColorModel) {
@@ -1778,7 +1778,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			var data [256]uint64
 
-			<-r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1838,7 +1838,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 			var dataGreen [256]uint64
 			var dataBlue [256]uint64
 
-			<-r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1931,7 +1931,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			var data [256]uint64
 
-			<-r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1987,7 +1987,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			var data [256]uint64
 
-			<-r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -2043,7 +2043,7 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 
 			var data [256]uint64
 
-			<-r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -2125,8 +2125,8 @@ func RegisterImger(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("INTER_LANCZOS", golua.LNumber(resize.InterLanczos))
 }
 
-func imgerFilter(r *lua.Runner, d lua.TaskData, img int, gray bool, fnGRAYA func(*image.Gray) (image.Image, imageutil.ColorModel), fnRGBA func(*image.RGBA) (image.Image, imageutil.ColorModel)) {
-	r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+func imgerFilter(r *lua.Runner, d lua.TaskData, state *golua.LState, img int, gray bool, fnGRAYA func(*image.Gray) (image.Image, imageutil.ColorModel), fnRGBA func(*image.RGBA) (image.Image, imageutil.ColorModel)) {
+	r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 		Lib:  d.Lib,
 		Name: d.Name,
 		Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -2147,11 +2147,11 @@ func imgerFilter(r *lua.Runner, d lua.TaskData, img int, gray bool, fnGRAYA func
 	})
 }
 
-func imgerFilterNew(r *lua.Runner, lg *log.Logger, d lua.TaskData, img int, name string, encoding imageutil.ImageEncoding, gray bool, fnGRAY func(*image.Gray) image.Image, fnRGBA func(*image.RGBA) image.Image) int {
+func imgerFilterNew(r *lua.Runner, lg *log.Logger, d lua.TaskData, state *golua.LState, img int, name string, encoding imageutil.ImageEncoding, gray bool, fnGRAY func(*image.Gray) image.Image, fnRGBA func(*image.RGBA) image.Image) int {
 	var imgOut image.Image
 	imgReady := make(chan struct{}, 2)
 
-	r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+	r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 		Lib:  d.Lib,
 		Name: d.Name,
 		Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -2172,7 +2172,7 @@ func imgerFilterNew(r *lua.Runner, lg *log.Logger, d lua.TaskData, img int, name
 
 	id := r.IC.AddItem(&chLog)
 
-	r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+	r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 		Lib:  d.Lib,
 		Name: d.Name,
 		Fn: func(i *collection.Item[collection.ItemImage]) {

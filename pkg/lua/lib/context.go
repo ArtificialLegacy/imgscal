@@ -154,7 +154,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			id := r.CC.AddItem(&chLog)
 
-			r.CC.Schedule(id, &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, id, &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -182,7 +182,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			imageReady := make(chan struct{}, 2)
 			var img image.Image
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -202,7 +202,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			id := r.CC.AddItem(&chLog)
 
-			r.CC.Schedule(id, &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, id, &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -241,7 +241,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			imageReady := make(chan struct{})
 			var img *image.RGBA
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -267,7 +267,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			id := r.CC.AddItem(&chLog)
 
-			r.CC.Schedule(id, &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, id, &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -309,7 +309,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			var context *gg.Context
 
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -327,7 +327,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -375,7 +375,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			var context *gg.Context
 
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -393,7 +393,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -434,7 +434,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			var img *image.Alpha
 
-			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["img"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -446,7 +446,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -473,7 +473,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			width := 0
 			height := 0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -498,7 +498,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			height := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -525,7 +525,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			width := 0.0
 			height := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -555,7 +555,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			width := 0.0
 			height := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -583,7 +583,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			y := 0.0
 			exists := false
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -619,7 +619,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			x := 0.0
 			y := 0.0
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -641,7 +641,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -663,7 +663,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -687,7 +687,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -707,7 +707,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -727,7 +727,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -751,7 +751,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -775,7 +775,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -808,7 +808,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y3"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -844,7 +844,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -877,7 +877,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -907,7 +907,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -937,7 +937,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "ry"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -972,7 +972,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1008,7 +1008,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			var img image.Image
 
-			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["img"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1021,7 +1021,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1060,7 +1060,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 
 			var img image.Image
 
-			r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["img"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1073,7 +1073,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1103,7 +1103,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1133,7 +1133,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1163,7 +1163,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1193,7 +1193,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "height"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1226,7 +1226,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "r"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1260,7 +1260,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "rotation"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1290,7 +1290,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1324,7 +1324,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "ay"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1366,7 +1366,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "align"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1398,7 +1398,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1422,7 +1422,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "rule"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1444,7 +1444,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "preserve", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1468,7 +1468,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1488,7 +1488,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1508,7 +1508,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1528,7 +1528,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1548,7 +1548,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1570,7 +1570,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "angle"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1596,7 +1596,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1624,7 +1624,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1655,7 +1655,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1683,7 +1683,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "hex"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1703,7 +1703,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1730,7 +1730,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "b"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1760,7 +1760,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "b"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1792,7 +1792,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "a"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1825,7 +1825,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "a"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1853,7 +1853,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			lua.ArgArray("pattern", lua.ArrayType{Type: lua.FLOAT}, false),
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1881,7 +1881,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "offset"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1901,7 +1901,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "cap"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1921,7 +1921,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "join"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1941,7 +1941,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "width"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1965,7 +1965,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -1989,7 +1989,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2017,7 +2017,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2046,7 +2046,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "y"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2072,7 +2072,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var wrappedStrings []string
 
-			<-r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			<-r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2441,7 +2441,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "pattern"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2464,7 +2464,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "pattern"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2487,7 +2487,7 @@ func RegisterContext(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.FLOAT, Name: "points"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.CC.Schedule(args["id"].(int), &collection.Task[collection.ItemContext]{
+			r.CC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemContext]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemContext]) {
@@ -2717,7 +2717,7 @@ func patternBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.L
 	case PATTERN_SOLID:
 		return patternSolidBuild(t)
 	case PATTERN_SURFACE:
-		return patternSurfaceBuild(t, r)
+		return patternSurfaceBuild(t, r, state)
 	case PATTERN_SURFACE_SYNC:
 		return patternSurfaceSyncBuild(t, r)
 	case PATTERN_GRADIENT_LINEAR:
@@ -2768,13 +2768,13 @@ func patternSurfaceTable(state *golua.LState, id, repeatOp int) *golua.LTable {
 	return t
 }
 
-func patternSurfaceBuild(t *golua.LTable, r *lua.Runner) gg.Pattern {
+func patternSurfaceBuild(t *golua.LTable, r *lua.Runner, state *golua.LState) gg.Pattern {
 	id := t.RawGetString("id").(golua.LNumber)
 	repeatOp := t.RawGetString("repeatOp").(golua.LNumber)
 
 	var img image.Image
 
-	<-r.IC.Schedule(int(id), &collection.Task[collection.ItemImage]{
+	<-r.IC.Schedule(state, int(id), &collection.Task[collection.ItemImage]{
 		Lib:  LIB_CONTEXT,
 		Name: "pattern_surface",
 		Fn: func(i *collection.Item[collection.ItemImage]) {

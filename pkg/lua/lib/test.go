@@ -69,7 +69,7 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			imgReady := make(chan struct{}, 2)
 			imgFinished := make(chan struct{}, 2)
 
-			r.IC.Schedule(img1, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img1, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -83,7 +83,7 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.IC.Schedule(img2, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img2, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {

@@ -228,7 +228,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				frames[ind] = id
 				frameChannels[ind] = make(chan image.Image)
 
-				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -243,7 +243,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				})
 			}
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -328,7 +328,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			for ind := range len(imgs) {
 				id := imgs[ind].(int)
 
-				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -346,7 +346,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -440,7 +440,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			ready := make(chan struct{})
 			finish := make(chan struct{})
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -481,7 +481,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {

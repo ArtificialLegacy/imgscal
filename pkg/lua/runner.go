@@ -65,10 +65,10 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		CLIMode:   cliMode,
 
 		// -- collections
-		IC: collection.NewCollection[collection.ItemImage](lg, wg),
-		CC: collection.NewCollection[collection.ItemContext](lg, wg),
-		QR: collection.NewCollection[collection.ItemQR](lg, wg),
-		TC: collection.NewCollection[collection.ItemTask](lg, wg),
+		IC: collection.NewCollection[collection.ItemImage](lg, wg, collection.TYPE_IMAGE),
+		CC: collection.NewCollection[collection.ItemContext](lg, wg, collection.TYPE_CONTEXT),
+		QR: collection.NewCollection[collection.ItemQR](lg, wg, collection.TYPE_QR),
+		TC: collection.NewCollection[collection.ItemTask](lg, wg, collection.TYPE_TASK),
 
 		// -- crates
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),

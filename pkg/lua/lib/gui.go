@@ -295,7 +295,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			r.IC.Schedule(args["icon_id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["icon_id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -329,7 +329,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 			for _, id := range imgids {
 				wg.Add(1)
-				r.IC.Schedule(id.(int), &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id.(int), &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -7242,7 +7242,7 @@ func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 	sync := t.RawGetString("sync").(golua.LBool)
 
 	if !sync {
-		<-r.IC.Schedule(int(ig), &collection.Task[collection.ItemImage]{
+		<-r.IC.Schedule(state, int(ig), &collection.Task[collection.ItemImage]{
 			Lib:  LIB_GUI,
 			Name: "wg_image",
 			Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -7251,7 +7251,7 @@ func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 		})
 	} else {
 		item := r.IC.Item(int(ig))
-		if item.Self.Image == nil {
+		if item == nil || item.Self == nil || item.Self.Image == nil {
 			img = image.NewRGBA(image.Rectangle{
 				Min: image.Pt(0, 0),
 				Max: image.Pt(1, 1), // image must have at least 1 pixel for imgui.
@@ -9206,7 +9206,7 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 	sync := t.RawGetString("sync").(golua.LBool)
 
 	if !sync {
-		<-r.IC.Schedule(int(ig), &collection.Task[collection.ItemImage]{
+		<-r.IC.Schedule(state, int(ig), &collection.Task[collection.ItemImage]{
 			Lib:  LIB_GUI,
 			Name: "wg_button_image",
 			Fn: func(i *collection.Item[collection.ItemImage]) {
