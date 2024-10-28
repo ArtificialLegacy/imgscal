@@ -827,7 +827,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "path"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			parseDir("io.dir_img", args["path"].(string), imageutil.EncodingExts, lib)
+			files := parseDir("io.dir_img", args["path"].(string), imageutil.EncodingExts, state, lg)
+
+			state.Push(files)
 			return 1
 		})
 
@@ -839,7 +841,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "path"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			parseDir("io.dir_txt", args["path"].(string), []string{".txt"}, lib)
+			files := parseDir("io.dir_txt", args["path"].(string), []string{".txt"}, state, lg)
+
+			state.Push(files)
 			return 1
 		})
 
@@ -851,7 +855,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "path"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			parseDir("io.dir_json", args["path"].(string), []string{".json"}, lib)
+			files := parseDir("io.dir_json", args["path"].(string), []string{".json"}, state, lg)
+
+			state.Push(files)
 			return 1
 		})
 
@@ -863,7 +869,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "path"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			parseDirDir("io.dir_dir", args["path"].(string), lib)
+			files := parseDirDir("io.dir_dir", args["path"].(string), state, lg)
+
+			state.Push(files)
 			return 1
 		})
 
@@ -883,7 +891,45 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				filter[i] = v.(string)
 			}
 
-			parseDir("dir_filter", args["path"].(string), filter, lib)
+			files := parseDir("dir_filter", args["path"].(string), filter, state, lg)
+
+			state.Push(files)
+			return 1
+		})
+
+	/// @func dir_recursive(path) -> []string
+	/// @arg path {string} - The directory path to scan for files, within all sub-directories.
+	/// @returns {[]string} - Array containing paths to each valid file in the directory and sub-directories.
+	lib.CreateFunction(tab, "dir_recursive",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			files := parseDirRecursive(args["path"].(string), state, lg)
+
+			state.Push(files)
+			return 1
+		})
+
+	/// @func dir_recursive_filter(path, filter) -> []string
+	/// @arg path {string} - The directory path to scan for files, within all sub-directories.
+	/// @arg filter {[]string} - Array of file extensions to include.
+	/// @returns {[]string} - Array containing paths to each valid file in the directory and sub-directories.
+	lib.CreateFunction(tab, "dir_recursive_filter",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			lua.ArgArray("filter", lua.ArrayType{Type: lua.STRING}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fv := args["filter"].([]any)
+			filter := make([]string, len(fv))
+			for i, v := range fv {
+				filter[i] = v.(string)
+			}
+
+			files := parseDirRecursiveFilter(args["path"].(string), filter, state, lg)
+
+			state.Push(files)
 			return 1
 		})
 
@@ -1032,21 +1078,21 @@ const (
 	EMBEDDED_ICON_512x512
 )
 
-func parseDir(fn string, pathstr string, filter []string, lib *lua.Lib) {
+func parseDir(fn string, pathstr string, filter []string, state *golua.LState, lg *log.Logger) *golua.LTable {
 	f, err := os.Stat(pathstr)
 	if err != nil {
-		lib.State.Error(golua.LString(lib.Lg.Append(fmt.Sprintf("invalid dir path provided to %s", fn), log.LEVEL_ERROR)), 0)
+		lua.Error(state, lg.Appendf("invalid dir path provided to %s: %s", log.LEVEL_ERROR, fn, pathstr))
 	}
 	if !f.IsDir() {
-		lib.State.Error(golua.LString(lib.Lg.Append("dir provided is not a directory", log.LEVEL_ERROR)), 0)
+		lua.Error(state, lg.Appendf("dir provided to %s is not a directory: %s", log.LEVEL_ERROR, fn, pathstr))
 	}
 
 	files, err := os.ReadDir(pathstr)
 	if err != nil {
-		lib.State.Error(golua.LString(lib.Lg.Append("failed to open dir", log.LEVEL_ERROR)), 0)
+		lua.Error(state, lg.Appendf("failed to open dir: %s with error (%s)", log.LEVEL_ERROR, pathstr, err))
 	}
 
-	t := lib.State.NewTable()
+	t := state.NewTable()
 
 	i := 1
 	for _, file := range files {
@@ -1055,31 +1101,29 @@ func parseDir(fn string, pathstr string, filter []string, lib *lua.Lib) {
 			continue
 		}
 
-		lib.Lg.Append(fmt.Sprintf("found file %s with %s", file.Name(), fn), log.LEVEL_INFO)
-
 		pth := path.Join(pathstr, file.Name())
-		lib.State.SetTable(t, golua.LNumber(i), golua.LString(pth))
+		t.RawSetInt(i, golua.LString(pth))
 		i++
 	}
 
-	lib.State.Push(t)
+	return t
 }
 
-func parseDirDir(fn string, pathstr string, lib *lua.Lib) {
+func parseDirDir(fn string, pathstr string, state *golua.LState, lg *log.Logger) *golua.LTable {
 	f, err := os.Stat(pathstr)
 	if err != nil {
-		lib.State.Error(golua.LString(lib.Lg.Append(fmt.Sprintf("invalid dir path provided to %s", fn), log.LEVEL_ERROR)), 0)
+		lua.Error(state, lg.Appendf("invalid dir path provided to %s: %s", log.LEVEL_ERROR, fn, pathstr))
 	}
 	if !f.IsDir() {
-		lib.State.Error(golua.LString(lib.Lg.Append("dir provided is not a directory", log.LEVEL_ERROR)), 0)
+		lua.Error(state, lg.Appendf("dir provided to %s is not a directory: %s", log.LEVEL_ERROR, fn, pathstr))
 	}
 
 	files, err := os.ReadDir(pathstr)
 	if err != nil {
-		lib.State.Error(golua.LString(lib.Lg.Append("failed to open dir", log.LEVEL_ERROR)), 0)
+		lua.Error(state, lg.Appendf("failed to open dir: %s with error (%s)", log.LEVEL_ERROR, pathstr, err))
 	}
 
-	t := lib.State.NewTable()
+	t := state.NewTable()
 
 	i := 1
 	for _, file := range files {
@@ -1087,12 +1131,75 @@ func parseDirDir(fn string, pathstr string, lib *lua.Lib) {
 			continue
 		}
 
-		lib.Lg.Append(fmt.Sprintf("found dir %s with %s", file.Name(), fn), log.LEVEL_INFO)
-
 		pth := path.Join(pathstr, file.Name())
-		lib.State.SetTable(t, golua.LNumber(i), golua.LString(pth))
+		t.RawSetInt(i, golua.LString(pth))
 		i++
 	}
 
-	lib.State.Push(t)
+	return t
+}
+
+func parseDirRecursive(pathstr string, state *golua.LState, lg *log.Logger) *golua.LTable {
+	f, err := os.Stat(pathstr)
+	if err != nil {
+		lua.Error(state, lg.Appendf("invalid dir path provided to io.dir_recursive: %s", log.LEVEL_ERROR, pathstr))
+	}
+	if !f.IsDir() {
+		lua.Error(state, lg.Appendf("dir provided to io.dir_recursive is not a directory: %s", log.LEVEL_ERROR, pathstr))
+	}
+
+	t := state.NewTable()
+
+	files, err := os.ReadDir(pathstr)
+	if err != nil {
+		lua.Error(state, lg.Appendf("failed to open dir: %s with error (%s)", log.LEVEL_ERROR, pathstr, err))
+	}
+
+	for i, file := range files {
+		child := path.Join(pathstr, file.Name())
+
+		if file.IsDir() {
+			t.RawSetInt(i+1, parseDirRecursive(child, state, lg))
+		} else {
+			t.RawSetInt(i+1, golua.LString(child))
+		}
+	}
+
+	return t
+}
+
+func parseDirRecursiveFilter(pathstr string, filter []string, state *golua.LState, lg *log.Logger) *golua.LTable {
+	f, err := os.Stat(pathstr)
+	if err != nil {
+		lua.Error(state, lg.Appendf("invalid dir path provided to io.dir_recursive_filter: %s", log.LEVEL_ERROR, pathstr))
+	}
+	if !f.IsDir() {
+		lua.Error(state, lg.Appendf("dir provided to io.dir_recursive_filter is not a directory: %s", log.LEVEL_ERROR, pathstr))
+	}
+	t := state.NewTable()
+
+	files, err := os.ReadDir(pathstr)
+	if err != nil {
+		lua.Error(state, lg.Appendf("failed to open dir: %s with error (%s)", log.LEVEL_ERROR, pathstr, err))
+	}
+
+	i := 0
+	for _, file := range files {
+		child := path.Join(pathstr, file.Name())
+
+		if file.IsDir() {
+			t.RawSetInt(i+1, parseDirRecursive(child, state, lg))
+		} else {
+			ext := path.Ext(child)
+			if slices.Contains(filter, ext) {
+				continue
+			}
+
+			t.RawSetInt(i+1, golua.LString(child))
+		}
+
+		i++
+	}
+
+	return t
 }
