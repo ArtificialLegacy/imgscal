@@ -109,6 +109,34 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func assert_schema(value, schema, msg?)
+	/// @arg value {table<any>}
+	/// @arg schema {table<any>}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_schema",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "value"},
+			{Type: lua.RAW_TABLE, Name: "schema"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			value := args["value"].(*golua.LTable)
+			schema := args["schema"].(*golua.LTable)
+			msg := args["msg"].(string)
+
+			valid := validateSchema(value, schema)
+
+			if !valid {
+				if msg != "" {
+					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
+					return 0
+				}
+				lua.Error(state, "assertion failed")
+			}
+
+			return 0
+		})
+
 	/// @func benchmark_start() -> int
 	/// @returns {int} - Start time.
 	lib.CreateFunction(tab, "benchmark_start",
@@ -139,4 +167,22 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LNumber(ellapsed))
 			return 1
 		})
+}
+
+func validateSchema(value, schema *golua.LTable) bool {
+	valid := true
+
+	schema.ForEach(func(k, v1 golua.LValue) {
+		v2 := value.RawGet(k)
+		if v1.Type() != v2.Type() {
+			valid = false
+		} else if v1.Type() == golua.LTTable {
+			validNested := validateSchema(v1.(*golua.LTable), v2.(*golua.LTable))
+			if !validNested {
+				valid = false
+			}
+		}
+	})
+
+	return valid
 }
