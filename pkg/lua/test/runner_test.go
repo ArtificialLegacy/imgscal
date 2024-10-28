@@ -268,3 +268,27 @@ func TestMapSchemaNesting(t *testing.T) {
 		t.Error("failed to map v1 field")
 	}
 }
+
+func TestMapSchemaArray(t *testing.T) {
+	schema := map[string]any{"v1": []any{5}}
+	data := map[string]any{"v1": []any{1, 2, 3}}
+	result := lua.MapSchema(schema, data)
+
+	if v, ok := result["v1"]; ok {
+		if v, ok := v.([]any); ok {
+			if v[0] != 1 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 1, v[0])
+			}
+			if v[1] != 2 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 2, v[1])
+			}
+			if v[2] != 3 {
+				t.Errorf("got wrong number: wanted=%d, got=%d", 3, v[2])
+			}
+		} else {
+			t.Error("failed to map v1 field")
+		}
+	} else {
+		t.Error("failed to map v1 field")
+	}
+}
