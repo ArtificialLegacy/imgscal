@@ -152,6 +152,10 @@ span.yellow {
     color: var(--yellow);
 }
 
+span.orange {
+    color: var(--orange);
+}
+
 span.green {
     color: var(--green);
 }

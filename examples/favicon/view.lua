@@ -1,5 +1,4 @@
----@diagnostic disable:lowercase-global
-
+---@param info imgscal_WorkflowInfo
 function help(info)
 	return [[
 Usage:
@@ -8,6 +7,7 @@ Usage:
     ]]
 end
 
+---@param workflow imgscal_WorkflowInit
 function init(workflow)
 	workflow.import({
 		"cmd",

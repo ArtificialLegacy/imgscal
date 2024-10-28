@@ -1,5 +1,4 @@
----@diagnostic disable:lowercase-global
-
+---@param workflow imgscal_WorkflowInit
 function init(workflow)
 	workflow.import({
 		"gui",

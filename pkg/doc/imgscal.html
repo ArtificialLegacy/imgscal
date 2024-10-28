@@ -141,6 +141,7 @@
             <hr>
             <p>This is the first function called after the file is loaded when running the workflow.</p>
 <pre>
+<span class="white">---</span><span class="purple">@param</span> <span class="orange">workflow imgscal_WorkflowInit</span>
 <span class="pink">function</span> <span class="purple">init</span>(workflow)
 
 <span class="pink">end</span>
@@ -153,6 +154,7 @@
                 This is where built-in libraries must be imported, for example the init function from the resize entry point:
             </p>
 <pre>
+<span class="white">---</span><span class="purple">@param</span> <span class="orange">workflow imgscal_WorkflowInit</span>
 <span class="pink">function</span> <span class="purple">init</span>(workflow)
     workflow.<span class="purple">import</span>({
         <span class="green">"cli"</span>,
@@ -190,6 +192,7 @@
             </p>
 
 <pre>
+<span class="white">---</span><span class="purple">@param</span> <span class="orange">workflow imgscal_WorkflowInfo</span>
 <span class="pink">function</span> <span class="purple">help</span>(info)
     <span class="pink">return</span> <span class="green">""</span>
 <span class="pink">end</span>
