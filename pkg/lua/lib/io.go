@@ -677,9 +677,9 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @func load_palette(path) -> []struct<image.ColorRGBA>
+	/// @func load_palette(path) -> []struct<image.Color>
 	/// @arg path {string} - Path to a .hex file for the palette.
-	/// @returns {[]struct<image.ColorRGBA>}
+	/// @returns {[]struct<image.Color>}
 	/// @desc
 	/// Use to load a hex color palette file; For example, from lospec.
 	lib.CreateFunction(tab, "load_palette",
@@ -707,6 +707,36 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			state.Push(colors)
 			return 1
+		})
+
+	/// @func save_palette(path, colors)
+	/// @arg path {string} - File to save hex data to, filename should end in .hex.
+	/// @arg colors {[]struct<image.Color>}
+	/// @desc
+	/// Discards alpha channels.
+	lib.CreateFunction(tab, "save_palette",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			lua.ArgArray("colors", lua.ArrayType{Type: lua.RAW_TABLE}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["path"].(string)
+			colors := args["colors"].([]any)
+
+			fs, err := os.OpenFile(pth, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to open file: %s with error (%s)", log.LEVEL_ERROR, pth, err))
+			}
+			defer fs.Close()
+
+			for _, v := range colors {
+				col := v.(*golua.LTable)
+				r, g, b, _ := imageutil.ColorTableToRGBA(col)
+
+				fmt.Fprintf(fs, "%02x%02x%02x\n", r, g, b)
+			}
+
+			return 0
 		})
 
 	/// @func remove(path, all?)
