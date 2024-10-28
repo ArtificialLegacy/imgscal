@@ -194,7 +194,13 @@ func MapSchema(schema, data map[string]any) map[string]any {
 
 	for k, v := range schema {
 		if d, ok := data[k]; ok {
-			if v1, ok := v.(map[string]any); ok {
+			if v1, ok := v.([]any); ok {
+				if d1, ok := d.([]any); ok {
+					result[k] = d1
+				} else {
+					result[k] = v1
+				}
+			} else if v1, ok := v.(map[string]any); ok {
 				if d1, ok := d.(map[string]any); ok {
 					result[k] = MapSchema(v1, d1)
 				} else {

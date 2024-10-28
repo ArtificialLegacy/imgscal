@@ -120,6 +120,26 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func map_schema(value, schema) -> table<any>
+	/// @arg value {table<any>}
+	/// @arg schema {table<any>}
+	/// @returns {table<any>}
+	lib.CreateFunction(tab, "map_schema",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "value"},
+			{Type: lua.RAW_TABLE, Name: "schema"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			value := lua.GetValue(args["value"].(golua.LValue)).(map[string]any)
+			schema := lua.GetValue(args["schema"].(golua.LValue)).(map[string]any)
+
+			mapped := lua.MapSchema(schema, value)
+			result := lua.CreateValue(mapped, state)
+
+			state.Push(result)
+			return 1
+		})
+
 	/// @func call_thread(func)
 	/// @arg func {function()} - The function to call in a new thread.
 	/// @desc
