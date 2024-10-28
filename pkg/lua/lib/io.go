@@ -87,6 +87,59 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func decode_into(path, id, model?)
+	/// @arg path {string} - The path to grab the image from.
+	/// @arg id {int<collection.INT>} - Image ID to overwrite with decoded image.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	lib.CreateFunction(tab, "decode_into",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			file, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid image path provided to io.decode_into: %s", args["path"]), log.LEVEL_ERROR)), 0)
+			}
+			if file.IsDir() {
+				state.Error(golua.LString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR)), 0)
+			}
+
+			name := strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
+			id := args["id"].(int)
+
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					f, err := os.Open(args["path"].(string))
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+					}
+					defer f.Close()
+
+					encoding := imageutil.ExtensionEncoding(path.Ext(file.Name()))
+					img, err := imageutil.Decode(f, encoding)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("provided file is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
+					i.Self = &collection.ItemImage{
+						Name:     name,
+						Image:    img,
+						Encoding: encoding,
+						Model:    model,
+					}
+				},
+			})
+
+			return 0
+		})
+
 	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGDataChunk>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
