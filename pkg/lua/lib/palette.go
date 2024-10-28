@@ -60,6 +60,17 @@ func RegisterPalette(r *lua.Runner, lg *log.Logger) {
 			state.Push(t)
 			return 1
 		})
+
+	/// @func rainbow() -> struct<palette.Rainbow>
+	/// @returns {struct<palette.Rainbow>} - The rainbow color palette.
+	lib.CreateFunction(tab, "rainbow",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := rainbowTable(state)
+
+			state.Push(t)
+			return 1
+		})
 }
 
 func draculaTable(state *golua.LState) *golua.LTable {
@@ -220,6 +231,29 @@ func gamemakerTable(state *golua.LState) *golua.LTable {
 	t.RawSetString("teal", imageutil.RGBAToColorTable(state, 0, 128, 128, 255))
 	t.RawSetString("white", imageutil.RGBAToColorTable(state, 255, 255, 255, 255))
 	t.RawSetString("yellow", imageutil.RGBAToColorTable(state, 255, 255, 0, 255))
+
+	return t
+}
+
+func rainbowTable(state *golua.LState) *golua.LTable {
+	/// @struct Rainbow
+	/// @prop violet {struct<image.ColorRGBA>} - The violet color.
+	/// @prop indigo {struct<image.ColorRGBA>} - The indigo color.
+	/// @prop blue {struct<image.ColorRGBA>} - The blue color.
+	/// @prop green {struct<image.ColorRGBA>} - The green color.
+	/// @prop yellow {struct<image.ColorRGBA>} - The yellow color.
+	/// @prop orange {struct<image.ColorRGBA>} - The orange color.
+	/// @prop red {struct<image.ColorRGBA>} - The red color.
+
+	t := state.NewTable()
+
+	t.RawSetString("violet", imageutil.RGBAToColorTable(state, 148, 0, 211, 255))
+	t.RawSetString("indigo", imageutil.RGBAToColorTable(state, 75, 0, 130, 255))
+	t.RawSetString("blue", imageutil.RGBAToColorTable(state, 0, 0, 255, 255))
+	t.RawSetString("green", imageutil.RGBAToColorTable(state, 0, 255, 0, 255))
+	t.RawSetString("yellow", imageutil.RGBAToColorTable(state, 255, 255, 0, 255))
+	t.RawSetString("orange", imageutil.RGBAToColorTable(state, 255, 127, 0, 255))
+	t.RawSetString("red", imageutil.RGBAToColorTable(state, 255, 0, 0, 255))
 
 	return t
 }
