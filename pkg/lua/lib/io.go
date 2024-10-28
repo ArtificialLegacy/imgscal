@@ -17,6 +17,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/crazy3lf/colorconv"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -621,6 +622,38 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			}
 
 			return 0
+		})
+
+	/// @func load_palette(path) -> []struct<image.ColorRGBA>
+	/// @arg path {string} - Path to a .hex file for the palette.
+	/// @returns {[]struct<image.ColorRGBA>}
+	/// @desc
+	/// Use to load a hex color palette file; For example, from lospec.
+	lib.CreateFunction(tab, "load_palette",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["path"].(string)
+			b, err := os.ReadFile(pth)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to read hex file: %s with error (%s)", log.LEVEL_ERROR, pth, err))
+			}
+
+			hexValues := strings.Split(string(b), "\n")
+			colors := state.NewTable()
+
+			for i, v := range hexValues {
+				r, g, b, err := colorconv.HexToRGB(v)
+				if err != nil {
+					lua.Error(state, lg.Appendf("failed to parse hex color: %s with error (%s)", log.LEVEL_ERROR, v, err))
+				}
+
+				colors.RawSetInt(i+1, imageutil.RGBAToColorTable(state, int(r), int(g), int(b), 255))
+			}
+
+			state.Push(colors)
+			return 1
 		})
 
 	/// @func remove(path, all?)
