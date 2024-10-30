@@ -35,3 +35,12 @@ log:
 .PHONY: new
 new:
 	go run ./cmd/imgscal-new
+
+install-slim:
+	go install ./cmd/imgscal
+
+install:
+	go install ./cmd/imgscal
+	go install ./cmd/imgscal-new
+	go install ./cmd/imgscal-entrypoint
+	go install ./cmd/imgscal-log
