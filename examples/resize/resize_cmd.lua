@@ -1,4 +1,4 @@
----@param workflow imgscal_WorkflowInfo
+---@param info imgscal_WorkflowInfo
 function help(info)
 	return [[
 Usage:
