@@ -500,13 +500,26 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// @constants Type {int}
 	/// @const TASK
 	/// @const IMAGE
-	/// @const FILE
 	/// @const CONTEXT
 	/// @const QR
 	tab.RawSetString("TASK", golua.LNumber(collection.TYPE_TASK))
 	tab.RawSetString("IMAGE", golua.LNumber(collection.TYPE_IMAGE))
 	tab.RawSetString("CONTEXT", golua.LNumber(collection.TYPE_CONTEXT))
 	tab.RawSetString("QR", golua.LNumber(collection.TYPE_QR))
+
+	/// @constants Crate {int}
+	/// @const CRATE_WINDOW
+	/// @const CRATE_REF
+	/// @const CRATE_GAMEMAKER
+	/// @const CRATE_TEA
+	/// @const CRATE_LIPGLOSS
+	/// @const CRATE_CACHEDIMAGE
+	tab.RawSetString("CRATE_WINDOW", golua.LNumber(0))
+	tab.RawSetString("CRATE_REF", golua.LNumber(1))
+	tab.RawSetString("CRATE_GAMEMAKER", golua.LNumber(2))
+	tab.RawSetString("CRATE_TEA", golua.LNumber(3))
+	tab.RawSetString("CRATE_LIPGLOSS", golua.LNumber(4))
+	tab.RawSetString("CRATE_CACHEDIMAGE", golua.LNumber(5))
 }
 
 func callScheduledFunction(state *golua.LState, f *golua.LFunction) {

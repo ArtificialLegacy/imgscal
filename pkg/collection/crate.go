@@ -2,7 +2,9 @@ package collection
 
 import (
 	"fmt"
+	"image"
 
+	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -16,6 +18,11 @@ type RefItem[T any] struct {
 
 type StyleItem struct {
 	Style *lipgloss.Style
+}
+
+type CachedImageItem struct {
+	Image image.Image
+	Model imageutil.ColorModel
 }
 
 type Crate[T any] struct {

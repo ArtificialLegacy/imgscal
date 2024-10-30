@@ -51,6 +51,7 @@ type Runner struct {
 	CR_GMP *collection.Crate[yyp.Project]
 	CR_TEA *collection.Crate[teamodels.TeaItem]
 	CR_LIP *collection.Crate[collection.StyleItem]
+	CR_CIM *collection.Crate[collection.CachedImageItem]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -76,6 +77,7 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		CR_GMP: collection.NewCrate[yyp.Project](),
 		CR_TEA: collection.NewCrate[teamodels.TeaItem](),
 		CR_LIP: collection.NewCrate[collection.StyleItem](),
+		CR_CIM: collection.NewCrate[collection.CachedImageItem](),
 	}
 }
 

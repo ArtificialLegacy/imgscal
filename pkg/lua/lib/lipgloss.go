@@ -957,7 +957,7 @@ func whitespaceOptionBuild(t *golua.LTable) []lipgloss.WhitespaceOption {
 
 func lipglossStyleTable(state *golua.LState, lib *lua.Lib, r *lua.Runner, id int) *golua.LTable {
 	/// @struct Style
-	/// @prop id {int} - The ID of the style.
+	/// @prop id {int<collection.CRATE_LIPGLOSS>} - The ID of the style.
 	/// @method render(string...) -> string
 	/// @method align() -> float<lipgloss.Position>, float<lipgloss.Position>
 	/// @method align_set(self, hpos float<lipgloss.Position>, vpos float<lipgloss.Position>) -> self
