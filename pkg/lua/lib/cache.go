@@ -2,6 +2,7 @@ package lib
 
 import (
 	"image"
+	"math/rand"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
@@ -20,10 +21,132 @@ const LIB_CACHE = "cache"
 func RegisterCache(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_CACHE, r, r.State, lg)
 
+	/// @func new(width, height, model?) -> int<collection.CRATE_CACHEDIMAGE>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? model {int<image.ColorModel>}
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
+	lib.CreateFunction(tab, "new",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+			img := imageutil.NewImage(args["width"].(int), args["height"].(int), model)
+
+			id := r.CR_CIM.Add(&collection.CachedImageItem{
+				Model: model,
+				Image: img,
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func new_filled(width, height, color, model?) -> int<collection.CRATE_CACHEDIMAGE>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg color {struct<image.Color>}
+	/// @arg? model {int<image.ColorModel>}
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
+	lib.CreateFunction(tab, "new_filled",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.RAW_TABLE, Name: "color"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+			width := args["width"].(int)
+			height := args["height"].(int)
+
+			img := imageutil.NewImage(width, height, model)
+
+			red, green, blue, alpha := imageutil.ColorTableToRGBA(args["color"].(*golua.LTable))
+
+			for ix := 0; ix < width; ix++ {
+				for iy := 0; iy < height; iy++ {
+					imageutil.Set(img, ix, iy, int(red), int(green), int(blue), int(alpha))
+				}
+			}
+
+			id := r.CR_CIM.Add(&collection.CachedImageItem{
+				Model: model,
+				Image: img,
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func new_random(width, height, enableAlpha?, model?) -> int<collection.CRATE_CACHEDIMAGE>
+	/// @arg width {int}
+	/// @arg height {int}
+	/// @arg? enableAlpha {bool}
+	/// @arg? model {int<image.ColorModel>}
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
+	lib.CreateFunction(tab, "new_random",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "width"},
+			{Type: lua.INT, Name: "height"},
+			{Type: lua.BOOL, Name: "enableAlpha", Optional: true},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+			width := args["width"].(int)
+			height := args["height"].(int)
+			enableAlpha := args["enableAlpha"].(bool)
+
+			img := imageutil.NewImage(width, height, model)
+
+			for ix := 0; ix < width; ix++ {
+				for iy := 0; iy < height; iy++ {
+					red := rand.Intn(256)
+					green := rand.Intn(256)
+					blue := rand.Intn(256)
+					alpha := 255
+					if enableAlpha {
+						alpha = rand.Intn(256)
+					}
+					imageutil.Set(img, ix, iy, int(red), int(green), int(blue), int(alpha))
+				}
+			}
+
+			id := r.CR_CIM.Add(&collection.CachedImageItem{
+				Model: model,
+				Image: img,
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func new_empty() -> int<collection.CRATE_CACHEDIMAGE>
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
+	/// @desc
+	/// Sets the cached image to a 1px by 1px gray image.
+	lib.CreateFunction(tab, "new_empty",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := r.CR_CIM.Add(&collection.CachedImageItem{
+				Model: imageutil.MODEL_GRAY,
+				Image: image.NewGray(image.Rect(0, 0, 1, 1)),
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
 	/// @func store(id, nocopy?) -> int<collection.CRATE_CACHEDIMAGE>
 	/// @arg id {int<collection.IMAGE>} - ID of the image to cache.
 	/// @arg? nocopy {bool}
-	/// @return {int<collection.CRATE_CACHEDIMAGE>}
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
 	/// @blocking
 	/// @desc
 	/// This stores an image in non-accessable storage. This allows the original image item to be reused without losing the image data.

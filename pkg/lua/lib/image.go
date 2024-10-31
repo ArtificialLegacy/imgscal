@@ -159,6 +159,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 					width := args["width"].(int)
 					height := args["height"].(int)
+					enableAlpha := args["enableAlpha"].(bool)
 
 					img := imageutil.NewImage(width, height, model)
 
@@ -168,7 +169,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 							green := rand.Intn(256)
 							blue := rand.Intn(256)
 							alpha := 255
-							if args["enableAlpha"].(bool) {
+							if enableAlpha {
 								alpha = rand.Intn(256)
 							}
 							imageutil.Set(img, ix, iy, int(red), int(green), int(blue), int(alpha))
