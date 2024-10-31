@@ -140,6 +140,49 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func decode_cached(path, model?) -> int<collection.CRATE_CACHEDIMAGE>
+	/// @arg path {string} - The path to grab the image from.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
+	lib.CreateFunction(tab, "decode_cached",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pth := args["path"].(string)
+			file, err := os.Stat(pth)
+			if err != nil {
+				lua.Error(state, lg.Appendf("invalid image path provided to io.decode_cached: %s", log.LEVEL_ERROR, pth))
+			}
+			if file.IsDir() {
+				lua.Error(state, lg.Append("cannot load a directory as an image", log.LEVEL_ERROR))
+			}
+
+			f, err := os.Open(pth)
+			if err != nil {
+				lua.Error(state, lg.Append("cannot open provided file", log.LEVEL_ERROR))
+			}
+			defer f.Close()
+
+			encoding := imageutil.ExtensionEncoding(path.Ext(file.Name()))
+			img, err := imageutil.Decode(f, encoding)
+			if err != nil {
+				lua.Error(state, lg.Appendf("provided file is an invalid image: %s", log.LEVEL_ERROR, err))
+			}
+
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+			img, model = imageutil.Limit(img, model)
+
+			id := r.CR_CIM.Add(&collection.CachedImageItem{
+				Model: model,
+				Image: img,
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
 	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGDataChunk>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
