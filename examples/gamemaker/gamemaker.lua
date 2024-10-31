@@ -53,5 +53,5 @@ function main()
 		:back()
 
 	gamemaker.sprite_save(proj, sprite)
-	gamemaker.project_save(proj)
+	gamemaker.project_close(proj, true)
 end

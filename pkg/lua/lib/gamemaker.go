@@ -63,6 +63,31 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func project_close(id, save?)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg? save {bool}
+	lib.CreateFunction(tab, "project_close",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "save", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if args["save"].(bool) {
+				proj, err := r.CR_GMP.Item(args["id"].(int))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+				}
+
+				err = proj.DataSave()
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to save project data: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+				}
+			}
+
+			r.CR_GMP.Clean(args["id"].(int))
+			return 0
+		})
+
 	/// @func folder_add(id, name, folderpath) -> struct<gamemaker.ResourceNode>, string
 	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
 	/// @arg name {string} - Name of the folder asset.
