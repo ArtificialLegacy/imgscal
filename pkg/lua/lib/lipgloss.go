@@ -495,6 +495,19 @@ func RegisterLipGloss(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func style_delete(style)
+	/// @arg style {struct<lipgloss.Style>}
+	lib.CreateFunction(tab, "style_delete",
+		[]lua.Arg{
+			{Type: lua.TABLE, Name: "style", Table: &[]lua.Arg{{Type: lua.INT, Name: "id"}}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			id := args["style"].(map[string]any)["id"].(int)
+
+			r.CR_LIP.Clean(id)
+			return 0
+		})
+
 	/// @func style_runes(str, indices, match, unmatch) -> string
 	/// @arg str {string}
 	/// @arg indices {[]int}
