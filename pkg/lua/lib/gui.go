@@ -2061,7 +2061,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := imageTable(state, args["id"].(int), false)
+			t := imageTable(state, args["id"].(int), false, false)
 
 			state.Push(t)
 			return 1
@@ -2079,7 +2079,21 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := imageTable(state, args["id"].(int), true)
+			t := imageTable(state, args["id"].(int), true, false)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_image_cached(id) -> struct<gui.WidgetImage>
+	/// @arg id {int<collection.CRATE_CACHEDIMAGE>}
+	/// @returns {struct<gui.WidgetImage>}
+	lib.CreateFunction(tab, "wg_image_cached",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := imageTable(state, args["id"].(int), false, true)
 
 			state.Push(t)
 			return 1
@@ -2511,7 +2525,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := buttonImageTable(state, args["id"].(int), false)
+			t := buttonImageTable(state, args["id"].(int), false, false)
 
 			state.Push(t)
 			return 1
@@ -2529,7 +2543,21 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := buttonImageTable(state, args["id"].(int), true)
+			t := buttonImageTable(state, args["id"].(int), true, false)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func wg_button_image_cached(id) -> struct<gui.WidgetButtonImage>
+	/// @arg id {int<collection.CRATE_CACHEDIMAGE>}
+	/// @returns {struct<gui.WidgetButtonImage>}
+	lib.CreateFunction(tab, "wg_button_image_cached",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := buttonImageTable(state, args["id"].(int), false, true)
 
 			state.Push(t)
 			return 1
@@ -7204,18 +7232,22 @@ func imageUrlBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.
 	return i
 }
 
-func imageTable(state *golua.LState, image int, sync bool) *golua.LTable {
+func imageTable(state *golua.LState, image int, sync, cache bool) *golua.LTable {
 	/// @struct WidgetImage
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop image {int<collection.IMAGE>}
+	/// @prop imagecached {int<collection.CRATE_CACHEDIMAGE>}
 	/// @prop sync {bool}
+	/// @prop cached {bool}
 	/// @method on_click(self, {function()}) -> self
 	/// @method size(self, width float, height float) -> self
 
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_IMAGE))
 	t.RawSetString("image", golua.LNumber(image))
+	t.RawSetString("imagecached", golua.LNumber(image))
 	t.RawSetString("sync", golua.LBool(sync))
+	t.RawSetString("cached", golua.LBool(cache))
 	t.RawSetString("__click", golua.LNil)
 	t.RawSetString("__width", golua.LNil)
 	t.RawSetString("__height", golua.LNil)
@@ -7240,25 +7272,32 @@ func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 	var img image.Image
 
 	sync := t.RawGetString("sync").(golua.LBool)
+	cache := t.RawGetString("cached").(golua.LBool)
 
 	if !sync {
-		<-r.IC.Schedule(state, int(ig), &collection.Task[collection.ItemImage]{
-			Lib:  LIB_GUI,
-			Name: "wg_image",
-			Fn: func(i *collection.Item[collection.ItemImage]) {
-				img = i.Self.Image
-			},
-		})
+		if cache {
+			ci, err := r.CR_CIM.Item(int(ig))
+			if err == nil {
+				img = ci.Image
+			}
+		} else {
+			<-r.IC.Schedule(state, int(ig), &collection.Task[collection.ItemImage]{
+				Lib:  LIB_GUI,
+				Name: "wg_image",
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+				},
+			})
+		}
 	} else {
 		item := r.IC.Item(int(ig))
-		if item == nil || item.Self == nil || item.Self.Image == nil {
-			img = image.NewRGBA(image.Rectangle{
-				Min: image.Pt(0, 0),
-				Max: image.Pt(1, 1), // image must have at least 1 pixel for imgui.
-			})
-		} else {
+		if item != nil && item.Self != nil {
 			img = item.Self.Image
 		}
+	}
+
+	if img == nil {
+		img = image.NewRGBA(image.Rect(0, 0, 1, 1))
 	}
 
 	i := g.ImageWithRgba(img)
@@ -9137,11 +9176,13 @@ func buttonInvisibleBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t 
 	return b
 }
 
-func buttonImageTable(state *golua.LState, id int, sync bool) *golua.LTable {
+func buttonImageTable(state *golua.LState, id int, sync, cache bool) *golua.LTable {
 	/// @struct WidgetButtonImage
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop id {int<collection.IMAGE>}
+	/// @prop cachedid {int<collection.CRATE_CACHEDIMAGE>}
 	/// @prop sync {bool}
+	/// @prop cached {bool}
 	/// @method size(self, width float, height float) -> self
 	/// @method on_click(self, {function()}) -> self
 	/// @method bg_color(self, struct<image.Color>) -> self
@@ -9152,7 +9193,9 @@ func buttonImageTable(state *golua.LState, id int, sync bool) *golua.LTable {
 	t := state.NewTable()
 	t.RawSetString("type", golua.LString(WIDGET_BUTTON_IMAGE))
 	t.RawSetString("id", golua.LNumber(id))
+	t.RawSetString("cachedid", golua.LNumber(id))
 	t.RawSetString("sync", golua.LBool(sync))
+	t.RawSetString("cached", golua.LBool(cache))
 	t.RawSetString("__width", golua.LNil)
 	t.RawSetString("__height", golua.LNil)
 	t.RawSetString("__click", golua.LNil)
@@ -9204,25 +9247,32 @@ func buttonImageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *gol
 	var img image.Image
 
 	sync := t.RawGetString("sync").(golua.LBool)
+	cache := t.RawGetString("cached").(golua.LBool)
 
 	if !sync {
-		<-r.IC.Schedule(state, int(ig), &collection.Task[collection.ItemImage]{
-			Lib:  LIB_GUI,
-			Name: "wg_button_image",
-			Fn: func(i *collection.Item[collection.ItemImage]) {
-				img = i.Self.Image
-			},
-		})
+		if cache {
+			ci, err := r.CR_CIM.Item(int(ig))
+			if err == nil {
+				img = ci.Image
+			}
+		} else {
+			<-r.IC.Schedule(state, int(ig), &collection.Task[collection.ItemImage]{
+				Lib:  LIB_GUI,
+				Name: "wg_button_image",
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					img = i.Self.Image
+				},
+			})
+		}
 	} else {
 		item := r.IC.Item(int(ig))
-		if item.Self.Image == nil {
-			img = image.NewRGBA(image.Rectangle{
-				Min: image.Pt(0, 0),
-				Max: image.Pt(1, 1), // image must have at least 1 pixel for imgui.
-			})
-		} else {
+		if item.Self.Image != nil {
 			img = item.Self.Image
 		}
+	}
+
+	if img == nil {
+		img = image.NewRGBA(image.Rect(0, 0, 1, 1))
 	}
 
 	b := g.ImageButtonWithRgba(img)
