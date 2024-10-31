@@ -24,6 +24,11 @@ dev:
 doc:
 	go run ./cmd/imgscal-doc
 
+.PHONY: doc-open
+doc-open:
+	go run ./cmd/imgscal-doc
+	open ./docs/index.html
+
 .PHONY: types
 types:
 	go run ./cmd/imgscal-types
