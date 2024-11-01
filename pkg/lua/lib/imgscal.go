@@ -63,6 +63,8 @@ func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func
 /// @method import([]string) - Array containing the import names for built-in libraries.
 /// @method config(table<any>) - Set the default configuration for the workflow.
 /// @method secrets(table<any>) - Set the default secrets for the workflow.
+/// @method use_default_input() - Enable using io.default_input().
+/// @method use_default_output() - Enable using io.default_output().
 
 /// @struct WorkflowInfo
 /// @prop is_cli {bool}

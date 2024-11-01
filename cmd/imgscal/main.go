@@ -107,6 +107,14 @@ func main() {
 		}
 	}
 
+	_, err = os.Stat(sm.Config.InputDirectory)
+	if err != nil {
+		err := os.MkdirAll(sm.Config.InputDirectory, 0o777)
+		if err != nil {
+			panic(fmt.Sprintf("failed to make input directory! (%s)", err))
+		}
+	}
+
 	_, err = os.Stat(sm.Config.PluginDirectory)
 	if err != nil {
 		err := os.MkdirAll(sm.Config.PluginDirectory, 0o777)

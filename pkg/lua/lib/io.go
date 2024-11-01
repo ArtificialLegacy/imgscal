@@ -1025,6 +1025,21 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func default_input() -> string
+	/// @returns {string}
+	/// @desc
+	/// Returns the default input directory specified in the config file.
+	lib.CreateFunction(tab, "default_input",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if !r.UseDefaultInput {
+				lua.Error(state, lg.Append("cannot use default_input, it has not been enabled within the init function", log.LEVEL_ERROR))
+			}
+			pth := path.Join(r.Config.InputDirectory, r.Entry)
+			state.Push(golua.LString(pth))
+			return 1
+		})
+
 	/// @func default_output() -> string
 	/// @returns {string}
 	/// @desc
@@ -1032,7 +1047,11 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "default_output",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			state.Push(golua.LString(r.Config.OutputDirectory))
+			if !r.UseDefaultOutput {
+				lua.Error(state, lg.Append("cannot use default_output, it has not been enabled within the init function", log.LEVEL_ERROR))
+			}
+			pth := path.Join(r.Config.OutputDirectory, r.Entry)
+			state.Push(golua.LString(pth))
 			return 1
 		})
 

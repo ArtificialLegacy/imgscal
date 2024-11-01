@@ -24,13 +24,15 @@ import (
 )
 
 type Runner struct {
-	State      *lua.LState
-	lg         *log.Logger
-	Dir        string
-	Config     *config.Config
-	Entry      string
-	ConfigData map[string]any
-	SecretData map[string]any
+	State            *lua.LState
+	lg               *log.Logger
+	Dir              string
+	Config           *config.Config
+	Entry            string
+	ConfigData       map[string]any
+	SecretData       map[string]any
+	UseDefaultInput  bool
+	UseDefaultOutput bool
 
 	Failed string
 
@@ -185,6 +187,28 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 
 	t.RawSetString("secrets", r.State.NewFunction(func(l *lua.LState) int {
 		r.SecretData = r.WorkflowConfig(l, ".secrets.json")
+		return 0
+	}))
+
+	t.RawSetString("use_default_input", r.State.NewFunction(func(l *lua.LState) int {
+		pth := path.Join(r.Config.InputDirectory, r.Entry)
+		err := os.MkdirAll(pth, 0o777)
+		if err != nil {
+			Error(r.State, lg.Appendf("failed to create default input directory %s, with error (%s)", log.LEVEL_ERROR, pth, err))
+		}
+		r.UseDefaultInput = true
+
+		return 0
+	}))
+
+	t.RawSetString("use_default_output", r.State.NewFunction(func(l *lua.LState) int {
+		pth := path.Join(r.Config.OutputDirectory, r.Entry)
+		err := os.MkdirAll(pth, 0o777)
+		if err != nil {
+			Error(r.State, lg.Appendf("failed to create default output directory %s, with error (%s)", log.LEVEL_ERROR, pth, err))
+		}
+		r.UseDefaultOutput = true
+
 		return 0
 	}))
 
