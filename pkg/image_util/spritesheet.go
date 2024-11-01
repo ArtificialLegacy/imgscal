@@ -5,6 +5,27 @@ import (
 	"math"
 )
 
+func SpritesheetToFramesTable(img image.Image, copy bool, sheet map[string]any) []image.Image {
+	count := sheet["count"].(int)
+
+	width := sheet["width"].(int)
+	height := sheet["height"].(int)
+
+	perRow := sheet["perRow"].(int)
+
+	offsets := sheet["offsets"].(map[string]any)
+	hpixel := offsets["hpixel"].(int)
+	vpixel := offsets["vpixel"].(int)
+	hcell := offsets["hcell"].(int)
+	vcell := offsets["vcell"].(int)
+	index := offsets["index"].(int)
+
+	hsep := sheet["hsep"].(int)
+	vsep := sheet["vsep"].(int)
+
+	return SpritesheetToFrames(img, copy, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+}
+
 func SpritesheetToFrames(img image.Image, copy bool, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep int) []image.Image {
 	imgs := make([]image.Image, count)
 
@@ -36,6 +57,27 @@ func SpritesheetToFrames(img image.Image, copy bool, count, width, height, perRo
 	}
 
 	return imgs
+}
+
+func FramesToSpritesheetTable(imgs []image.Image, model ColorModel, sheet map[string]any) image.Image {
+	count := sheet["count"].(int)
+
+	width := sheet["width"].(int)
+	height := sheet["height"].(int)
+
+	perRow := sheet["perRow"].(int)
+
+	offsets := sheet["offsets"].(map[string]any)
+	hpixel := offsets["hpixel"].(int)
+	vpixel := offsets["vpixel"].(int)
+	hcell := offsets["hcell"].(int)
+	vcell := offsets["vcell"].(int)
+	index := offsets["index"].(int)
+
+	hsep := sheet["hsep"].(int)
+	vsep := sheet["vsep"].(int)
+
+	return FramesToSpritesheet(imgs, model, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
 }
 
 func FramesToSpritesheet(imgs []image.Image, model ColorModel, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep int) image.Image {
