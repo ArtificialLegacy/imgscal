@@ -6,6 +6,7 @@ import (
 
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/charmbracelet/lipgloss"
+	"gitlab.com/microo8/blackcl"
 )
 
 type CrateItem[T any] struct {
@@ -23,6 +24,14 @@ type StyleItem struct {
 type CachedImageItem struct {
 	Image image.Image
 	Model imageutil.ColorModel
+}
+
+type ShaderItem struct {
+	Device        *blackcl.Device
+	BuffersImage  []*blackcl.Image
+	BuffersVector []*blackcl.Vector
+	BuffersBytes  []*blackcl.Bytes
+	Kernels       []*blackcl.KernelCall
 }
 
 type Crate[T any] struct {

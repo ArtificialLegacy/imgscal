@@ -54,6 +54,7 @@ type Runner struct {
 	CR_TEA *collection.Crate[teamodels.TeaItem]
 	CR_LIP *collection.Crate[collection.StyleItem]
 	CR_CIM *collection.Crate[collection.CachedImageItem]
+	CR_SHD *collection.Crate[collection.ShaderItem]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -80,6 +81,19 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		CR_TEA: collection.NewCrate[teamodels.TeaItem](),
 		CR_LIP: collection.NewCrate[collection.StyleItem](),
 		CR_CIM: collection.NewCrate[collection.CachedImageItem](),
+		CR_SHD: collection.NewCrate[collection.ShaderItem]().OnClean(func(i *collection.CrateItem[collection.ShaderItem]) {
+			for _, b := range i.Self.BuffersImage {
+				b.Release()
+			}
+			for _, b := range i.Self.BuffersVector {
+				b.Release()
+			}
+			for _, b := range i.Self.BuffersBytes {
+				b.Release()
+			}
+
+			i.Self.Device.Release()
+		}),
 	}
 }
 

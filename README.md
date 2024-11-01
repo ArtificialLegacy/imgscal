@@ -55,6 +55,7 @@ Demo workflow that creates an interface to apply filters to an image.
   * Go >= 1.22.6
   * Makefile
   * A C compiler (mingw, TDM-GCC or g++)
+  * OpenCL
 
 ```sh
 make build-windows
@@ -70,6 +71,7 @@ make build-linux
   * Go >= 1.22.6
   * Makefile
   * A C compiler (mingw, TDM-GCC or g++)
+  * OpenCL
 
 ```sh
 make install-slim

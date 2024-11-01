@@ -11,6 +11,7 @@ require (
 	github.com/anthonynsimon/bild v0.14.0
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.1.1
+	github.com/charmbracelet/huh v0.6.0
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/crazy3lf/colorconv v1.2.0
 	github.com/disintegration/gift v1.2.1
@@ -25,6 +26,7 @@ require (
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a
 	github.com/yuin/gopher-lua v1.1.1
+	gitlab.com/microo8/blackcl v0.0.0-20190218100333-2c95478cf9bd
 	golang.org/x/image v0.20.0
 )
 
@@ -35,7 +37,6 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
-	github.com/charmbracelet/huh v0.6.0 // indirect
 	github.com/charmbracelet/x/ansi v0.2.3 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect

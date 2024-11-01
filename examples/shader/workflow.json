@@ -1,0 +1,9 @@
+{
+    "name": "shader",
+    "author": "ArtificialLegacy",
+    "version": "1.0.0",
+    "desc": "Example workflow for gpu shaders.",
+    "workflows": {
+        "*": "shader.lua"
+    }
+}

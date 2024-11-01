@@ -514,12 +514,14 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 	/// @const CRATE_TEA
 	/// @const CRATE_LIPGLOSS
 	/// @const CRATE_CACHEDIMAGE
+	/// @const CRATE_SHADER
 	tab.RawSetString("CRATE_WINDOW", golua.LNumber(0))
 	tab.RawSetString("CRATE_REF", golua.LNumber(1))
 	tab.RawSetString("CRATE_GAMEMAKER", golua.LNumber(2))
 	tab.RawSetString("CRATE_TEA", golua.LNumber(3))
 	tab.RawSetString("CRATE_LIPGLOSS", golua.LNumber(4))
 	tab.RawSetString("CRATE_CACHEDIMAGE", golua.LNumber(5))
+	tab.RawSetString("CRATE_SHADER", golua.LNumber(6))
 }
 
 func callScheduledFunction(state *golua.LState, f *golua.LFunction) {
