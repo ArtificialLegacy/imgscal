@@ -138,7 +138,7 @@ Example workflows are copied into a directory named `examples`, and this directo
 ### `imgscal-doc`
 
 Generates documentation for the lua api to `./docs/`.
-When using an update to date version of the tool from the main branch,
+When using an up to date version of the tool from the main branch,
 refer to the [live site](https://artificiallegacy.github.io/imgscal/) instead.
 
 ### `imgscal-types`
