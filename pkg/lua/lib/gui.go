@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	imgui "github.com/AllenDang/cimgui-go"
+	imgui "github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
 	"github.com/ArtificialLegacy/imgscal/pkg/assets"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -702,7 +702,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			v := args["s"].(string)
-			sv := g.StyleVarIDFromString(v)
+			sv, _ := g.StyleVarIDString(v)
 
 			state.Push(golua.LNumber(sv))
 			return 1

@@ -1,10 +1,10 @@
 module github.com/ArtificialLegacy/imgscal
 
-go 1.22.6
+go 1.23.2
 
 require (
-	github.com/AllenDang/cimgui-go v0.0.0-20240805083726-719fbcdaf7fa
-	github.com/AllenDang/giu v0.8.1
+	github.com/AllenDang/cimgui-go v1.1.0
+	github.com/AllenDang/giu v0.10.0
 	github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829175936-7ea472aea965
 	github.com/ArtificialLegacy/go-ico v0.0.0-20240905165543-df31b047e3f7
 	github.com/akamensky/argparse v1.4.0
@@ -27,7 +27,7 @@ require (
 	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a
 	github.com/yuin/gopher-lua v1.1.1
 	gitlab.com/microo8/blackcl v0.0.0-20190218100333-2c95478cf9bd
-	golang.org/x/image v0.20.0
+	golang.org/x/image v0.21.0
 )
 
 require (
@@ -45,11 +45,12 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/gucio321/glm-go v0.0.0-20241029220517-e1b5a3e011c8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
-	github.com/mazznoer/csscolorparser v0.1.3 // indirect
+	github.com/mazznoer/csscolorparser v0.1.5 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
@@ -65,7 +66,7 @@ require (
 	golang.design/x/hotkey v0.4.1 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/text v0.19.0 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 )
 
