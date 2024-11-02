@@ -13,6 +13,7 @@ import (
 
 	goico "github.com/ArtificialLegacy/go-ico"
 	"github.com/ArtificialLegacy/imgscal/pkg/assets"
+	"github.com/ArtificialLegacy/imgscal/pkg/byteseeker"
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
@@ -87,6 +88,110 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func decode_string(name, encoding, data, model?) -> int<collection.IMAGE>
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg data {string}
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {int<collection.IMAGE>}
+	lib.CreateFunction(tab, "decode_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+
+					img, err := imageutil.Decode(strings.NewReader(args["data"].(string)), encoding)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("provided data is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
+					i.Self = &collection.ItemImage{
+						Name:     name,
+						Image:    img,
+						Encoding: encoding,
+						Model:    model,
+					}
+				},
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
+	/// @func decode_config(path) -> int, int, bool
+	/// @arg path {string} - The path to grab the image from.
+	/// @returns {int} - The width of the image.
+	/// @returns {int} - The height of the image.
+	/// @returns {bool} - If the image can be decoded.
+	lib.CreateFunction(tab, "decode_config",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			f, err := os.Open(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+			}
+			defer f.Close()
+
+			encoding := imageutil.ExtensionEncoding(path.Ext(f.Name()))
+			width, height, err := imageutil.DecodeConfig(f, encoding)
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			if err != nil {
+				state.Push(golua.LFalse)
+				lg.Append(err.Error(), log.LEVEL_WARN)
+			} else {
+				state.Push(golua.LTrue)
+			}
+			return 0
+		})
+
+	/// @func decode_config_string(encoding, data) -> int, int, bool
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg data {string}
+	/// @returns {int} - The width of the image.
+	/// @returns {int} - The height of the image.
+	/// @returns {bool} - If the image can be decoded.
+	lib.CreateFunction(tab, "decode_config_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.STRING, Name: "data"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+			width, height, err := imageutil.DecodeConfig(strings.NewReader(args["data"].(string)), encoding)
+
+			state.Push(golua.LNumber(width))
+			state.Push(golua.LNumber(height))
+			if err != nil {
+				state.Push(golua.LFalse)
+				lg.Append(err.Error(), log.LEVEL_WARN)
+			} else {
+				state.Push(golua.LTrue)
+			}
+			return 0
+		})
+
 	/// @func decode_into(path, id, model?)
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg id {int<collection.INT>} - Image ID to overwrite with decoded image.
@@ -123,6 +228,49 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 					img, err := imageutil.Decode(f, encoding)
 					if err != nil {
 						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("provided file is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
+					i.Self = &collection.ItemImage{
+						Name:     name,
+						Image:    img,
+						Encoding: encoding,
+						Model:    model,
+					}
+				},
+			})
+
+			return 0
+		})
+
+	/// @func decode_into_string(name, encoding, data, id, model?)
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg data {string}
+	/// @arg id {int<collection.INT>} - Image ID to overwrite with decoded image.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	lib.CreateFunction(tab, "decode_into_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+			id := args["id"].(int)
+
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+					img, err := imageutil.Decode(strings.NewReader(args["data"].(string)), encoding)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("provided data is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
 					}
 
 					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
@@ -183,6 +331,36 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func decode_cached_string(encoding, data, model?) -> int<collection.CRATE_CACHEDIMAGE>
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg data {string}
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {int<collection.CRATE_CACHEDIMAGE>}
+	lib.CreateFunction(tab, "decode_cached_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+			img, err := imageutil.Decode(strings.NewReader(args["data"].(string)), encoding)
+			if err != nil {
+				lua.Error(state, lg.Appendf("provided data is an invalid image: %s", log.LEVEL_ERROR, err))
+			}
+
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+			img, model = imageutil.Limit(img, model)
+
+			id := r.CR_CIM.Add(&collection.CachedImageItem{
+				Model: model,
+				Image: img,
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
 	/// @func decode_png_data(path, model?) -> int<collection.IMAGE>, []struct<image.PNGDataChunk>
 	/// @arg path {string} - The path to grab the image from.
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
@@ -209,6 +387,58 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			img, chunks, err := imageutil.PNGDataChunkDecode(f)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided file is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+					img, model = imageutil.Limit(img, model)
+
+					i.Self = &collection.ItemImage{
+						Name:     name,
+						Image:    img,
+						Encoding: imageutil.ENCODING_PNG,
+						Model:    model,
+					}
+				},
+			})
+
+			ct := state.NewTable()
+			for _, chunk := range chunks {
+				t := imageutil.DataChunkToTable(chunk, state)
+				ct.Append(t)
+			}
+
+			state.Push(golua.LNumber(id))
+			state.Push(ct)
+			return 2
+		})
+
+	/// @func decode_png_data_string(name, data, model?) -> int<collection.IMAGE>, []struct<image.PNGDataChunk>
+	/// @arg name {string}
+	/// @arg data {string}
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {int<collection.IMAGE>}
+	/// @returns {[]struct<image.PNGDataChunk>}
+	lib.CreateFunction(tab, "decode_png_data_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			img, chunks, err := imageutil.PNGDataChunkDecode(strings.NewReader(args["data"].(string)))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided data is an invalid image: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
 			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
@@ -279,6 +509,65 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			for i, img := range imgs {
 				name := fmt.Sprintf("%s_%dx%d", strings.TrimSuffix(file.Name(), path.Ext(file.Name())), img.Bounds().Dx(), img.Bounds().Dy())
+				chLog := log.NewLogger("image_"+name, lg)
+				lg.Append(fmt.Sprintf("child log created: %s", "image_"+name), log.LEVEL_INFO)
+
+				id := r.IC.AddItem(&chLog)
+				ids[i] = id
+
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img, model = imageutil.Limit(img, model)
+
+						i.Self = &collection.ItemImage{
+							Name:     name,
+							Image:    img,
+							Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
+							Model:    model,
+						}
+					},
+				})
+			}
+
+			t := state.NewTable()
+			for i, id := range ids {
+				t.RawSetInt(i+1, golua.LNumber(id))
+			}
+			state.Push(t)
+			return 1
+		})
+
+	/// @func decode_favicon_string(name, data, encoding, model?) -> []int<collection.IMAGE>
+	/// @arg name {string}
+	/// @arg data{string}
+	/// @arg encoding {int<image.Encoding>} - The encoding to use for the extracted images.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {[]int<collection.IMAGE>}
+	/// @desc
+	/// Decodes an ICO type favicon into an array of images.
+	lib.CreateFunction(tab, "decode_favicon_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cfg, imgs, err := goico.Decode(strings.NewReader(args["data"].(string)))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided data is an invalid favicon: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			if cfg.Type != goico.TYPE_ICO {
+				state.Error(golua.LString(lg.Append("provided data is not an ICO type favicon", log.LEVEL_ERROR)), 0)
+			}
+
+			ids := make([]int, len(imgs))
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+			for i, img := range imgs {
+				name := fmt.Sprintf("%s_%dx%d", args["name"].(string), img.Bounds().Dx(), img.Bounds().Dy())
 				chLog := log.NewLogger("image_"+name, lg)
 				lg.Append(fmt.Sprintf("child log created: %s", "image_"+name), log.LEVEL_INFO)
 
@@ -389,6 +678,74 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 2
 		})
 
+	/// @func decode_favicon_cursor_string(name, data, encoding, model?) -> []int<collection.IMAGE>, []int
+	/// @arg name {string}
+	/// @arg data {string}
+	/// @arg encoding {int<image.Encoding>} - The encoding to use for the extracted images.
+	/// @arg? model {int<image.ColorModel>} - Used only to specify default when there is an unsupported color model.
+	/// @returns {[]int<collection.IMAGE>}
+	/// @returns {[]int} - Pairs of ints representing the hotspot of each cursor. e.g. [x1, y1, x2, y2, ...]
+	/// @desc
+	/// Decodes a CUR type favicon into an array of images and hotspots.
+	lib.CreateFunction(tab, "decode_favicon_cursor_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cfg, imgs, err := goico.Decode(strings.NewReader(args["data"].(string)))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided data is an invalid favicon: %s", err), log.LEVEL_ERROR)), 0)
+			}
+			if cfg.Type != goico.TYPE_CUR {
+				state.Error(golua.LString(lg.Append("provided data is not a CUR type favicon", log.LEVEL_ERROR)), 0)
+			}
+
+			ids := make([]int, len(imgs))
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+			for i, img := range imgs {
+				name := fmt.Sprintf("%s_%dx%d", args["name"].(string), img.Bounds().Dx(), img.Bounds().Dy())
+				chLog := log.NewLogger(name, lg)
+				lg.Append(fmt.Sprintf("child log created: %s", name), log.LEVEL_INFO)
+
+				id := r.IC.AddItem(&chLog)
+				ids[i] = id
+
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img, model = imageutil.Limit(img, model)
+
+						i.Self = &collection.ItemImage{
+							Name:     name,
+							Image:    img,
+							Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
+							Model:    model,
+						}
+					},
+				})
+			}
+
+			t := state.NewTable()
+			for _, id := range ids {
+				t.Append(golua.LNumber(id))
+			}
+
+			ht := state.NewTable()
+			for _, e := range cfg.Entries {
+				ht.Append(golua.LNumber(e.Data1))
+				ht.Append(golua.LNumber(e.Data2))
+			}
+
+			state.Push(t)
+			state.Push(ht)
+			return 2
+		})
+
 	/// @func decode_favicon_config(path) -> struct<io.FaviconConfig>
 	/// @arg path {string} - The path to grab the image from.
 	/// @returns {struct<io.FaviconConfig>}
@@ -426,6 +783,41 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			cfg, err := goico.DecodeConfig(f)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided file is an invalid favicon: %s", err), log.LEVEL_ERROR)), 0)
+			}
+
+			t := state.NewTable()
+			t.RawSetString("type", golua.LNumber(cfg.Type))
+			t.RawSetString("count", golua.LNumber(cfg.Count))
+			t.RawSetString("largest", golua.LNumber(cfg.Largest))
+
+			entries := state.NewTable()
+			for _, e := range cfg.Entries {
+				entry := state.NewTable()
+				entry.RawSetString("width", golua.LNumber(e.Width))
+				entry.RawSetString("height", golua.LNumber(e.Height))
+				entry.RawSetString("data1", golua.LNumber(e.Data1))
+				entry.RawSetString("data2", golua.LNumber(e.Data2))
+
+				entries.Append(entry)
+			}
+
+			t.RawSetString("entries", entries)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func decode_favicon_config_string(data) -> struct<io.FaviconConfig>
+	/// @arg data {string}
+	/// @returns {struct<io.FaviconConfig>}
+	lib.CreateFunction(tab, "decode_favicon_config_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "data"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			cfg, err := goico.DecodeConfig(strings.NewReader(args["data"].(string)))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("provided data is an invalid favicon: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
 			t := state.NewTable()
@@ -555,6 +947,37 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func encode_string(id) -> string
+	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "encode_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var data string
+
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					strwriter := byteseeker.NewByteSeeker(20000, 1000)
+
+					i.Lg.Append(fmt.Sprintf("encoding using %d", i.Self.Encoding), log.LEVEL_INFO)
+					err := imageutil.Encode(strwriter, i.Self.Image, i.Self.Encoding)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("cannot write image to string: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					data = string(strwriter.Bytes())
+				},
+			})
+
+			state.Push(golua.LString(data))
+			return 1
+		})
+
 	/// @func encode_png_data(id, chunks, path)
 	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
 	/// @arg chunks {[]struct<image.PNGDataChunk>} - The PNG data chunks to encode with the image.
@@ -596,6 +1019,46 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 			return 0
+		})
+
+	/// @func encode_png_data_string(id, chunks) -> string
+	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
+	/// @arg chunks {[]struct<image.PNGDataChunk>} - The PNG data chunks to encode with the image.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "encode_png_data_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			lua.ArgArray("chunks", lua.ArrayType{Type: lua.RAW_TABLE}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var data string
+
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					strwriter := byteseeker.NewByteSeeker(20000, 1000)
+
+					pngdata := []*imageutil.PNGDataChunk{}
+					chunks := args["chunks"].([]any)
+
+					for _, chunk := range chunks {
+						pngdata = append(pngdata, imageutil.TableToDataChunk(chunk.(*golua.LTable)))
+					}
+
+					i.Lg.Append(fmt.Sprintf("encoding using %d, with data", imageutil.ENCODING_PNG), log.LEVEL_INFO)
+					err := imageutil.PNGDataChunkEncode(strwriter, i.Self.Image, pngdata)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("cannot write image to string: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					data = string(strwriter.Bytes())
+				},
+			})
+
+			state.Push(golua.LString(data))
+			return 1
 		})
 
 	/// @func encode_favicon(name, ids, path)
@@ -653,6 +1116,50 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			}
 
 			return 0
+		})
+
+	/// @func encode_favicon_string(ids) -> string
+	/// @arg ids {[]int<collection.IMAGE>} - List of image ids to encode and save into a favicon.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "encode_favicon_string",
+		[]lua.Arg{
+			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ids := args["ids"].([]any)
+			imgs := make([]image.Image, len(ids))
+			wg := sync.WaitGroup{}
+			wg.Add(len(ids))
+
+			for ind, id := range ids {
+				r.IC.Schedule(state, id.(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						imgs[ind] = i.Self.Image
+						wg.Done()
+					},
+				})
+			}
+
+			wg.Wait()
+
+			strwriter := byteseeker.NewByteSeeker(20000, 1000)
+
+			lg.Append("encoding as an ICO favicon", log.LEVEL_INFO)
+
+			cfg, err := goico.NewICOConfig(imgs)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to create ICO config: %s", log.LEVEL_ERROR, err))
+			}
+			err = goico.Encode(strwriter, cfg, imgs)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to encode ICO favicon: %s", log.LEVEL_ERROR, err))
+			}
+
+			state.Push(golua.LString(strwriter.Bytes()))
+			return 1
 		})
 
 	/// @func encode_favicon_cursor(name, ids, hotspots, path)
@@ -718,6 +1225,58 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			}
 
 			return 0
+		})
+
+	/// @func encode_favicon_cursor_string(ids, hotspots) -> string
+	/// @arg ids {[]int<collection.IMAGE>} - List of image ids to encode and save into a favicon.
+	/// @arg hotspots {[]int} - Pairs of ints representing the hotspot of each cursor.
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "encode_favicon_cursor_string",
+		[]lua.Arg{
+			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
+			lua.ArgArray("hotspots", lua.ArrayType{Type: lua.INT}, false),
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ids := args["ids"].([]any)
+			imgs := make([]image.Image, len(ids))
+			wg := sync.WaitGroup{}
+			wg.Add(len(ids))
+
+			for ind, id := range ids {
+				r.IC.Schedule(state, id.(int), &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						imgs[ind] = i.Self.Image
+						wg.Done()
+					},
+				})
+			}
+
+			wg.Wait()
+
+			strwriter := byteseeker.NewByteSeeker(20000, 1000)
+
+			lg.Append("encoding as a CUR favicon", log.LEVEL_INFO)
+
+			hotspotsArg := args["hotspots"].([]any)
+			hotspots := make([]int, len(hotspotsArg))
+			for i, v := range hotspotsArg {
+				hotspots[i] = v.(int)
+			}
+
+			cfg, err := goico.NewCURConfig(imgs, hotspots)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to create CUR config: %s", log.LEVEL_ERROR, err))
+			}
+			err = goico.Encode(strwriter, cfg, imgs)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to encode CUR favicon: %s", log.LEVEL_ERROR, err))
+			}
+
+			state.Push(golua.LString(strwriter.Bytes()))
+			return 1
 		})
 
 	/// @func load_palette(path) -> []struct<image.Color>
