@@ -1,7 +1,10 @@
 package states
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
 	"path"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
@@ -70,6 +73,26 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	luaPth := path.Join(sm.Config.WorkflowDirectory, pth)
 
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	defer signal.Stop(signalChan)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		defer func() {
+			if p := recover(); p != nil {
+				cancel()
+			}
+		}()
+
+		select {
+		case <-signalChan:
+			runner.State.Error(golua.LString(lg.Append("user force quit", log.LEVEL_ERROR)), 0)
+		case <-ctx.Done():
+		}
+	}()
+
+	runner.Ctx = ctx
 	err := runner.Run(luaPth, lib.Builtins)
 	runner.Wg.Wait()
 

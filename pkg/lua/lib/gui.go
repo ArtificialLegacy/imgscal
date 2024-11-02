@@ -550,10 +550,29 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("error getting window: %s", err), log.LEVEL_ERROR)), 0)
 			}
 
-			w.Run(func() {
-				state.Push(args["fn"].(*golua.LFunction))
-				state.Call(0, 0)
-			})
+			closed := make(chan struct{})
+
+			go func() {
+				defer func() {
+					if p := recover(); p != nil {
+						closed <- struct{}{}
+					}
+				}()
+
+				w.Run(func() {
+					state.Push(args["fn"].(*golua.LFunction))
+					state.Call(0, 0)
+				})
+
+				closed <- struct{}{}
+			}()
+
+			select {
+			case <-r.Ctx.Done():
+				w.Close()
+				g.Update()
+			case <-closed:
+			}
 
 			return 0
 		})

@@ -249,11 +249,30 @@ func RegisterNet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "addr"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			err := http.ListenAndServe(args["addr"].(string), nil)
-			if err != nil {
-				if !errors.Is(err, http.ErrServerClosed) {
-					lua.Error(state, lg.Appendf("failed to start server: %s", log.LEVEL_ERROR, err))
+			server := http.Server{Addr: args["addr"].(string)}
+			closed := make(chan struct{})
+
+			go func() {
+				defer func() {
+					if p := recover(); p != nil {
+						closed <- struct{}{}
+					}
+				}()
+
+				err := server.ListenAndServe()
+				if err != nil {
+					if !errors.Is(err, http.ErrServerClosed) {
+						lua.Error(state, lg.Appendf("failed to start server: %s", log.LEVEL_ERROR, err))
+					}
 				}
+
+				closed <- struct{}{}
+			}()
+
+			select {
+			case <-r.Ctx.Done():
+				_ = server.Close()
+			case <-closed:
 			}
 
 			return 0

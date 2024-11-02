@@ -1,6 +1,7 @@
 package lua
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -36,7 +37,8 @@ type Runner struct {
 
 	Failed string
 
-	Wg *sync.WaitGroup
+	Wg  *sync.WaitGroup
+	Ctx context.Context
 
 	CMDParser *argparse.Parser
 	CLIMode   bool
