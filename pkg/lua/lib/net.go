@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -167,6 +168,95 @@ func RegisterNet(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			return 1
+		})
+
+	/// @func canonical_header_key(key) -> string
+	/// @arg key {string}
+	/// @returns {string}
+	lib.CreateFunction(tab, "canonical_header_key",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "key"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			canon := http.CanonicalHeaderKey(args["key"].(string))
+
+			state.Push(golua.LString(canon))
+			return 1
+		})
+
+	/// @func detect_content(content) -> string
+	/// @arg content {string}
+	/// @returns {string}
+	/// @desc
+	/// Detects the http content of a data represented as a string.
+	lib.CreateFunction(tab, "detect_content",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "content"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			contentType := http.DetectContentType([]byte(args["content"].(string)))
+
+			state.Push(golua.LString(contentType))
+			return 1
+		})
+
+	/// @func status_text(code) -> string
+	/// @arg code {int<net.Status>}
+	/// @returns {string}
+	lib.CreateFunction(tab, "status_text",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "code"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			text := http.StatusText(args["code"].(int))
+
+			state.Push(golua.LString(text))
+			return 1
+		})
+
+	/// @func route(pattern, fn)
+	/// @arg pattern {string}
+	/// @arg fn {function(w struct<net.ResponseWriter>, r struct<net.Request>)}
+	lib.CreateFunction(tab, "route",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "pattern"},
+			{Type: lua.FUNC, Name: "fn"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			pattern := args["pattern"].(string)
+			fn := args["fn"].(*golua.LFunction)
+
+			routeThread, _ := state.NewThread()
+
+			http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+				respWriter := responseWriterTable(lib, routeThread, lg, w)
+				request := requestTable(lib, routeThread, lg, r)
+
+				routeThread.Push(fn)
+				routeThread.Push(respWriter)
+				routeThread.Push(request)
+				routeThread.Call(2, 0)
+			})
+
+			return 0
+		})
+
+	/// @func serve(addr)
+	/// @arg addr {string}
+	/// @blocking
+	lib.CreateFunction(tab, "serve",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "addr"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			err := http.ListenAndServe(args["addr"].(string), nil)
+			if err != nil {
+				if !errors.Is(err, http.ErrServerClosed) {
+					lua.Error(state, lg.Appendf("failed to start server: %s", log.LEVEL_ERROR, err))
+				}
+			}
+
+			return 0
 		})
 
 	/// @constants Method {string}
@@ -503,8 +593,8 @@ func responseTable(lib *lua.Lib, state *golua.LState, lg *log.Logger, resp *http
 	if err != nil {
 		lua.Error(state, lg.Appendf("failed to read body: %s", log.LEVEL_ERROR, err))
 	}
-
 	t.RawSetString("body", golua.LString(body))
+
 	t.RawSetString("status", golua.LString(resp.Status))
 	t.RawSetString("status_code", golua.LNumber(resp.StatusCode))
 
@@ -516,6 +606,110 @@ func responseTable(lib *lua.Lib, state *golua.LState, lg *log.Logger, resp *http
 	t.RawSetString("proto", golua.LString(resp.Proto))
 	t.RawSetString("proto_major", golua.LNumber(resp.ProtoMajor))
 	t.RawSetString("proto_minor", golua.LNumber(resp.ProtoMinor))
+
+	return t
+}
+
+func responseWriterTable(lib *lua.Lib, state *golua.LState, lg *log.Logger, w http.ResponseWriter) *golua.LTable {
+	/// @struct ResponseWriter
+	/// @method header() -> struct<net.Values>
+	/// @method write(data string) -> int
+	/// @method write_header(code int<net.Status>)
+
+	t := state.NewTable()
+
+	lib.TableFunction(state, t, "header",
+		[]lua.Arg{},
+		func(state *golua.LState, args map[string]any) int {
+			header := w.Header()
+
+			state.Push(netvaluesTable(lib, state, header))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "write",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "data"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			data := args["data"].(string)
+			n, err := w.Write([]byte(data))
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to write data to response: %s", log.LEVEL_ERROR, err))
+			}
+
+			state.Push(golua.LNumber(n))
+			return 1
+		})
+
+	lib.TableFunction(state, t, "write_header",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "code"},
+		},
+		func(state *golua.LState, args map[string]any) int {
+			code := args["code"].(int)
+			w.WriteHeader(code)
+
+			return 0
+		})
+
+	return t
+}
+
+func requestTable(lib *lua.Lib, state *golua.LState, lg *log.Logger, r *http.Request) *golua.LTable {
+	/// @struct Request
+	/// @prop method {string<net.Method>}
+	/// @prop proto {string}
+	/// @prop proto_major {int}
+	/// @prop proto_minor {int}
+	/// @prop header {struct<net.Values>}
+	/// @prop body {string}
+	/// @prop content_length {int}
+	/// @prop host {string}
+	/// @prop remote_addr {string}
+	/// @prop request_uri {string}
+	/// @prop form {struct<net.Values>}
+	/// @prop form_post {struct<net.Values>}
+	/// @method parse_form(self) -> self
+
+	t := state.NewTable()
+
+	t.RawSetString("method", golua.LString(r.Method))
+
+	t.RawSetString("proto", golua.LString(r.Proto))
+	t.RawSetString("proto_major", golua.LNumber(r.ProtoMajor))
+	t.RawSetString("proto_minor", golua.LNumber(r.ProtoMinor))
+
+	header := netvaluesTable(lib, state, r.Header)
+	t.RawSetString("header", header)
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		lua.Error(state, lg.Appendf("failed to read body: %s", log.LEVEL_ERROR, err))
+	}
+	t.RawSetString("body", golua.LString(body))
+
+	t.RawSetString("content_length", golua.LNumber(r.ContentLength))
+	t.RawSetString("host", golua.LString(r.Host))
+	t.RawSetString("remote_addr", golua.LString(r.RemoteAddr))
+	t.RawSetString("request_uri", golua.LString(r.RequestURI))
+
+	t.RawSetString("form", golua.LNil)
+	t.RawSetString("form_post", golua.LNil)
+
+	lib.BuilderFunction(state, t, "parse_form",
+		[]lua.Arg{},
+		func(state *golua.LState, t *golua.LTable, args map[string]any) {
+			err := r.ParseForm()
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to parse form data: %s", log.LEVEL_ERROR, err))
+			}
+
+			form := netvaluesTable(lib, state, r.Form)
+			t.RawSetString("form", form)
+			formPost := netvaluesTable(lib, state, r.PostForm)
+			t.RawSetString("form_post", formPost)
+		})
 
 	return t
 }

@@ -1,0 +1,9 @@
+{
+    "name": "net",
+    "author": "ArtificialLegacy",
+    "version": "1.0.0",
+    "desc": "Example workflow to the net library.",
+    "workflows": {
+        "*": "net.lua"
+    }
+}
