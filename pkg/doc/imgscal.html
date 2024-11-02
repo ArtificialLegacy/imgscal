@@ -288,10 +288,12 @@ example/
     <span class="yellow">"config_directory"</span>: <span class="green">"%HOME%/imgscal/config"</span>,
     <span class="yellow">"workflow_directory"</span>: <span class="green">"%HOME%/imgscal/workflow"</span>,
     <span class="yellow">"output_directory"</span>: <span class="green">"%HOME%/imgscal/output"</span>,
+    <span class="yellow">"input_directory"</span>: <span class="green">"%HOME%/imgscal/input"</span>,
     <span class="yellow">"log_directory"</span>: <span class="green">"%HOME%/imgscal/log"</span>,
     <span class="yellow">"plugin_directory"</span>: <span class="green">"%HOME%/imgscal/plugin"</span>,
     <span class="yellow">"disable_logs"</span>: <span class="cyan">false</span>,
     <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>
+    <span class="yellow">"default_author"</span>: <span class="yellow">""</span>
 }</pre>
         <p>The config file is located at <code><span class="green">%CONFIG%/imgscal/config.json</span></code>.</p>
         <p>
@@ -330,11 +332,25 @@ example/
             </li>
             <li>
                 <code class="field">output_directory</code>
-                - This is a directory that can be used by workflows for outputting files.
+                - This is a directory that can be used by workflows for outputting files. Each workflow with automatically get it's own directory.
                 <ul>
                     <li>
-                        Workflows can get this directory with <code class="import">io.default_output()</code>, though user provided paths and
-                        relative paths should take precedent when outputting.
+                        Requires calling <code class="import">workflow.use_default_output()</code> within the init function.
+                    </li>
+                    <li>
+                        Workflows can get this directory with <code class="import">io.default_output()</code>.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <code class="field">input_directory</code>
+                - This is a directory that can be used by workflows for inputting files. Each workflow with automatically get it's own directory.
+                <ul>
+                    <li>
+                        Requires calling <code class="import">workflow.use_default_input()</code> within the init function.
+                    </li>
+                    <li>
+                        Workflows can get this directory with <code class="import">io.default_input()</code>.
                     </li>
                 </ul>
             </li>
@@ -358,6 +374,10 @@ example/
             <li>
                 <code class="field">always_confirm</code>
                 - When this is set to true, the confirmation menu will be skipped before running a workflow.
+            </li>
+            <li>
+                <code class="field">default_author</code>
+                - This value will be autofilled in the author section when using the <code class="import">imgscal-new</code> tool.
             </li>
         </ul>
     </details>

@@ -62,7 +62,7 @@ func main() {
 	cli.Clear()
 
 	name := ""
-	author := ""
+	author := cfg.DefaultAuthor
 	version := "1.0.0"
 	desc := ""
 

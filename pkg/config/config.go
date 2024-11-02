@@ -4,7 +4,7 @@ import (
 	"path"
 )
 
-const CONFIG_VERSION = "0.3.0"
+const CONFIG_VERSION = "0.4.0"
 
 type Config struct {
 	ConfigVersion     string `json:"config_version"`
@@ -16,6 +16,7 @@ type Config struct {
 	PluginDirectory   string `json:"plugin_directory"`
 	DisableLogs       bool   `json:"disable_logs"`
 	AlwaysConfirm     bool   `json:"always_confirm"`
+	DefaultAuthor     string `json:"default_author"`
 }
 
 func NewConfig() *Config {
@@ -33,5 +34,6 @@ func NewConfigWithDefaults(homeDir string) *Config {
 		PluginDirectory:   path.Join(homeDir, "imgscal", "plugin"),
 		DisableLogs:       false,
 		AlwaysConfirm:     false,
+		DefaultAuthor:     "",
 	}
 }
