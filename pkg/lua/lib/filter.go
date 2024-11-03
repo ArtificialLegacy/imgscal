@@ -37,9 +37,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState := collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+			var scheduledState *golua.LState
 
-			r.IC.SchedulePipe(scheduledState, args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(state, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -51,6 +51,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState = collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+
 						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
 						if args["disableParallelization"].(bool) {
 							g.SetParallelization(false)
@@ -87,9 +89,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState := collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+			var scheduledState *golua.LState
 
-			r.IC.SchedulePipe(scheduledState, args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(state, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -101,6 +103,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState = collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+
 						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
 						pt := imageutil.TableToPoint(args["point"].(*golua.LTable))
 						if args["disableParallelization"].(bool) {
@@ -140,9 +144,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState := collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+			var scheduledState *golua.LState
 
-			r.IC.SchedulePipe(scheduledState, args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(state, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -154,6 +158,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState = collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+
 						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
 						if args["disableParallelization"].(bool) {
 							g.SetParallelization(false)

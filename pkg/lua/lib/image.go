@@ -1813,12 +1813,14 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			id := args["id"].(int)
-			scheduledState := collection.NewThread(state, id, collection.TYPE_IMAGE)
+			var scheduledState *golua.LState
 
-			r.IC.Schedule(scheduledState, id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
+					scheduledState = collection.NewThread(state, id, collection.TYPE_IMAGE)
+
 					x := i.Self.Image.Bounds().Min.X
 					y := i.Self.Image.Bounds().Min.Y
 					width := i.Self.Image.Bounds().Dx()

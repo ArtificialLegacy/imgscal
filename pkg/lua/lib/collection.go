@@ -128,14 +128,19 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			id := args["id"].(int)
 
+			var scheduledState *golua.LState
+
 			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
 			case collection.TYPE_TASK:
 				r.TC.Schedule(state, id, &collection.Task[collection.ItemTask]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
-						scheduledState := collection.NewThread(state, id, collection.TYPE_TASK)
+						scheduledState = collection.NewThread(state, id, collection.TYPE_TASK)
 						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+					},
+					Fail: func(i *collection.Item[collection.ItemTask]) {
+						scheduledState.Close()
 					},
 				})
 			case collection.TYPE_IMAGE:
@@ -143,8 +148,11 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
-						scheduledState := collection.NewThread(state, id, collection.TYPE_IMAGE)
+						scheduledState = collection.NewThread(state, id, collection.TYPE_IMAGE)
 						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+					},
+					Fail: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState.Close()
 					},
 				})
 			case collection.TYPE_CONTEXT:
@@ -152,8 +160,11 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
-						scheduledState := collection.NewThread(state, id, collection.TYPE_CONTEXT)
+						scheduledState = collection.NewThread(state, id, collection.TYPE_CONTEXT)
 						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+					},
+					Fail: func(i *collection.Item[collection.ItemContext]) {
+						scheduledState.Close()
 					},
 				})
 			case collection.TYPE_QR:
@@ -161,8 +172,11 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
-						scheduledState := collection.NewThread(state, id, collection.TYPE_QR)
+						scheduledState = collection.NewThread(state, id, collection.TYPE_QR)
 						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+					},
+					Fail: func(i *collection.Item[collection.ItemQR]) {
+						scheduledState.Close()
 					},
 				})
 			}

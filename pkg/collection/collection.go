@@ -258,7 +258,7 @@ func (c *Collection[T]) Schedule(state *golua.LState, id int, tk *Task[T]) <-cha
 	item := c.items[id]
 
 	if item.failed {
-		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id), log.LEVEL_WARN)
+		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d (%s.%s)", id, tk.Lib, tk.Name), log.LEVEL_WARN)
 		task.Fail(item)
 		return wait
 	}
@@ -267,11 +267,11 @@ func (c *Collection[T]) Schedule(state *golua.LState, id int, tk *Task[T]) <-cha
 	nested := SearchContext(ctx, id, c.Identifier)
 
 	if !nested {
-		item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_VERBOSE)
+		item.Lg.Append(fmt.Sprintf("task scheduled for %d (%s.%s)", id, tk.Lib, tk.Name), log.LEVEL_VERBOSE)
 		c.wg.Add(1)
 		item.TaskQueue <- task
 	} else {
-		item.Lg.Append(fmt.Sprintf("task skipped scheduling, already within nested schedule (%d)", id), log.LEVEL_VERBOSE)
+		item.Lg.Append(fmt.Sprintf("task skipped scheduling, already within nested schedule: %d (%s.%s)", id, tk.Lib, tk.Name), log.LEVEL_VERBOSE)
 		defer func() {
 			if p := recover(); p != nil {
 				task.Fail(item)
@@ -298,12 +298,13 @@ func CreateContext(state *golua.LState) {
 		ctx = context.TODO()
 	}
 
-	state.SetContext(context.WithValue(ctx, CONTEXT_STACK, &[]StackContext{}))
+	state.SetContext(context.WithValue(ctx, CONTEXT_STACK, []StackContext{}))
 }
 
 func NewThread(state *golua.LState, id int, identifier CollectionType) *golua.LState {
 	thread, _ := state.NewThread()
-	ctx := AddContext(thread.Context(), id, identifier)
+	tctx := thread.Context()
+	ctx := AddContext(tctx, id, identifier)
 	thread.SetContext(ctx)
 
 	return thread
@@ -311,12 +312,13 @@ func NewThread(state *golua.LState, id int, identifier CollectionType) *golua.LS
 
 func AddContext(ctx context.Context, id int, identifier CollectionType) context.Context {
 	value := ctx.Value(CONTEXT_STACK)
-	stack, ok := value.(*[]StackContext)
+	stack, ok := value.([]StackContext)
+	copy(stack, stack)
 
 	if !ok {
-		stack = &[]StackContext{{Identifier: identifier, ID: id}}
+		stack = []StackContext{{Identifier: identifier, ID: id}}
 	} else {
-		*stack = append(*stack, StackContext{Identifier: identifier, ID: id})
+		stack = append(stack, StackContext{Identifier: identifier, ID: id})
 	}
 
 	newCtx := context.WithValue(ctx, CONTEXT_STACK, stack)
@@ -325,13 +327,13 @@ func AddContext(ctx context.Context, id int, identifier CollectionType) context.
 
 func SearchContext(ctx context.Context, id int, identifier CollectionType) bool {
 	value := ctx.Value(CONTEXT_STACK)
-	stack, ok := value.(*[]StackContext)
+	stack, ok := value.([]StackContext)
 
 	if !ok {
 		return false
 	}
 
-	for _, v := range *stack {
+	for _, v := range stack {
 		if v.Identifier == identifier && v.ID == id {
 			return true
 		}
