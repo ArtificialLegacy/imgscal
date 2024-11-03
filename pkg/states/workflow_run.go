@@ -110,6 +110,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	runner.IC.CollectAll(state)
 	runner.CC.CollectAll(state)
 	runner.QR.CollectAll(state)
+	runner.Wg.Wait()
 
 	if runner.Failed != "" {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", runner.Failed), log.LEVEL_ERROR)
