@@ -49,16 +49,6 @@ func main() {
 		}
 		defer fs.Close()
 
-		if name == "imgscal" {
-			fmt.Fprintf(fs, "\n")
-			for _, mod := range docs {
-				if mod.Name == "~" {
-					continue
-				}
-				fmt.Fprintf(fs, "---@module '%s'\n", mod.Name)
-			}
-		}
-
 		fmt.Fprintf(fs, "\n---@meta %s\n\n", name)
 		fmt.Fprintf(fs, "---@class %s\n", name)
 
