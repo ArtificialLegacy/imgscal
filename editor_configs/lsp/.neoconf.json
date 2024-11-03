@@ -36,6 +36,7 @@
                     ]
                 },
                 "diagnostics": {
+                    "globals": ["require"],
                     "disable": [
                         "lowercase-global"
                     ]
