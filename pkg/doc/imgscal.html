@@ -422,7 +422,7 @@ example/
             <figure>
                 <figcaption>Usage</figcaption>
                 <hr>
-<pre><span class="pink">imgscal-entrypoint</span> <span class="cyan">&lt;name&gt; &lt;path&gt;</span> <span class="orange">[-c]</span></pre>
+<pre><span class="pink">imgscal-entrypoint</span> <span class="cyan">&lt;name&gt; &lt;path&gt;</span> <span class="orange">[-c] [-w]</span></pre>
 
                 <ul>
                     <li><code class="cyan">&lt;name&gt;</code> - The name of the entry point, use <code class="field">"*"</code> to bind to workflow name.</li>
@@ -431,6 +431,7 @@ example/
                         Any subdirectories included will be created if needed.
                     </li> 
                     <li><code class="orange">[-c]</code> - Optional flag to create a cli entry point.</li>
+                    <li><code class="orange">[-w]</code> - Optional flag to to set the relative path to search for the <code class=field>workflow.json</code> file.</li>
                 </ul>
             </figure>
 

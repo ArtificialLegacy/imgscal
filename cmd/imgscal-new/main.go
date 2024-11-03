@@ -68,7 +68,7 @@ func main() {
 
 	err = huh.NewForm(
 		huh.NewGroup(
-			huh.NewInput().Title("Name").Description("Only allows the characters: A-Z (case insensitive), 0-9 and _.").Value(&name).Validate(validateName(workflows)),
+			huh.NewInput().Title("Name").Description("Only allows the characters: A-Z, a-z (case sensitive), 0-9 and _.").Value(&name).Validate(validateName(workflows)),
 			huh.NewInput().Title("Author").Value(&author).Validate(validateAuthor),
 			huh.NewInput().Title("Version").Value(&version).Placeholder("1.0.0"),
 			huh.NewText().Title("Description").Value(&desc),

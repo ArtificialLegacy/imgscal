@@ -42,6 +42,7 @@ func main() {
 	pth := parser.StringPositional(&argparse.Options{Required: true})
 
 	iscli := parser.Flag("c", "cli", &argparse.Options{})
+	wfin := parser.String("w", "wf", &argparse.Options{})
 
 	err := parser.Parse(os.Args)
 	if err != nil {
@@ -75,10 +76,14 @@ func main() {
 		panic(fmt.Sprintf("failed to get working directory: %s", err))
 	}
 
-	jsonpth := path.Join(wd, "workflow.json")
+	if wfin == nil {
+		*wfin = ""
+	}
+
+	jsonpth := path.Join(wd, *wfin, "workflow.json")
 	b, err := os.ReadFile(jsonpth)
 	if err != nil {
-		fmt.Print("Failed to find workflow.json in the current directory.\n")
+		fmt.Printf("Failed to find workflow.json in the directory: %s.\n", jsonpth)
 		os.Exit(1)
 	}
 
@@ -101,7 +106,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	entrypath := path.Join(wd, *pth)
+	entrypath := path.Join(wd, *wfin, *pth)
 	dir := path.Dir(entrypath)
 	if dir != "." {
 		err = os.MkdirAll(dir, 0o777)
@@ -143,7 +148,7 @@ func main() {
 		panic(fmt.Sprintf("failed to write updated workflow.json: %s", err))
 	}
 
-	fmt.Printf("Created new entry point named %s%s%s at path %s%s%s.\n", cli.COLOR_BLUE, *name, cli.COLOR_RESET, "\u001b[38;5;240m\u001b[4m", *pth, cli.COLOR_RESET)
+	fmt.Printf("Created new entry point named %s%s%s at path %s%s%s.\n", cli.COLOR_BLUE, *name, cli.COLOR_RESET, "\u001b[38;5;240m\u001b[4m", path.Join(*wfin, *pth), cli.COLOR_RESET)
 }
 
 var nameHasValidChars = regexp.MustCompile(`^[a-zA-Z0-9_*\-]+$`)

@@ -112,6 +112,7 @@ imgscal-entrypoint <name> <path> [-c]
 * `<name>`: The name of the entry point, use `\*` to bind to workflow name.
 * `<path>`: Path including the `.lua` file to create as the entry point. Any subdirectories included will be created if needed.
 * `[-c]`: Optional flag to create a cli entry point.
+* `[-w]`: Optional flag to to set the relative path to search for the `workflow.json` file.
 
 Install with `go install ./cmd/imgscal-entrypoint`.
 
