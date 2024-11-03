@@ -555,11 +555,21 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			go func() {
 				defer func() {
 					if p := recover(); p != nil {
-						closed <- struct{}{}
+						w.Close()
+						g.Update()
+						lg.Appendf("recovered from panic within gui: %+v\n", log.LEVEL_ERROR, p)
 					}
 				}()
 
 				w.Run(func() {
+					defer func() {
+						if p := recover(); p != nil {
+							w.Close()
+							g.Update()
+							lg.Appendf("recovered from panic within gui: %+v\n", log.LEVEL_ERROR, p)
+						}
+					}()
+
 					state.Push(args["fn"].(*golua.LFunction))
 					state.Call(0, 0)
 				})

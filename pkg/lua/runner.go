@@ -7,7 +7,6 @@ import (
 	"math"
 	"os"
 	"path"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -103,7 +102,6 @@ func (r *Runner) Run(file string, plugins PluginMap) error {
 	defer func() {
 		if p := recover(); p != nil {
 			r.lg.Append("recovered from panic during lua runtime", log.LEVEL_ERROR)
-			r.lg.Append(string(debug.Stack()), log.LEVEL_ERROR)
 			r.Failed = fmt.Sprintf("%s", p)
 		}
 	}()
