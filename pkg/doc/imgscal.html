@@ -383,6 +383,83 @@ example/
     </details>
 
     <details class="imgscal">
+        <summary>Tools</summary>
+
+        <blockquote class="note">
+            These tools will require ImgScal to have been run at least once before using.
+        </blockquote>
+
+        <details class="method">
+            <summary><code class="type">imgscal-new</code></summary>
+            <hr>
+
+           <figure>
+            <figcaption>Usage</figcaption>
+            <hr>
+<pre><span class="pink">imgscal-new</span></pre>
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-new</span></pre>
+            </figure>
+
+            <figure>
+                <figcaption>Additonal Info</figcaption>
+                <hr>
+
+                <ul>
+                    <li><code class="field">default_author</code> in the config file will change the autofilled value for the author.</li>
+                </ul>
+            </figure>
+        </details>
+
+        <details class="method">
+            <summary><code class="type">imgscal-entrypoint</code></summary>
+            <hr>
+
+            <figure>
+                <figcaption>Usage</figcaption>
+                <hr>
+<pre><span class="pink">imgscal-entrypoint</span> <span class="cyan">&lt;name&gt; &lt;path&gt;</span> <span class="orange">[-c]</span></pre>
+
+                <ul>
+                    <li><code class="cyan">&lt;name&gt;</code> - The name of the entry point, use <code class="field">"*"</code> to bind to workflow name.</li>
+                    <li><code class="cyan">&lt;path&gt;</code> 
+                        - The path including the <code class="field">.lua</code> file to create as the entry point.
+                        Any subdirectories included will be created if needed.
+                    </li> 
+                    <li><code class="orange">[-c]</code> - Optional flag to create a cli entry point.</li>
+                </ul>
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-entrypoint</span></pre>
+            </figure>
+        </details>
+
+        <details class="method">
+            <summary><code class="type">imgscal-log</code></summary>
+            <hr>
+
+            <figure>
+                <figcaption>Usage</figcaption>
+                <hr>
+<pre><span class="pink">imgscal-log</span></pre> 
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-log</span></pre>
+            </figure>
+        </details>
+    </details>
+
+    <details class="imgscal">
         <summary>Log Files</summary>
 
         <p>
