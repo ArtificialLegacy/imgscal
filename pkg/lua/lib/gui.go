@@ -7329,7 +7329,7 @@ func imageBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 		img = image.NewRGBA(image.Rect(0, 0, 1, 1))
 	}
 
-	i := g.ImageWithRgba(img)
+	i := g.ImageWithRgba(img).ID(g.GenAutoID(fmt.Sprintf("%s", time.Now())))
 
 	width := t.RawGetString("__width")
 	height := t.RawGetString("__height")
