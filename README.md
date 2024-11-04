@@ -155,6 +155,8 @@ Included in this repo is `./editor_configs/`. These can be used as a reference f
 
 ## Known Issues
 
+> These have tentatively fixed.
+
 * There is an upstream issue related to `mainthread` when running on Windows.
   * Sometimes causes the application to crash within the first frame of the master window.
   * Sometimes prevents `gui.update()` from updating the UI when called from a scheduled function.
