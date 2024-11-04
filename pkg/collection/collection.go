@@ -119,8 +119,9 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 				}
 				i.Lg.Append(fmt.Sprintf("drained task %d from item [%T]", c, i.Self), log.LEVEL_WARN)
 			}
-			i.Lg.Close()
 		}
+
+		i.Lg.Close()
 	}()
 
 	for {
@@ -137,7 +138,6 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 
 		if i.cleaned {
 			i.Lg.Append(fmt.Sprintf("item [%T] cleaned", i.Self), log.LEVEL_INFO)
-			i.Lg.Close()
 			break
 		}
 	}
@@ -489,6 +489,10 @@ func (c *Collection[T]) CollectAll(state *golua.LState) {
 
 func (c *Collection[T]) Collect(state *golua.LState, id int) {
 	i := c.items[id]
+	if i.collect || i.failed || i.cleaned {
+		return
+	}
+
 	i.collect = true
 
 	c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", id, i.Self), log.LEVEL_INFO)
