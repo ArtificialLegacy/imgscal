@@ -122,6 +122,7 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 		}
 
 		i.Lg.Close()
+		i.wg.Done()
 	}()
 
 	for {
@@ -494,6 +495,7 @@ func (c *Collection[T]) Collect(state *golua.LState, id int) {
 	}
 
 	i.collect = true
+	i.wg.Add(1)
 
 	c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", id, i.Self), log.LEVEL_INFO)
 	c.Schedule(state, id, &Task[T]{
