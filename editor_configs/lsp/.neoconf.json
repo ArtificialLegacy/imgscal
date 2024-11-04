@@ -36,10 +36,15 @@
                     ]
                 },
                 "diagnostics": {
-                    "globals": ["require"],
+                    "globals": [
+                        "require"
+                    ],
                     "disable": [
                         "lowercase-global"
                     ]
+                },
+                "hover": {
+                    "expandAlias": false
                 }
             }
         }
