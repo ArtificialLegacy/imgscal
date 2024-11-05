@@ -5,11 +5,11 @@
                 "runtime": {
                     "version": "Lua 5.1",
                     "path": [
-                        "?.lua",
-                        "?/?.lua"
+                        "?/?.lua",
+                        "?.lua"
                     ],
                     "builtin": {
-                        "basic": "enable",
+                        "basic": "default",
                         "bit": "disable",
                         "bit32": "disable",
                         "builtin": "default",
@@ -29,7 +29,7 @@
                     }
                 },
                 "workspace": {
-                    "checkThirdParty": true,
+                    "checkThirdParty": false,
                     "library": [
                         "path_to_types_here",
                         "path_to_plugins_here"

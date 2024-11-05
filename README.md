@@ -116,6 +116,16 @@ imgscal-entrypoint <name> <path> [-c]
 
 Install with `go install ./cmd/imgscal-entrypoint`.
 
+### `imgscal-workspace`
+
+Command for quickly creating an empty `.luarc.json` file. This allows the Lua LSP to find the root of a workflow or plugin.
+
+```sh
+imgscal-workspace
+```
+
+Install with `go install ./cmd/imgscal-workspace`.
+
 ### `imgscal-log`
 
 Prints the log file `@latest.txt` if it exists. `make log` is a shortcut for calling this.

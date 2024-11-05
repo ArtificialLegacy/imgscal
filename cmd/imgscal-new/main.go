@@ -14,6 +14,11 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+const (
+	workspace_file = ".luarc.json"
+	workspace_data = "{}"
+)
+
 func main() {
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
@@ -122,6 +127,11 @@ func main() {
 	err = os.WriteFile(path.Join(wfPath, "workflow.json"), wfb, 0o666)
 	if err != nil {
 		panic(fmt.Sprintf("failed to write workflow.json: %s", err))
+	}
+
+	err = os.WriteFile(path.Join(wfPath, workspace_file), []byte(workspace_data), 0o666)
+	if err != nil {
+		panic(fmt.Sprintf("failed to write %s: %s", workspace_file, err))
 	}
 
 	fmt.Printf("%sCreated Workflow: %s.%s\n", cli.COLOR_GREEN, name, cli.COLOR_RESET)

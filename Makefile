@@ -49,3 +49,4 @@ install:
 	go install ./cmd/imgscal-new
 	go install ./cmd/imgscal-entrypoint
 	go install ./cmd/imgscal-log
+	go install ./cmd/imgscal-workspace
