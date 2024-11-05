@@ -15,6 +15,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/crazy3lf/colorconv v1.2.0
 	github.com/disintegration/gift v1.2.1
+	github.com/ericpauley/go-quantize v0.0.0-20200331213906-ae555eb2afa4
 	github.com/ernyoke/imger v1.0.0
 	github.com/fogleman/gg v1.3.0
 	github.com/koyachi/go-nude v0.0.2-0.20150410134931-699a88f33605

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/gif"
 	"os"
 	"path"
 	"path/filepath"
@@ -842,6 +843,78 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func decode_gif(path, name, encoding, model?) -> struct<image.GIF>
+	/// @arg path {string}
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg? model {int<image.Model>}
+	/// @returns {struct<image.GIF>}
+	lib.CreateFunction(tab, "decode_gif",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			file, err := os.Stat(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append(fmt.Sprintf("invalid image path provided to io.decode_gif: %s", args["path"]), log.LEVEL_ERROR)), 0)
+			}
+			if file.IsDir() {
+				state.Error(golua.LString(lg.Append("cannot load a directory as an image", log.LEVEL_ERROR)), 0)
+			}
+
+			f, err := os.Open(args["path"].(string))
+			if err != nil {
+				state.Error(golua.LString(lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+			}
+			defer f.Close()
+
+			gf, err := gif.DecodeAll(f)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to decode gif: %s", log.LEVEL_ERROR, err))
+			}
+
+			name := args["name"].(string)
+			encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+			t := gifTable(r, lg, state, &d, gf, name, encoding, model)
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @func decode_gif_string(data, name, encoding, model?) -> struct<image.GIF>
+	/// @arg data {string}
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @arg? model {int<image.Model>}
+	/// @returns {struct<image.GIF>}
+	lib.CreateFunction(tab, "decode_gif_string",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "data"},
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+			{Type: lua.INT, Name: "model", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			gf, err := gif.DecodeAll(strings.NewReader(args["data"].(string)))
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to decode gif: %s", log.LEVEL_ERROR, err))
+			}
+
+			name := args["name"].(string)
+			encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
+			model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+			t := gifTable(r, lg, state, &d, gf, name, encoding, model)
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func load_embedded(embedded, model?) -> int<collection.IMAGE>
 	/// @arg embedded {int<io.Embedded>}
 	/// @arg? model {int<image.ColorModel>} - Used only to specify default of unsupported color models.
@@ -1277,6 +1350,62 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 
 			state.Push(golua.LString(strwriter.Bytes()))
 			return 1
+		})
+
+	/// @func encode_gif(name, gif, path)
+	/// @arg name {string} - Excluding the extension.
+	/// @arg gif {struct<image.GIF>}
+	/// @arg path {string} - The directory path to save the file to.
+	/// @blocking
+	lib.CreateFunction(tab, "encode_gif",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.RAW_TABLE, Name: "gif"},
+			{Type: lua.STRING, Name: "path"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			_, err := os.Stat(args["path"].(string))
+			if err != nil {
+				os.MkdirAll(args["path"].(string), 0o777)
+			}
+
+			name := args["name"].(string)
+
+			f, err := os.OpenFile(path.Join(args["path"].(string), name+".gif"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+			if err != nil {
+				state.Error(golua.LString(lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+			}
+			defer f.Close()
+
+			gf := gifBuild(r, &d, state, args["gif"].(*golua.LTable))
+
+			err = gif.EncodeAll(f, gf)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to encode gif: %s", log.LEVEL_ERROR, err))
+			}
+
+			return 0
+		})
+
+	/// @func encode_gif_string(gif) -> string
+	/// @arg name {string} - Excluding the extension.
+	/// @arg gif {struct<image.GIF>}
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "encode_gif_string",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "gif"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			strwriter := byteseeker.NewByteSeeker(20000, 1000)
+			gf := gifBuild(r, &d, state, args["gif"].(*golua.LTable))
+
+			err := gif.EncodeAll(strwriter, gf)
+			if err != nil {
+				lua.Error(state, lg.Appendf("failed to encode gif: %s", log.LEVEL_ERROR, err))
+			}
+
+			return 0
 		})
 
 	/// @func load_palette(path) -> []struct<image.Color>

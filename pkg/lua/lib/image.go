@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
+	"image/gif"
 	"math/rand"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/crazy3lf/colorconv"
+	"github.com/ericpauley/go-quantize/quantize"
 	color_extractor "github.com/marekm4/color-extractor"
 	golua "github.com/yuin/gopher-lua"
 )
@@ -2073,6 +2077,39 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func gif(imgs, delay, loopCount, disposal?, backgroundIndex?) -> struct<image.GIF>
+	/// @arg imgs {[]int<collection.IMAGE>}
+	/// @arg delay {[]int}
+	/// @arg loopCount {int}
+	/// @arg? disposal {[]int<image.GIFDisposal>}
+	/// @arg? backgroundIndex {int}
+	/// @returns {struct<image.GIF>}
+	lib.CreateFunction(tab, "gif",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "imgs"},
+			{Type: lua.RAW_TABLE, Name: "delay"},
+			{Type: lua.INT, Name: "loopCount"},
+			{Type: lua.RAW_TABLE, Name: "disposal", Optional: true},
+			{Type: lua.INT, Name: "backgroundIndex", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			imgs := args["imgs"].(*golua.LTable)
+			delay := args["delay"].(*golua.LTable)
+			loopCount := args["loopCount"].(int)
+			disposal := args["disposal"].(*golua.LTable)
+			backgroundIndex := args["backgroundIndex"].(int)
+
+			t := state.NewTable()
+			t.RawSetString("img", imgs)
+			t.RawSetString("delay", delay)
+			t.RawSetString("disposal", disposal)
+			t.RawSetString("loop_count", golua.LNumber(loopCount))
+			t.RawSetString("background_index", golua.LNumber(backgroundIndex))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @constants ColorModel {int}
 	/// @const RGBA
 	/// @const RGBA64
@@ -2134,4 +2171,114 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLOR_TYPE_CMYK", golua.LString(imageutil.COLOR_TYPE_CMYK))
 	tab.RawSetString("COLOR_TYPE_CMYKA", golua.LString(imageutil.COLOR_TYPE_CMYKA))
 	tab.RawSetString("COLOR_TYPE_ZERO", golua.LString(imageutil.COLOR_TYPE_ZERO))
+
+	/// @constants GIFDisposal {int}
+	/// @const GIFDISPOSAL_NONE
+	/// @const GIFDISPOSAL_BACKGROUND
+	/// @const GIFDISPOSAL_PREVIOUS
+	tab.RawSetString("GIFDISPOSAL_NONE", golua.LNumber(gif.DisposalNone))
+	tab.RawSetString("GIFDISPOSAL_BACKGROUND", golua.LNumber(gif.DisposalBackground))
+	tab.RawSetString("GIFDISPOSAL_PREVIOUS", golua.LNumber(gif.DisposalPrevious))
+}
+
+func gifTable(r *lua.Runner, lg *log.Logger, state *golua.LState, d *lua.TaskData, gf *gif.GIF, name string, encoding imageutil.ImageEncoding, model imageutil.ColorModel) *golua.LTable {
+	/// @struct GIF
+	/// @prop img {[]int<collection.IMAGE>}
+	/// @prop delay {[]int}
+	/// @prop disposal {[]int<image.GIFDisposal>}
+	/// @prop loop_count {int}
+	/// @prop background_index {int}
+
+	t := state.NewTable()
+
+	img := state.NewTable()
+	for i, v := range gf.Image {
+		frameName := fmt.Sprintf("%s_%d", name, i)
+		img.RawSetInt(i+1, golua.LNumber(r.IC.ScheduleAdd(state, frameName, lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemImage]) {
+			imghere, mhere := imageutil.Limit(v, model)
+
+			i.Self = &collection.ItemImage{
+				Name:     frameName,
+				Image:    imghere,
+				Encoding: encoding,
+				Model:    mhere,
+			}
+		})))
+	}
+	t.RawSetString("img", img)
+
+	delay := state.NewTable()
+	for i, v := range gf.Delay {
+		delay.RawSetInt(i+1, golua.LNumber(v))
+	}
+	t.RawSetString("delay", delay)
+
+	disposal := state.NewTable()
+	for i, v := range gf.Disposal {
+		disposal.RawSetInt(i+1, golua.LNumber(v))
+	}
+	t.RawSetString("disposal", disposal)
+
+	t.RawSetString("loop_count", golua.LNumber(gf.LoopCount))
+	t.RawSetString("background_index", golua.LNumber(gf.BackgroundIndex))
+
+	return t
+}
+
+func gifBuild(r *lua.Runner, d *lua.TaskData, state *golua.LState, t *golua.LTable) *gif.GIF {
+	loopCount := int(t.RawGetString("loop_count").(golua.LNumber))
+	backgroundIndex := byte(t.RawGetString("background_index").(golua.LNumber))
+
+	delayTable := t.RawGetString("delay").(*golua.LTable)
+	delay := make([]int, delayTable.Len())
+	for i := range delayTable.Len() {
+		delay[i] = int(delayTable.RawGetInt(i + 1).(golua.LNumber))
+	}
+
+	disposalTable := t.RawGetString("disposal").(*golua.LTable)
+	disposal := make([]byte, disposalTable.Len())
+	for i := range disposalTable.Len() {
+		disposal[i] = byte(disposalTable.RawGetInt(i + 1).(golua.LNumber))
+	}
+
+	if len(disposal) == 0 {
+		disposal = nil
+	}
+
+	imgTable := t.RawGetString("img").(*golua.LTable)
+	img := make([]*image.Paletted, imgTable.Len())
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(img))
+
+	for ind := range imgTable.Len() {
+		r.IC.Schedule(state, int(imgTable.RawGetInt(ind+1).(golua.LNumber)), &collection.Task[collection.ItemImage]{
+			Lib:  d.Lib,
+			Name: d.Name,
+			Fn: func(i *collection.Item[collection.ItemImage]) {
+				bounds := i.Self.Image.Bounds()
+				q := quantize.MedianCutQuantizer{}
+				pal := q.Quantize(make([]color.Color, 0, 255), i.Self.Image)
+				pal = append([]color.Color{image.Transparent}, pal...)
+				pimage := image.NewPaletted(image.Rect(0, 0, bounds.Dx(), bounds.Dy()), pal)
+
+				draw.Draw(pimage, pimage.Rect, i.Self.Image, bounds.Min, draw.Over)
+				img[ind] = pimage
+
+				wg.Done()
+			},
+		})
+	}
+
+	wg.Wait()
+
+	gf := &gif.GIF{
+		Image:           img,
+		Delay:           delay,
+		LoopCount:       loopCount,
+		Disposal:        disposal,
+		BackgroundIndex: backgroundIndex,
+	}
+
+	return gf
 }

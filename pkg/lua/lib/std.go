@@ -158,4 +158,26 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			}()
 			return 0
 		})
+
+	/// @func array_fill(size, value) -> []any
+	/// @arg size {int}
+	/// @arg value {any}
+	/// @returns {[]any} - Note that some values are copied by reference.
+	lib.CreateFunction(tab, "array_fill",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "size"},
+			{Type: lua.ANY, Name: "value"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			size := args["size"].(int)
+			value := args["value"].(golua.LValue)
+
+			t := state.NewTable()
+			for i := range size {
+				t.RawSetInt(i+1, value)
+			}
+
+			state.Push(t)
+			return 1
+		})
 }
