@@ -18,6 +18,7 @@ require (
 	github.com/ericpauley/go-quantize v0.0.0-20200331213906-ae555eb2afa4
 	github.com/ernyoke/imger v1.0.0
 	github.com/fogleman/gg v1.3.0
+	github.com/kolesa-team/go-webp v1.0.4
 	github.com/koyachi/go-nude v0.0.2-0.20150410134931-699a88f33605
 	github.com/manifoldco/promptui v0.9.0
 	github.com/marekm4/color-extractor v1.2.1

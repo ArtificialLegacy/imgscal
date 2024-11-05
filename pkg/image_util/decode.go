@@ -9,6 +9,8 @@ import (
 	"io"
 
 	goico "github.com/ArtificialLegacy/go-ico"
+	"github.com/kolesa-team/go-webp/decoder"
+	"github.com/kolesa-team/go-webp/webp"
 	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
 )
@@ -32,6 +34,9 @@ func Decode(r io.ReadSeeker, encoding ImageEncoding) (image.Image, error) {
 
 	case ENCODING_BMP:
 		return bmp.Decode(r)
+
+	case ENCODING_WEBP:
+		return webp.Decode(r, &decoder.Options{})
 
 	// generic decoding of ICO only keeps the largest image
 	case ENCODING_ICO:
@@ -70,6 +75,9 @@ func DecodeConfig(r io.Reader, encoding ImageEncoding) (int, int, error) {
 
 	case ENCODING_BMP:
 		cfg, err = bmp.DecodeConfig(r)
+
+	case ENCODING_WEBP:
+		cfg, err = webp.DecodeConfig(r, &decoder.Options{})
 
 	case ENCODING_ICO:
 		fallthrough

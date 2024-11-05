@@ -20,6 +20,8 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/crazy3lf/colorconv"
+	"github.com/kolesa-team/go-webp/encoder"
+	"github.com/kolesa-team/go-webp/webp"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -1405,7 +1407,107 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 				lua.Error(state, lg.Appendf("failed to encode gif: %s", log.LEVEL_ERROR, err))
 			}
 
+			state.Push(golua.LString(strwriter.Bytes()))
+			return 1
+		})
+
+	/// @func encode_webp(id, path, preset, lossy, level)
+	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
+	/// @arg path {string} - The directory path to save the file to.
+	/// @arg preset {int<image.WebPPreset>}
+	/// @arg lossy {bool}
+	/// @arg level {float}
+	lib.CreateFunction(tab, "encode_webp",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.STRING, Name: "path"},
+			{Type: lua.INT, Name: "preset"},
+			{Type: lua.BOOL, Name: "lossy"},
+			{Type: lua.FLOAT, Name: "level"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			_, err := os.Stat(args["path"].(string))
+			if err != nil {
+				os.MkdirAll(args["path"].(string), 0o777)
+			}
+
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					f, err := os.OpenFile(path.Join(args["path"].(string), i.Self.Name+".webp"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o666)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append("cannot open provided file", log.LEVEL_ERROR)), 0)
+					}
+					defer f.Close()
+
+					preset := args["preset"].(int)
+					lossy := args["lossy"].(bool)
+					level := args["level"].(float64)
+
+					var options *encoder.Options
+
+					if lossy {
+						options, _ = encoder.NewLossyEncoderOptions(encoder.EncodingPreset(preset), float32(level))
+					} else {
+						options, _ = encoder.NewLosslessEncoderOptions(encoder.EncodingPreset(preset), int(level))
+					}
+
+					err = webp.Encode(f, i.Self.Image, options)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("cannot write image to file: %s", err), log.LEVEL_ERROR)), 0)
+					}
+				},
+			})
 			return 0
+		})
+
+	/// @func encode_webp_string(id, preset, lossy, lvel) -> string
+	/// @arg id {int<collection.IMAGE>} - The image id to encode and save to file.
+	/// @arg preset {int<image.WebPPreset>}
+	/// @arg lossy {bool}
+	/// @arg level {float}
+	/// @returns {string}
+	/// @blocking
+	lib.CreateFunction(tab, "encode_webp_string",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "preset"},
+			{Type: lua.BOOL, Name: "lossy"},
+			{Type: lua.FLOAT, Name: "level"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var data string
+
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					strwriter := byteseeker.NewByteSeeker(20000, 1000)
+
+					preset := args["preset"].(int)
+					lossy := args["lossy"].(bool)
+					level := args["level"].(float64)
+
+					var options *encoder.Options
+
+					if lossy {
+						options, _ = encoder.NewLossyEncoderOptions(encoder.EncodingPreset(preset), float32(level))
+					} else {
+						options, _ = encoder.NewLosslessEncoderOptions(encoder.EncodingPreset(preset), int(level))
+					}
+
+					err := webp.Encode(strwriter, i.Self.Image, options)
+					if err != nil {
+						state.Error(golua.LString(i.Lg.Append(fmt.Sprintf("cannot write image to string: %s", err), log.LEVEL_ERROR)), 0)
+					}
+
+					data = string(strwriter.Bytes())
+				},
+			})
+
+			state.Push(golua.LString(data))
+			return 1
 		})
 
 	/// @func load_palette(path) -> []struct<image.Color>

@@ -18,6 +18,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/crazy3lf/colorconv"
 	"github.com/ericpauley/go-quantize/quantize"
+	"github.com/kolesa-team/go-webp/encoder"
 	color_extractor "github.com/marekm4/color-extractor"
 	golua "github.com/yuin/gopher-lua"
 )
@@ -2179,6 +2180,20 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("GIFDISPOSAL_NONE", golua.LNumber(gif.DisposalNone))
 	tab.RawSetString("GIFDISPOSAL_BACKGROUND", golua.LNumber(gif.DisposalBackground))
 	tab.RawSetString("GIFDISPOSAL_PREVIOUS", golua.LNumber(gif.DisposalPrevious))
+
+	/// @constants WebPPreset {int}
+	/// @const WEBPPRESET_DEFAULT
+	/// @const WEBPPRESET_PICTURE
+	/// @const WEBPPRESET_PHOTO
+	/// @const WEBPPRESET_DRAWING
+	/// @const WEBPPRESET_ICON
+	/// @const WEBPPRESET_TEXT
+	tab.RawSetString("WEBPPRESET_DEFAULT", golua.LNumber(encoder.PresetDefault))
+	tab.RawSetString("WEBPPRESET_PICTURE", golua.LNumber(encoder.PresetPicture))
+	tab.RawSetString("WEBPPRESET_PHOTO", golua.LNumber(encoder.PresetPhoto))
+	tab.RawSetString("WEBPPRESET_DRAWING", golua.LNumber(encoder.PresetDrawing))
+	tab.RawSetString("WEBPPRESET_ICON", golua.LNumber(encoder.PresetIcon))
+	tab.RawSetString("WEBPPRESET_TEXT", golua.LNumber(encoder.PresetText))
 }
 
 func gifTable(r *lua.Runner, lg *log.Logger, state *golua.LState, d *lua.TaskData, gf *gif.GIF, name string, encoding imageutil.ImageEncoding, model imageutil.ColorModel) *golua.LTable {
