@@ -2,7 +2,10 @@
     "name": "cache",
     "author": "ArtificialLegacy",
     "version": "1.0.0",
+    "api_version": 1,
+
     "desc": "Example workflow for image caching.",
+    
     "workflows": {
         "*": "cache.lua"
     }

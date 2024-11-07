@@ -30,6 +30,7 @@ func WorkflowCMD(sm *statemachine.StateMachine) error {
 	}
 
 	foundPath := ""
+	var foundWf *workflow.Workflow
 	for _, w := range *wf {
 		if w.Name == name {
 			found, ok := w.CliWorkflows["*"]
@@ -39,6 +40,7 @@ func WorkflowCMD(sm *statemachine.StateMachine) error {
 				return err
 			}
 
+			foundWf = w
 			foundPath = path.Join(path.Dir(w.Base), found)
 			break
 		}
@@ -51,8 +53,16 @@ func WorkflowCMD(sm *statemachine.StateMachine) error {
 		if !ok {
 			continue
 		}
+
+		foundWf = w
 		foundPath = path.Join(path.Dir(w.Base), found)
 		break
+	}
+
+	if foundWf.APIVersion > workflow.API_VERSION {
+		fmt.Printf("Workflow %s has a newer API version than supported: %d. Current API: %d\n", foundWf.Name, foundWf.APIVersion, workflow.API_VERSION)
+		sm.SetState(STATE_EXIT)
+		return err
 	}
 
 	WorkflowRunEnter(sm, WorkflowRunData{Script: foundPath, Name: name})

@@ -23,8 +23,16 @@ func WorkflowConfirmEnter(sm *statemachine.StateMachine, data WorkflowConfirmDat
 func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	data := sm.Data.(WorkflowConfirmData)
 	sm.Data = nil
-	workflow := data.Workflow
+	wf := data.Workflow
 	pth := data.Entry
+
+	if wf.APIVersion > workflow.API_VERSION {
+		fmt.Printf("Workflow %s has a newer API version than supported: %d. Current API: %d\n", wf.Name, wf.APIVersion, workflow.API_VERSION)
+
+		cli.Question("...", cli.QuestionOptions{})
+		sm.SetState(STATE_WORKFLOW_LIST)
+		return nil
+	}
 
 	autoConfirm := sm.CliMode || sm.Config.AlwaysConfirm
 
@@ -33,9 +41,9 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 	if !autoConfirm {
 		cli.Clear()
 
-		fmt.Printf("\n%s%s%s [%s] by %s.\n", cli.COLOR_BOLD, workflow.Name, cli.COLOR_RESET, workflow.Version, workflow.Author)
+		fmt.Printf("\n%s%s%s [%s] by %s.\n", cli.COLOR_BOLD, wf.Name, cli.COLOR_RESET, wf.Version, wf.Author)
 		fmt.Printf("%s%s%s\n\n", configPathColor, pth, cli.COLOR_RESET)
-		fmt.Printf("%s\n\n", workflow.Desc)
+		fmt.Printf("%s\n\n", wf.Desc)
 
 		var err error
 		answer, err = cli.Question(
@@ -55,7 +63,7 @@ func WorkflowConfirm(sm *statemachine.StateMachine) error {
 
 	switch answer {
 	case "y":
-		WorkflowRunEnter(sm, WorkflowRunData{Script: pth, Name: workflow.Name})
+		WorkflowRunEnter(sm, WorkflowRunData{Script: pth, Name: wf.Name})
 	case "n":
 		sm.SetState(STATE_WORKFLOW_LIST)
 	default:

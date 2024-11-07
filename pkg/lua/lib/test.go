@@ -10,6 +10,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -151,6 +152,29 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			msg := args["msg"].(string)
 
 			if !slices.Contains(r.Libraries, name) {
+				if msg != "" {
+					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
+					return 0
+				}
+				lua.Error(state, "assertion failed")
+			}
+
+			return 0
+		})
+
+	/// @func assert_api_version(version, msg?)
+	/// @arg version {int}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_api_version",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "version"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			version := args["version"].(int)
+			msg := args["msg"].(string)
+
+			if workflow.API_VERSION < version {
 				if msg != "" {
 					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
 					return 0

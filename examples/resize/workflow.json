@@ -2,6 +2,7 @@
     "name": "resize",
     "author": "ArtificialLegacy",
     "version": "1.0.0",
+    "api_version": 1,
 
     "desc": "Resize an image.",
 

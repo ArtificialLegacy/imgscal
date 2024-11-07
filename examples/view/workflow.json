@@ -2,6 +2,7 @@
     "name": "view",
     "author": "ArtificialLegacy",
     "version": "1.0.0",
+    "api_version": 1,
 
     "desc": "View an image in the terminal.",
 

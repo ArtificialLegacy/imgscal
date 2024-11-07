@@ -2,6 +2,7 @@
     "name": "gui",
     "author": "ArtificialLegacy",
     "version": "1.0.0",
+    "api_version": 1,
 
     "desc": "Workflow containing multiple GUI examples.",
 

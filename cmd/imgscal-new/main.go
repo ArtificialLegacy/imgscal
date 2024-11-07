@@ -107,11 +107,12 @@ func main() {
 	}
 
 	wf := workflow.WorkflowJSON{
-		Name:     name,
-		Author:   author,
-		Version:  version,
-		Desc:     desc,
-		DescLong: descLong,
+		Name:       name,
+		Author:     author,
+		Version:    version,
+		APIVersion: workflow.API_VERSION,
+		Desc:       desc,
+		DescLong:   descLong,
 	}
 
 	err = os.Mkdir(wfPath, 0o777)
