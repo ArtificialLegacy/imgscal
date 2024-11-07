@@ -34,6 +34,8 @@ type Runner struct {
 	UseDefaultInput  bool
 	UseDefaultOutput bool
 
+	Libraries []string
+
 	Failed string
 
 	Wg  *sync.WaitGroup
@@ -63,6 +65,8 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 	return Runner{
 		State: state,
 		lg:    lg,
+
+		Libraries: []string{},
 
 		Wg: wg,
 
@@ -98,6 +102,8 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 	}
 }
 
+const luapath = "%[1]s/?/?.lua;%[1]s/?/init.lua;%[1]s/?.lua"
+
 func (r *Runner) Run(file string, plugins PluginMap) error {
 	defer func() {
 		if p := recover(); p != nil {
@@ -109,7 +115,7 @@ func (r *Runner) Run(file string, plugins PluginMap) error {
 	r.Dir = path.Dir(file)
 
 	pkg := r.State.GetField(r.State.Get(lua.EnvironIndex), "package")
-	r.State.SetField(pkg, "path", lua.LString(fmt.Sprintf("%s/?.lua;%s/?.lua;%s/?/?.lua", r.Dir, r.Config.PluginDirectory, r.Config.PluginDirectory)))
+	r.State.SetField(pkg, "path", lua.LString(fmt.Sprintf(luapath, r.Dir)+";"+fmt.Sprintf(luapath, r.Config.PluginDirectory)))
 
 	lua.OpenBase(r.State)
 	lua.OpenMath(r.State)
@@ -183,11 +189,18 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 
 	t.RawSetString("import", r.State.NewFunction(func(l *lua.LState) int {
 		pt := l.CheckTable(-1)
-		reqs := []string{}
+		reqs := []string{"test"}
 
 		pt.ForEach(func(l1, l2 lua.LValue) {
-			reqs = append(reqs, string(l2.(lua.LString)))
+			lname := string(l2.(lua.LString))
+			if lname == "test" { // test lib should always be imported so skip here
+				return
+			}
+
+			reqs = append(reqs, lname)
 		})
+
+		r.Libraries = reqs
 
 		LoadPlugins(name, r, lg, plugins, reqs, r.State)
 

@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"image"
+	"slices"
 	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
@@ -17,7 +18,7 @@ const LIB_TEST = "test"
 /// @lib Testing
 /// @import test
 /// @desc
-/// A library for testing lua workflows.
+/// A library for testing lua workflows. This library is always available, and does not need to be imported.
 
 func RegisterTest(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TEST, r, r.State, lg)
@@ -127,6 +128,29 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			valid := validateSchema(value, schema)
 
 			if !valid {
+				if msg != "" {
+					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
+					return 0
+				}
+				lua.Error(state, "assertion failed")
+			}
+
+			return 0
+		})
+
+	/// @func assert_imported(name, msg?)
+	/// @arg name {string}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_imported",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+			msg := args["msg"].(string)
+
+			if !slices.Contains(r.Libraries, name) {
 				if msg != "" {
 					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
 					return 0

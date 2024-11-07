@@ -6,6 +6,7 @@
                     "version": "Lua 5.1",
                     "path": [
                         "?/?.lua",
+                        "?/init.lua",
                         "?.lua"
                     ],
                     "builtin": {
