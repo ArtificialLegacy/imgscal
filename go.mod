@@ -7,6 +7,7 @@ require (
 	github.com/AllenDang/giu v0.10.0
 	github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829175936-7ea472aea965
 	github.com/ArtificialLegacy/go-ico v0.0.0-20240905165543-df31b047e3f7
+	github.com/BourgeoisBear/rasterm v1.1.1
 	github.com/akamensky/argparse v1.4.0
 	github.com/anthonynsimon/bild v0.14.0
 	github.com/charmbracelet/bubbles v0.20.0
@@ -68,6 +69,7 @@ require (
 	golang.design/x/hotkey v0.4.1 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 )

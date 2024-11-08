@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
@@ -9,6 +10,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/BourgeoisBear/rasterm"
 	"github.com/disintegration/gift"
 	golua "github.com/yuin/gopher-lua"
 )
@@ -239,6 +241,43 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			})
 
 			return 0
+		})
+
+	/// @func print_image_inline(id) -> bool
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {bool}
+	/// @blocking
+	/// @desc
+	/// Prints the image using inline graphics protocol, if available.
+	/// Returns false if this feature in unavailable.
+	lib.CreateFunction(tab, "print_image_inline",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			kitty := rasterm.IsKittyCapable()
+			iterm := rasterm.IsItermCapable()
+			if !kitty && !iterm {
+				state.Push(golua.LFalse)
+				return 1
+			}
+
+			id := args["id"].(int)
+
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					if kitty {
+						rasterm.KittyWriteImage(os.Stdout, i.Self.Image, rasterm.KittyImgOpts{})
+					} else if iterm {
+						rasterm.ItermWriteImage(os.Stdout, i.Self.Image)
+					}
+				},
+			})
+
+			state.Push(golua.LTrue)
+			return 1
 		})
 
 	/// @func string_image(id, double?, alpha?) -> string
