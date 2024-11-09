@@ -811,9 +811,19 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func bell()
+	lib.CreateFunction(tab, "bell",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			fmt.Print(cli.COLOR_BELL)
+			return 0
+		})
+
 	/// @constants Control {string}
 	/// @const RESET
+	/// @const BELL
 	tab.RawSetString("RESET", golua.LString(cli.COLOR_RESET))
+	tab.RawSetString("BELL", golua.LString(cli.COLOR_BELL))
 
 	/// @constants TextColor {string}
 	/// @const BLACK
