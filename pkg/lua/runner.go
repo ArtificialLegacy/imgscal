@@ -33,6 +33,7 @@ type Runner struct {
 	SecretData       map[string]any
 	UseDefaultInput  bool
 	UseDefaultOutput bool
+	FinishBell       bool
 
 	Libraries []string
 
@@ -214,6 +215,11 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 
 	t.RawSetString("secrets", r.State.NewFunction(func(l *lua.LState) int {
 		r.SecretData = r.WorkflowConfig(l, ".secrets.json")
+		return 0
+	}))
+
+	t.RawSetString("finish_bell", r.State.NewFunction(func(l *lua.LState) int {
+		r.FinishBell = true
 		return 0
 	}))
 

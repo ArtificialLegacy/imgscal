@@ -61,6 +61,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			if sm.CliMode {
 				sm.SetState(STATE_EXIT)
 			} else {
+				if runner.FinishBell {
+					fmt.Print(cli.COLOR_BELL)
+				}
+
 				WorkflowFailEnter(sm, WorkflowFailData{
 					Name:  pth,
 					Error: fmt.Errorf(runner.Failed),
@@ -122,6 +126,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			return nil
 		}
 
+		if runner.FinishBell {
+			fmt.Print(cli.COLOR_BELL)
+		}
+
 		WorkflowFailEnter(sm, WorkflowFailData{
 			Name:  pth,
 			Error: fmt.Errorf(runner.Failed),
@@ -140,6 +148,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			return nil
 		}
 
+		if runner.FinishBell {
+			fmt.Print(cli.COLOR_BELL)
+		}
+
 		WorkflowFailEnter(sm, WorkflowFailData{
 			Name:  pth,
 			Error: err,
@@ -156,6 +168,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		if sm.CliMode {
 			sm.SetState(STATE_EXIT)
 			return fmt.Errorf("error running script")
+		}
+
+		if runner.FinishBell {
+			fmt.Print(cli.COLOR_BELL)
 		}
 
 		WorkflowFailEnter(sm, WorkflowFailData{
