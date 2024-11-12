@@ -252,7 +252,7 @@ example/
         <hr>
 
         <p>
-            <code><span class="white">imgscal help &lt;workflow&gt;</span></code>
+            <code><span class="pink">imgscal help</span> <span class="yellow">&lt;workflow&gt;</span></code>
         </p>
 
         <p>
@@ -268,7 +268,7 @@ example/
         <hr>
 
         <p>
-            <code><span class="white">imgscal list</span></code>
+            <code><span class="pink">imgscal list</span></code>
         </p>
 
         <p>
@@ -291,15 +291,22 @@ example/
     <span class="yellow">"input_directory"</span>: <span class="green">"%HOME%/imgscal/input"</span>,
     <span class="yellow">"log_directory"</span>: <span class="green">"%HOME%/imgscal/log"</span>,
     <span class="yellow">"plugin_directory"</span>: <span class="green">"%HOME%/imgscal/plugin"</span>,
+    <span class="yellow">"default_author"</span>: <span class="green">""</span>,
     <span class="yellow">"disable_logs"</span>: <span class="cyan">false</span>,
-    <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>
-    <span class="yellow">"default_author"</span>: <span class="yellow">""</span>
+    <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>,
+    <span class="yellow">"disable_bell"</span>: <span class="cyan">false</span>
 }</pre>
         <p>The config file is located at <code><span class="green">%CONFIG%/imgscal/config.json</span></code>.</p>
         <p>
-            <code class="field">%CONFIG%</code> is retrieved from <a href="https://pkg.go.dev/os#UserConfigDir"><code>os.UserConfigDir()</code></a>
+            <code class="field">%CONFIG%</code> is retrieved from 
+            <a href="https://pkg.go.dev/os#UserConfigDir">
+                <code><span class="red">os</span><span class="white">.</span><span class="purple">UserConfigDir</span><span class="white">()</span></code>
+            </a>
             and 
-            <code class="field">%HOME%</code> from <a href="https://pkg.go.dev/os#UserHomeDir"><code>os.UserHomeDir()</code></a>.
+            <code class="field">%HOME%</code> from 
+            <a href="https://pkg.go.dev/os#UserHomeDir">
+                <code><span class="red">os</span><span class="white">.</span><span class="purple">UserHomeDir</span><span class="white">()</span></code>
+            </a>.
         </p>
 
         <hr>
@@ -335,10 +342,13 @@ example/
                 - This is a directory that can be used by workflows for outputting files. Each workflow with automatically get it's own directory.
                 <ul>
                     <li>
-                        Requires calling <code class="import">workflow.use_default_output()</code> within the init function.
+                        Requires calling
+                        <code><span class="red">workflow</span><span class="white">.</span><span class="purple">use_default_output</span><span class="white">()</span></code>
+                        within the init function.
                     </li>
                     <li>
-                        Workflows can get this directory with <code class="import">io.default_output()</code>.
+                        Workflows can get this directory with
+                        <code><span class="red">io</span><span class="white">.</span><span class="purple">default_output</span><span class="white">()</span></code>.
                     </li>
                 </ul>
             </li>
@@ -347,10 +357,13 @@ example/
                 - This is a directory that can be used by workflows for inputting files. Each workflow with automatically get it's own directory.
                 <ul>
                     <li>
-                        Requires calling <code class="import">workflow.use_default_input()</code> within the init function.
+                        Requires calling
+                        <code><span class="red">workflow</span><span class="white">.</span><span class="purple">use_default_input</span><span class="white">()</span></code>
+                        within the init function.
                     </li>
                     <li>
-                        Workflows can get this directory with <code class="import">io.default_input()</code>.
+                        Workflows can get this directory with
+                        <code><span class="red">io</span><span class="white">.</span><span class="purple">default_input</span><span class="white">()</span></code>.
                     </li>
                 </ul>
             </li>
@@ -365,7 +378,7 @@ example/
             </li>
             <li>
                 <code class="field">plugin_directory</code>
-                - This directory is used as a secondary path when calling <code class="import">require()</code>. 
+                - This directory is used as a secondary path when calling <code><span class="purple">require</span><span class="white">()</span></code>. 
             </li>
             <li>
                 <code class="field">disable_logs</code>
@@ -376,8 +389,14 @@ example/
                 - When this is set to true, the confirmation menu will be skipped before running a workflow.
             </li>
             <li>
+                <code class="field">disable_bell</code>
+                - Disables both 
+                <code><span class="red">cli</span><span class="white">.</span><span class="purple">bell</span><span class="white">()</span></code>
+                and the workflow finish bell. 
+            </li>
+            <li>
                 <code class="field">default_author</code>
-                - This value will be autofilled in the author section when using the <code class="import">imgscal-new</code> tool.
+                - This value will be autofilled in the author section when using the <code class="pink">imgscal-new</code> tool.
             </li>
         </ul>
     </details>

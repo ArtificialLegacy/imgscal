@@ -815,6 +815,12 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	lib.CreateFunction(tab, "bell",
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if r.Config.DisableBell {
+				lg.Append("bell called but is disabled", log.LEVEL_INFO)
+				return 0
+			}
+
+			lg.Append("bell called", log.LEVEL_INFO)
 			fmt.Print(cli.COLOR_BELL)
 			return 0
 		})

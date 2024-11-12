@@ -140,6 +140,10 @@ code.orange {
     color: var(--orange);
 }
 
+code.pink {
+    color: var(--orange);
+}
+
 figcaption > code {
     color: var(--purple);
 }

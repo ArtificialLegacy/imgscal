@@ -219,6 +219,10 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 	}))
 
 	t.RawSetString("finish_bell", r.State.NewFunction(func(l *lua.LState) int {
+		if r.Config.DisableBell {
+			return 0
+		}
+
 		r.FinishBell = true
 		return 0
 	}))
