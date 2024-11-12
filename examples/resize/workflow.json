@@ -3,13 +3,10 @@
     "author": "ArtificialLegacy",
     "version": "1.0.0",
     "api_version": 1,
-
     "desc": "Resize an image.",
-
     "workflows": {
         "*": "resize.lua"
     },
-
     "cli_workflows": {
         "*": "resize_cmd.lua"
     }

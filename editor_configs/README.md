@@ -10,12 +10,18 @@ This is not for development of ImgScal itself.
 * `.ignore` is for `%home%/imgscal`. This prevents unneeded files from showing up in your fuzzyfinder.
 * In `./workflow_configs` there is a `.gitignore`, this is used for excluding workflow secrets from any git repo capturing the main imgscal directory.
   * While included here, it is created automatically by ImgScal in the `%home%/imgscal/config/` directory.
+* In `./schema` there are files that are used for provided JSON schema to different `.json` files used by the tool.
 
 ## Links
 
 ### LSP Configs
 
 * [Neovim (neoconf)](/editor_configs/lsp/.neoconf.json)
+
+### JSON Schemas
+
+* [workflow.json](/editor_configs/schema/workflow.json)
+* [config.json](/editor_configs/schema/config.json)
 
 ### Misc
 
