@@ -23,6 +23,11 @@ This is not for development of ImgScal itself.
 * [workflow.json](/editor_configs/schema/workflow.json)
 * [config.json](/editor_configs/schema/config.json)
 
+#### Gist Links
+
+* [workflow.json](https://gist.githubusercontent.com/ArtificialLegacy/9711f20511e76b519aedb729a6762b9f/raw/de77e999654060a38d7a4e7eea8aeb4f5ee1273e/imgscal_workflow.json)
+* [config.json](https://gist.githubusercontent.com/ArtificialLegacy/bf37b79d4fc943006f333cc35467266c/raw/933fdffd6d871d3bf5a281a7815b7d408fcd51b2/imgscal_config.json)
+
 ### Misc
 
 * [.ignore](/editor_configs/.ignore)

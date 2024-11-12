@@ -165,7 +165,7 @@ Included in this repo is `./editor_configs/`. These can be used as a reference f
 
 ## Known Issues
 
-> These have tentatively fixed.
+> These have been tentatively fixed.
 
 * There is an upstream issue related to `mainthread` when running on Windows.
   * Sometimes causes the application to crash within the first frame of the master window.

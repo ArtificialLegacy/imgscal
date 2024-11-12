@@ -107,6 +107,7 @@ func main() {
 	}
 
 	wf := workflow.WorkflowJSON{
+		Schema:     workflow.SCHEMA,
 		Name:       name,
 		Author:     author,
 		Version:    version,

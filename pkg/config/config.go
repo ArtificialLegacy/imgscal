@@ -4,9 +4,13 @@ import (
 	"path"
 )
 
-const CONFIG_VERSION = "0.5.0"
+const (
+	CONFIG_VERSION = "0.5.0"
+	SCHEMA         = "https://gist.githubusercontent.com/ArtificialLegacy/bf37b79d4fc943006f333cc35467266c/raw/933fdffd6d871d3bf5a281a7815b7d408fcd51b2/imgscal_config.json"
+)
 
 type Config struct {
+	Schema            string `json:"$schema"`
 	ConfigVersion     string `json:"config_version"`
 	ConfigDirectory   string `json:"config_directory"`
 	WorkflowDirectory string `json:"workflow_directory"`
@@ -21,11 +25,14 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	return &Config{}
+	return &Config{
+		Schema: SCHEMA,
+	}
 }
 
 func NewConfigWithDefaults(homeDir string) *Config {
 	return &Config{
+		Schema:            SCHEMA,
 		ConfigVersion:     CONFIG_VERSION,
 		ConfigDirectory:   path.Join(homeDir, "imgscal", "config"),
 		WorkflowDirectory: path.Join(homeDir, "imgscal", "workflow"),
