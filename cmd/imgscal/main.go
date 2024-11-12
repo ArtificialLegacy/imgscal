@@ -39,6 +39,9 @@ func main() {
 	}
 
 	cfgPath := path.Join(cfgDir, "imgscal", "config.json")
+	if envCfg, exists := os.LookupEnv("IMGSCAL_CONFIG"); exists {
+		cfgPath = envCfg
+	}
 
 	_, err = os.Stat(cfgPath)
 	if err != nil {
