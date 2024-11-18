@@ -248,7 +248,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	/// @returns {bool}
 	/// @blocking
 	/// @desc
-	/// Prints the image using inline graphics protocol, if available.
+	/// Prints the image using the inline graphics protocol, if available.
 	/// Returns false if this feature in unavailable.
 	lib.CreateFunction(tab, "print_image_inline",
 		[]lua.Arg{
@@ -273,6 +273,83 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 					} else if iterm {
 						rasterm.ItermWriteImage(os.Stdout, i.Self.Image)
 					}
+				},
+			})
+
+			state.Push(golua.LTrue)
+			return 1
+		})
+
+	/// @func print_image_inline_kitty(id, opts) -> bool
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg opts {struct<cli.KittyOpts>}
+	/// @returns {bool}
+	/// @blocking
+	/// @desc
+	/// Prints the image using kitty's inline graphics protocol, if available.
+	/// Returns false if this feature in unavailable.
+	lib.CreateFunction(tab, "print_image_inline_kitty",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.TABLE, Name: "opts", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "x", Optional: true},
+				{Type: lua.INT, Name: "y", Optional: true},
+				{Type: lua.INT, Name: "width", Optional: true},
+				{Type: lua.INT, Name: "height", Optional: true},
+				{Type: lua.INT, Name: "offsetx", Optional: true},
+				{Type: lua.INT, Name: "offsety", Optional: true},
+				{Type: lua.INT, Name: "cols", Optional: true},
+				{Type: lua.INT, Name: "rows", Optional: true},
+				{Type: lua.INT, Name: "zindex", Optional: true},
+				{Type: lua.INT, Name: "imageId", Optional: true},
+				{Type: lua.INT, Name: "imageNo", Optional: true},
+				{Type: lua.INT, Name: "placementId", Optional: true},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct KittyOpts
+			/// @prop x {int} - The x position of the image.
+			/// @prop y {int} - The y position of the image.
+			/// @prop width {int} - The width of the image.
+			/// @prop height {int} - The height of the image.
+			/// @prop offsetx {int} - The pixel x offset of the image.
+			/// @prop offsety {int} - The pixel y offset of the image.
+			/// @prop cols {int} - Width in terminal columns.
+			/// @prop rows {int} - Height in terminal rows.
+			/// @prop zindex {int} - The z-index of the image.
+			/// @prop imageId {int}
+			/// @prop imageNo {int}
+			/// @prop placementId {int}
+
+			kitty := rasterm.IsKittyCapable()
+			if !kitty {
+				state.Push(golua.LFalse)
+				return 1
+			}
+
+			id := args["id"].(int)
+			opts := args["opts"].(map[string]any)
+
+			kopts := rasterm.KittyImgOpts{
+				SrcX:        uint32(opts["x"].(int)),
+				SrcY:        uint32(opts["y"].(int)),
+				SrcWidth:    uint32(opts["width"].(int)),
+				SrcHeight:   uint32(opts["height"].(int)),
+				CellOffsetX: uint32(opts["offsetx"].(int)),
+				CellOffsetY: uint32(opts["offsety"].(int)),
+				DstCols:     uint32(opts["cols"].(int)),
+				DstRows:     uint32(opts["rows"].(int)),
+				ZIndex:      int32(opts["zindex"].(int)),
+				ImageId:     uint32(opts["imageId"].(int)),
+				ImageNo:     uint32(opts["imageNo"].(int)),
+				PlacementId: uint32(opts["placementId"].(int)),
+			}
+
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					rasterm.KittyWriteImage(os.Stdout, i.Self.Image, kopts)
 				},
 			})
 
@@ -823,6 +900,33 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			lg.Append("bell called", log.LEVEL_INFO)
 			fmt.Print(cli.COLOR_BELL)
 			return 0
+		})
+
+	/// @func is_kitty() -> bool
+	/// @returns {bool}
+	lib.CreateFunction(tab, "is_kitty",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(rasterm.IsKittyCapable()))
+			return 1
+		})
+
+	/// @func is_iterm() -> bool
+	/// @returns {bool}
+	lib.CreateFunction(tab, "is_iterm",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(rasterm.IsItermCapable()))
+			return 1
+		})
+
+	/// @func is_tmux() -> bool
+	/// @returns {bool}
+	lib.CreateFunction(tab, "is_tmux",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(rasterm.IsTmuxScreen()))
+			return 1
 		})
 
 	/// @constants Control {string}
