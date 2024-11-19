@@ -63,7 +63,7 @@ func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func
 /// @prop is_cli {bool}
 /// @method debug() - Open the lua debug library to the workflow.
 /// @method verbose() - Enable verbose logging when running the workflow.
-/// @method import([]string) - Array containing the import names for built-in libraries.
+/// @method import([]string<imgscal_Imports>) - Array containing the import names for built-in libraries.
 /// @method config(table<any>) - Set the default configuration for the workflow.
 /// @method secrets(table<any>) - Set the default secrets for the workflow.
 /// @method finish_bell() - Causes the bell control character to be printed when the workflow either finishes or fails.

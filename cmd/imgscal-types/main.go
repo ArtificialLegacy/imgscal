@@ -95,7 +95,15 @@ func main() {
 			formatInterface(fs, name, it)
 		}
 
-		fmt.Fprintf(fs, "return %s\n", name)
+		if name == "imgscal" {
+			fmt.Fprintf(fs, "---@alias imgscal_Imports\n")
+
+			for _, lib := range docs {
+				fmt.Fprintf(fs, "---| '\"%s\"' # %s\n", lib.Name, strings.Join(lib.Desc, " "))
+			}
+		}
+
+		fmt.Fprintf(fs, "\nreturn %s\n", name)
 	}
 }
 
