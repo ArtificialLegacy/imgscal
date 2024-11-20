@@ -1636,6 +1636,20 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func wg_markdown(text) -> struct<gui.WidgetMarkdown>
+	/// @arg text {string}
+	/// @returns {struct<gui.WidgetMarkdown>}
+	lib.CreateFunction(tab, "wg_markdown",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "text"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			t := markdownTable(state, args["text"].(string))
+
+			state.Push(t)
+			return 1
+		})
+
 	/// @func wg_button(text) -> struct<gui.WidgetButton>
 	/// @arg text {string}
 	/// @returns {struct<gui.WidgetButton>}
@@ -4710,6 +4724,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 
 	/// @constants WidgetType {string}
 	/// @const WIDGET_LABEL
+	/// @const WIDGET_MARKDOWN
 	/// @const WIDGET_BUTTON
 	/// @const WIDGET_DUMMY
 	/// @const WIDGET_SEPARATOR
@@ -4774,6 +4789,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const WIDGET_PLOT
 	/// @const WIDGET_CSS_TAG
 	tab.RawSetString("WIDGET_LABEL", golua.LString(WIDGET_LABEL))
+	tab.RawSetString("WIDGET_MARKDOWN", golua.LString(WIDGET_MARKDOWN))
 	tab.RawSetString("WIDGET_BUTTON", golua.LString(WIDGET_BUTTON))
 	tab.RawSetString("WIDGET_DUMMY", golua.LString(WIDGET_DUMMY))
 	tab.RawSetString("WIDGET_SEPARATOR", golua.LString(WIDGET_SEPARATOR))
@@ -5538,6 +5554,7 @@ const (
 
 const (
 	WIDGET_LABEL                = "label"
+	WIDGET_MARKDOWN             = "markdown"
 	WIDGET_BUTTON               = "button"
 	WIDGET_DUMMY                = "dummy"
 	WIDGET_SEPARATOR            = "separator"
@@ -5622,6 +5639,7 @@ var (
 func init() {
 	buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{
 		WIDGET_LABEL:                labelBuild,
+		WIDGET_MARKDOWN:             markdownBuild,
 		WIDGET_BUTTON:               buttonBuild,
 		WIDGET_DUMMY:                dummyBuild,
 		WIDGET_SEPARATOR:            separatorBuild,
@@ -5785,6 +5803,24 @@ func labelBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTa
 
 		l.Font(font)
 	}
+
+	return l
+}
+
+func markdownTable(state *golua.LState, text string) *golua.LTable {
+	/// @struct WidgetMarkdown
+	/// @prop type {string<gui.WidgetType>}
+	/// @prop md {string}
+
+	t := state.NewTable()
+	t.RawSetString("type", golua.LString(WIDGET_MARKDOWN))
+	t.RawSetString("markdown", golua.LString(text))
+
+	return t
+}
+
+func markdownBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
+	l := g.Markdown(t.RawGetString("markdown").String())
 
 	return l
 }

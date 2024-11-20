@@ -1,10 +1,10 @@
 module github.com/ArtificialLegacy/imgscal
 
-go 1.23.2
+go 1.23.3
 
 require (
-	github.com/AllenDang/cimgui-go v1.1.0
-	github.com/AllenDang/giu v0.10.0
+	github.com/AllenDang/cimgui-go v1.2.0
+	github.com/AllenDang/giu v0.11.0
 	github.com/ArtificialLegacy/gm-proj-tool v0.0.0-20240829175936-7ea472aea965
 	github.com/ArtificialLegacy/go-ico v0.0.0-20240905165543-df31b047e3f7
 	github.com/BourgeoisBear/rasterm v1.1.1
@@ -30,7 +30,7 @@ require (
 	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a
 	github.com/yuin/gopher-lua v1.1.1
 	gitlab.com/microo8/blackcl v0.0.0-20190218100333-2c95478cf9bd
-	golang.org/x/image v0.21.0
+	golang.org/x/image v0.22.0
 )
 
 require (
@@ -59,18 +59,18 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.3-0.20240618155329-98d742f6907a // indirect
-	github.com/napsy/go-css v0.0.0-20221107082635-4ed403047a64 // indirect
+	github.com/napsy/go-css v0.0.0-20230611142900-9dd118f3874c // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/wayneashleyberry/terminal-dimensions v1.1.0 // indirect
 	golang.design/x/hotkey v0.4.1 // indirect
 	golang.design/x/mainthread v0.3.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sync v0.9.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 )
 
@@ -78,5 +78,5 @@ require (
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/google/uuid v1.6.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
 )
