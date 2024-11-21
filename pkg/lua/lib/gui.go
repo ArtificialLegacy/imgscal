@@ -5455,16 +5455,86 @@ func markdownTable(state *golua.LState, text string) *golua.LTable {
 	/// @struct WidgetMarkdown
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop md {string}
+	/// @method h1(self, font int<ref.FONT>, separator bool) -> self
+	/// @method h2(self, font int<ref.FONT>, separator bool) -> self
+	/// @method h3(self, font int<ref.FONT>, separator bool) -> self
 
 	t := state.NewTable()
+
 	t.RawSetString("type", golua.LString(WIDGET_MARKDOWN))
 	t.RawSetString("markdown", golua.LString(text))
+	t.RawSetString("__h1Font", golua.LNil)
+	t.RawSetString("__h1Separator", golua.LNil)
+	t.RawSetString("__h2Font", golua.LNil)
+	t.RawSetString("__h2Separator", golua.LNil)
+	t.RawSetString("__h3Font", golua.LNil)
+	t.RawSetString("__h3Separator", golua.LNil)
+
+	tableBuilderFunc(state, t, "h1", func(state *golua.LState, t *golua.LTable) {
+		f := state.CheckNumber(-2)
+		v := state.CheckBool(-1)
+		t.RawSetString("__h1Font", f)
+		t.RawSetString("__h1Separator", golua.LBool(v))
+	})
+
+	tableBuilderFunc(state, t, "h2", func(state *golua.LState, t *golua.LTable) {
+		f := state.CheckNumber(-2)
+		v := state.CheckBool(-1)
+		t.RawSetString("__h2Font", f)
+		t.RawSetString("__h2Separator", golua.LBool(v))
+	})
+
+	tableBuilderFunc(state, t, "h3", func(state *golua.LState, t *golua.LTable) {
+		f := state.CheckNumber(-2)
+		v := state.CheckBool(-1)
+		t.RawSetString("__h3Font", f)
+		t.RawSetString("__h3Separator", golua.LBool(v))
+	})
 
 	return t
 }
 
 func markdownBuild(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget {
 	l := g.Markdown(t.RawGetString("markdown").String())
+
+	h1Font := t.RawGetString("__h1Font")
+	h1Separator := t.RawGetString("__h1Separator")
+	if h1Font.Type() == golua.LTNumber && h1Separator.Type() == golua.LTBool {
+		ref := int(h1Font.(golua.LNumber))
+		sref, err := r.CR_REF.Item(ref)
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+
+		font := sref.Value.(*g.FontInfo)
+		l.Header(0, font, bool(h1Separator.(golua.LBool)))
+	}
+
+	h2Font := t.RawGetString("__h2Font")
+	h2Separator := t.RawGetString("__h2Separator")
+	if h2Font.Type() == golua.LTNumber && h2Separator.Type() == golua.LTBool {
+		ref := int(h2Font.(golua.LNumber))
+		sref, err := r.CR_REF.Item(ref)
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+
+		font := sref.Value.(*g.FontInfo)
+		l.Header(1, font, bool(h2Separator.(golua.LBool)))
+	}
+
+	h3Font := t.RawGetString("__h3Font")
+	h3Separator := t.RawGetString("__h3Separator")
+	if h3Font.Type() == golua.LTNumber && h3Separator.Type() == golua.LTBool {
+		ref := int(h3Font.(golua.LNumber))
+		sref, err := r.CR_REF.Item(ref)
+		if err != nil {
+			state.Error(golua.LString(lg.Append(fmt.Sprintf("unable to find ref: %s", err), log.LEVEL_ERROR)), 0)
+		}
+
+		font := sref.Value.(*g.FontInfo)
+		l.Header(2, font, bool(h3Separator.(golua.LBool)))
+	}
 
 	return l
 }
