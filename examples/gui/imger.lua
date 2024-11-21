@@ -2,6 +2,7 @@
 function init(workflow)
 	workflow.import({
 		"gui",
+		"guiplot",
 		"image",
 		"imger",
 		"ref",
@@ -33,8 +34,8 @@ function main()
 
 	-- source refs
 	local srcOption = ref.new(0, ref.INT32)
-	local srcGradientStart = ref.new(image.color_rgb(0, 0, 0), ref.RGBA) --[[@as ref.RGBA]]
-	local srcGradientEnd = ref.new(image.color_rgb(255, 255, 255), ref.RGBA) --[[@as ref.RGBA]]
+	local srcGradientStart = ref.new(image.color_rgb(0, 0, 0), ref.RGBA) --[[@as ref_RGBA]]
+	local srcGradientEnd = ref.new(image.color_rgb(255, 255, 255), ref.RGBA) --[[@as ref_RGBA]]
 	local srcGradientDir = ref.new(0, ref.INT32)
 	local srcNoiseSeed = ref.new(0, ref.INT32)
 	local srcNoiseScale = ref.new(0.5, ref.FLOAT32)
@@ -180,20 +181,21 @@ function main()
 						gui.wg_align(gui.ALIGN_CENTER):to({
 							gui.wg_style():set_style_float(gui.STYLEVAR_CHILDROUNDING, 10):to({
 								gui.wg_child():size((256 + wpx * 2), 256 + wpy * 2 + 4):layout({
-									gui.wg_plot("Histogram")
+									guiplot
+										.wg_plot("Histogram")
 										:size(256, 256)
 										:axis_limits(0, 256, 0, 100, gui.COND_ALWAYS)
-										:x_axeflags(gui.FLAGPLOTAXIS_NOHIGHLIGHT)
+										:x_axeflags(guiplot.FLAGPLOTAXIS_NOHIGHLIGHT)
 										:y_axeflags(
-											gui.FLAGPLOTAXIS_NOHIGHLIGHT,
-											gui.FLAGPLOTAXIS_NOHIGHLIGHT,
-											gui.FLAGPLOTAXIS_NOHIGHLIGHT
+											guiplot.FLAGPLOTAXIS_NOHIGHLIGHT,
+											guiplot.FLAGPLOTAXIS_NOHIGHLIGHT,
+											guiplot.FLAGPLOTAXIS_NOHIGHLIGHT
 										)
 										:plots({
-											gui.pt_line("Gray", histogramDataGray),
-											gui.pt_line("Red", histogramDataRed),
-											gui.pt_line("Green", histogramDataGreen),
-											gui.pt_line("Blue", histogramDataBlue),
+											guiplot.pt_line("Gray", histogramDataGray),
+											guiplot.pt_line("Red", histogramDataRed),
+											guiplot.pt_line("Green", histogramDataGreen),
+											guiplot.pt_line("Blue", histogramDataBlue),
 										}),
 								}),
 							}),

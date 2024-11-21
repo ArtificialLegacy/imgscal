@@ -2112,15 +2112,15 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @constants ColorModel {int}
-	/// @const RGBA
-	/// @const RGBA64
-	/// @const NRGBA
-	/// @const NRGBA64
-	/// @const ALPHA
-	/// @const ALPHA16
-	/// @const GRAY
-	/// @const GRAY16
-	/// @const CMYK
+	/// @const MODEL_RGBA
+	/// @const MODEL_RGBA64
+	/// @const MODEL_NRGBA
+	/// @const MODEL_NRGBA64
+	/// @const MODEL_ALPHA
+	/// @const MODEL_ALPHA16
+	/// @const MODEL_GRAY
+	/// @const MODEL_GRAY16
+	/// @const MODEL_CMYK
 	tab.RawSetString("MODEL_RGBA", golua.LNumber(imageutil.MODEL_RGBA))
 	tab.RawSetString("MODEL_RGBA64", golua.LNumber(imageutil.MODEL_RGBA64))
 	tab.RawSetString("MODEL_NRGBA", golua.LNumber(imageutil.MODEL_NRGBA))
