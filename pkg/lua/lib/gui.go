@@ -4526,6 +4526,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	/// @const WIDGET_EVENT_HANDLER
 	/// @const WIDGET_PLOT
 	/// @const WIDGET_CSS_TAG
+	/// @const WIDGET_CODEEDITOR
 	tab.RawSetString("WIDGET_LABEL", golua.LString(WIDGET_LABEL))
 	tab.RawSetString("WIDGET_MARKDOWN", golua.LString(WIDGET_MARKDOWN))
 	tab.RawSetString("WIDGET_BUTTON", golua.LString(WIDGET_BUTTON))
@@ -4591,6 +4592,7 @@ func RegisterGUI(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("WIDGET_EVENT_HANDLER", golua.LString(WIDGET_EVENT_HANDLER))
 	tab.RawSetString("WIDGET_PLOT", golua.LString(WIDGET_PLOT))
 	tab.RawSetString("WIDGET_CSS_TAG", golua.LString(WIDGET_CSS_TAG))
+	tab.RawSetString("WIDGET_CODEEDITOR", golua.LString(WIDGET_CODEEDITOR))
 }
 
 const (
@@ -5287,6 +5289,7 @@ const (
 	WIDGET_EVENT_HANDLER        = "event_handler"
 	WIDGET_PLOT                 = "plot"
 	WIDGET_CSS_TAG              = "css_tag"
+	WIDGET_CODEEDITOR           = "code_editor"
 )
 
 var buildList = map[string]func(r *lua.Runner, lg *log.Logger, state *golua.LState, t *golua.LTable) g.Widget{}
@@ -5352,6 +5355,7 @@ func init() {
 		WIDGET_EVENT_HANDLER:        eventHandlerBuild,
 		WIDGET_PLOT:                 plotBuild,
 		WIDGET_CSS_TAG:              cssTagBuild,
+		WIDGET_CODEEDITOR:           codeeditorBuild,
 	}
 }
 

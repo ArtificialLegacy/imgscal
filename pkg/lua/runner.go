@@ -59,6 +59,7 @@ type Runner struct {
 	CR_LIP *collection.Crate[collection.StyleItem]
 	CR_CIM *collection.Crate[collection.CachedImageItem]
 	CR_SHD *collection.Crate[collection.ShaderItem]
+	CR_CED *collection.Crate[giu.CodeEditorWidget]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -100,6 +101,7 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 
 			i.Self.Device.Release()
 		}),
+		CR_CED: collection.NewCrate[giu.CodeEditorWidget](),
 	}
 }
 

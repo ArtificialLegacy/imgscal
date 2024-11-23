@@ -6,8 +6,9 @@
     "api_version": 1,
     "desc": "Workflow containing multiple GUI examples.",
     "workflows": {
-        "noise": "noise.lua",
+        "code": "code.lua",
         "filter": "filter.lua",
-        "imger": "imger.lua"
+        "imger": "imger.lua",
+        "noise": "noise.lua"
     }
 }

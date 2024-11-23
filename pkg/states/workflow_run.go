@@ -109,6 +109,7 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	runner.CR_TEA.CleanAll()
 	runner.CR_CIM.CleanAll()
 	runner.CR_SHD.CleanAll()
+	runner.CR_CED.CleanAll()
 
 	runner.TC.CollectAll(state)
 	runner.IC.CollectAll(state)
