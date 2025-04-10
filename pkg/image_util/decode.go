@@ -78,7 +78,7 @@ func DecodeConfig(r io.Reader, encoding ImageEncoding) (int, int, error) {
 
 	case ENCODING_WEBP:
 		cfg, err = webp.DecodeConfig(r, &decoder.Options{})
-
+    
 	case ENCODING_ICO:
 		fallthrough
 	case ENCODING_CUR:
