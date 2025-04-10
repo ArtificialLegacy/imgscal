@@ -63,6 +63,31 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func project_close(id, save?)
+	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
+	/// @arg? save {bool}
+	lib.CreateFunction(tab, "project_close",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.BOOL, Name: "save", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if args["save"].(bool) {
+				proj, err := r.CR_GMP.Item(args["id"].(int))
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+				}
+
+				err = proj.DataSave()
+				if err != nil {
+					state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to save project data: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
+				}
+			}
+
+			r.CR_GMP.Clean(args["id"].(int))
+			return 0
+		})
+
 	/// @func folder_add(id, name, folderpath) -> struct<gamemaker.ResourceNode>, string
 	/// @arg id {int<collection.CRATE_GAMEMAKER>} - ID for the loaded Gamemaker project.
 	/// @arg name {string} - Name of the folder asset.
@@ -229,7 +254,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to find project: %d, %s", args["id"], err), log.LEVEL_ERROR)), 0)
 			}
 
-			sprite, err := spriteBuild(args["sprite"].(*golua.LTable), r)
+			sprite, err := spriteBuild(args["sprite"].(*golua.LTable), r, state)
 			if err != nil {
 				state.Error(golua.LString(lg.Append(fmt.Sprintf("failed to build sprite: %s", err), log.LEVEL_ERROR)), 0)
 			}
@@ -830,7 +855,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Sprite Origin
+	/// @constants SpriteOrigin {int}
 	/// @const SPRITEORIGIN_TOPLEFT
 	/// @const SPRITEORIGIN_TOPCENTER
 	/// @const SPRITEORIGIN_TOPRIGHT
@@ -852,7 +877,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("SPRITEORIGIN_BOTTOMRIGHT", golua.LNumber(yyp.SPRITEORIGIN_BOTTOMRIGHT))
 	tab.RawSetString("SPRITEORIGIN_CUSTOM", golua.LNumber(yyp.SPRITEORIGIN_CUSTOM))
 
-	/// @constants Collision Masks
+	/// @constants CollMask {int}
 	/// @const COLLMASK_PRECISE
 	/// @const COLLMASK_RECT
 	/// @const COLLMASK_ELLIPSE
@@ -868,7 +893,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLLMASK_RECTROT", golua.LNumber(yyp.COLLMASK_RECTROT))
 	tab.RawSetString("COLLMASK_SPINE", golua.LNumber(yyp.COLLMASK_SPINE))
 
-	/// @constants BBOX Modes
+	/// @constants BBOXMode {int}
 	/// @const BBOXMODE_AUTO
 	/// @const BBOXMODE_FULL
 	/// @const BBOXMODE_MANUAL
@@ -876,7 +901,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BBOXMODE_FULL", golua.LNumber(yyp.BBOXMODE_FULL))
 	tab.RawSetString("BBOXMODE_MANUAL", golua.LNumber(yyp.BBOXMODE_MANUAL))
 
-	/// @constants Nineslice Tile Modes
+	/// @constants NinesliceTile {int}
 	/// @const NINESLICETILE_STRETCH
 	/// @const NINESLICETILE_REPEAT
 	/// @const NINESLICETILE_MIRROR
@@ -888,7 +913,7 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("NINESLICETILE_BLANKREPEAT", golua.LNumber(yyp.NINESLICETILE_BLANKREPEAT))
 	tab.RawSetString("NINESLICETILE_HIDE", golua.LNumber(yyp.NINESLICETILE_HIDE))
 
-	/// @constants Nineslice Slices
+	/// @constants NinesliceSlice {int}
 	/// @const NINESLICESLICE_LEFT
 	/// @const NINESLICESLICE_TOP
 	/// @const NINESLICESLICE_RIGHT
@@ -900,17 +925,17 @@ func RegisterGamemaker(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("NINESLICESLICE_BOTTOM", golua.LNumber(yyp.NINESLICESLICE_BOTTOM))
 	tab.RawSetString("NINESLICESLICE_CENTER", golua.LNumber(yyp.NINESLICESLICE_CENTER))
 
-	/// @constants Playback Units
+	/// @constants PlaybackUnit {int}
 	/// @const PLAYBACK_PERSECOND
 	/// @const PLAYBACK_PERFRAME
 	tab.RawSetString("PLAYBACK_PERSECOND", golua.LNumber(yyp.SEQUNITS_TIME))
 	tab.RawSetString("PLAYBACK_PERFRAME", golua.LNumber(yyp.SEQUNITS_FRAME))
 
-	/// @constants Directories
+	/// @constants Directories {string}
 	/// @const DIR_DATAFILES
 	tab.RawSetString("DIR_DATAFILES", golua.LString(yyp.INCLUDEDFILE_DEFAULTPATH))
 
-	/// @constants Color (24 Bit)
+	/// @constants Color {int}
 	/// @const COLOR_AQUA
 	/// @const COLOR_BLACK
 	/// @const COLOR_BLUE
@@ -1034,20 +1059,20 @@ func spriteTable(lib *lua.Lib, state *golua.LState, name string, width, height i
 	/// @prop height {int}
 	/// @prop parent {struct<gamemaker.ResourceNode>}
 	/// @prop texgroup {struct<gamemaker.ResourceNode>}
-	/// @method layers() -> struct<gamemaker.SpriteLayers>
-	/// @method frames() -> struct<gamemaker.SpriteFrames>
-	/// @method tags(string...) -> self
-	/// @method tag_list([]string) -> self
-	/// @method tile(htile bool, vtile bool) -> self
-	/// @method origin(int<gamemaker.SpriteOrigin>, xorigin int?, yorigin int?) -> self
-	/// @method collision(int<gamemaker.BBOXMode>, int<gamemaker.CollMask>, struct<gamemaker.BBOX>?, tolerance int?) -> self
-	/// @method premultiply_alpha(bool) -> self
-	/// @method edge_filtering(bool) -> self
-	/// @method dynamic_texturepage(bool) -> self
-	/// @method nineslice(top int, left int, bottom int, right int) -> self
-	/// @method nineslice_tilemode(int<gamemaker.NineSliceSlice>, int<gamemaker.NineSliceTile>) -> self
-	/// @method broadcast_message(frame int, msg string) -> self
-	/// @method playback(speed int, units int<gamemaker.PlaybackUnits>?) -> self
+	/// @method layers(self) -> struct<gamemaker.SpriteLayers>
+	/// @method frames(self) -> struct<gamemaker.SpriteFrames>
+	/// @method tags(self, string...) -> self
+	/// @method tag_list(self, []string) -> self
+	/// @method tile(self, htile bool, vtile bool) -> self
+	/// @method origin(self, int<gamemaker.SpriteOrigin>, xorigin int?, yorigin int?) -> self
+	/// @method collision(self, int<gamemaker.BBOXMode>, int<gamemaker.CollMask>, struct<gamemaker.BBOX>?, tolerance int?) -> self
+	/// @method premultiply_alpha(self, bool) -> self
+	/// @method edge_filtering(self, bool) -> self
+	/// @method dynamic_texturepage(self, bool) -> self
+	/// @method nineslice(self, top int, left int, bottom int, right int) -> self
+	/// @method nineslice_tilemode(self, int<gamemaker.NineSliceSlice>, int<gamemaker.NineSliceTile>) -> self
+	/// @method broadcast_message(self, frame int, msg string) -> self
+	/// @method playback(self, speed int, units int<gamemaker.PlaybackUnit>?) -> self
 
 	t := state.NewTable()
 	t.RawSetString("name", golua.LString(name))
@@ -1215,7 +1240,7 @@ func spriteTable(lib *lua.Lib, state *golua.LState, name string, width, height i
 	return t
 }
 
-func spriteBuild(t *golua.LTable, r *lua.Runner) (*yyp.Sprite, error) {
+func spriteBuild(t *golua.LTable, r *lua.Runner, state *golua.LState) (*yyp.Sprite, error) {
 	name := string(t.RawGetString("name").(golua.LString))
 	width := int(t.RawGetString("width").(golua.LNumber))
 	height := int(t.RawGetString("height").(golua.LNumber))
@@ -1240,7 +1265,7 @@ func spriteBuild(t *golua.LTable, r *lua.Runner) (*yyp.Sprite, error) {
 		frames = append(frames, make([]*image.NRGBA, len(fLayers)))
 
 		for id, img := range fLayers {
-			r.IC.Schedule(img, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img, &collection.Task[collection.ItemImage]{
 				Lib:  LIB_GAMEMAKER,
 				Name: "sprite_save",
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1449,7 +1474,7 @@ func layersParse(r *lua.Runner, lg *log.Logger, state *golua.LState, parent *gol
 			ft.Append(golua.LNumber(id))
 			frames.RawSetInt(fi+1, ft)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  LIB_GAMEMAKER,
 				Name: "sprite_load",
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1506,10 +1531,10 @@ func layersBuild(t *golua.LTable, layerIndex *int, layers *[]yyp.SpriteLayer, fr
 
 func layersTable(state *golua.LState, parent *golua.LTable) *golua.LTable {
 	/// @struct SpriteLayers
-	/// @method image(name) -> self
-	/// @method default() -> self
-	/// @method folder(name) -> struct<gamemaker.SpriteLayerFolder>
-	/// @method back() -> struct<gamemaker.Sprite>
+	/// @method image(self, name string) -> self
+	/// @method default(self) -> self
+	/// @method folder(self, name string) -> struct<gamemaker.SpriteLayerFolder>
+	/// @method back(self) -> struct<gamemaker.Sprite>
 
 	t := state.NewTable()
 	layers := parent.RawGetString("__layers").(*golua.LTable)
@@ -1535,10 +1560,10 @@ func layerFolderTable(state *golua.LState, name string, parent *golua.LTable) *g
 	/// @struct SpriteLayerFolder
 	/// @prop type {string<gamemaker.LayerType>}
 	/// @prop name {string}
-	/// @method image(name) -> self
-	/// @method default() -> self
-	/// @method folder(name) -> struct<gamemaker.SpriteLayerFolder>
-	/// @method back() -> struct<gamemaker.SpriteLayers>
+	/// @method image(self, name string) -> self
+	/// @method default(self) -> self
+	/// @method folder(self, name string) -> struct<gamemaker.SpriteLayerFolder>
+	/// @method back(self) -> struct<gamemaker.SpriteLayers>
 
 	t := state.NewTable()
 
@@ -1555,8 +1580,8 @@ func layerFolderTable(state *golua.LState, name string, parent *golua.LTable) *g
 
 func framesTable(state *golua.LState, parent *golua.LTable, lg *log.Logger) *golua.LTable {
 	/// @struct SpriteFrames
-	/// @method add([]int<collection.IMAGE>) -> self
-	/// @method back() -> struct<gamemaker.Sprite>
+	/// @method add(self, []int<collection.IMAGE>) -> self
+	/// @method back(self) -> struct<gamemaker.Sprite>
 
 	t := state.NewTable()
 
@@ -1599,8 +1624,8 @@ func noteTable(lib *lua.Lib, state *golua.LState, name, text string, parent golu
 	/// @prop name {string}
 	/// @prop text {string}
 	/// @prop parent {struct<gamemaker.ResourceNode>}
-	/// @method tags(string...) -> self
-	/// @method tag_list([]string) -> self
+	/// @method tags(self, string...) -> self
+	/// @method tag_list(self, []string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("name", golua.LString(name))
@@ -1637,8 +1662,8 @@ func scriptTable(lib *lua.Lib, state *golua.LState, name, code string, parent go
 	/// @prop name {string}
 	/// @prop code {string}
 	/// @prop parent {struct<gamemaker.ResourceNode>}
-	/// @method tags(string...) -> self
-	/// @method tag_list([]string) -> self
+	/// @method tags(self, string...) -> self
+	/// @method tag_list(self, []string) -> self
 
 	t := state.NewTable()
 	t.RawSetString("name", golua.LString(name))
@@ -1731,7 +1756,7 @@ func datafileBuild(state *golua.LState, t *golua.LTable, r *lua.Runner, lg *log.
 	case DATAFILE_IMAGE:
 		var img image.Image
 		var encoding imageutil.ImageEncoding
-		<-r.IC.Schedule(int(data.(golua.LNumber)), &collection.Task[collection.ItemImage]{
+		<-r.IC.Schedule(state, int(data.(golua.LNumber)), &collection.Task[collection.ItemImage]{
 			Lib:  LIB_GAMEMAKER,
 			Name: "datafile_save",
 			Fn: func(i *collection.Item[collection.ItemImage]) {

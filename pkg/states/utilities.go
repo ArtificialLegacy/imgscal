@@ -95,9 +95,12 @@ func viewConfig(cfg *config.Config) {
 		"workflow_directory",
 		"log_directory",
 		"output_directory",
+		"input_directory",
 		"plugin_directory",
 		"disable_logs",
 		"always_confirm",
+		"disable_bell",
+		"default_author",
 	}
 
 	pathStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Underline(true)
@@ -107,9 +110,12 @@ func viewConfig(cfg *config.Config) {
 		pathStyle.Render(cfg.WorkflowDirectory),
 		pathStyle.Render(cfg.LogDirectory),
 		pathStyle.Render(cfg.OutputDirectory),
+		pathStyle.Render(cfg.InputDirectory),
 		pathStyle.Render(cfg.PluginDirectory),
+		fmt.Sprintf("%s\"%s\"%s", cli.COLOR_YELLOW, cfg.DefaultAuthor, cli.COLOR_RESET),
 		fmt.Sprintf("%s%t%s", dlColor, cfg.DisableLogs, cli.COLOR_RESET),
 		fmt.Sprintf("%s%t%s", acColor, cfg.AlwaysConfirm, cli.COLOR_RESET),
+		fmt.Sprintf("%s%t%s", acColor, cfg.DisableBell, cli.COLOR_RESET),
 	}
 
 	strFields := ""

@@ -1,0 +1,53 @@
+{
+    "lspconfig": {
+        "lua_ls": {
+            "Lua": {
+                "runtime": {
+                    "version": "Lua 5.1",
+                    "path": [
+                        "?/?.lua",
+                        "?/init.lua",
+                        "?.lua"
+                    ],
+                    "builtin": {
+                        "basic": "default",
+                        "bit": "disable",
+                        "bit32": "disable",
+                        "builtin": "default",
+                        "coroutine": "disable",
+                        "debug": "default",
+                        "ffi": "disable",
+                        "io": "disable",
+                        "jit": "disable",
+                        "math": "default",
+                        "os": "disable",
+                        "package": "disable",
+                        "string": "default",
+                        "table": "default",
+                        "table.clear": "default",
+                        "table.new": "default",
+                        "utf8": "disable"
+                    }
+                },
+                "workspace": {
+                    "checkThirdParty": false,
+                    "library": [
+                        "path_to_types_here",
+                        "path_to_plugins_here"
+                    ]
+                },
+                "diagnostics": {
+                    "globals": [
+                        "require"
+                    ],
+                    "disable": [
+                        "lowercase-global"
+                    ]
+                },
+                "hover": {
+                    "expandAlias": false
+                }
+            }
+        }
+    }
+}

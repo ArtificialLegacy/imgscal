@@ -1,0 +1,4 @@
+output/*
+ignore/*
+log/*
+types/*

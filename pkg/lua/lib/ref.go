@@ -25,10 +25,10 @@ const LIB_REF = "ref"
 func RegisterRef(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_REF, r, r.State, lg)
 
-	/// @func new(value, type?) -> int<collection.CRATE_REF>
+	/// @func new(value, type?) -> int<ref.REFType.*>
 	/// @arg value {any}
 	/// @arg? type {int<ref.REFType>} - Must be compatible with the above value.
-	/// @returns {int<collection.CRATE_REF>}
+	/// @returns {int<ref.REFType.*>}
 	/// @desc
 	/// References are used when go and lua need to share a reference to the same value.
 	/// The primitive type versions must be used when that value must be a Go value.
@@ -81,10 +81,10 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func new_slice(ln, type?) -> int<collection.CRATE_REF>
+	/// @func new_slice(ln, type?) -> int<ref.REFType.*>
 	/// @arg ln {int} - A fixed length for the slice.
 	/// @arg? type {int<ref.REFType>} - Must be compatible with the values set into the slice.
-	/// @returns {int<collection.CRATE_REF>}
+	/// @returns {int<ref.REFType.*>}
 	/// @desc
 	/// References are used when go and lua need to share a reference to the same value.
 	/// The primitive type versions must be used when that value must be a Go value.
@@ -138,7 +138,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func get(id) -> any
-	/// @arg id {int<collection.CRATE_REF>}
+	/// @arg id {int<ref.REFType.*>}
 	/// @returns {any} - Will be a set type deteremined by the REFType.
 	/// @desc
 	/// Note: this is a copy of the value being referenced, to mutate the ref use 'ref.set()'.
@@ -182,7 +182,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func get_slice(id, index) -> any
-	/// @arg id {int<collection.CRATE_REF>}
+	/// @arg id {int<ref.REFType.*>}
 	/// @arg index {int} - Must be within the range of 0 to 1 less than the set length.
 	/// @returns {any} - Will be a set type determined by the REFType.
 	/// @desc
@@ -230,7 +230,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func len_slice(id) -> int
-	/// @arg id {int<collection.CRATE_REF>}
+	/// @arg id {int<ref.REFType.*>}
 	/// @returns {int} - The length of the slice in the ref.
 	lib.CreateFunction(tab, "len_slice",
 		[]lua.Arg{
@@ -272,7 +272,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func set(id, value)
-	/// @arg id {int<collection.CRATE_REF>}
+	/// @arg id {int<ref.REFType.*>}
 	/// @arg value {any} - Must be compatible with the set REFType.
 	lib.CreateFunction(tab, "set",
 		[]lua.Arg{
@@ -322,7 +322,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func set_slice(id, index, value)
-	/// @arg id {int<collection.CRATE_REF>}
+	/// @arg id {int<ref.REFType.*>}
 	/// @arg index {int} - Must be in range 0 to 1 less than the set length.
 	/// @arg value {any} - Must be compatible with the set REFType.
 	lib.CreateFunction(tab, "set_slice",
@@ -370,7 +370,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func del(id)
-	/// @arg id {int<collection.CRATE_REF>}
+	/// @arg id {int<ref.REFType.*>}
 	lib.CreateFunction(tab, "del",
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
@@ -381,7 +381,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 		})
 
 	/// @func del_many(ids...)
-	/// @arg ids {int<collection.CRATE_REF>...}
+	/// @arg ids {int<ref.REFType.*>...}
 	lib.CreateFunction(tab, "del_many",
 		[]lua.Arg{
 			lua.ArgVariadic("ids", lua.ArrayType{Type: lua.INT}, false),
@@ -395,7 +395,7 @@ func RegisterRef(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
-	/// @constants Ref Types
+	/// @constants REFType {int}
 	/// @const LUA
 	/// @const BOOL
 	/// @const INT

@@ -27,4 +27,5 @@ go.work
 /log/
 resource.syso
 /docs/
+/types/
 **/test/*.png

@@ -1,0 +1,78 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ImgScal Workflow",
+    "description": "Schema for the workflow.json file.",
+    "type": "object",
+    "properties": {
+        "name": {
+            "description": "The name to use for the workflow. All lowercase should be preferred.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "author": {
+            "description": "Used to label the author of the workflow. Prefer using the same name as your source control username.",
+            "type": "string"
+        },
+        "version": {
+            "description": "While this is not used by the tool, it should use a consistent system for users to keep track of.",
+            "type": [
+                "integer",
+                "string"
+            ]
+        },
+        "api_version": {
+            "description": "Used to determine compatibility with the API version of the tool. Backwards compatibility is guaranteed in stable versions, so must be equal or less than the API version in the tool.",
+            "type": "integer",
+            "enum": [
+                1
+            ]
+        },
+        "desc": {
+            "description": "A description of the workflow, will be displayed in the confirmation menu.",
+            "type": "string"
+        },
+        "desc_long": {
+            "description": "An optional array of strings to help break up the description. Each string will be appended to the description.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "workflows": {
+            "description": "Bindings for workflow entry points to show in the interface.",
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        },
+        "cli_workflows": {
+            "description": "Bindings for workflow entry points to scan for when calling from the command line.",
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "name",
+        "author",
+        "version",
+        "api_version",
+        "desc"
+    ],
+    "anyOf": [
+        {
+            "required": [
+                "workflows"
+            ]
+        },
+        {
+            "required": [
+                "cli_workflows"
+            ]
+        }
+    ]
+}

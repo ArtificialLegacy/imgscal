@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"runtime/debug"
@@ -10,6 +11,7 @@ import (
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/fogleman/gg"
 	"github.com/skip2/go-qrcode"
+	golua "github.com/yuin/gopher-lua"
 )
 
 const TASK_QUEUE_SIZE = 64
@@ -118,6 +120,9 @@ func (i *Item[T]) process(fn func(i *Item[T])) {
 				i.Lg.Append(fmt.Sprintf("drained task %d from item [%T]", c, i.Self), log.LEVEL_WARN)
 			}
 		}
+
+		i.Lg.Close()
+		i.wg.Done()
 	}()
 
 	for {
@@ -156,14 +161,17 @@ type Collection[T ItemSelf] struct {
 	Errs []error
 
 	onCollect func(i *Item[T])
+
+	Identifier CollectionType
 }
 
-func NewCollection[T ItemSelf](lg *log.Logger, wg *sync.WaitGroup) *Collection[T] {
+func NewCollection[T ItemSelf](lg *log.Logger, wg *sync.WaitGroup, identifier CollectionType) *Collection[T] {
 	return &Collection[T]{
-		items: []*Item[T]{},
-		lg:    lg,
-		Errs:  []error{},
-		wg:    wg,
+		items:      []*Item[T]{},
+		lg:         lg,
+		Errs:       []error{},
+		wg:         wg,
+		Identifier: identifier,
 	}
 }
 
@@ -204,13 +212,13 @@ func (c *Collection[T]) ItemExists(id int) bool {
 	return !item.collect && !item.cleaned && !item.failed
 }
 
-func (c *Collection[T]) ScheduleAdd(name string, lg *log.Logger, tl, tn string, fn func(i *Item[T])) int {
+func (c *Collection[T]) ScheduleAdd(state *golua.LState, name string, lg *log.Logger, tl, tn string, fn func(i *Item[T])) int {
 	chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
 	lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
 
 	id := c.AddItem(&chLog)
 
-	c.Schedule(id, &Task[T]{
+	c.Schedule(state, id, &Task[T]{
 		Lib:  tl,
 		Name: tn,
 		Fn: func(i *Item[T]) {
@@ -221,7 +229,7 @@ func (c *Collection[T]) ScheduleAdd(name string, lg *log.Logger, tl, tn string, 
 	return id
 }
 
-func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
+func (c *Collection[T]) Schedule(state *golua.LState, id int, tk *Task[T]) <-chan struct{} {
 	wait := make(chan struct{}, 2)
 
 	if !c.IDValid(id) {
@@ -251,23 +259,95 @@ func (c *Collection[T]) Schedule(id int, tk *Task[T]) <-chan struct{} {
 	item := c.items[id]
 
 	if item.failed {
-		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d", id), log.LEVEL_WARN)
+		item.Lg.Append(fmt.Sprintf("cannot schedule task for failed item: %d (%s.%s)", id, tk.Lib, tk.Name), log.LEVEL_WARN)
 		task.Fail(item)
 		return wait
 	}
 
-	item.Lg.Append(fmt.Sprintf("task scheduled for %d", id), log.LEVEL_VERBOSE)
-	c.wg.Add(1)
-	item.TaskQueue <- task
+	ctx := state.Context()
+	nested := SearchContext(ctx, id, c.Identifier)
+
+	if !nested {
+		item.Lg.Append(fmt.Sprintf("task scheduled for %d (%s.%s)", id, tk.Lib, tk.Name), log.LEVEL_VERBOSE)
+		c.wg.Add(1)
+		item.TaskQueue <- task
+	} else {
+		item.Lg.Append(fmt.Sprintf("task skipped scheduling, already within nested schedule: %d (%s.%s)", id, tk.Lib, tk.Name), log.LEVEL_VERBOSE)
+		defer func() {
+			if p := recover(); p != nil {
+				task.Fail(item)
+			}
+		}()
+		task.Fn(item)
+	}
 
 	return wait
+}
+
+type ContextKey string
+
+const CONTEXT_STACK ContextKey = "__scheduleStack"
+
+type StackContext struct {
+	Identifier CollectionType
+	ID         int
+}
+
+func CreateContext(state *golua.LState) {
+	ctx := state.Context()
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+
+	state.SetContext(context.WithValue(ctx, CONTEXT_STACK, []StackContext{}))
+}
+
+func NewThread(state *golua.LState, id int, identifier CollectionType) *golua.LState {
+	thread, _ := state.NewThread()
+	tctx := thread.Context()
+	ctx := AddContext(tctx, id, identifier)
+	thread.SetContext(ctx)
+
+	return thread
+}
+
+func AddContext(ctx context.Context, id int, identifier CollectionType) context.Context {
+	value := ctx.Value(CONTEXT_STACK)
+	stack, ok := value.([]StackContext)
+	copy(stack, stack)
+
+	if !ok {
+		stack = []StackContext{{Identifier: identifier, ID: id}}
+	} else {
+		stack = append(stack, StackContext{Identifier: identifier, ID: id})
+	}
+
+	newCtx := context.WithValue(ctx, CONTEXT_STACK, stack)
+	return newCtx
+}
+
+func SearchContext(ctx context.Context, id int, identifier CollectionType) bool {
+	value := ctx.Value(CONTEXT_STACK)
+	stack, ok := value.([]StackContext)
+
+	if !ok {
+		return false
+	}
+
+	for _, v := range stack {
+		if v.Identifier == identifier && v.ID == id {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *Collection[T]) IDValid(id int) bool {
 	return id >= 0 && id < len(c.items)
 }
 
-func (c *Collection[T]) SchedulePipe(id1, id2 int, tk1, tk2 *Task[T]) <-chan struct{} {
+func (c *Collection[T]) SchedulePipe(state *golua.LState, id1, id2 int, tk1, tk2 *Task[T]) <-chan struct{} {
 	wait := make(chan struct{}, 2)
 
 	if !c.IDValid(id1) || !c.IDValid(id2) {
@@ -334,11 +414,8 @@ func (c *Collection[T]) SchedulePipe(id1, id2 int, tk1, tk2 *Task[T]) <-chan str
 			},
 		}
 
-		item1.Lg.Append(fmt.Sprintf("task scheduled for %d", id1), log.LEVEL_VERBOSE)
-		item2.Lg.Append(fmt.Sprintf("task scheduled for %d", id2), log.LEVEL_VERBOSE)
-		c.wg.Add(2)
-		item1.TaskQueue <- task1
-		item2.TaskQueue <- task2
+		c.Schedule(state, id1, task1)
+		c.Schedule(state, id2, task2)
 	} else {
 		item := c.items[id1]
 
@@ -367,21 +444,19 @@ func (c *Collection[T]) SchedulePipe(id1, id2 int, tk1, tk2 *Task[T]) <-chan str
 			},
 		}
 
-		item.Lg.Append(fmt.Sprintf("task scheduled for %d", id1), log.LEVEL_VERBOSE)
-		c.wg.Add(1)
-		item.TaskQueue <- task
+		c.Schedule(state, id1, task)
 	}
 
 	return wait
 }
 
-func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
+func (c *Collection[T]) ScheduleAll(state *golua.LState, tk *Task[T]) <-chan struct{} {
 	c.lg.Append(fmt.Sprintf("tasks scheduled for all items: [%T]", c), log.LEVEL_VERBOSE)
 
 	wait := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}
 
-	for _, i := range c.items {
+	for id, i := range c.items {
 		if i.collect {
 			continue
 		}
@@ -396,8 +471,7 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 			},
 		}
 
-		c.wg.Add(1)
-		i.TaskQueue <- task
+		c.Schedule(state, id, task)
 	}
 
 	go func() {
@@ -408,38 +482,35 @@ func (c *Collection[T]) ScheduleAll(tk *Task[T]) <-chan struct{} {
 	return wait
 }
 
-func (c *Collection[T]) CollectAll() {
-	for id, i := range c.items {
-		if i.collect {
-			continue
-		}
-
-		i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
-		i.Lg.Close()
-
-		if c.onCollect != nil {
-			c.onCollect(i)
-		}
-		i.Self = nil
-		i.cleaned = true
+func (c *Collection[T]) CollectAll(state *golua.LState) {
+	for id := range c.items {
+		c.Collect(state, id)
 	}
 }
 
-func (c *Collection[T]) Collect(id int) {
+func (c *Collection[T]) Collect(state *golua.LState, id int) {
 	i := c.items[id]
+	if i.collect || i.failed || i.cleaned {
+		return
+	}
+
 	i.collect = true
+	i.wg.Add(1)
 
 	c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", id, i.Self), log.LEVEL_INFO)
-	c.Schedule(id, &Task[T]{
+	c.Schedule(state, id, &Task[T]{
 		Lib:  "internal",
 		Name: "collect",
 		Fn: func(i *Item[T]) {
 			i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
-			i.Lg.Close()
 
 			if c.onCollect != nil {
 				c.onCollect(i)
 			}
+			i.Self = nil
+			i.cleaned = true
+		},
+		Fail: func(i *Item[T]) {
 			i.Self = nil
 			i.cleaned = true
 		},

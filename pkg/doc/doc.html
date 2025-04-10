@@ -169,6 +169,51 @@
           {{ end }}
         </section>
         {{ end }}
+
+        {{ if .Its }}
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          {{ range .Its }}
+          <details>
+            <summary>{{ .Interface }}</summary>
+            <p>
+              {{ range .Desc }}{{ . }} {{ end }}
+            </p>
+
+            {{ if .Props }}
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                {{ range .Props }}
+                <li class="prop">{{ .Str }} <code class="type">{{ .Type }}</code> {{ .Desc }} </li>
+                {{ end }}
+              </ul>
+            </figure>
+            {{ end }}
+
+            {{ if .Methods }}
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              {{ range .Methods }}
+              <details class="method">
+                <summary>{{ .Name }}</summary>
+                <p><code>{{ .Type }}</code></p>
+                {{ if .Desc }}
+                <hr>
+                <p>{{ .Desc }}</p>
+                {{ end }}
+              </details>
+              {{ end }}
+            </figure>
+            {{ end }}
+          </details>
+          {{ end }}
+        </section>
+        {{ end }}
       </section>
     </main>
   </body>

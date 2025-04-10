@@ -31,7 +31,7 @@ func RegisterNSFW(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			result := false
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {

@@ -37,9 +37,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState, _ := state.NewThread()
+			var scheduledState *golua.LState
 
-			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(state, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -51,6 +51,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState = collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+
 						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
 						if args["disableParallelization"].(bool) {
 							g.SetParallelization(false)
@@ -87,9 +89,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState, _ := state.NewThread()
+			var scheduledState *golua.LState
 
-			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(state, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -101,6 +103,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState = collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+
 						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
 						pt := imageutil.TableToPoint(args["point"].(*golua.LTable))
 						if args["disableParallelization"].(bool) {
@@ -140,9 +144,9 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
-			scheduledState, _ := state.NewThread()
+			var scheduledState *golua.LState
 
-			r.IC.SchedulePipe(args["id1"].(int), args["id2"].(int),
+			r.IC.SchedulePipe(state, args["id1"].(int), args["id2"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -154,6 +158,8 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
+						scheduledState = collection.NewThread(state, args["id2"].(int), collection.TYPE_IMAGE)
+
 						g := buildFilterList(scheduledState, filters, args["filters"].(*golua.LTable))
 						if args["disableParallelization"].(bool) {
 							g.SetParallelization(false)
@@ -194,7 +200,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var dstBounds image.Rectangle
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -230,7 +236,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var dstBounds image.Rectangle
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -850,7 +856,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Anchor
+	/// @constants Anchor {int}
 	/// @const ANCHOR_CENTER
 	/// @const ANCHOR_TOPLEFT
 	/// @const ANCHOR_TOP
@@ -870,7 +876,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ANCHOR_BOTTOM", golua.LNumber(gift.BottomAnchor))
 	tab.RawSetString("ANCHOR_BOTTOMRIGHT", golua.LNumber(gift.BottomRightAnchor))
 
-	/// @constants Interpolation
+	/// @constants Interpolation {int}
 	/// @const INTERPOLATION_NEARESTNEIGHBOR
 	/// @const INTERPOLATION_LINEAR
 	/// @const INTERPOLATION_CUBIC
@@ -878,13 +884,13 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("INTERPOLATION_LINEAR", golua.LNumber(gift.LinearInterpolation))
 	tab.RawSetString("INTERPOLATION_CUBIC", golua.LNumber(gift.CubicInterpolation))
 
-	/// @constants Operators
+	/// @constants Operator {int}
 	/// @const OPERATOR_COPY
 	/// @const OPERATOR_OVER
 	tab.RawSetString("OPERATOR_COPY", golua.LNumber(gift.CopyOperator))
 	tab.RawSetString("OPERATOR_OVER", golua.LNumber(gift.OverOperator))
 
-	/// @constants Resampling
+	/// @constants Resampling {int}
 	/// @const RESAMPLING_BOX
 	/// @const RESAMPLING_CUBIC
 	/// @const RESAMPLING_LANCZOS
@@ -896,7 +902,7 @@ func RegisterFilter(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("RESAMPLING_LINEAR", golua.LNumber(RESAMPLING_LINEAR))
 	tab.RawSetString("RESAMPLING_NEARESTNEIGHBOR", golua.LNumber(RESAMPLING_NEARESTNEIGHBOR))
 
-	/// @constants Filter Types
+	/// @constants FilterType {string}
 	/// @const FILTER_BRIGHTNESS
 	/// @const FILTER_COLOR_BALANCE
 	/// @const FILTER_COLORIZE
@@ -1076,7 +1082,7 @@ var filters = filterList{
 }
 
 func buildFilterList(state *golua.LState, filterList filterList, t *golua.LTable) *gift.GIFT {
-	/// @struct Filter
+	/// @interface Filter
 	/// @prop type {string<filter.FilterType>}
 
 	filters := []gift.Filter{}

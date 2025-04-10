@@ -1,6 +1,6 @@
-
+---@param info imgscal_WorkflowInfo
 function help(info)
-    return [[
+	return [[
 Usage:
  >  resize <inputPath> <width> <height> [-o=outputPath] [-r=resampling]
     * If output is omitted, it will append 'resized_' to the inputted file name.
@@ -10,74 +10,76 @@ Usage:
     ]]
 end
 
+---@param workflow imgscal_WorkflowInit
 function init(workflow)
-    workflow.import({
-        "cmd",
-        "ref",
-        "cli",
-        "filter",
-        "io",
-        "image",
-        "std",
-    })
+	workflow.import({
+		"cmd",
+		"ref",
+		"cli",
+		"filter",
+		"io",
+		"image",
+		"std",
+	})
 end
 
 function main()
-    local inRef = cmd.arg_string_pos()
-    local widthRef = cmd.arg_int_pos()
-    local heightRef = cmd.arg_int_pos()
-    local outRef = cmd.arg_string("o",  "output")
-    local rRef = cmd.arg_selector("r", "resampling", {"box", "cubic", "lanczos", "linear", "nn"})
+	local inRef = cmd.arg_string_pos()
+	local widthRef = cmd.arg_int_pos()
+	local heightRef = cmd.arg_int_pos()
+	local outRef = cmd.arg_string("o", "output")
+	local rRef = cmd.arg_selector("r", "resampling", { "box", "cubic", "lanczos", "linear", "nn" })
 
-    local ok, err = cmd.parse()
+	local ok, err = cmd.parse()
 
-    if not ok then
-        cli.print(cli.RED..err..cli.RESET)
-        return
-    end
+	if not ok then
+		cli.print(cli.RED .. err .. cli.RESET)
+		return
+	end
 
-    local width = ref.get(widthRef)
-    local height = ref.get(heightRef)
+	local width = ref.get(widthRef)
+	local height = ref.get(heightRef)
 
-    if width == 0 then
-        std.panic("image width must not be 0")
-    end
-    if height == 0 then
-        std.panic("image height must not be 0")
-    end
+	if width == 0 then
+		std.panic("image width must not be 0")
+	end
+	if height == 0 then
+		std.panic("image height must not be 0")
+	end
 
-    local inPath = ref.get(inRef)
-    local inImg = io.decode(inPath)
+	local inPath = ref.get(inRef)
+	local inImg = io.decode(inPath)
 
-    -- check output file name, if not provided default to input file with "resized_" prefix.
-    local outPath = ref.get(outRef)
-    local outName = ""
-    if outPath == "" then
-        outPath = inPath
-        outName = "resized_"..io.base(outPath)
-    else
-        outName = io.base(outPath)
-    end
+	-- check output file name, if not provided default to input file with "resized_" prefix.
+	local outPath = ref.get(outRef)
+	local outName = ""
+	if outPath == "" then
+		outPath = inPath
+		outName = "resized_" .. io.base(outPath)
+	else
+		outName = io.base(outPath)
+	end
 
-    local outImg = image.new(outName, image.path_to_encoding(outPath), width, height)
+	local outImg = image.new(outName, image.path_to_encoding(outPath), width, height)
 
-    -- get resampling method to use, defaulting to box.
-    local r = ref.get(rRef)
-    local resampling = filter.RESAMPLING_BOX
-    
-    if r == "cubic" then
-        resampling = filter.RESAMPLING_CUBIC
-    elseif r == "lanczos" then
-        resampling = filter.RESAMPLING_LANCZOS
-    elseif r == "linear" then
-        resampling = filter.RESAMPLING_LINEAR
-    elseif r == "nn" then
-        resampling = filter.RESAMPLING_NEARESTNEIGHBOR
-    end
+	-- get resampling method to use, defaulting to box.
+	local r = ref.get(rRef)
+	local resampling = filter.RESAMPLING_BOX
 
-    filter.draw(inImg, outImg, {
-        filter.resize(width, height, resampling),
-    })
+	if r == "cubic" then
+		resampling = filter.RESAMPLING_CUBIC
+	elseif r == "lanczos" then
+		resampling = filter.RESAMPLING_LANCZOS
+	elseif r == "linear" then
+		resampling = filter.RESAMPLING_LINEAR
+	elseif r == "nn" then
+		resampling = filter.RESAMPLING_NEARESTNEIGHBOR
+	end
 
-    io.encode(outImg, io.path_to(outPath))
+	filter.draw(inImg, outImg, {
+		filter.resize(width, height, resampling),
+	})
+
+	io.encode(outImg, io.path_to(outPath))
 end
+

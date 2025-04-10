@@ -21,6 +21,24 @@ const LIB_SPRITESHEET = "spritesheet"
 /// @section
 /// Modeled after the 'To Frames' functionality in GameMaker.
 
+var offsets = []lua.Arg{
+	{Type: lua.INT, Name: "hpixel", Optional: true},
+	{Type: lua.INT, Name: "vpixel", Optional: true},
+	{Type: lua.INT, Name: "hcell", Optional: true},
+	{Type: lua.INT, Name: "vcell", Optional: true},
+	{Type: lua.INT, Name: "index", Optional: true},
+}
+
+var sheet = []lua.Arg{
+	{Type: lua.INT, Name: "count"},
+	{Type: lua.INT, Name: "width"},
+	{Type: lua.INT, Name: "height"},
+	{Type: lua.INT, Name: "perRow"},
+	{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &offsets},
+	{Type: lua.INT, Name: "hsep", Optional: true},
+	{Type: lua.INT, Name: "vsep", Optional: true},
+}
+
 func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_SPRITESHEET, r, r.State, lg)
 
@@ -34,21 +52,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg? vsep {int}
 	/// @returns {struct<spritesheet.Spritesheet>}
 	lib.CreateFunction(tab, "sheet",
-		[]lua.Arg{
-			{Type: lua.INT, Name: "count"},
-			{Type: lua.INT, Name: "width"},
-			{Type: lua.INT, Name: "height"},
-			{Type: lua.INT, Name: "perRow"},
-			{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "hpixel", Optional: true},
-				{Type: lua.INT, Name: "vpixel", Optional: true},
-				{Type: lua.INT, Name: "hcell", Optional: true},
-				{Type: lua.INT, Name: "vcell", Optional: true},
-				{Type: lua.INT, Name: "index", Optional: true},
-			}},
-			{Type: lua.INT, Name: "hsep", Optional: true},
-			{Type: lua.INT, Name: "vsep", Optional: true},
-		},
+		sheet,
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Spritesheet
 			/// @prop count {int}
@@ -90,13 +94,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 	/// @arg index {int}
 	/// @returns {struct<spritesheet.Offset>}
 	lib.CreateFunction(tab, "offset",
-		[]lua.Arg{
-			{Type: lua.INT, Name: "hpixel"},
-			{Type: lua.INT, Name: "vpixel"},
-			{Type: lua.INT, Name: "hcell"},
-			{Type: lua.INT, Name: "vcell"},
-			{Type: lua.INT, Name: "index"},
-		},
+		offsets,
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Offset
 			/// @prop hpixel {int}
@@ -127,13 +125,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "vpixel"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := state.NewTable()
+			t := spritesheetOffsetTable(state)
 
 			t.RawSetString("hpixel", golua.LNumber(args["hpixel"].(int)))
 			t.RawSetString("vpixel", golua.LNumber(args["vpixel"].(int)))
-			t.RawSetString("hcell", golua.LNumber(0))
-			t.RawSetString("vcell", golua.LNumber(0))
-			t.RawSetString("index", golua.LNumber(0))
 
 			state.Push(t)
 			return 1
@@ -149,13 +144,10 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "vcell"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := state.NewTable()
+			t := spritesheetOffsetTable(state)
 
-			t.RawSetString("hpixel", golua.LNumber(0))
-			t.RawSetString("vpixel", golua.LNumber(0))
 			t.RawSetString("hcell", golua.LNumber(args["hcell"].(int)))
 			t.RawSetString("vcell", golua.LNumber(args["vcell"].(int)))
-			t.RawSetString("index", golua.LNumber(0))
 
 			state.Push(t)
 			return 1
@@ -169,12 +161,8 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "index"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			t := state.NewTable()
+			t := spritesheetOffsetTable(state)
 
-			t.RawSetString("hpixel", golua.LNumber(0))
-			t.RawSetString("vpixel", golua.LNumber(0))
-			t.RawSetString("hcell", golua.LNumber(0))
-			t.RawSetString("vcell", golua.LNumber(0))
 			t.RawSetString("index", golua.LNumber(args["index"].(int)))
 
 			state.Push(t)
@@ -191,21 +179,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
-			{Type: lua.TABLE, Name: "sheet", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "count"},
-				{Type: lua.INT, Name: "width"},
-				{Type: lua.INT, Name: "height"},
-				{Type: lua.INT, Name: "perRow"},
-				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-					{Type: lua.INT, Name: "hpixel", Optional: true},
-					{Type: lua.INT, Name: "vpixel", Optional: true},
-					{Type: lua.INT, Name: "hcell", Optional: true},
-					{Type: lua.INT, Name: "vcell", Optional: true},
-					{Type: lua.INT, Name: "index", Optional: true},
-				}},
-				{Type: lua.INT, Name: "hsep", Optional: true},
-				{Type: lua.INT, Name: "vsep", Optional: true},
-			}},
+			{Type: lua.TABLE, Name: "sheet", Table: &sheet},
 			{Type: lua.BOOL, Name: "nocopy", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
@@ -228,7 +202,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				frames[ind] = id
 				frameChannels[ind] = make(chan image.Image)
 
-				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -243,26 +217,11 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 				})
 			}
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
-					width := sheet["width"].(int)
-					height := sheet["height"].(int)
-
-					perRow := sheet["perRow"].(int)
-
-					offsets := sheet["offsets"].(map[string]any)
-					hpixel := offsets["hpixel"].(int)
-					vpixel := offsets["vpixel"].(int)
-					hcell := offsets["hcell"].(int)
-					vcell := offsets["vcell"].(int)
-					index := offsets["index"].(int)
-
-					hsep := sheet["hsep"].(int)
-					vsep := sheet["vsep"].(int)
-
-					imgs := imageutil.SpritesheetToFrames(i.Self.Image, !args["nocopy"].(bool), count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+					imgs := imageutil.SpritesheetToFramesTable(i.Self.Image, !args["nocopy"].(bool), sheet)
 
 					encoding = i.Self.Encoding
 					model = i.Self.Model
@@ -282,6 +241,89 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func to_frames_cached(id, spritesheet, nocopy?) -> []int<collection.CRATE_CACHEDIMAGE>
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg spritesheet {struct<spritesheet.Spritesheet>}
+	/// @arg? nocopy {bool}
+	/// @returns {[]int<collection.CRATE_CACHEDIMAGE>}
+	/// @blocking
+	lib.CreateFunction(tab, "to_frames_cached",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.TABLE, Name: "sheet", Table: &sheet},
+			{Type: lua.BOOL, Name: "nocopy", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			ids := state.NewTable()
+
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					sheet := args["sheet"].(map[string]any)
+
+					imgs := imageutil.SpritesheetToFramesTable(i.Self.Image, !args["nocopy"].(bool), sheet)
+
+					for fi, img := range imgs {
+						id := r.CR_CIM.Add(&collection.CachedImageItem{
+							Model: i.Self.Model,
+							Image: img,
+						})
+
+						ids.RawSetInt(fi+1, golua.LNumber(id))
+					}
+				},
+			})
+
+			state.Push(ids)
+			return 1
+		})
+
+	/// @func to_frames_into_cached(id, ids, spritesheet, nocopy?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg ids {[]int<collection.CRATE_CACHEDIMAGE>} - Must be the same length as the amount of frames in the spritesheet.
+	/// @arg spritesheet {struct<spritesheet.Spritesheet>}
+	/// @arg? nocopy {bool}
+	/// @returns {[]int<collection.CRATE_CACHEDIMAGE>}
+	/// @blocking
+	lib.CreateFunction(tab, "to_frames_into_cached",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
+			{Type: lua.TABLE, Name: "sheet", Table: &sheet},
+			{Type: lua.BOOL, Name: "nocopy", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					sheet := args["sheet"].(map[string]any)
+
+					imgs := imageutil.SpritesheetToFramesTable(i.Self.Image, !args["nocopy"].(bool), sheet)
+
+					ids := args["ids"].([]any)
+					if len(imgs) > len(ids) {
+						lua.Error(state, lg.Appendf("not enough cache ids: expected=%d, got=%d", log.LEVEL_ERROR, len(imgs), len(ids)))
+					}
+
+					for fi, img := range imgs {
+						id := ids[fi].(int)
+
+						citem, err := r.CR_CIM.Item(id)
+						if err != nil {
+							lua.Error(state, lg.Appendf("failed to get cached image: %s", log.LEVEL_ERROR, err))
+						}
+
+						citem.Image = img
+						citem.Model = i.Self.Model
+					}
+				},
+			})
+
+			return 0
+		})
+
 	/// @func from_frames(ids, name, model, encoding, spritesheet) -> int<collection.IMAGE>
 	/// @arg ids {[]int<collection.IMAGE>}
 	/// @arg name {string}
@@ -295,21 +337,7 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "name"},
 			{Type: lua.INT, Name: "model"},
 			{Type: lua.INT, Name: "encoding"},
-			{Type: lua.TABLE, Name: "sheet", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "count"},
-				{Type: lua.INT, Name: "width"},
-				{Type: lua.INT, Name: "height"},
-				{Type: lua.INT, Name: "perRow"},
-				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-					{Type: lua.INT, Name: "hpixel", Optional: true},
-					{Type: lua.INT, Name: "vpixel", Optional: true},
-					{Type: lua.INT, Name: "hcell", Optional: true},
-					{Type: lua.INT, Name: "vcell", Optional: true},
-					{Type: lua.INT, Name: "index", Optional: true},
-				}},
-				{Type: lua.INT, Name: "hsep", Optional: true},
-				{Type: lua.INT, Name: "vsep", Optional: true},
-			}},
+			{Type: lua.TABLE, Name: "sheet", Table: &sheet},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			imgs := args["ids"].([]any)
@@ -320,15 +348,11 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			imgList := make([]image.Image, len(imgs))
 
-			count := sheet["count"].(int)
-			width := sheet["width"].(int)
-			height := sheet["height"].(int)
-
 			wg.Add(len(imgs))
 			for ind := range len(imgs) {
 				id := imgs[ind].(int)
 
-				r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -346,28 +370,16 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
 					encoding := lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib)
 
-					perRow := sheet["perRow"].(int)
-
-					offsets := sheet["offsets"].(map[string]any)
-					hpixel := offsets["hpixel"].(int)
-					vpixel := offsets["vpixel"].(int)
-					hcell := offsets["hcell"].(int)
-					vcell := offsets["vcell"].(int)
-					index := offsets["index"].(int)
-
-					hsep := sheet["hsep"].(int)
-					vsep := sheet["vsep"].(int)
-
 					wg.Wait()
 
-					img := imageutil.FramesToSpritesheet(imgList, model, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+					img := imageutil.FramesToSpritesheetTable(imgList, model, sheet)
 					i.Self = &collection.ItemImage{
 						Image:    img,
 						Name:     name,
@@ -386,11 +398,74 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @func extract(id, name, spritesheet_in, spritesheet_out) -> int<collection.IMAGE>
+	/// @func from_frames_into(ids, id, model, spritesheet)
+	/// @arg ids {[]int<collection.IMAGE>}
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg model {int<image.ColorModel>}
+	/// @arg spritesheet {struct<spritesheet.Spritesheet>}
+	lib.CreateFunction(tab, "from_frames_into",
+		[]lua.Arg{
+			lua.ArgArray("ids", lua.ArrayType{Type: lua.INT}, false),
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "model"},
+			{Type: lua.TABLE, Name: "sheet", Table: &sheet},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			imgs := args["ids"].([]any)
+			wg := sync.WaitGroup{}
+			finish := make(chan struct{})
+
+			sheet := args["sheet"].(map[string]any)
+
+			imgList := make([]image.Image, len(imgs))
+
+			wg.Add(len(imgs))
+			for ind := range len(imgs) {
+				id := imgs[ind].(int)
+
+				r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						imgList[ind] = i.Self.Image
+						wg.Done()
+						<-finish
+					},
+				})
+			}
+
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					model := lua.ParseEnum(args["model"].(int), imageutil.ModelList, lib)
+
+					wg.Wait()
+
+					img := imageutil.FramesToSpritesheetTable(imgList, model, sheet)
+					i.Self = &collection.ItemImage{
+						Image:    img,
+						Name:     i.Self.Name,
+						Encoding: i.Self.Encoding,
+						Model:    model,
+					}
+
+					close(finish)
+				},
+				Fail: func(i *collection.Item[collection.ItemImage]) {
+					close(finish)
+				},
+			})
+
+			return 0
+		})
+
+	/// @func extract(id, name, spritesheet_in, spritesheet_out, nocopy?) -> int<collection.IMAGE>
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg name {string}
 	/// @arg spritesheet_in {struct<spritesheet.Spritesheet>} - The spritesheet related to the source image.
 	/// @arg spritesheet_out {struct<spritesheet.Spritesheet>} - The spritesheet related to the returned image.
+	/// @arg? nocopy {bool}
 	/// @returns {int<collection.IMAGE>}
 	/// @desc
 	/// Note it is more efficient to exclude frames using index and count
@@ -399,36 +474,9 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{
 			{Type: lua.INT, Name: "id"},
 			{Type: lua.STRING, Name: "name"},
-			{Type: lua.TABLE, Name: "sheetin", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "count"},
-				{Type: lua.INT, Name: "width"},
-				{Type: lua.INT, Name: "height"},
-				{Type: lua.INT, Name: "perRow"},
-				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-					{Type: lua.INT, Name: "hpixel", Optional: true},
-					{Type: lua.INT, Name: "vpixel", Optional: true},
-					{Type: lua.INT, Name: "hcell", Optional: true},
-					{Type: lua.INT, Name: "vcell", Optional: true},
-					{Type: lua.INT, Name: "index", Optional: true},
-				}},
-				{Type: lua.INT, Name: "hsep", Optional: true},
-				{Type: lua.INT, Name: "vsep", Optional: true},
-			}},
-			{Type: lua.TABLE, Name: "sheetout", Table: &[]lua.Arg{
-				{Type: lua.INT, Name: "count"},
-				{Type: lua.INT, Name: "width"},
-				{Type: lua.INT, Name: "height"},
-				{Type: lua.INT, Name: "perRow"},
-				{Type: lua.TABLE, Name: "offsets", Optional: true, Table: &[]lua.Arg{
-					{Type: lua.INT, Name: "hpixel", Optional: true},
-					{Type: lua.INT, Name: "vpixel", Optional: true},
-					{Type: lua.INT, Name: "hcell", Optional: true},
-					{Type: lua.INT, Name: "vcell", Optional: true},
-					{Type: lua.INT, Name: "index", Optional: true},
-				}},
-				{Type: lua.INT, Name: "hsep", Optional: true},
-				{Type: lua.INT, Name: "vsep", Optional: true},
-			}},
+			{Type: lua.TABLE, Name: "sheetin", Table: &sheet},
+			{Type: lua.TABLE, Name: "sheetout", Table: &sheet},
+			{Type: lua.BOOL, Name: "nocopy", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var encoding imageutil.ImageEncoding
@@ -438,28 +486,13 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 			ready := make(chan struct{})
 			finish := make(chan struct{})
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					sheet := args["sheetin"].(map[string]any)
 
-					count := sheet["count"].(int)
-					width := sheet["width"].(int)
-					height := sheet["height"].(int)
-					perRow := sheet["perRow"].(int)
-
-					offsets := sheet["offsets"].(map[string]any)
-					hpixel := offsets["hpixel"].(int)
-					vpixel := offsets["vpixel"].(int)
-					hcell := offsets["hcell"].(int)
-					vcell := offsets["vcell"].(int)
-					index := offsets["index"].(int)
-
-					hsep := sheet["hsep"].(int)
-					vsep := sheet["vsep"].(int)
-
-					imgs = imageutil.SpritesheetToFrames(i.Self.Image, false, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+					imgs = imageutil.SpritesheetToFramesTable(i.Self.Image, args["nocopy"].(bool), sheet)
 
 					encoding = i.Self.Encoding
 					model = i.Self.Model
@@ -479,30 +512,15 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
 					sheet := args["sheetout"].(map[string]any)
 
-					count := sheet["count"].(int)
-					width := sheet["width"].(int)
-					height := sheet["height"].(int)
-					perRow := sheet["perRow"].(int)
-
-					offsets := sheet["offsets"].(map[string]any)
-					hpixel := offsets["hpixel"].(int)
-					vpixel := offsets["vpixel"].(int)
-					hcell := offsets["hcell"].(int)
-					vcell := offsets["vcell"].(int)
-					index := offsets["index"].(int)
-
-					hsep := sheet["hsep"].(int)
-					vsep := sheet["vsep"].(int)
-
 					<-ready
 
-					img := imageutil.FramesToSpritesheet(imgs, model, count, width, height, perRow, hpixel, vpixel, hcell, vcell, index, hsep, vsep)
+					img := imageutil.FramesToSpritesheetTable(imgs, model, sheet)
 					i.Self = &collection.ItemImage{
 						Image:    img,
 						Name:     name,
@@ -519,6 +537,69 @@ func RegisterSpritesheet(r *lua.Runner, lg *log.Logger) {
 
 			state.Push(golua.LNumber(id))
 			return 1
+		})
+
+	/// @func extract_into(id, idinto, spritesheet_in, spritesheet_out, nocopy?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg idinto {int<collection.IMAGE>}
+	/// @arg spritesheet_in {struct<spritesheet.Spritesheet>} - The spritesheet related to the source image.
+	/// @arg spritesheet_out {struct<spritesheet.Spritesheet>} - The spritesheet related to the returned image.
+	/// @arg? nocopy {bool}
+	/// @desc
+	/// Note it is more efficient to exclude frames using index and count
+	/// from spritesheet_in than from spritesheet_out. This prevents them from being sub-imaged completely.
+	lib.CreateFunction(tab, "extract_into",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "idinto"},
+			{Type: lua.TABLE, Name: "sheetin", Table: &sheet},
+			{Type: lua.TABLE, Name: "sheetout", Table: &sheet},
+			{Type: lua.BOOL, Name: "nocopy", Optional: true},
 		},
-	)
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var model imageutil.ColorModel
+			var imgs []image.Image
+
+			r.IC.SchedulePipe(state, args["id"].(int), args["idinto"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						sheet := args["sheetin"].(map[string]any)
+
+						imgs = imageutil.SpritesheetToFramesTable(i.Self.Image, args["nocopy"].(bool), sheet)
+
+						model = i.Self.Model
+					},
+				},
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						sheet := args["sheetout"].(map[string]any)
+
+						img := imageutil.FramesToSpritesheetTable(imgs, model, sheet)
+						i.Self = &collection.ItemImage{
+							Image:    img,
+							Name:     i.Self.Name,
+							Encoding: i.Self.Encoding,
+							Model:    model,
+						}
+					},
+				})
+
+			return 0
+		})
+}
+
+func spritesheetOffsetTable(state *golua.LState) *golua.LTable {
+	t := state.NewTable()
+
+	t.RawSetString("hpixel", golua.LNumber(0))
+	t.RawSetString("vpixel", golua.LNumber(0))
+	t.RawSetString("hcell", golua.LNumber(0))
+	t.RawSetString("vcell", golua.LNumber(0))
+	t.RawSetString("index", golua.LNumber(0))
+
+	return t
 }

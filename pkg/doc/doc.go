@@ -17,6 +17,7 @@ const (
 	TAG_BLOCK     = "/// @blocking"
 	TAG_DESC      = "/// @desc"
 	TAG_STRUCT    = "/// @struct "
+	TAG_INTERFACE = "/// @interface "
 	TAG_PROP      = "/// @prop "
 	TAG_METHOD    = "/// @method "
 	TAG_INCORRECT = "// @"
@@ -33,6 +34,7 @@ type Lib struct {
 	Scs       [][]string
 	Cns       []Const
 	Sts       []Struct
+	Its       []Interface
 	Friends   []*Lib
 	Insert    template.HTML
 }
@@ -60,6 +62,7 @@ type Fn struct {
 
 type Const struct {
 	Group  string
+	Type   string
 	Consts []string
 }
 
@@ -80,4 +83,11 @@ type Struct struct {
 	Props   []Prop
 	Methods []Method
 	Desc    []string
+}
+
+type Interface struct {
+	Interface string
+	Props     []Prop
+	Methods   []Method
+	Desc      []string
 }

@@ -27,6 +27,8 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_TIME:        RegisterTime,
 	LIB_JSON:        RegisterJSON,
 	LIB_GUI:         RegisterGUI,
+	LIB_GUIPLOT:     RegisterGUIPlot,
+	LIB_GUICODE:     RegisterGUICode,
 	LIB_BIT:         RegisterBit,
 	LIB_REF:         RegisterRef,
 	LIB_NOISE:       RegisterNoise,
@@ -42,6 +44,10 @@ var Builtins = map[string]func(r *lua.Runner, lg *log.Logger){
 	LIB_PALETTE:     RegisterPalette,
 	LIB_STRINGS:     RegisterStrings,
 	LIB_BLEND:       RegisterBlend,
+	LIB_CACHE:       RegisterCache,
+	LIB_SHADER:      RegisterShader,
+	LIB_NET:         RegisterNet,
+	LIB_PIPE:        RegisterPipe,
 }
 
 func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func(state *golua.LState, t *golua.LTable)) {
@@ -59,9 +65,12 @@ func tableBuilderFunc(state *golua.LState, t *golua.LTable, name string, fn func
 /// @prop is_cli {bool}
 /// @method debug() - Open the lua debug library to the workflow.
 /// @method verbose() - Enable verbose logging when running the workflow.
-/// @method import([]string) - Array containing the import names for built-in libraries.
+/// @method import([]string<imgscal_Imports>) - Array containing the import names for built-in libraries.
 /// @method config(table<any>) - Set the default configuration for the workflow.
 /// @method secrets(table<any>) - Set the default secrets for the workflow.
+/// @method finish_bell() - Causes the bell control character to be printed when the workflow either finishes or fails.
+/// @method use_default_input() - Enable using io.default_input().
+/// @method use_default_output() - Enable using io.default_output().
 
 /// @struct WorkflowInfo
 /// @prop is_cli {bool}

@@ -132,6 +132,18 @@ code.type {
     color: var(--purple);
 }
 
+code.cyan {
+    color: var(--cyan);
+}
+
+code.orange {
+    color: var(--orange);
+}
+
+code.pink {
+    color: var(--orange);
+}
+
 figcaption > code {
     color: var(--purple);
 }
@@ -150,6 +162,10 @@ span.cyan {
 
 span.yellow {
     color: var(--yellow);
+}
+
+span.orange {
+    color: var(--orange);
 }
 
 span.green {
@@ -194,6 +210,17 @@ blockquote {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 2px 2px 5px black;
+}
+
+blockquote.note {
+    background: none;
+    color: var(--foreground);
+
+    border-radius: 0;
+    box-shadow: none;
+
+    border-left: solid 1px;
+    border-image: linear-gradient(var(--current-line), var(--foreground), var(--current-line)) 0 100%;
 }
 
 figure {

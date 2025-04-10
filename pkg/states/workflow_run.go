@@ -1,10 +1,14 @@
 package states
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
 	"path"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
+	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua/lib"
@@ -41,7 +45,11 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	}
 
 	lg.Append("log started for workflow_run", log.LEVEL_SYSTEM)
-	state := golua.NewState()
+	state := golua.NewState(golua.Options{
+		SkipOpenLibs: false,
+	})
+	collection.CreateContext(state)
+
 	runner := lua.NewRunner(state, &lg, sm.CliMode)
 	runner.Config = sm.Config
 	runner.Entry = name
@@ -49,6 +57,19 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 	defer func() {
 		if r := recover(); r != nil {
 			lg.Append(fmt.Sprintf("panic recovered: %+v", r), log.LEVEL_ERROR)
+
+			if sm.CliMode {
+				sm.SetState(STATE_EXIT)
+			} else {
+				if runner.FinishBell {
+					fmt.Print(cli.COLOR_BELL)
+				}
+
+				WorkflowFailEnter(sm, WorkflowFailData{
+					Name:  pth,
+					Error: fmt.Errorf(runner.Failed),
+				})
+			}
 		}
 
 		lg.Close()
@@ -56,6 +77,26 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	luaPth := path.Join(sm.Config.WorkflowDirectory, pth)
 
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	defer signal.Stop(signalChan)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		defer func() {
+			if p := recover(); p != nil {
+				cancel()
+			}
+		}()
+
+		select {
+		case <-signalChan:
+			runner.State.Error(golua.LString(lg.Append("user force quit", log.LEVEL_ERROR)), 0)
+		case <-ctx.Done():
+		}
+	}()
+
+	runner.Ctx = ctx
 	err := runner.Run(luaPth, lib.Builtins)
 	runner.Wg.Wait()
 
@@ -63,11 +104,18 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 	runner.CR_WIN.CleanAll()
 	runner.CR_REF.CleanAll()
+	runner.CR_GMP.CleanAll()
+	runner.CR_LIP.CleanAll()
+	runner.CR_TEA.CleanAll()
+	runner.CR_CIM.CleanAll()
+	runner.CR_SHD.CleanAll()
+	runner.CR_CED.CleanAll()
 
-	runner.TC.CollectAll()
-	runner.IC.CollectAll()
-	runner.CC.CollectAll()
-	runner.QR.CollectAll()
+	runner.TC.CollectAll(state)
+	runner.IC.CollectAll(state)
+	runner.CC.CollectAll(state)
+	runner.QR.CollectAll(state)
+	runner.Wg.Wait()
 
 	if runner.Failed != "" {
 		lg.Append(fmt.Sprintf("error occured while running script: %s", runner.Failed), log.LEVEL_ERROR)
@@ -77,6 +125,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 
 			sm.SetState(STATE_EXIT)
 			return nil
+		}
+
+		if runner.FinishBell {
+			fmt.Print(cli.COLOR_BELL)
 		}
 
 		WorkflowFailEnter(sm, WorkflowFailData{
@@ -97,6 +149,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 			return nil
 		}
 
+		if runner.FinishBell {
+			fmt.Print(cli.COLOR_BELL)
+		}
+
 		WorkflowFailEnter(sm, WorkflowFailData{
 			Name:  pth,
 			Error: err,
@@ -113,6 +169,10 @@ func WorkflowRun(sm *statemachine.StateMachine) error {
 		if sm.CliMode {
 			sm.SetState(STATE_EXIT)
 			return fmt.Errorf("error running script")
+		}
+
+		if runner.FinishBell {
+			fmt.Print(cli.COLOR_BELL)
 		}
 
 		WorkflowFailEnter(sm, WorkflowFailData{

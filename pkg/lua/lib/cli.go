@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
@@ -9,6 +10,7 @@ import (
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/BourgeoisBear/rasterm"
 	"github.com/disintegration/gift"
 	golua "github.com/yuin/gopher-lua"
 )
@@ -209,7 +211,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			double := args["double"].(bool)
 			alpha := args["alpha"].(int)
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -241,6 +243,120 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func print_image_inline(id) -> bool
+	/// @arg id {int<collection.IMAGE>}
+	/// @returns {bool}
+	/// @blocking
+	/// @desc
+	/// Prints the image using the inline graphics protocol, if available.
+	/// Returns false if this feature in unavailable.
+	lib.CreateFunction(tab, "print_image_inline",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			kitty := rasterm.IsKittyCapable()
+			iterm := rasterm.IsItermCapable()
+			if !kitty && !iterm {
+				state.Push(golua.LFalse)
+				return 1
+			}
+
+			id := args["id"].(int)
+
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					if kitty {
+						rasterm.KittyWriteImage(os.Stdout, i.Self.Image, rasterm.KittyImgOpts{})
+					} else if iterm {
+						rasterm.ItermWriteImage(os.Stdout, i.Self.Image)
+					}
+				},
+			})
+
+			state.Push(golua.LTrue)
+			return 1
+		})
+
+	/// @func print_image_inline_kitty(id, opts) -> bool
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg opts {struct<cli.KittyOpts>}
+	/// @returns {bool}
+	/// @blocking
+	/// @desc
+	/// Prints the image using kitty's inline graphics protocol, if available.
+	/// Returns false if this feature in unavailable.
+	lib.CreateFunction(tab, "print_image_inline_kitty",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.TABLE, Name: "opts", Table: &[]lua.Arg{
+				{Type: lua.INT, Name: "x", Optional: true},
+				{Type: lua.INT, Name: "y", Optional: true},
+				{Type: lua.INT, Name: "width", Optional: true},
+				{Type: lua.INT, Name: "height", Optional: true},
+				{Type: lua.INT, Name: "offsetx", Optional: true},
+				{Type: lua.INT, Name: "offsety", Optional: true},
+				{Type: lua.INT, Name: "cols", Optional: true},
+				{Type: lua.INT, Name: "rows", Optional: true},
+				{Type: lua.INT, Name: "zindex", Optional: true},
+				{Type: lua.INT, Name: "imageId", Optional: true},
+				{Type: lua.INT, Name: "imageNo", Optional: true},
+				{Type: lua.INT, Name: "placementId", Optional: true},
+			}},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			/// @struct KittyOpts
+			/// @prop x {int} - The x position of the image.
+			/// @prop y {int} - The y position of the image.
+			/// @prop width {int} - The width of the image.
+			/// @prop height {int} - The height of the image.
+			/// @prop offsetx {int} - The pixel x offset of the image.
+			/// @prop offsety {int} - The pixel y offset of the image.
+			/// @prop cols {int} - Width in terminal columns.
+			/// @prop rows {int} - Height in terminal rows.
+			/// @prop zindex {int} - The z-index of the image.
+			/// @prop imageId {int}
+			/// @prop imageNo {int}
+			/// @prop placementId {int}
+
+			kitty := rasterm.IsKittyCapable()
+			if !kitty {
+				state.Push(golua.LFalse)
+				return 1
+			}
+
+			id := args["id"].(int)
+			opts := args["opts"].(map[string]any)
+
+			kopts := rasterm.KittyImgOpts{
+				SrcX:        uint32(opts["x"].(int)),
+				SrcY:        uint32(opts["y"].(int)),
+				SrcWidth:    uint32(opts["width"].(int)),
+				SrcHeight:   uint32(opts["height"].(int)),
+				CellOffsetX: uint32(opts["offsetx"].(int)),
+				CellOffsetY: uint32(opts["offsety"].(int)),
+				DstCols:     uint32(opts["cols"].(int)),
+				DstRows:     uint32(opts["rows"].(int)),
+				ZIndex:      int32(opts["zindex"].(int)),
+				ImageId:     uint32(opts["imageId"].(int)),
+				ImageNo:     uint32(opts["imageNo"].(int)),
+				PlacementId: uint32(opts["placementId"].(int)),
+			}
+
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					rasterm.KittyWriteImage(os.Stdout, i.Self.Image, kopts)
+				},
+			})
+
+			state.Push(golua.LTrue)
+			return 1
+		})
+
 	/// @func string_image(id, double?, alpha?) -> string
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg? double {bool} - If true, use 2 characters per pixel.
@@ -260,7 +376,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			result := ""
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -315,7 +431,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			double := args["double"].(bool)
 			alpha := args["alpha"].(int)
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -375,7 +491,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 
 			result := ""
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -772,11 +888,54 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Control
-	/// @const RESET
-	tab.RawSetString("RESET", golua.LString(cli.COLOR_RESET))
+	/// @func bell()
+	lib.CreateFunction(tab, "bell",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			if r.Config.DisableBell {
+				lg.Append("bell called but is disabled", log.LEVEL_INFO)
+				return 0
+			}
 
-	/// @constants Text Colors
+			lg.Append("bell called", log.LEVEL_INFO)
+			fmt.Print(cli.COLOR_BELL)
+			return 0
+		})
+
+	/// @func is_kitty() -> bool
+	/// @returns {bool}
+	lib.CreateFunction(tab, "is_kitty",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(rasterm.IsKittyCapable()))
+			return 1
+		})
+
+	/// @func is_iterm() -> bool
+	/// @returns {bool}
+	lib.CreateFunction(tab, "is_iterm",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(rasterm.IsItermCapable()))
+			return 1
+		})
+
+	/// @func is_tmux() -> bool
+	/// @returns {bool}
+	lib.CreateFunction(tab, "is_tmux",
+		[]lua.Arg{},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			state.Push(golua.LBool(rasterm.IsTmuxScreen()))
+			return 1
+		})
+
+	/// @constants Control {string}
+	/// @const RESET
+	/// @const BELL
+	tab.RawSetString("RESET", golua.LString(cli.COLOR_RESET))
+	tab.RawSetString("BELL", golua.LString(cli.COLOR_BELL))
+
+	/// @constants TextColor {string}
 	/// @const BLACK
 	/// @const RED
 	/// @const GREEN
@@ -811,7 +970,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BRIGHT_CYAN", golua.LString(cli.COLOR_BRIGHT_CYAN))
 	tab.RawSetString("BRIGHT_WHITE", golua.LString(cli.COLOR_BRIGHT_WHITE))
 
-	/// @constants Background Colors
+	/// @constants BackgroundColor {string}
 	/// @const BACKGROUND_BLACK
 	/// @const BACKGROUND_RED
 	/// @const BACKGROUND_GREEN
@@ -846,7 +1005,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("BRIGHT_BACKGROUND_CYAN", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_CYAN))
 	tab.RawSetString("BRIGHT_BACKGROUND_WHITE", golua.LString(cli.COLOR_BRIGHT_BACKGROUND_WHITE))
 
-	/// @constants Styles
+	/// @constants Style {string}
 	/// @const BOLD
 	/// @const UNDERLINE
 	/// @const REVERSED
@@ -854,7 +1013,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("UNDERLINE", golua.LString(cli.COLOR_UNDERLINE))
 	tab.RawSetString("REVERSED", golua.LString(cli.COLOR_REVERSED))
 
-	/// @constants Cursor
+	/// @constants Cursor {string}
 	/// @const CURSOR_HOME
 	/// @const CURSOR_LINEUP
 	/// @const CURSOR_SAVE
@@ -868,7 +1027,7 @@ func RegisterCli(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("CURSOR_INVISIBLE", golua.LString(cli.COLOR_CURSOR_INVISIBLE))
 	tab.RawSetString("CURSOR_VISIBLE", golua.LString(cli.COLOR_CURSOR_VISIBLE))
 
-	/// @constants Erase
+	/// @constants Erase {string}
 	/// @const ERASE_DOWN
 	/// @const ERASE_UP
 	/// @const ERASE_SCREEN

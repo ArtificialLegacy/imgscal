@@ -22,6 +22,7 @@
                 <li>JPEG - <code class="field">.jpg</code>, <code class="field">.jpeg</code></li>
                 <li>BMP - <code class="field">.bmp</code></li>
                 <li>TIFF - <code class="field">.tiff</code>, <code class="field">.tif</code></li>
+                <li>WebP - <code class="field">.webp</code></li>
             </ul>
         </figure>
 
@@ -50,7 +51,6 @@
                     <ul>
                         <li>When decoded using the generic <code class="field">io.decode</code> function, only the first frame will be returned.</li>
                         <li>When encoded using the generic <code class="field">io.encode</code> function, will not include animation.</li>
-                        <li>Currently does not have full support, no dedicated encoding or decoding functions exist.</li>
                     </ul>
                 </li>
             </ul>
@@ -69,9 +69,11 @@
             </p>
 <pre>
 {
+    <span class="yellow">"$schema"</span>: <span class="green">"https://gist.githubusercontent.com/ArtificialLegacy/9711f20511e76b519aedb729a6762b9f/raw/de77e999654060a38d7a4e7eea8aeb4f5ee1273e/imgscal_workflow.json"</span>
     <span class="yellow">"name"</span>: <span class="green">""</span>,
     <span class="yellow">"author"</span>: <span class="green">""</span>,
     <span class="yellow">"version"</span>: <span class="green">""</span>,
+    <span class="yellow">"api_version"</span>: <span class="green">1</span>,
 
     <span class="yellow">"desc"</span>: <span class="green">""</span>,
     <span class="yellow">"desc_long"</span>: [
@@ -94,6 +96,12 @@
                     <code class="field">name</code>
                     - This is the name of the workflow, it should not include spaces.
                     Using all lowercase should also be preferred.
+                </li>
+                <li>
+                    <code class="field">api_version</code>
+                    - This is used to determine compatibility.
+                    In stable versions backwards compatibility is guaranteed,
+                    so this value must be equal to or less than the API version in the tool.
                 </li>
                 <li>
                     <code class="field">desc_long</code>
@@ -141,6 +149,7 @@
             <hr>
             <p>This is the first function called after the file is loaded when running the workflow.</p>
 <pre>
+<span class="white">---</span><span class="purple">@param</span> <span class="orange">workflow imgscal_WorkflowInit</span>
 <span class="pink">function</span> <span class="purple">init</span>(workflow)
 
 <span class="pink">end</span>
@@ -153,6 +162,7 @@
                 This is where built-in libraries must be imported, for example the init function from the resize entry point:
             </p>
 <pre>
+<span class="white">---</span><span class="purple">@param</span> <span class="orange">workflow imgscal_WorkflowInit</span>
 <span class="pink">function</span> <span class="purple">init</span>(workflow)
     workflow.<span class="purple">import</span>({
         <span class="green">"cli"</span>,
@@ -190,6 +200,7 @@
             </p>
 
 <pre>
+<span class="white">---</span><span class="purple">@param</span> <span class="orange">workflow imgscal_WorkflowInfo</span>
 <span class="pink">function</span> <span class="purple">help</span>(info)
     <span class="pink">return</span> <span class="green">""</span>
 <span class="pink">end</span>
@@ -249,7 +260,7 @@ example/
         <hr>
 
         <p>
-            <code><span class="white">imgscal help &lt;workflow&gt;</span></code>
+            <code><span class="pink">imgscal help</span> <span class="yellow">&lt;workflow&gt;</span></code>
         </p>
 
         <p>
@@ -265,7 +276,7 @@ example/
         <hr>
 
         <p>
-            <code><span class="white">imgscal list</span></code>
+            <code><span class="pink">imgscal list</span></code>
         </p>
 
         <p>
@@ -281,20 +292,30 @@ example/
         <summary>Config File</summary>
 
 <pre>{
+    <span class="yellow">"$schema"</span>: <span class="green">"https://gist.githubusercontent.com/ArtificialLegacy/bf37b79d4fc943006f333cc35467266c/raw/933fdffd6d871d3bf5a281a7815b7d408fcd51b2/imgscal_config.json"</span>,
     <span class="yellow">"config_version"</span>: <span class="green">""</span>,
     <span class="yellow">"config_directory"</span>: <span class="green">"%HOME%/imgscal/config"</span>,
     <span class="yellow">"workflow_directory"</span>: <span class="green">"%HOME%/imgscal/workflow"</span>,
     <span class="yellow">"output_directory"</span>: <span class="green">"%HOME%/imgscal/output"</span>,
+    <span class="yellow">"input_directory"</span>: <span class="green">"%HOME%/imgscal/input"</span>,
     <span class="yellow">"log_directory"</span>: <span class="green">"%HOME%/imgscal/log"</span>,
     <span class="yellow">"plugin_directory"</span>: <span class="green">"%HOME%/imgscal/plugin"</span>,
+    <span class="yellow">"default_author"</span>: <span class="green">""</span>,
     <span class="yellow">"disable_logs"</span>: <span class="cyan">false</span>,
-    <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>
+    <span class="yellow">"always_confirm"</span>: <span class="cyan">false</span>,
+    <span class="yellow">"disable_bell"</span>: <span class="cyan">false</span>
 }</pre>
         <p>The config file is located at <code><span class="green">%CONFIG%/imgscal/config.json</span></code>.</p>
         <p>
-            <code class="field">%CONFIG%</code> is retrieved from <a href="https://pkg.go.dev/os#UserConfigDir"><code>os.UserConfigDir()</code></a>
+            <code class="field">%CONFIG%</code> is retrieved from 
+            <a href="https://pkg.go.dev/os#UserConfigDir">
+                <code><span class="red">os</span><span class="white">.</span><span class="purple">UserConfigDir</span><span class="white">()</span></code>
+            </a>
             and 
-            <code class="field">%HOME%</code> from <a href="https://pkg.go.dev/os#UserHomeDir"><code>os.UserHomeDir()</code></a>.
+            <code class="field">%HOME%</code> from 
+            <a href="https://pkg.go.dev/os#UserHomeDir">
+                <code><span class="red">os</span><span class="white">.</span><span class="purple">UserHomeDir</span><span class="white">()</span></code>
+            </a>.
         </p>
 
         <hr>
@@ -327,11 +348,31 @@ example/
             </li>
             <li>
                 <code class="field">output_directory</code>
-                - This is a directory that can be used by workflows for outputting files.
+                - This is a directory that can be used by workflows for outputting files. Each workflow with automatically get it's own directory.
                 <ul>
                     <li>
-                        Workflows can get this directory with <code class="import">io.default_output()</code>, though user provided paths and
-                        relative paths should take precedent when outputting.
+                        Requires calling
+                        <code><span class="red">workflow</span><span class="white">.</span><span class="purple">use_default_output</span><span class="white">()</span></code>
+                        within the init function.
+                    </li>
+                    <li>
+                        Workflows can get this directory with
+                        <code><span class="red">io</span><span class="white">.</span><span class="purple">default_output</span><span class="white">()</span></code>.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <code class="field">input_directory</code>
+                - This is a directory that can be used by workflows for inputting files. Each workflow with automatically get it's own directory.
+                <ul>
+                    <li>
+                        Requires calling
+                        <code><span class="red">workflow</span><span class="white">.</span><span class="purple">use_default_input</span><span class="white">()</span></code>
+                        within the init function.
+                    </li>
+                    <li>
+                        Workflows can get this directory with
+                        <code><span class="red">io</span><span class="white">.</span><span class="purple">default_input</span><span class="white">()</span></code>.
                     </li>
                 </ul>
             </li>
@@ -346,7 +387,7 @@ example/
             </li>
             <li>
                 <code class="field">plugin_directory</code>
-                - This directory is used as a secondary path when calling <code class="import">require()</code>. 
+                - This directory is used as a secondary path when calling <code><span class="purple">require</span><span class="white">()</span></code>. 
             </li>
             <li>
                 <code class="field">disable_logs</code>
@@ -356,7 +397,112 @@ example/
                 <code class="field">always_confirm</code>
                 - When this is set to true, the confirmation menu will be skipped before running a workflow.
             </li>
+            <li>
+                <code class="field">disable_bell</code>
+                - Disables both 
+                <code><span class="red">cli</span><span class="white">.</span><span class="purple">bell</span><span class="white">()</span></code>
+                and the workflow finish bell. 
+            </li>
+            <li>
+                <code class="field">default_author</code>
+                - This value will be autofilled in the author section when using the <code class="pink">imgscal-new</code> tool.
+            </li>
         </ul>
+    </details>
+
+    <details class="imgscal">
+        <summary>Tools</summary>
+
+        <blockquote class="note">
+            These tools will require ImgScal to have been run at least once before using.
+        </blockquote>
+
+        <details class="method">
+            <summary><code class="type">imgscal-new</code></summary>
+            <hr>
+
+           <figure>
+            <figcaption>Usage</figcaption>
+            <hr>
+<pre><span class="pink">imgscal-new</span></pre>
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-new</span></pre>
+            </figure>
+
+            <figure>
+                <figcaption>Additonal Info</figcaption>
+                <hr>
+
+                <ul>
+                    <li><code class="field">default_author</code> in the config file will change the autofilled value for the author.</li>
+                </ul>
+            </figure>
+        </details>
+
+        <details class="method">
+            <summary><code class="type">imgscal-entrypoint</code></summary>
+            <hr>
+
+            <figure>
+                <figcaption>Usage</figcaption>
+                <hr>
+<pre><span class="pink">imgscal-entrypoint</span> <span class="cyan">&lt;name&gt; &lt;path&gt;</span> <span class="orange">[-c] [-w]</span></pre>
+
+                <ul>
+                    <li><code class="cyan">&lt;name&gt;</code> - The name of the entry point, use <code class="field">"*"</code> to bind to workflow name.</li>
+                    <li><code class="cyan">&lt;path&gt;</code> 
+                        - The path including the <code class="field">.lua</code> file to create as the entry point.
+                        Any subdirectories included will be created if needed.
+                    </li> 
+                    <li><code class="orange">[-c]</code> - Optional flag to create a cli entry point.</li>
+                    <li><code class="orange">[-w]</code> - Optional flag to to set the relative path to search for the <code class=field>workflow.json</code> file.</li>
+                </ul>
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-entrypoint</span></pre>
+            </figure>
+        </details>
+
+        <details class="method">
+            <summary><code class="type">imgscal-log</code></summary>
+            <hr>
+
+            <figure>
+                <figcaption>Usage</figcaption>
+                <hr>
+<pre><span class="pink">imgscal-log</span></pre> 
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-log</span></pre>
+            </figure>
+        </details>
+
+        <details class="method">
+            <summary><code class="type">imgscal-workspace</code></summary>
+            <hr>
+
+            <figure>
+                <figcaption>Usage</figcaption>
+                <hr>
+<pre><span class="pink">imgscal-workspace</span></pre> 
+            </figure>
+
+            <figure>
+                <figcaption>Installation</figcaption>
+                <hr>
+<pre><span class="pink">go install</span> <span class="yellow">./cmd/imgscal-workspace</span></pre>
+            </figure>
+        </details>
     </details>
 
     <details class="imgscal">
@@ -486,5 +632,25 @@ example/
             in the gui library.
             When there is no specified structure, <code class="type">table&lt;any&gt;</code> is used.
         </p>
+    </details>
+
+    <details class="imgscal">
+        <summary>Environment Variables</summary>
+        <hr>
+
+        <details class="method">
+            <summary><code class="type">IMGSCAL_CONFIG</code></summary>
+            <hr>
+
+            This environment variable can be used to specify an alternative config file to use.
+            The tool <code class="type">imgscal</code>, will also create this file if it does not exist.
+
+            <p>The following tools can make use of this:</p>
+            <ul>
+                <li><code class="type">imgscal</code></li>
+                <li><code class="type">imgscal-new</code></li>
+                <li><code class="type">imgscal-log</code></li>
+            </ul>
+        </details>
     </details>
 </section>

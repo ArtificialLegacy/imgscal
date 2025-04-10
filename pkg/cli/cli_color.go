@@ -4,6 +4,7 @@ type CliColor string
 
 const (
 	COLOR_RESET CliColor = "\u001b[0m"
+	COLOR_BELL  CliColor = "\u0007"
 
 	COLOR_BLACK   CliColor = "\u001b[30m"
 	COLOR_RED     CliColor = "\u001b[31m"

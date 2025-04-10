@@ -114,7 +114,7 @@ func RegisterBase64(r *lua.Runner, lg *log.Logger) {
 			var img image.Image
 			var encoding imageutil.ImageEncoding
 
-			<-r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -155,7 +155,7 @@ func RegisterBase64(r *lua.Runner, lg *log.Logger) {
 			raw := args["raw"].(bool)
 			pth := args["path"].(string)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -215,7 +215,7 @@ func RegisterBase64(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -279,7 +279,7 @@ func RegisterBase64(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {

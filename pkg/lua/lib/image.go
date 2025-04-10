@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
+	"image/gif"
 	"math/rand"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
 	"github.com/crazy3lf/colorconv"
+	"github.com/ericpauley/go-quantize/quantize"
+	"github.com/kolesa-team/go-webp/encoder"
 	color_extractor "github.com/marekm4/color-extractor"
 	golua "github.com/yuin/gopher-lua"
 )
@@ -51,7 +56,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -95,7 +100,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -151,7 +156,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -159,6 +164,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 					width := args["width"].(int)
 					height := args["height"].(int)
+					enableAlpha := args["enableAlpha"].(bool)
 
 					img := imageutil.NewImage(width, height, model)
 
@@ -168,7 +174,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 							green := rand.Intn(256)
 							blue := rand.Intn(256)
 							alpha := 255
-							if args["enableAlpha"].(bool) {
+							if enableAlpha {
 								alpha = rand.Intn(256)
 							}
 							imageutil.Set(img, ix, iy, int(red), int(green), int(blue), int(alpha))
@@ -188,6 +194,42 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func new_empty(name, encoding) -> int<collection.IMAGE>
+	/// @arg name {string}
+	/// @arg encoding {int<image.Encoding>}
+	/// @returns {int<collection.IMAGE>}
+	/// @desc
+	/// Creates a 1px by 1px gray image.
+	lib.CreateFunction(tab, "new_empty",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.INT, Name: "encoding"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+
+			chLog := log.NewLogger(fmt.Sprintf("image_%s", name), lg)
+			lg.Append(fmt.Sprintf("child log created: image_%s", name), log.LEVEL_INFO)
+
+			id := r.IC.AddItem(&chLog)
+
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
+				Lib:  d.Lib,
+				Name: d.Name,
+				Fn: func(i *collection.Item[collection.ItemImage]) {
+					i.Self = &collection.ItemImage{
+						Image:    image.NewGray(image.Rect(0, 0, 1, 1)),
+						Encoding: lua.ParseEnum(args["encoding"].(int), imageutil.EncodingList, lib),
+						Name:     name,
+						Model:    imageutil.MODEL_GRAY,
+					}
+				},
+			})
+
+			state.Push(golua.LNumber(id))
+			return 1
+		})
+
 	/// @func remove(id)
 	/// @arg id {int<collection.IMAGE>}
 	/// @desc
@@ -198,7 +240,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Collect(args["id"].(int))
+			r.IC.Collect(state, args["id"].(int))
 			return 0
 		})
 
@@ -211,7 +253,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.STRING, Name: "name"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -239,7 +281,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			/// @prop prefix {string}
 			/// @prop suffix {string}
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -272,7 +314,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "encoding"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -292,7 +334,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			model := 0
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -317,7 +359,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			width := 0
 			height := 0
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -349,7 +391,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "y2"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -396,7 +438,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			var encoding imageutil.ImageEncoding
 			simgReady := make(chan struct{}, 1)
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -426,7 +468,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -461,7 +503,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 			var model imageutil.ColorModel
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -487,7 +529,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 			id := r.IC.AddItem(&chLog)
 
-			r.IC.Schedule(id, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -523,7 +565,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			cimgReady := make(chan struct{}, 1)
 			var model imageutil.ColorModel
 
-			r.IC.Schedule(args["src"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["src"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -541,7 +583,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -565,7 +607,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "model"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -588,7 +630,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -608,7 +650,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "id"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -632,7 +674,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "alpha"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -659,7 +701,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var red, green, blue, alpha uint32
 
-			<-r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -689,7 +731,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.RAW_TABLE, Name: "color"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, args["id"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1102,7 +1144,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.INT, Name: "b"},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			/// @struct Color
+			/// @interface Color
 			/// @prop type {string<image.ColorType>}
 			/// @desc
 			/// Color structs are automatically converted into the needed type.
@@ -1733,7 +1775,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
 
-			r.IC.SchedulePipe(args["src"].(int), args["id"].(int),
+			r.IC.SchedulePipe(state, args["src"].(int), args["id"].(int),
 				&collection.Task[collection.ItemImage]{
 					Lib:  d.Lib,
 					Name: d.Name,
@@ -1766,7 +1808,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 
 	/// @func map(id, fn, invert?)
 	/// @arg id {int<collection.IMAGE>}
-	/// @arg fn {function(x int, y int, color struct<image.ColorRGBA>) -> struct<image.ColorRGBA>}
+	/// @arg fn {function(x int, y int, color struct<image.ColorRGBA>) -> struct<image.Color>}
 	/// @arg? invert {bool} - Reverses the looping order from columns to rows.
 	lib.CreateFunction(tab, "map",
 		[]lua.Arg{
@@ -1775,12 +1817,15 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			{Type: lua.BOOL, Name: "invert", Optional: true},
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
-			scheduledState, _ := state.NewThread()
+			id := args["id"].(int)
+			var scheduledState *golua.LState
 
-			r.IC.Schedule(args["id"].(int), &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
+					scheduledState = collection.NewThread(state, id, collection.TYPE_IMAGE)
+
 					x := i.Self.Image.Bounds().Min.X
 					y := i.Self.Image.Bounds().Min.Y
 					width := i.Self.Image.Bounds().Dx()
@@ -1864,7 +1909,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			var img image.Image
 			var equal bool
 
-			r.IC.Schedule(id1, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, id1, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1877,7 +1922,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			<-r.IC.Schedule(id2, &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, id2, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1950,7 +1995,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
 
-			<-r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["img"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -1984,7 +2029,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			var img image.Image
 
-			<-r.IC.Schedule(args["img"].(int), &collection.Task[collection.ItemImage]{
+			<-r.IC.Schedule(state, args["img"].(int), &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -2033,16 +2078,49 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
-	/// @constants Color Models
-	/// @const RGBA
-	/// @const RGBA64
-	/// @const NRGBA
-	/// @const NRGBA64
-	/// @const ALPHA
-	/// @const ALPHA16
-	/// @const GRAY
-	/// @const GRAY16
-	/// @const CMYK
+	/// @func gif(imgs, delay, loopCount, disposal?, backgroundIndex?) -> struct<image.GIF>
+	/// @arg imgs {[]int<collection.IMAGE>}
+	/// @arg delay {[]int}
+	/// @arg loopCount {int}
+	/// @arg? disposal {[]int<image.GIFDisposal>}
+	/// @arg? backgroundIndex {int}
+	/// @returns {struct<image.GIF>}
+	lib.CreateFunction(tab, "gif",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "imgs"},
+			{Type: lua.RAW_TABLE, Name: "delay"},
+			{Type: lua.INT, Name: "loopCount"},
+			{Type: lua.RAW_TABLE, Name: "disposal", Optional: true},
+			{Type: lua.INT, Name: "backgroundIndex", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			imgs := args["imgs"].(*golua.LTable)
+			delay := args["delay"].(*golua.LTable)
+			loopCount := args["loopCount"].(int)
+			disposal := args["disposal"].(*golua.LTable)
+			backgroundIndex := args["backgroundIndex"].(int)
+
+			t := state.NewTable()
+			t.RawSetString("img", imgs)
+			t.RawSetString("delay", delay)
+			t.RawSetString("disposal", disposal)
+			t.RawSetString("loop_count", golua.LNumber(loopCount))
+			t.RawSetString("background_index", golua.LNumber(backgroundIndex))
+
+			state.Push(t)
+			return 1
+		})
+
+	/// @constants ColorModel {int}
+	/// @const MODEL_RGBA
+	/// @const MODEL_RGBA64
+	/// @const MODEL_NRGBA
+	/// @const MODEL_NRGBA64
+	/// @const MODEL_ALPHA
+	/// @const MODEL_ALPHA16
+	/// @const MODEL_GRAY
+	/// @const MODEL_GRAY16
+	/// @const MODEL_CMYK
 	tab.RawSetString("MODEL_RGBA", golua.LNumber(imageutil.MODEL_RGBA))
 	tab.RawSetString("MODEL_RGBA64", golua.LNumber(imageutil.MODEL_RGBA64))
 	tab.RawSetString("MODEL_NRGBA", golua.LNumber(imageutil.MODEL_NRGBA))
@@ -2053,7 +2131,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("MODEL_GRAY16", golua.LNumber(imageutil.MODEL_GRAY16))
 	tab.RawSetString("MODEL_CMYK", golua.LNumber(imageutil.MODEL_CMYK))
 
-	/// @constants Encodings
+	/// @constants Encoding {int}
 	/// @const ENCODING_PNG
 	/// @const ENCODING_JPEG
 	/// @const ENCODING_GIF
@@ -2069,7 +2147,7 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("ENCODING_ICO", golua.LNumber(imageutil.ENCODING_ICO))
 	tab.RawSetString("ENCODING_CUR", golua.LNumber(imageutil.ENCODING_CUR))
 
-	/// @constants Color Types
+	/// @constants ColorType {string}
 	/// @const COLOR_TYPE_RGBA
 	/// @const COLOR_TYPE_HSVA
 	/// @const COLOR_TYPE_HSLA
@@ -2094,4 +2172,128 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 	tab.RawSetString("COLOR_TYPE_CMYK", golua.LString(imageutil.COLOR_TYPE_CMYK))
 	tab.RawSetString("COLOR_TYPE_CMYKA", golua.LString(imageutil.COLOR_TYPE_CMYKA))
 	tab.RawSetString("COLOR_TYPE_ZERO", golua.LString(imageutil.COLOR_TYPE_ZERO))
+
+	/// @constants GIFDisposal {int}
+	/// @const GIFDISPOSAL_NONE
+	/// @const GIFDISPOSAL_BACKGROUND
+	/// @const GIFDISPOSAL_PREVIOUS
+	tab.RawSetString("GIFDISPOSAL_NONE", golua.LNumber(gif.DisposalNone))
+	tab.RawSetString("GIFDISPOSAL_BACKGROUND", golua.LNumber(gif.DisposalBackground))
+	tab.RawSetString("GIFDISPOSAL_PREVIOUS", golua.LNumber(gif.DisposalPrevious))
+
+	/// @constants WebPPreset {int}
+	/// @const WEBPPRESET_DEFAULT
+	/// @const WEBPPRESET_PICTURE
+	/// @const WEBPPRESET_PHOTO
+	/// @const WEBPPRESET_DRAWING
+	/// @const WEBPPRESET_ICON
+	/// @const WEBPPRESET_TEXT
+	tab.RawSetString("WEBPPRESET_DEFAULT", golua.LNumber(encoder.PresetDefault))
+	tab.RawSetString("WEBPPRESET_PICTURE", golua.LNumber(encoder.PresetPicture))
+	tab.RawSetString("WEBPPRESET_PHOTO", golua.LNumber(encoder.PresetPhoto))
+	tab.RawSetString("WEBPPRESET_DRAWING", golua.LNumber(encoder.PresetDrawing))
+	tab.RawSetString("WEBPPRESET_ICON", golua.LNumber(encoder.PresetIcon))
+	tab.RawSetString("WEBPPRESET_TEXT", golua.LNumber(encoder.PresetText))
+}
+
+func gifTable(r *lua.Runner, lg *log.Logger, state *golua.LState, d *lua.TaskData, gf *gif.GIF, name string, encoding imageutil.ImageEncoding, model imageutil.ColorModel) *golua.LTable {
+	/// @struct GIF
+	/// @prop img {[]int<collection.IMAGE>}
+	/// @prop delay {[]int}
+	/// @prop disposal {[]int<image.GIFDisposal>}
+	/// @prop loop_count {int}
+	/// @prop background_index {int}
+
+	t := state.NewTable()
+
+	img := state.NewTable()
+	for i, v := range gf.Image {
+		frameName := fmt.Sprintf("%s_%d", name, i)
+		img.RawSetInt(i+1, golua.LNumber(r.IC.ScheduleAdd(state, frameName, lg, d.Lib, d.Name, func(i *collection.Item[collection.ItemImage]) {
+			imghere, mhere := imageutil.Limit(v, model)
+
+			i.Self = &collection.ItemImage{
+				Name:     frameName,
+				Image:    imghere,
+				Encoding: encoding,
+				Model:    mhere,
+			}
+		})))
+	}
+	t.RawSetString("img", img)
+
+	delay := state.NewTable()
+	for i, v := range gf.Delay {
+		delay.RawSetInt(i+1, golua.LNumber(v))
+	}
+	t.RawSetString("delay", delay)
+
+	disposal := state.NewTable()
+	for i, v := range gf.Disposal {
+		disposal.RawSetInt(i+1, golua.LNumber(v))
+	}
+	t.RawSetString("disposal", disposal)
+
+	t.RawSetString("loop_count", golua.LNumber(gf.LoopCount))
+	t.RawSetString("background_index", golua.LNumber(gf.BackgroundIndex))
+
+	return t
+}
+
+func gifBuild(r *lua.Runner, d *lua.TaskData, state *golua.LState, t *golua.LTable) *gif.GIF {
+	loopCount := int(t.RawGetString("loop_count").(golua.LNumber))
+	backgroundIndex := byte(t.RawGetString("background_index").(golua.LNumber))
+
+	delayTable := t.RawGetString("delay").(*golua.LTable)
+	delay := make([]int, delayTable.Len())
+	for i := range delayTable.Len() {
+		delay[i] = int(delayTable.RawGetInt(i + 1).(golua.LNumber))
+	}
+
+	disposalTable := t.RawGetString("disposal").(*golua.LTable)
+	disposal := make([]byte, disposalTable.Len())
+	for i := range disposalTable.Len() {
+		disposal[i] = byte(disposalTable.RawGetInt(i + 1).(golua.LNumber))
+	}
+
+	if len(disposal) == 0 {
+		disposal = nil
+	}
+
+	imgTable := t.RawGetString("img").(*golua.LTable)
+	img := make([]*image.Paletted, imgTable.Len())
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(img))
+
+	for ind := range imgTable.Len() {
+		r.IC.Schedule(state, int(imgTable.RawGetInt(ind+1).(golua.LNumber)), &collection.Task[collection.ItemImage]{
+			Lib:  d.Lib,
+			Name: d.Name,
+			Fn: func(i *collection.Item[collection.ItemImage]) {
+				bounds := i.Self.Image.Bounds()
+				q := quantize.MedianCutQuantizer{}
+				pal := q.Quantize(make([]color.Color, 0, 255), i.Self.Image)
+				pal = append([]color.Color{image.Transparent}, pal...)
+				pimage := image.NewPaletted(image.Rect(0, 0, bounds.Dx(), bounds.Dy()), pal)
+
+				draw.Draw(pimage, pimage.Rect, i.Self.Image, bounds.Min, draw.Over)
+				img[ind] = pimage
+
+				wg.Done()
+			},
+		})
+	}
+
+	wg.Wait()
+
+	gf := &gif.GIF{
+		Image:           img,
+		Delay:           delay,
+		LoopCount:       loopCount,
+		Disposal:        disposal,
+		BackgroundIndex: backgroundIndex,
+	}
+
+	return gf
 }

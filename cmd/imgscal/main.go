@@ -39,6 +39,9 @@ func main() {
 	}
 
 	cfgPath := path.Join(cfgDir, "imgscal", "config.json")
+	if envCfg, exists := os.LookupEnv("IMGSCAL_CONFIG"); exists {
+		cfgPath = envCfg
+	}
 
 	_, err = os.Stat(cfgPath)
 	if err != nil {
@@ -104,6 +107,14 @@ func main() {
 		err := os.MkdirAll(sm.Config.OutputDirectory, 0o777)
 		if err != nil {
 			panic(fmt.Sprintf("failed to make output directory! (%s)", err))
+		}
+	}
+
+	_, err = os.Stat(sm.Config.InputDirectory)
+	if err != nil {
+		err := os.MkdirAll(sm.Config.InputDirectory, 0o777)
+		if err != nil {
+			panic(fmt.Sprintf("failed to make input directory! (%s)", err))
 		}
 	}
 

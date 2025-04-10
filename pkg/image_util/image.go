@@ -18,6 +18,7 @@ const (
 	ENCODING_BMP
 	ENCODING_ICO
 	ENCODING_CUR
+	ENCODING_WEBP
 	ENCODING_UNKNOWN
 )
 
@@ -30,6 +31,7 @@ var EncodingExts = []string{
 	".bmp",
 	".ico",
 	".cur",
+	".webp",
 }
 
 var EncodingList = []ImageEncoding{
@@ -40,6 +42,7 @@ var EncodingList = []ImageEncoding{
 	ENCODING_BMP,
 	ENCODING_ICO,
 	ENCODING_CUR,
+	ENCODING_WEBP,
 	ENCODING_UNKNOWN,
 }
 
@@ -59,6 +62,8 @@ func EncodingExtension(encoding ImageEncoding) string {
 		return ".ico"
 	case ENCODING_CUR:
 		return ".cur"
+	case ENCODING_WEBP:
+		return ".webp"
 	default:
 		return ".unknown"
 	}
@@ -86,6 +91,8 @@ func ExtensionEncoding(ext string) ImageEncoding {
 		return ENCODING_ICO
 	case ".cur":
 		return ENCODING_CUR
+	case ".webp":
+		return ENCODING_WEBP
 	}
 
 	return ENCODING_UNKNOWN

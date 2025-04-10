@@ -1,3 +1,4 @@
+---@param info imgscal_WorkflowInfo
 function help(info)
 	return [[
 Usage:
@@ -6,6 +7,7 @@ Usage:
     ]]
 end
 
+---@param workflow imgscal_WorkflowInit
 function init(workflow)
 	workflow.import({
 		"cmd",
@@ -65,6 +67,7 @@ function main()
 		end)
 		:update(function(model, msg)
 			if msg.msg == tui.MSG_WINDOWSIZE then
+				---@cast msg tui.MSGWindowSize
 				model.width = msg.width
 				model.height = msg.height
 			end

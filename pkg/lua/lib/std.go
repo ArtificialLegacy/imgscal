@@ -120,8 +120,28 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 			return 1
 		})
 
+	/// @func map_schema(value, schema) -> table<any>
+	/// @arg value {table<any>}
+	/// @arg schema {table<any>}
+	/// @returns {table<any>}
+	lib.CreateFunction(tab, "map_schema",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "value"},
+			{Type: lua.RAW_TABLE, Name: "schema"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			value := lua.GetValue(args["value"].(golua.LValue)).(map[string]any)
+			schema := lua.GetValue(args["schema"].(golua.LValue)).(map[string]any)
+
+			mapped := lua.MapSchema(schema, value)
+			result := lua.CreateValue(mapped, state)
+
+			state.Push(result)
+			return 1
+		})
+
 	/// @func call_thread(func)
-	/// @arg func {function} - The function to call in a new thread.
+	/// @arg func {function()} - The function to call in a new thread.
 	/// @desc
 	/// This function will call the provided function in a new thread, unlike tasks there is no control over the thread.
 	/// There is also no guarantee that the thread will finish before the script ends.
@@ -137,5 +157,27 @@ func RegisterStd(r *lua.Runner, lg *log.Logger) {
 				scheduledState.Close()
 			}()
 			return 0
+		})
+
+	/// @func array_fill(size, value) -> []any
+	/// @arg size {int}
+	/// @arg value {any}
+	/// @returns {[]any} - Note that some values are copied by reference.
+	lib.CreateFunction(tab, "array_fill",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "size"},
+			{Type: lua.ANY, Name: "value"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			size := args["size"].(int)
+			value := args["value"].(golua.LValue)
+
+			t := state.NewTable()
+			for i := range size {
+				t.RawSetInt(i+1, value)
+			}
+
+			state.Push(t)
+			return 1
 		})
 }

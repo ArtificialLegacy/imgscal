@@ -1,12 +1,12 @@
 package lua
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
 	"os"
 	"path"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,17 +24,23 @@ import (
 )
 
 type Runner struct {
-	State      *lua.LState
-	lg         *log.Logger
-	Dir        string
-	Config     *config.Config
-	Entry      string
-	ConfigData map[string]any
-	SecretData map[string]any
+	State            *lua.LState
+	lg               *log.Logger
+	Dir              string
+	Config           *config.Config
+	Entry            string
+	ConfigData       map[string]any
+	SecretData       map[string]any
+	UseDefaultInput  bool
+	UseDefaultOutput bool
+	FinishBell       bool
+
+	Libraries []string
 
 	Failed string
 
-	Wg *sync.WaitGroup
+	Wg  *sync.WaitGroup
+	Ctx context.Context
 
 	CMDParser *argparse.Parser
 	CLIMode   bool
@@ -51,6 +57,9 @@ type Runner struct {
 	CR_GMP *collection.Crate[yyp.Project]
 	CR_TEA *collection.Crate[teamodels.TeaItem]
 	CR_LIP *collection.Crate[collection.StyleItem]
+	CR_CIM *collection.Crate[collection.CachedImageItem]
+	CR_SHD *collection.Crate[collection.ShaderItem]
+	CR_CED *collection.Crate[giu.CodeEditorWidget]
 }
 
 func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
@@ -59,16 +68,18 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		State: state,
 		lg:    lg,
 
+		Libraries: []string{},
+
 		Wg: wg,
 
 		CMDParser: argparse.NewParser("imgscal", ""),
 		CLIMode:   cliMode,
 
 		// -- collections
-		IC: collection.NewCollection[collection.ItemImage](lg, wg),
-		CC: collection.NewCollection[collection.ItemContext](lg, wg),
-		QR: collection.NewCollection[collection.ItemQR](lg, wg),
-		TC: collection.NewCollection[collection.ItemTask](lg, wg),
+		IC: collection.NewCollection[collection.ItemImage](lg, wg, collection.TYPE_IMAGE),
+		CC: collection.NewCollection[collection.ItemContext](lg, wg, collection.TYPE_CONTEXT),
+		QR: collection.NewCollection[collection.ItemQR](lg, wg, collection.TYPE_QR),
+		TC: collection.NewCollection[collection.ItemTask](lg, wg, collection.TYPE_TASK),
 
 		// -- crates
 		CR_WIN: collection.NewCrate[giu.MasterWindow](),
@@ -76,14 +87,30 @@ func NewRunner(state *lua.LState, lg *log.Logger, cliMode bool) Runner {
 		CR_GMP: collection.NewCrate[yyp.Project](),
 		CR_TEA: collection.NewCrate[teamodels.TeaItem](),
 		CR_LIP: collection.NewCrate[collection.StyleItem](),
+		CR_CIM: collection.NewCrate[collection.CachedImageItem](),
+		CR_SHD: collection.NewCrate[collection.ShaderItem]().OnClean(func(i *collection.CrateItem[collection.ShaderItem]) {
+			for _, b := range i.Self.BuffersImage {
+				b.Release()
+			}
+			for _, b := range i.Self.BuffersVector {
+				b.Release()
+			}
+			for _, b := range i.Self.BuffersBytes {
+				b.Release()
+			}
+
+			i.Self.Device.Release()
+		}),
+		CR_CED: collection.NewCrate[giu.CodeEditorWidget](),
 	}
 }
+
+const luapath = "%[1]s/?/?.lua;%[1]s/?/init.lua;%[1]s/?.lua"
 
 func (r *Runner) Run(file string, plugins PluginMap) error {
 	defer func() {
 		if p := recover(); p != nil {
 			r.lg.Append("recovered from panic during lua runtime", log.LEVEL_ERROR)
-			r.lg.Append(string(debug.Stack()), log.LEVEL_ERROR)
 			r.Failed = fmt.Sprintf("%s", p)
 		}
 	}()
@@ -91,7 +118,7 @@ func (r *Runner) Run(file string, plugins PluginMap) error {
 	r.Dir = path.Dir(file)
 
 	pkg := r.State.GetField(r.State.Get(lua.EnvironIndex), "package")
-	r.State.SetField(pkg, "path", lua.LString(fmt.Sprintf("%s/?.lua;%s/?.lua;%s/?/?.lua", r.Dir, r.Config.PluginDirectory, r.Config.PluginDirectory)))
+	r.State.SetField(pkg, "path", lua.LString(fmt.Sprintf(luapath, r.Dir)+";"+fmt.Sprintf(luapath, r.Config.PluginDirectory)))
 
 	lua.OpenBase(r.State)
 	lua.OpenMath(r.State)
@@ -165,11 +192,18 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 
 	t.RawSetString("import", r.State.NewFunction(func(l *lua.LState) int {
 		pt := l.CheckTable(-1)
-		reqs := []string{}
+		reqs := []string{"test"}
 
 		pt.ForEach(func(l1, l2 lua.LValue) {
-			reqs = append(reqs, string(l2.(lua.LString)))
+			lname := string(l2.(lua.LString))
+			if lname == "test" { // test lib should always be imported so skip here
+				return
+			}
+
+			reqs = append(reqs, lname)
 		})
+
+		r.Libraries = reqs
 
 		LoadPlugins(name, r, lg, plugins, reqs, r.State)
 
@@ -186,6 +220,37 @@ func (r *Runner) WorkflowInit(name string, lg *log.Logger, plugins PluginMap) *l
 		return 0
 	}))
 
+	t.RawSetString("finish_bell", r.State.NewFunction(func(l *lua.LState) int {
+		if r.Config.DisableBell {
+			return 0
+		}
+
+		r.FinishBell = true
+		return 0
+	}))
+
+	t.RawSetString("use_default_input", r.State.NewFunction(func(l *lua.LState) int {
+		pth := path.Join(r.Config.InputDirectory, r.Entry)
+		err := os.MkdirAll(pth, 0o777)
+		if err != nil {
+			Error(r.State, lg.Appendf("failed to create default input directory %s, with error (%s)", log.LEVEL_ERROR, pth, err))
+		}
+		r.UseDefaultInput = true
+
+		return 0
+	}))
+
+	t.RawSetString("use_default_output", r.State.NewFunction(func(l *lua.LState) int {
+		pth := path.Join(r.Config.OutputDirectory, r.Entry)
+		err := os.MkdirAll(pth, 0o777)
+		if err != nil {
+			Error(r.State, lg.Appendf("failed to create default output directory %s, with error (%s)", log.LEVEL_ERROR, pth, err))
+		}
+		r.UseDefaultOutput = true
+
+		return 0
+	}))
+
 	return t
 }
 
@@ -194,7 +259,13 @@ func MapSchema(schema, data map[string]any) map[string]any {
 
 	for k, v := range schema {
 		if d, ok := data[k]; ok {
-			if v1, ok := v.(map[string]any); ok {
+			if v1, ok := v.([]any); ok {
+				if d1, ok := d.([]any); ok {
+					result[k] = d1
+				} else {
+					result[k] = v1
+				}
+			} else if v1, ok := v.(map[string]any); ok {
 				if d1, ok := d.(map[string]any); ok {
 					result[k] = MapSchema(v1, d1)
 				} else {

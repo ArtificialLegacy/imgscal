@@ -3,12 +3,14 @@ package lib
 import (
 	"fmt"
 	"image"
+	"slices"
 	"time"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/collection"
 	imageutil "github.com/ArtificialLegacy/imgscal/pkg/image_util"
 	"github.com/ArtificialLegacy/imgscal/pkg/log"
 	"github.com/ArtificialLegacy/imgscal/pkg/lua"
+	"github.com/ArtificialLegacy/imgscal/pkg/workflow"
 	golua "github.com/yuin/gopher-lua"
 )
 
@@ -17,7 +19,7 @@ const LIB_TEST = "test"
 /// @lib Testing
 /// @import test
 /// @desc
-/// A library for testing lua workflows.
+/// A library for testing lua workflows. This library is always available, and does not need to be imported.
 
 func RegisterTest(r *lua.Runner, lg *log.Logger) {
 	lib, tab := lua.NewLib(LIB_TEST, r, r.State, lg)
@@ -69,7 +71,7 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			imgReady := make(chan struct{}, 2)
 			imgFinished := make(chan struct{}, 2)
 
-			r.IC.Schedule(img1, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img1, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -83,7 +85,7 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 				},
 			})
 
-			r.IC.Schedule(img2, &collection.Task[collection.ItemImage]{
+			r.IC.Schedule(state, img2, &collection.Task[collection.ItemImage]{
 				Lib:  d.Lib,
 				Name: d.Name,
 				Fn: func(i *collection.Item[collection.ItemImage]) {
@@ -105,6 +107,80 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 					state.Error(golua.LString("compare failed while processing image2"), 0)
 				},
 			})
+
+			return 0
+		})
+
+	/// @func assert_schema(value, schema, msg?)
+	/// @arg value {table<any>}
+	/// @arg schema {table<any>}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_schema",
+		[]lua.Arg{
+			{Type: lua.RAW_TABLE, Name: "value"},
+			{Type: lua.RAW_TABLE, Name: "schema"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			value := args["value"].(*golua.LTable)
+			schema := args["schema"].(*golua.LTable)
+			msg := args["msg"].(string)
+
+			valid := validateSchema(value, schema)
+
+			if !valid {
+				if msg != "" {
+					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
+					return 0
+				}
+				lua.Error(state, "assertion failed")
+			}
+
+			return 0
+		})
+
+	/// @func assert_imported(name, msg?)
+	/// @arg name {string}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_imported",
+		[]lua.Arg{
+			{Type: lua.STRING, Name: "name"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			name := args["name"].(string)
+			msg := args["msg"].(string)
+
+			if !slices.Contains(r.Libraries, name) {
+				if msg != "" {
+					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
+					return 0
+				}
+				lua.Error(state, "assertion failed")
+			}
+
+			return 0
+		})
+
+	/// @func assert_api_version(version, msg?)
+	/// @arg version {int}
+	/// @arg? msg {string}
+	lib.CreateFunction(tab, "assert_api_version",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "version"},
+			{Type: lua.STRING, Name: "msg", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			version := args["version"].(int)
+			msg := args["msg"].(string)
+
+			if workflow.API_VERSION < version {
+				if msg != "" {
+					lua.Error(state, lg.Appendf("assertion failed: %s", log.LEVEL_ERROR, msg))
+					return 0
+				}
+				lua.Error(state, "assertion failed")
+			}
 
 			return 0
 		})
@@ -139,4 +215,22 @@ func RegisterTest(r *lua.Runner, lg *log.Logger) {
 			state.Push(golua.LNumber(ellapsed))
 			return 1
 		})
+}
+
+func validateSchema(value, schema *golua.LTable) bool {
+	valid := true
+
+	schema.ForEach(func(k, v1 golua.LValue) {
+		v2 := value.RawGet(k)
+		if v1.Type() != v2.Type() {
+			valid = false
+		} else if v1.Type() == golua.LTTable {
+			validNested := validateSchema(v1.(*golua.LTable), v2.(*golua.LTable))
+			if !validNested {
+				valid = false
+			}
+		}
+	})
+
+	return valid
 }

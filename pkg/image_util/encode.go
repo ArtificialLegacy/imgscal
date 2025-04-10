@@ -9,6 +9,8 @@ import (
 	"io"
 
 	goico "github.com/ArtificialLegacy/go-ico"
+	"github.com/kolesa-team/go-webp/encoder"
+	"github.com/kolesa-team/go-webp/webp"
 	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
 )
@@ -25,6 +27,12 @@ func Encode(w io.WriteSeeker, img image.Image, encoding ImageEncoding) error {
 		return tiff.Encode(w, img, &tiff.Options{})
 	case ENCODING_BMP:
 		return bmp.Encode(w, img)
+	case ENCODING_WEBP:
+		options, err := encoder.NewLosslessEncoderOptions(encoder.PresetDefault, 100)
+		if err != nil {
+			return err
+		}
+		return webp.Encode(w, img, options)
 	case ENCODING_ICO:
 		imgs := []image.Image{img}
 		ico, err := goico.NewICOConfig(imgs)
