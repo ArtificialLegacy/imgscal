@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CLI - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>CLI</h1>
+      <p>
+        Library for interacting with the command-line. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/cli.go">
+            pkg/lua/lib/cli.go</a></code> 
+        | 
+        Import: <code>cli</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>clear</summary>
+            <p><code>clear()</code></p>
+            
+            
+            <p>
+              Clears the console screen. 
+            </p>
+            
+
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>clear_line</summary>
+            <p><code>clear_line()</code></p>
+            
+            
+            <p>
+              Clears the current line in the console. 
+            </p>
+            
+
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>print</summary>
+            <p><code>print(msg...)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">msg  <code class="type">string...</code>   - The messages to print to the console.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>printf</summary>
+            <p><code>printf(msg, args...)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">msg  <code class="type">string</code>   - The message to print to the console.</li>
+                  
+                
+                  <li class="arg">args  <code class="type">any...</code>   - The arguments to format the message with.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>println</summary>
+            <p><code>println(msg?)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  
+                    <li class="arg-opt"><i>msg </i> <code class="type">string</code>   - The message to print to the console.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>printlnf</summary>
+            <p><code>printlnf(msg, args...)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">msg  <code class="type">string</code>   - The message to print to the console.</li>
+                  
+                
+                  <li class="arg">args  <code class="type">any...</code>   - The arguments to format the message with.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>print_float</summary>
+            <p><code>print_float(numbers...)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">numbers  <code class="type">float64...</code>   - The numbers to print to the console.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>print_int</summary>
+            <p><code>print_int(numbers...)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">numbers  <code class="type">int...</code>   - The numbers to print to the console.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>println_number</summary>
+            <p><code>println_number(number, trunc?)</code></p>
+            
+            
+            <p>
+              This is also including in the log similar to std.log. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">number  <code class="type">float64</code>   - The number to print to the console.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>trunc </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>print_table</summary>
+            <p><code>print_table(table)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">table  <code class="type">table&lt;any&gt;</code>   - The table to print to the console.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>print_image</summary>
+            <p><code>print_image(id, double?, alpha?)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>double </i> <code class="type">bool</code>   - If true, use 2 characters per pixel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>alpha </i> <code class="type">int</code>   - Remove pixels with an alpha below this value.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>print_image_inline</summary>
+            <p><code>print_image_inline(id) -&gt; bool</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              Prints the image using the inline graphics protocol, if available. Returns false if this feature in unavailable. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>print_image_inline_kitty</summary>
+            <p><code>print_image_inline_kitty(id, opts) -&gt; bool</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              Prints the image using kitty&#39;s inline graphics protocol, if available. Returns false if this feature in unavailable. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">opts  <code class="type">struct&lt;cli.KittyOpts&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>string_image</summary>
+            <p><code>string_image(id, double?, alpha?) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>double </i> <code class="type">bool</code>   - If true, use 2 characters per pixel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>alpha </i> <code class="type">int</code>   - Remove pixels with an alpha below this value.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>print_image_size</summary>
+            <p><code>print_image_size(id, width, height, double?, alpha?)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code>   - The width of the image.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - The height of the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>double </i> <code class="type">bool</code>   - If true, use 2 characters per pixel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>alpha </i> <code class="type">int</code>   - Remove pixels with an alpha below this value.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>string_image_size</summary>
+            <p><code>string_image_size(id, width, height, double?, alpha?) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code>   - The width of the image.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - The height of the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>double </i> <code class="type">bool</code>   - If true, use 2 characters per pixel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>alpha </i> <code class="type">int</code>   - Remove pixels with an alpha below this value.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>print_color</summary>
+            <p><code>print_color(c, double?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">struct&lt;color&gt;</code>   - The color to print.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>double </i> <code class="type">bool</code>   - If true, use 2 characters per pixel.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>println_color</summary>
+            <p><code>println_color(c, double?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">struct&lt;color&gt;</code>   - The color to print.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>double </i> <code class="type">bool</code>   - If true, use 2 characters per pixel.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>progress</summary>
+            <p><code>progress(current, total, width, title, bar?, empty?, noreset?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">current  <code class="type">int</code>   - The current step.</li>
+                  
+                
+                  <li class="arg">total  <code class="type">int</code>   - The total number of steps.</li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code>   - The width of the progress bar.</li>
+                  
+                
+                  <li class="arg">title  <code class="type">string</code>   - The title of the progress bar.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>bar </i> <code class="type">string</code>   - The character to use for the progress bar, default is &#39;#&#39;.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>empty </i> <code class="type">string</code>   - The character to use for the empty space, default is &#39; &#39;.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>noreset </i> <code class="type">bool</code>   - If true, the progress bar will not reset to the beginning of the line. If false, it will print a newline after the progress bar.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>question</summary>
+            <p><code>question(question) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">question  <code class="type">string</code>   - The message to be displayed.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The answer given by the user.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>question_ext</summary>
+            <p><code>question_ext(question, options) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">question  <code class="type">string</code>   - The message to be displayed.</li>
+                  
+                
+                  <li class="arg">options  <code class="type">struct&lt;cli.Options&gt;</code>   - Options used for processing the response.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The answer given by the user.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>confirm</summary>
+            <p><code>confirm(msg)</code></p>
+            
+            
+            <p>
+              Waits for the user to press enter before continuing. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">msg  <code class="type">string</code>   - The message to be displayed.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>select</summary>
+            <p><code>select(msg, options) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">msg  <code class="type">string</code>   - The message to be displayed.</li>
+                  
+                
+                  <li class="arg">options  <code class="type">[]string</code>   - List of options for the user to select from.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The index of selected option, or 0 if none were picked.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_256</summary>
+            <p><code>color_256(code) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">code  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The color control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_true</summary>
+            <p><code>color_true(red, green, blue) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">red  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">green  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">blue  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The color control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_bg_256</summary>
+            <p><code>color_bg_256(code) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">code  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The color control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_bg_true</summary>
+            <p><code>color_bg_true(red, green, blue) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">red  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">green  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">blue  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The color control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_up</summary>
+            <p><code>cursor_up(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_down</summary>
+            <p><code>cursor_down(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_right</summary>
+            <p><code>cursor_right(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_left</summary>
+            <p><code>cursor_left(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_pos</summary>
+            <p><code>cursor_pos(x, y) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_next_line</summary>
+            <p><code>cursor_next_line(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_prev_line</summary>
+            <p><code>cursor_prev_line(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>cursor_column</summary>
+            <p><code>cursor_column(n) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">n  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The cursor control code.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>bell</summary>
+            <p><code>bell()</code></p>
+            
+            
+
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>is_kitty</summary>
+            <p><code>is_kitty() -&gt; bool</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>is_iterm</summary>
+            <p><code>is_iterm() -&gt; bool</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>is_tmux</summary>
+            <p><code>is_tmux() -&gt; bool</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Control </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>RESET</code></li>
+              
+                <li class="const"><code>BELL</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>TextColor </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>BLACK</code></li>
+              
+                <li class="const"><code>RED</code></li>
+              
+                <li class="const"><code>GREEN</code></li>
+              
+                <li class="const"><code>YELLOW</code></li>
+              
+                <li class="const"><code>BLUE</code></li>
+              
+                <li class="const"><code>MAGENTA</code></li>
+              
+                <li class="const"><code>CYAN</code></li>
+              
+                <li class="const"><code>WHITE</code></li>
+              
+                <li class="const"><code>BRIGHT_BLACK</code></li>
+              
+                <li class="const"><code>BRIGHT_RED</code></li>
+              
+                <li class="const"><code>BRIGHT_GREEN</code></li>
+              
+                <li class="const"><code>BRIGHT_YELLOW</code></li>
+              
+                <li class="const"><code>BRIGHT_BLUE</code></li>
+              
+                <li class="const"><code>BRIGHT_MAGENTA</code></li>
+              
+                <li class="const"><code>BRIGHT_CYAN</code></li>
+              
+                <li class="const"><code>BRIGHT_WHITE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>BackgroundColor </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>BACKGROUND_BLACK</code></li>
+              
+                <li class="const"><code>BACKGROUND_RED</code></li>
+              
+                <li class="const"><code>BACKGROUND_GREEN</code></li>
+              
+                <li class="const"><code>BACKGROUND_YELLOW</code></li>
+              
+                <li class="const"><code>BACKGROUND_BLUE</code></li>
+              
+                <li class="const"><code>BACKGROUND_MAGENTA</code></li>
+              
+                <li class="const"><code>BACKGROUND_CYAN</code></li>
+              
+                <li class="const"><code>BACKGROUND_WHITE</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_BLACK</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_RED</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_GREEN</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_YELLOW</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_BLUE</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_MAGENTA</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_CYAN</code></li>
+              
+                <li class="const"><code>BRIGHT_BACKGROUND_WHITE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Style </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>BOLD</code></li>
+              
+                <li class="const"><code>UNDERLINE</code></li>
+              
+                <li class="const"><code>REVERSED</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Cursor </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>CURSOR_HOME</code></li>
+              
+                <li class="const"><code>CURSOR_LINEUP</code></li>
+              
+                <li class="const"><code>CURSOR_SAVE</code></li>
+              
+                <li class="const"><code>CURSOR_LOAD</code></li>
+              
+                <li class="const"><code>CURSOR_INVISIBLE</code></li>
+              
+                <li class="const"><code>CURSOR_VISIBLE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Erase </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>ERASE_DOWN</code></li>
+              
+                <li class="const"><code>ERASE_UP</code></li>
+              
+                <li class="const"><code>ERASE_SCREEN</code></li>
+              
+                <li class="const"><code>ERASE_SAVED</code></li>
+              
+                <li class="const"><code>ERASE_LINE_END</code></li>
+              
+                <li class="const"><code>ERASE_LINE_START</code></li>
+              
+                <li class="const"><code>ERASE_LINE</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>KittyOpts</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">x  <code class="type">int</code>  - The x position of the image. </li>
+                
+                <li class="prop">y  <code class="type">int</code>  - The y position of the image. </li>
+                
+                <li class="prop">width  <code class="type">int</code>  - The width of the image. </li>
+                
+                <li class="prop">height  <code class="type">int</code>  - The height of the image. </li>
+                
+                <li class="prop">offsetx  <code class="type">int</code>  - The pixel x offset of the image. </li>
+                
+                <li class="prop">offsety  <code class="type">int</code>  - The pixel y offset of the image. </li>
+                
+                <li class="prop">cols  <code class="type">int</code>  - Width in terminal columns. </li>
+                
+                <li class="prop">rows  <code class="type">int</code>  - Height in terminal rows. </li>
+                
+                <li class="prop">zindex  <code class="type">int</code>  - The z-index of the image. </li>
+                
+                <li class="prop">imageId  <code class="type">int</code>  </li>
+                
+                <li class="prop">imageNo  <code class="type">int</code>  </li>
+                
+                <li class="prop">placementId  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>Options</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">normalize  <code class="type">bool</code>  - Set to lowercase the recieved answer. </li>
+                
+                <li class="prop">accepts  <code class="type">[]string</code>  - List of accepted responses. </li>
+                
+                <li class="prop">fallback  <code class="type">string</code>  - A default response to return when the one entered by the user is not in &#39;accepts&#39;. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

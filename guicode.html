@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>GUI Code - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>GUI Code</h1>
+      <p>
+        Extension of the GUI library for code editor widgets. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/guicode.go">
+            pkg/lua/lib/guicode.go</a></code> 
+        | 
+        Import: <code>guicode</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>wg_code_editor</summary>
+            <p><code>wg_code_editor() -&gt; struct&lt;guicode.WidgetCodeEditor&gt;</code></p>
+            
+            
+            <p>
+              Note this should be treated as persistent, do not recreate on each render. 
+            </p>
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guicode.WidgetCodeEditor&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>LanguageDefinition </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>LANG_NONE</code></li>
+              
+                <li class="const"><code>LANG_CPP</code></li>
+              
+                <li class="const"><code>LANG_C</code></li>
+              
+                <li class="const"><code>LANG_CS</code></li>
+              
+                <li class="const"><code>LANG_PYTHON</code></li>
+              
+                <li class="const"><code>LANG_LUA</code></li>
+              
+                <li class="const"><code>LANG_JSON</code></li>
+              
+                <li class="const"><code>LANG_SQL</code></li>
+              
+                <li class="const"><code>LANG_ANGELSCRIPT</code></li>
+              
+                <li class="const"><code>LANG_GLSL</code></li>
+              
+                <li class="const"><code>LANG_HLSL</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>WidgetCodeEditor</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;gui.WidgetType&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int&lt;collection.CRATE_CODEEDITOR&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>border</summary>
+                <p><code>border(self, v bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>copy</summary>
+                <p><code>copy()</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>cut</summary>
+                <p><code>cut()</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>delete</summary>
+                <p><code>delete()</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>paste</summary>
+                <p><code>paste()</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>text</summary>
+                <p><code>text() -&gt; string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>current_line_text</summary>
+                <p><code>current_line_text() -&gt; string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>selected_text</summary>
+                <p><code>selected_text() -&gt; string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>word_under_cursor</summary>
+                <p><code>word_under_cursor() -&gt; string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>cursor_pos</summary>
+                <p><code>cursor_pos() -&gt; int, int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>cursor_screen_pos</summary>
+                <p><code>cursor_screen_pos() -&gt; int, int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>selection_start</summary>
+                <p><code>selection_start() -&gt; int, int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>handle_keyboard_inputs</summary>
+                <p><code>handle_keyboard_inputs(self, v bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>has_selection</summary>
+                <p><code>has_selection() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>is_text_changed</summary>
+                <p><code>is_text_changed() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>insert_text</summary>
+                <p><code>insert_text(self, v string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>text</summary>
+                <p><code>text(self, v string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>show_whitespace</summary>
+                <p><code>show_whitespace(self, v bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tab_size</summary>
+                <p><code>tab_size(self, v int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size</summary>
+                <p><code>size(self, x int, y int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>language_definition</summary>
+                <p><code>language_definition(self, v int&lt;guicode.LanguageDefinition&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>
