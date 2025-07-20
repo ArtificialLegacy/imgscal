@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Command - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Command</h1>
+      <p>
+        Library for parsing command-line arguments. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/cmd.go">
+            pkg/lua/lib/cmd.go</a></code> 
+        | 
+        Import: <code>cmd</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+        
+        <section class="sect">
+          
+          <p>Cannot be used when the workflow was called from the workflow selection menu.</p>
+          
+        </section>
+        
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>parse</summary>
+            <p><code>parse() -&gt; bool, string</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code>  - If the results are valid.</li>
+                
+                  <li class="return"><code class="type">string</code>  - A string of the error if on occured.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>called</summary>
+            <p><code>called() -&gt; bool</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code>  - If the workflow was called directly from the command-line.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>options</summary>
+            <p><code>options() -&gt; struct&lt;cmd.Options&gt;</code></p>
+            
+            
+            <p>
+              Creates a table for passing options into arguments. 
+            </p>
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_flag</summary>
+            <p><code>arg_flag(short, long, options?) -&gt; int&lt;ref.BOOL&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.BOOL&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_flag_count</summary>
+            <p><code>arg_flag_count(short, long, options?) -&gt; int&lt;ref.INT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.INT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_string</summary>
+            <p><code>arg_string(short, long, options?) -&gt; int&lt;ref.STRING&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.STRING&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_string_list</summary>
+            <p><code>arg_string_list(short, long, options?) -&gt; int&lt;[]ref.STRING&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;[]ref.STRING&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_string_pos</summary>
+            <p><code>arg_string_pos(options?) -&gt; int&lt;ref.STRING&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.STRING&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_int</summary>
+            <p><code>arg_int(short, long, options?) -&gt; int&lt;ref.INT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.INT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_int_list</summary>
+            <p><code>arg_int_list(short, long, options?) -&gt; int&lt;[]ref.INT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;[]ref.INT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_int_pos</summary>
+            <p><code>arg_int_pos(options?) -&gt; int&lt;ref.INT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.INT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_float</summary>
+            <p><code>arg_float(short, long, options?) -&gt; int&lt;ref.FLOAT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.FLOAT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_float_list</summary>
+            <p><code>arg_float_list(short, long, options?) -&gt; int&lt;[]ref.FLOAT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;[]ref.FLOAT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_float_pos</summary>
+            <p><code>arg_float_pos(options?) -&gt; int&lt;[]ref.FLOAT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.FLOAT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_selector</summary>
+            <p><code>arg_selector(short, long, choices, options?) -&gt; int&lt;ref.STRING&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">short  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">long  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">choices  <code class="type">[]string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.STRING&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>arg_selector_pos</summary>
+            <p><code>arg_selector_pos(choices, options?) -&gt; int&lt;ref.STRING&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">choices  <code class="type">[]string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>options </i> <code class="type">struct&lt;cmd.Options&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.STRING&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>DefaultType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>DEFAULT_INT</code></li>
+              
+                <li class="const"><code>DEFAULT_FLOAT</code></li>
+              
+                <li class="const"><code>DEFAULT_STRING</code></li>
+              
+                <li class="const"><code>DEFAULT_BOOL</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Options</summary>
+            <p>
+              
+            </p>
+
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>required</summary>
+                <p><code>required(self, bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>validate</summary>
+                <p><code>validate(self, {function([]string) -&gt; string}) -&gt; self</code></p>
+                
+                <hr>
+                <p>Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>default</summary>
+                <p><code>default(self, any, int&lt;cmd.DefaultType&gt;) -&gt; self</code></p>
+                
+                <hr>
+                <p>The first value should match the default type given.</p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

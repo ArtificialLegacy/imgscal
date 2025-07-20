@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Networking - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Networking</h1>
+      <p>
+        Library for making http requests and serving endpoints. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/net.go">
+            pkg/lua/lib/net.go</a></code> 
+        | 
+        Import: <code>net</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>req</summary>
+            <p><code>req(method, url, body, header, contentLength?) -&gt; struct&lt;net.Response&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">method  <code class="type">string&lt;net.Method&gt;</code> </li>
+                  
+                
+                  <li class="arg">url  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">body  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">header  <code class="type">struct&lt;net.Values&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>contentLength </i> <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;net.Response&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>req_get</summary>
+            <p><code>req_get(url) -&gt; struct&lt;net.Response&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">url  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;net.Response&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>req_head</summary>
+            <p><code>req_head(url) -&gt; struct&lt;net.Response&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">url  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;net.Response&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>req_post</summary>
+            <p><code>req_post(url, contentType, body) -&gt; struct&lt;net.Response&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">url  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">contentType  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">body  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;net.Response&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>req_post_form</summary>
+            <p><code>req_post_form(url, values) -&gt; struct&lt;net.Response&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">url  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">values  <code class="type">struct&lt;net.Values&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;net.Response&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>values</summary>
+            <p><code>values() -&gt; struct&lt;net.Values&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;net.Values&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>canonical_header_key</summary>
+            <p><code>canonical_header_key(key) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">key  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>detect_content</summary>
+            <p><code>detect_content(content) -&gt; string</code></p>
+            
+            
+            <p>
+              Detects the http content of a data represented as a string. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">content  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>status_text</summary>
+            <p><code>status_text(code) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">code  <code class="type">int&lt;net.Status&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>route</summary>
+            <p><code>route(pattern, fn)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pattern  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">fn  <code class="type">function(w struct&lt;net.ResponseWriter&gt;, r struct&lt;net.Request&gt;)</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>serve</summary>
+            <p><code>serve(addr)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">addr  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Method </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>METHOD_GET</code></li>
+              
+                <li class="const"><code>METHOD_HEAD</code></li>
+              
+                <li class="const"><code>METHOD_POST</code></li>
+              
+                <li class="const"><code>METHOD_PUT</code></li>
+              
+                <li class="const"><code>METHOD_PATCH</code></li>
+              
+                <li class="const"><code>METHOD_DELETE</code></li>
+              
+                <li class="const"><code>METHOD_CONNECT</code></li>
+              
+                <li class="const"><code>METHOD_OPTIONS</code></li>
+              
+                <li class="const"><code>METHOD_TRACE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Status </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>STATUS_CONTINUE</code></li>
+              
+                <li class="const"><code>STATUS_SWITCHING_PROTOCOLS</code></li>
+              
+                <li class="const"><code>STATUS_PROCESSING</code></li>
+              
+                <li class="const"><code>STATUS_EARLY_HINTS</code></li>
+              
+                <li class="const"><code>STATUS_OK</code></li>
+              
+                <li class="const"><code>STATUS_CREATED</code></li>
+              
+                <li class="const"><code>STATUS_ACCEPTED</code></li>
+              
+                <li class="const"><code>STATUS_NON_AUTHORITATIVE_INFO</code></li>
+              
+                <li class="const"><code>STATUS_NO_CONTENT</code></li>
+              
+                <li class="const"><code>STATUS_RESET_CONTENT</code></li>
+              
+                <li class="const"><code>STATUS_PARTIAL_CONTENT</code></li>
+              
+                <li class="const"><code>STATUS_MULTI_STATUS</code></li>
+              
+                <li class="const"><code>STATUS_ALREADY_REPORTED</code></li>
+              
+                <li class="const"><code>STATUS_IM_USED</code></li>
+              
+                <li class="const"><code>STATUS_MULTIPLE_CHOICES</code></li>
+              
+                <li class="const"><code>STATUS_MOVED_PERMANENTLY</code></li>
+              
+                <li class="const"><code>STATUS_FOUND</code></li>
+              
+                <li class="const"><code>STATUS_SEE_OTHER</code></li>
+              
+                <li class="const"><code>STATUS_NOT_MODIFIED</code></li>
+              
+                <li class="const"><code>STATUS_USE_PROXY</code></li>
+              
+                <li class="const"><code>STATUS_TEMPORARY_REDIRECT</code></li>
+              
+                <li class="const"><code>STATUS_PERMANENT_REDIRECT</code></li>
+              
+                <li class="const"><code>STATUS_BAD_REQUEST</code></li>
+              
+                <li class="const"><code>STATUS_UNAUTHORIZED</code></li>
+              
+                <li class="const"><code>STATUS_PAYMENT_REQUIRED</code></li>
+              
+                <li class="const"><code>STATUS_FORBIDDEN</code></li>
+              
+                <li class="const"><code>STATUS_NOT_FOUND</code></li>
+              
+                <li class="const"><code>STATUS_METHOD_NOT_ALLOWED</code></li>
+              
+                <li class="const"><code>STATUS_NOT_ACCEPTABLE</code></li>
+              
+                <li class="const"><code>STATUS_PROXY_AUTH_REQUIRED</code></li>
+              
+                <li class="const"><code>STATUS_REQUEST_TIMEOUT</code></li>
+              
+                <li class="const"><code>STATUS_CONFLICT</code></li>
+              
+                <li class="const"><code>STATUS_GONE</code></li>
+              
+                <li class="const"><code>STATUS_LENGTH_REQUIRED</code></li>
+              
+                <li class="const"><code>STATUS_PRECONDITION_FAILED</code></li>
+              
+                <li class="const"><code>STATUS_PAYLOAD_TOO_LARGE</code></li>
+              
+                <li class="const"><code>STATUS_URI_TOO_LONG</code></li>
+              
+                <li class="const"><code>STATUS_UNSUPPORTED_MEDIA_TYPE</code></li>
+              
+                <li class="const"><code>STATUS_RANGE_NOT_SATISFIABLE</code></li>
+              
+                <li class="const"><code>STATUS_EXPECTATION_FAILED</code></li>
+              
+                <li class="const"><code>STATUS_TEAPOT</code></li>
+              
+                <li class="const"><code>STATUS_MISDIRECTED_REQUEST</code></li>
+              
+                <li class="const"><code>STATUS_UNPROCESSABLE_ENTITY</code></li>
+              
+                <li class="const"><code>STATUS_LOCKED</code></li>
+              
+                <li class="const"><code>STATUS_FAILED_DEPENDENCY</code></li>
+              
+                <li class="const"><code>STATUS_TOO_EARLY</code></li>
+              
+                <li class="const"><code>STATUS_UPGRADE_REQUIRED</code></li>
+              
+                <li class="const"><code>STATUS_PRECONDITION_REQUIRED</code></li>
+              
+                <li class="const"><code>STATUS_TOO_MANY_REQUESTS</code></li>
+              
+                <li class="const"><code>STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE</code></li>
+              
+                <li class="const"><code>STATUS_UNAVAILABLE_FOR_LEGAL_REASONS</code></li>
+              
+                <li class="const"><code>STATUS_INTERNAL_SERVER_ERROR</code></li>
+              
+                <li class="const"><code>STATUS_NOT_IMPLEMENTED</code></li>
+              
+                <li class="const"><code>STATUS_BAD_GATEWAY</code></li>
+              
+                <li class="const"><code>STATUS_SERVICE_UNAVAILABLE</code></li>
+              
+                <li class="const"><code>STATUS_GATEWAY_TIMEOUT</code></li>
+              
+                <li class="const"><code>STATUS_HTTP_VERSION_NOT_SUPPORTED</code></li>
+              
+                <li class="const"><code>STATUS_VARIANT_ALSO_NEGOTIATES</code></li>
+              
+                <li class="const"><code>STATUS_INSUFFICIENT_STORAGE</code></li>
+              
+                <li class="const"><code>STATUS_LOOP_DETECTED</code></li>
+              
+                <li class="const"><code>STATUS_NOT_EXTENDED</code></li>
+              
+                <li class="const"><code>STATUS_NETWORK_AUTH_REQUIRED</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Values</summary>
+            <p>
+              
+            </p>
+
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>add</summary>
+                <p><code>add(self, key string, value string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>del</summary>
+                <p><code>del(self, key string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>get</summary>
+                <p><code>get(key string) -&gt; string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>get_all</summary>
+                <p><code>get_all(key string) -&gt; []string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>has</summary>
+                <p><code>has(key string) -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>set</summary>
+                <p><code>set(self, key string, value string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>set_multi</summary>
+                <p><code>set_multi(self, key string, values []string) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>Response</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">body  <code class="type">string</code>  </li>
+                
+                <li class="prop">status  <code class="type">string</code>  </li>
+                
+                <li class="prop">status_code  <code class="type">int&lt;net.Status&gt;</code>  </li>
+                
+                <li class="prop">header  <code class="type">struct&lt;net.Values&gt;</code>  </li>
+                
+                <li class="prop">content_length  <code class="type">int</code>  </li>
+                
+                <li class="prop">uncompressed  <code class="type">bool</code>  </li>
+                
+                <li class="prop">proto  <code class="type">string</code>  </li>
+                
+                <li class="prop">proto_major  <code class="type">int</code>  </li>
+                
+                <li class="prop">proto_minor  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ResponseWriter</summary>
+            <p>
+              
+            </p>
+
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>header</summary>
+                <p><code>header() -&gt; struct&lt;net.Values&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>write</summary>
+                <p><code>write(data string) -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>write_header</summary>
+                <p><code>write_header(code int&lt;net.Status&gt;)</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>Request</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">method  <code class="type">string&lt;net.Method&gt;</code>  </li>
+                
+                <li class="prop">proto  <code class="type">string</code>  </li>
+                
+                <li class="prop">proto_major  <code class="type">int</code>  </li>
+                
+                <li class="prop">proto_minor  <code class="type">int</code>  </li>
+                
+                <li class="prop">header  <code class="type">struct&lt;net.Values&gt;</code>  </li>
+                
+                <li class="prop">body  <code class="type">string</code>  </li>
+                
+                <li class="prop">content_length  <code class="type">int</code>  </li>
+                
+                <li class="prop">host  <code class="type">string</code>  </li>
+                
+                <li class="prop">remote_addr  <code class="type">string</code>  </li>
+                
+                <li class="prop">request_uri  <code class="type">string</code>  </li>
+                
+                <li class="prop">form  <code class="type">struct&lt;net.Values&gt;</code>  </li>
+                
+                <li class="prop">form_post  <code class="type">struct&lt;net.Values&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>parse_form</summary>
+                <p><code>parse_form(self) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

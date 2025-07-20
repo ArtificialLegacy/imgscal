@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Imger - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Imger</h1>
+      <p>
+        Library including imger image filters. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/imger.go">
+            pkg/lua/lib/imger.go</a></code> 
+        | 
+        Import: <code>imger</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>gray_add</summary>
+            <p><code>gray_add(img1, img2)</code></p>
+            
+            
+            <p>
+              Result is stored in img1. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img1  <code class="type">int&lt;collection.IMAGE&gt;</code>   - First image.</li>
+                  
+                
+                  <li class="arg">img2  <code class="type">int&lt;collection.IMAGE&gt;</code>   - Second image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>gray_add_weighted</summary>
+            <p><code>gray_add_weighted(img1, img2, weight1, weight2)</code></p>
+            
+            
+            <p>
+              Result is stored in img1. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img1  <code class="type">int&lt;collection.IMAGE&gt;</code>   - First image.</li>
+                  
+                
+                  <li class="arg">img2  <code class="type">int&lt;collection.IMAGE&gt;</code>   - Second image.</li>
+                  
+                
+                  <li class="arg">weight1  <code class="type">float</code>   - Weight of the first image.</li>
+                  
+                
+                  <li class="arg">weight2  <code class="type">float</code>   - Weight of the second image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>gray_add_scalar</summary>
+            <p><code>gray_add_scalar(img, value)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">value  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>blur_box</summary>
+            <p><code>blur_box(img, ksize, anchor, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">ksize  <code class="type">struct&lt;image.Point&gt;</code> </li>
+                  
+                
+                  <li class="arg">anchor  <code class="type">struct&lt;image.Point&gt;</code>   - Point inside of kernel.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>blur_box_xy</summary>
+            <p><code>blur_box_xy(img, kwidth, kheight, ax, ay, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">kwidth  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">kheight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">ax  <code class="type">int</code>   - Anchor x inside of kernel.</li>
+                  
+                
+                  <li class="arg">ay  <code class="type">int</code>   - Anchor y inside of kernel.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>blur_gaussian</summary>
+            <p><code>blur_gaussian(img, radius, sigma, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">radius  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">sigma  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>kernel</summary>
+            <p><code>kernel(width, height, content) -&gt; struct&lt;imger.Kernel&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code>   - Width of the kernel.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - Height of the kernel.</li>
+                  
+                
+                  <li class="arg">content  <code class="type">[][]float</code>   - Kernel content.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;imger.Kernel&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>kernel_zero</summary>
+            <p><code>kernel_zero(width, height) -&gt; struct&lt;imger.Kernel&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code>   - Width of the kernel.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - Height of the kernel.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;imger.Kernel&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>kernel_flat</summary>
+            <p><code>kernel_flat(width, height, content_flat) -&gt; struct&lt;imger.Kernel&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code>   - Width of the kernel.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - Height of the kernel.</li>
+                  
+                
+                  <li class="arg">content_flat  <code class="type">[]float</code>   - Kernel content as a flat array. The length of the array must be width * height. Should be row-major order.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;imger.Kernel&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>convolve</summary>
+            <p><code>convolve(img, kernel, anchor, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">kernel  <code class="type">struct&lt;imger.Kernel&gt;</code> </li>
+                  
+                
+                  <li class="arg">anchor  <code class="type">struct&lt;image.Point&gt;</code>   - Point inside of kernel.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>convolve_xy</summary>
+            <p><code>convolve_xy(img, kernel, ax, ay, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">kernel  <code class="type">struct&lt;imger.Kernel&gt;</code> </li>
+                  
+                
+                  <li class="arg">ax  <code class="type">int</code>   - Anchor x inside of kernel.</li>
+                  
+                
+                  <li class="arg">ay  <code class="type">int</code>   - Anchor y inside of kernel.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>edge_canny</summary>
+            <p><code>edge_canny(img, lower, upper, ksize, name, encoding, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">lower  <code class="type">float</code>   - Lower threshold.</li>
+                  
+                
+                  <li class="arg">upper  <code class="type">float</code>   - Upper threshold.</li>
+                  
+                
+                  <li class="arg">ksize  <code class="type">int</code>   - Size of the kernel.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.GRAY color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>edge_canny_inplace</summary>
+            <p><code>edge_canny_inplace(img, lower, upper, ksize, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">lower  <code class="type">float</code>   - Lower threshold.</li>
+                  
+                
+                  <li class="arg">upper  <code class="type">float</code>   - Upper threshold.</li>
+                  
+                
+                  <li class="arg">ksize  <code class="type">int</code>   - Size of the kernel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>edge_sobel</summary>
+            <p><code>edge_sobel(img, name, encoding, border, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.GRAY color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>edge_sobel_inplace</summary>
+            <p><code>edge_sobel_inplace(img, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>edge_sobel_horizontal</summary>
+            <p><code>edge_sobel_horizontal(img, name, encoding, border, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.GRAY color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>edge_sobel_horizontal_inplace</summary>
+            <p><code>edge_sobel_horizontal_inplace(img, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>edge_sobel_vertical</summary>
+            <p><code>edge_sobel_vertical(img, name, encoding, border, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.GRAY color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>edge_sobel_vertical_inplace</summary>
+            <p><code>edge_sobel_vertical_inplace(img, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>edge_laplacian</summary>
+            <p><code>edge_laplacian(img, kernel, name, encoding, border, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">kernel  <code class="type">int&lt;imger.LaplacianKernel&gt;</code>   - Laplacian kernel.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.GRAY color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>edge_laplacian_inplace</summary>
+            <p><code>edge_laplacian_inplace(img, kernel, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">kernel  <code class="type">int&lt;imger.LaplacianKernel&gt;</code>   - Laplacian kernel.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>emboss</summary>
+            <p><code>emboss(img, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>invert</summary>
+            <p><code>invert(img, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>pixelate</summary>
+            <p><code>pixelate(img, factor, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">factor  <code class="type">float</code>   - Pixelation factor.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>sharpen</summary>
+            <p><code>sharpen(img, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>sepia</summary>
+            <p><code>sepia(img)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>gradient_linear</summary>
+            <p><code>gradient_linear(size, startColor, endColor, direction, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">size  <code class="type">struct&lt;image.Point&gt;</code>   - Size of the gradient.</li>
+                  
+                
+                  <li class="arg">startColor  <code class="type">struct&lt;image.Color&gt;</code>   - Start color of the gradient.</li>
+                  
+                
+                  <li class="arg">endColor  <code class="type">struct&lt;image.Color&gt;</code>   - End color of the gradient.</li>
+                  
+                
+                  <li class="arg">direction  <code class="type">int&lt;imger.Direction&gt;</code>   - Direction of the gradient.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.RGBA color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gradient_linear_xy</summary>
+            <p><code>gradient_linear_xy(width, height, startColor, endColor, direction, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code>   - Width of the gradient.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - Height of the gradient.</li>
+                  
+                
+                  <li class="arg">startColor  <code class="type">struct&lt;image.Color&gt;</code>   - Start color of the gradient.</li>
+                  
+                
+                  <li class="arg">endColor  <code class="type">struct&lt;image.Color&gt;</code>   - End color of the gradient.</li>
+                  
+                
+                  <li class="arg">direction  <code class="type">int&lt;imger.Direction&gt;</code>   - Direction of the gradient.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.RGBA color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gradient_sigmoidal</summary>
+            <p><code>gradient_sigmoidal(size, startColor, endColor, direction, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">size  <code class="type">struct&lt;image.Point&gt;</code>   - Size of the gradient.</li>
+                  
+                
+                  <li class="arg">startColor  <code class="type">struct&lt;image.Color&gt;</code>   - Start color of the gradient.</li>
+                  
+                
+                  <li class="arg">endColor  <code class="type">struct&lt;image.Color&gt;</code>   - End color of the gradient.</li>
+                  
+                
+                  <li class="arg">direction  <code class="type">int&lt;imger.Direction&gt;</code>   - Direction of the gradient.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.RGBA color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gradient_sigmoidal_xy</summary>
+            <p><code>gradient_sigmoidal_xy(width, height, startColor, endColor, direction, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code>   - Width of the gradient.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - Height of the gradient.</li>
+                  
+                
+                  <li class="arg">startColor  <code class="type">struct&lt;image.Color&gt;</code>   - Start color of the gradient.</li>
+                  
+                
+                  <li class="arg">endColor  <code class="type">struct&lt;image.Color&gt;</code>   - End color of the gradient.</li>
+                  
+                
+                  <li class="arg">direction  <code class="type">int&lt;imger.Direction&gt;</code>   - Direction of the gradient.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The resulting image will be in the image.RGBA color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>grayscale</summary>
+            <p><code>grayscale(img, name, encoding, to16?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>to16 </i> <code class="type">bool</code>   - If true, the image is converted to 16-bit grayscale, otherwise it is converted to 8-bit grayscale.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>grayscale_inplace</summary>
+            <p><code>grayscale_inplace(img, to16?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>to16 </i> <code class="type">bool</code>   - If true, the image is converted to 16-bit grayscale, otherwise it is converted to 8-bit grayscale.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>padding</summary>
+            <p><code>padding(img, ksize, anchor, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">ksize  <code class="type">struct&lt;image.Point&gt;</code>   - Size of the kernel.</li>
+                  
+                
+                  <li class="arg">anchor  <code class="type">struct&lt;image.Point&gt;</code>   - Anchor point of the kernel.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>padding_xy</summary>
+            <p><code>padding_xy(img, kwidth, kheight, ax, ay, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">kwidth  <code class="type">int</code>   - Width of the kernel.</li>
+                  
+                
+                  <li class="arg">kheight  <code class="type">int</code>   - Height of the kernel.</li>
+                  
+                
+                  <li class="arg">ax  <code class="type">int</code>   - X coordinate of the anchor point.</li>
+                  
+                
+                  <li class="arg">ay  <code class="type">int</code>   - Y coordinate of the anchor point.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>padding_size</summary>
+            <p><code>padding_size(img, top, bottom, left, right, border, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">top  <code class="type">int</code>   - Top padding.</li>
+                  
+                
+                  <li class="arg">bottom  <code class="type">int</code>   - Bottom padding.</li>
+                  
+                
+                  <li class="arg">left  <code class="type">int</code>   - Left padding.</li>
+                  
+                
+                  <li class="arg">right  <code class="type">int</code>   - Right padding.</li>
+                  
+                
+                  <li class="arg">border  <code class="type">int&lt;imger.Border&gt;</code>   - Border type.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>threshold</summary>
+            <p><code>threshold(img, t, method, to16?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">t  <code class="type">int</code>   - Threshold value, either an uint8 or uint16 value.</li>
+                  
+                
+                  <li class="arg">method  <code class="type">int&lt;imger.Threshold&gt;</code>   - Threshold method.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>to16 </i> <code class="type">bool</code>   - If true, the image is converted to 16-bit grayscale, otherwise it is converted to 8-bit grayscale.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>threshold_otsu</summary>
+            <p><code>threshold_otsu(img, method)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">method  <code class="type">int&lt;imger.Threshold&gt;</code>   - Threshold method.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>rotate</summary>
+            <p><code>rotate(img, angle, anchor, resizeToFit, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">angle  <code class="type">float</code>   - Angle of rotation in degrees, counter-clockwise.</li>
+                  
+                
+                  <li class="arg">anchor  <code class="type">struct&lt;image.Point&gt;</code>   - Anchor point of rotation.</li>
+                  
+                
+                  <li class="arg">resizeToFit  <code class="type">bool</code>   - If true, the image is resized to fit the rotated image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>rotate_xy</summary>
+            <p><code>rotate_xy(img, angle, ax, ay, resizeToFit, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">angle  <code class="type">float</code>   - Angle of rotation in degrees, counter-clockwise.</li>
+                  
+                
+                  <li class="arg">ax  <code class="type">int</code>   - X coordinate of the anchor point.</li>
+                  
+                
+                  <li class="arg">ay  <code class="type">int</code>   - Y coordinate of the anchor point.</li>
+                  
+                
+                  <li class="arg">resizeToFit  <code class="type">bool</code>   - If true, the image is resized to fit the rotated image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>resize</summary>
+            <p><code>resize(img, scalex, scaley, inter, gray?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">scalex  <code class="type">float</code>   - Scale factor along the horizontal axis.</li>
+                  
+                
+                  <li class="arg">scaley  <code class="type">float</code>   - Scale factor along the vertical axis.</li>
+                  
+                
+                  <li class="arg">inter  <code class="type">int&lt;imger.Interpolation&gt;</code>   - Interpolation method.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code>   - If true, the image is converted to gray before applying the filter, otherwise it is converted to RGBA.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>histogram_draw</summary>
+            <p><code>histogram_draw(img, scale, name, encoding, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+            <p>
+              Size is (256*scale.x, 256*scale.y). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">scale  <code class="type">struct&lt;image.Point&gt;</code>   - Scale of the histogram.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>histogram_draw_xy</summary>
+            <p><code>histogram_draw_xy(img, scalex, scaley, name, encoding, gray?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+            <p>
+              Size is (256*scalex, 256*scaley). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">scalex  <code class="type">int</code>   - Scale of the histogram along the horizontal axis.</li>
+                  
+                
+                  <li class="arg">scaley  <code class="type">int</code>   - Scale of the histogram along the vertical axis.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - Encoding of the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>histogram_draw_inplace</summary>
+            <p><code>histogram_draw_inplace(img, scale, gray?)</code></p>
+            
+            
+            <p>
+              Size is (256*scale.x, 256*scale.y). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">scale  <code class="type">struct&lt;image.Point&gt;</code>   - Scale of the histogram.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>histogram_draw_inplace_xy</summary>
+            <p><code>histogram_draw_inplace_xy(img, scalex, scaley, gray?)</code></p>
+            
+            
+            <p>
+              Size is (256*scalex, 256*scaley). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">scalex  <code class="type">int</code>   - Scale of the histogram along the horizontal axis.</li>
+                  
+                
+                  <li class="arg">scaley  <code class="type">int</code>   - Scale of the histogram along the vertical axis.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>gray </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>histogram_gray</summary>
+            <p><code>histogram_gray(img, max, removeZero?) -&gt; []int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">max  <code class="type">int</code>   - Maximum value of the histogram.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>removeZero </i> <code class="type">bool</code>   - If true, the zero value is removed from the histogram.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int</code>  - Length is 256.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>histogram_rgb</summary>
+            <p><code>histogram_rgb(img, max, removeZero?) -&gt; []int, []int, []int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">max  <code class="type">int</code>   - Maximum value of the histogram.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>removeZero </i> <code class="type">bool</code>   - If true, the zero value is removed from the histogram.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int</code>  - Histogram of the red channel, length is 256.</li>
+                
+                  <li class="return"><code class="type">[]int</code>  - Histogram of the green channel, length is 256.</li>
+                
+                  <li class="return"><code class="type">[]int</code>  - Histogram of the blue channel, length is 256.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>histogram_red</summary>
+            <p><code>histogram_red(img, max, removeZero?) -&gt; []int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">max  <code class="type">int</code>   - Maximum value of the histogram.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>removeZero </i> <code class="type">bool</code>   - If true, the zero value is removed from the histogram.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int</code>  - Length is 256.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>histogram_green</summary>
+            <p><code>histogram_green(img, max, removeZero?) -&gt; []int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">max  <code class="type">int</code>   - Maximum value of the histogram.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>removeZero </i> <code class="type">bool</code>   - If true, the zero value is removed from the histogram.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int</code>  - Length is 256.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>histogram_blue</summary>
+            <p><code>histogram_blue(img, max, removeZero?) -&gt; []int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">max  <code class="type">int</code>   - Maximum value of the histogram.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>removeZero </i> <code class="type">bool</code>   - If true, the zero value is removed from the histogram.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int</code>  - Length is 256.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Border </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>BORDER_CONSTANT</code></li>
+              
+                <li class="const"><code>BORDER_REPLICATE</code></li>
+              
+                <li class="const"><code>BORDER_REFLECT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>LaplacianKernel </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>LAPLACIAN_K4</code></li>
+              
+                <li class="const"><code>LAPLACIAN_K8</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Direction </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>DIR_HORIZONTAL</code></li>
+              
+                <li class="const"><code>DIR_VERTICAL</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Threshold </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>THRESHOLD_BINARY</code></li>
+              
+                <li class="const"><code>THRESHOLD_BINARYINV</code></li>
+              
+                <li class="const"><code>THRESHOLD_TRUNC</code></li>
+              
+                <li class="const"><code>THRESHOLD_TOZERO</code></li>
+              
+                <li class="const"><code>THRESHOLD_TOZEROINV</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Interpolation </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>INTER_NEAREST</code></li>
+              
+                <li class="const"><code>INTER_LINEAR</code></li>
+              
+                <li class="const"><code>INTER_CATMULLROM</code></li>
+              
+                <li class="const"><code>INTER_LANCZOS</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Kernel</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">width  <code class="type">int</code>  - Width of the kernel. </li>
+                
+                <li class="prop">height  <code class="type">int</code>  - Height of the kernel. </li>
+                
+                <li class="prop">content  <code class="type">[][]float</code>  - Kernel content. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>center</summary>
+                <p><code>center() -&gt; struct&lt;image.Point&gt;</code></p>
+                
+                <hr>
+                <p>Returns the center of the kernel, rounded down.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>center_xy</summary>
+                <p><code>center_xy() -&gt; int, int</code></p>
+                
+                <hr>
+                <p>Returns the center of the kernel, rounded down.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>sum</summary>
+                <p><code>sum() -&gt; float</code></p>
+                
+                <hr>
+                <p>Returns the sum of all elements in the kernel.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>sum_abs</summary>
+                <p><code>sum_abs() -&gt; float</code></p>
+                
+                <hr>
+                <p>Returns the sum of the absolute values of all elements in the kernel.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size</summary>
+                <p><code>size() -&gt; struct&lt;image.Point&gt;</code></p>
+                
+                <hr>
+                <p>Returns the size of the kernel as a point.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>at</summary>
+                <p><code>at(x int, y int) -&gt; float</code></p>
+                
+                <hr>
+                <p>Returns the value at the given position, or nil if out of bounds. Uses 0-based indexing, set directly to the kernel content for 1-based indexing.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>set</summary>
+                <p><code>set(self, x int, y int, value float) -&gt; self</code></p>
+                
+                <hr>
+                <p>Sets the value at the given position. Uses 0-based indexing, set directly to the kernel content for 1-based indexing.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>normalize</summary>
+                <p><code>normalize(self) -&gt; self</code></p>
+                
+                <hr>
+                <p>Normalizes the kernel.</p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>normalize_set</summary>
+                <p><code>normalize_set(self, normalize bool) -&gt; self</code></p>
+                
+                <hr>
+                <p>Sets the normalize flag of the kernel, this normalization is only run when the kernel is built.</p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

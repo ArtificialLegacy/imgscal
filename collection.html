@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Collection - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Collection</h1>
+      <p>
+        Utility library for manually interacting with ImgScal&#39;s concurrency system. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/collection.go">
+            pkg/lua/lib/collection.go</a></code> 
+        | 
+        Import: <code>collection</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>task</summary>
+            <p><code>task(name) -&gt; int&lt;collection.TASK&gt;</code></p>
+            
+            
+            <p>
+              This creates an item in the task collection. This is a generic collection for any concurrency needs. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.TASK&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>reference</summary>
+            <p><code>reference(type, id) -&gt; id</code></p>
+            
+            
+            <p>
+              This creates a new task queue that references the same data, this does not ensure thread safety. The reference may also get out of sync if the original item is overridden. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.Type.*</code>  - ID for a new collection item from the above id.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>schedule</summary>
+            <p><code>schedule(type, id, func)</code></p>
+            
+            
+            <p>
+              Schedules a lua func to be called from the queue. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+                  <li class="arg">func  <code class="type">function()</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>wait</summary>
+            <p><code>wait(type, id)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>wait_all</summary>
+            <p><code>wait_all(type)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>wait_extensive</summary>
+            <p><code>wait_extensive()</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              This waits for all items across all collections to sync. Realistically, shouldn&#39;t be used. 
+            </p>
+            
+
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>collect</summary>
+            <p><code>collect(type, id)</code></p>
+            
+            
+            <p>
+              Items are collected automatically at the end of execution, but this can be used to collect early in workflows that create a large amount of items. This is important for collections that open files, as they are only closed when collected. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>exists</summary>
+            <p><code>exists(type, id) -&gt; bool</code></p>
+            
+            
+            <p>
+              Note that this is non-blocking, and can return true for items that get collected soon after. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code>  - If the item exists, and has not been collected.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>log</summary>
+            <p><code>log(type, id, msg)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+                  <li class="arg">msg  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>warn</summary>
+            <p><code>warn(type, id, msg)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+                  <li class="arg">msg  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>panic</summary>
+            <p><code>panic(type, id, msg)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">type  <code class="type">int&lt;collection.Type&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.Type.*&gt;</code>   - An ID from the same collection as the above type.</li>
+                  
+                
+                  <li class="arg">msg  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Type </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>TASK</code></li>
+              
+                <li class="const"><code>IMAGE</code></li>
+              
+                <li class="const"><code>CONTEXT</code></li>
+              
+                <li class="const"><code>QR</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Crate </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>CRATE_WINDOW</code></li>
+              
+                <li class="const"><code>CRATE_REF</code></li>
+              
+                <li class="const"><code>CRATE_GAMEMAKER</code></li>
+              
+                <li class="const"><code>CRATE_TEA</code></li>
+              
+                <li class="const"><code>CRATE_LIPGLOSS</code></li>
+              
+                <li class="const"><code>CRATE_CACHEDIMAGE</code></li>
+              
+                <li class="const"><code>CRATE_SHADER</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

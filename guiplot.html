@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>GUI Plots - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>GUI Plots</h1>
+      <p>
+        Extension of the GUI library for plot widgets. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/guiplot.go">
+            pkg/lua/lib/guiplot.go</a></code> 
+        | 
+        Import: <code>guiplot</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>wg_plot</summary>
+            <p><code>wg_plot(title) -&gt; struct&lt;guiplot.WidgetPlot&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.WidgetPlot&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>plot_ticker</summary>
+            <p><code>plot_ticker(position, label) -&gt; struct&lt;guiplot.PlotTicker&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">position  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">label  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotTicker&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_bar_h</summary>
+            <p><code>pt_bar_h(title, data) -&gt; struct&lt;guiplot.PlotBarH&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">[]float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotBarH&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_bar</summary>
+            <p><code>pt_bar(title, data) -&gt; struct&lt;guiplot.PlotBar&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">[]float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotBar&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_line</summary>
+            <p><code>pt_line(title, data) -&gt; struct&lt;guiplot.PlotLine&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">[]float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotLine&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_line_xy</summary>
+            <p><code>pt_line_xy(title, xdata, ydata) -&gt; struct&lt;guiplot.PlotLineXY&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">xdata  <code class="type">[]float</code> </li>
+                  
+                
+                  <li class="arg">ydata  <code class="type">[]float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotLineXY&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_pie_chart</summary>
+            <p><code>pt_pie_chart(labels, data, x, y, radius) -&gt; struct&lt;guiplot.PlotPieChart&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">labels  <code class="type">[]string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">[]float</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">radius  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotPieChart&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_scatter</summary>
+            <p><code>pt_scatter(title, data) -&gt; struct&lt;guiplot.PlotScatter&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">[]float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotScatter&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_scatter_xy</summary>
+            <p><code>pt_scatter_xy(title, xdata, ydata) -&gt; struct&lt;guiplot.PlotScatterXY&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">title  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">xdata  <code class="type">[]float</code> </li>
+                  
+                
+                  <li class="arg">ydata  <code class="type">[]float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotScatterXY&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pt_custom</summary>
+            <p><code>pt_custom(builder) -&gt; struct&lt;guiplot.PlotCustom&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">builder  <code class="type">function()</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;guiplot.PlotCustom&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>PlotFlags </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>FLAGPLOT_NONE</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOTITLE</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOLEGEND</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOMOUSETEXT</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOINPUTS</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOMENUS</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOBOXSELECT</code></li>
+              
+                <li class="const"><code>FLAGPLOT_NOFRAME</code></li>
+              
+                <li class="const"><code>FLAGPLOT_EQUAL</code></li>
+              
+                <li class="const"><code>FLAGPLOT_CROSSHAIRS</code></li>
+              
+                <li class="const"><code>FLAGPLOT_CANVASONLY</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>PlotAxis </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>PLOTAXIS_X1</code></li>
+              
+                <li class="const"><code>PLOTAXIS_X2</code></li>
+              
+                <li class="const"><code>PLOTAXIS_X3</code></li>
+              
+                <li class="const"><code>PLOTAXIS_Y1</code></li>
+              
+                <li class="const"><code>PLOTAXIS_Y2</code></li>
+              
+                <li class="const"><code>PLOTAXIS_Y3</code></li>
+              
+                <li class="const"><code>PLOTAXIS_COUNT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>PlotAxisFlags </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>FLAGPLOTAXIS_NONE</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOLABEL</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOGRIDLINES</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOTICKMARKS</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOTICKLABELS</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOINITIALFIT</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOMENUS</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOSIDESWITCH</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NOHIGHLIGHT</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_OPPOSITE</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_FOREGROUND</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_INVERT</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_AUTOFIT</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_RANGEFIT</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_PANSTRETCH</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_LOCKMIN</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_LOCKMAX</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_LOCK</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_NODECORATIONS</code></li>
+              
+                <li class="const"><code>FLAGPLOTAXIS_AUXDEFAULT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>PlotYAxis </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>PLOTYAXIS_LEFT</code></li>
+              
+                <li class="const"><code>PLOTYAXIS_FIRSTONRIGHT</code></li>
+              
+                <li class="const"><code>PLOTYAXIS_SECONDONRIGHT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>PlotType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>PLOT_BAR_H</code></li>
+              
+                <li class="const"><code>PLOT_BAR</code></li>
+              
+                <li class="const"><code>PLOT_LINE</code></li>
+              
+                <li class="const"><code>PLOT_LINE_XY</code></li>
+              
+                <li class="const"><code>PLOT_PIE_CHART</code></li>
+              
+                <li class="const"><code>PLOT_SCATTER</code></li>
+              
+                <li class="const"><code>PLOT_SCATTER_XY</code></li>
+              
+                <li class="const"><code>PLOT_CUSTOM</code></li>
+              
+                <li class="const"><code>PLOT_STYLE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>StylePlotColorID </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>COLIDPLOT_LINE</code></li>
+              
+                <li class="const"><code>COLIDPLOT_FILL</code></li>
+              
+                <li class="const"><code>COLIDPLOT_MARKEROUTLINE</code></li>
+              
+                <li class="const"><code>COLIDPLOT_MARKERFILL</code></li>
+              
+                <li class="const"><code>COLIDPLOT_ERRORBAR</code></li>
+              
+                <li class="const"><code>COLIDPLOT_FRAMEBG</code></li>
+              
+                <li class="const"><code>COLIDPLOT_PLOTBG</code></li>
+              
+                <li class="const"><code>COLIDPLOT_PLOTBORDER</code></li>
+              
+                <li class="const"><code>COLIDPLOT_LEGENDBG</code></li>
+              
+                <li class="const"><code>COLIDPLOT_LEGENDBORDER</code></li>
+              
+                <li class="const"><code>COLIDPLOT_LEGENDTEXT</code></li>
+              
+                <li class="const"><code>COLIDPLOT_TITLETEXT</code></li>
+              
+                <li class="const"><code>COLIDPLOT_INLAYTEXT</code></li>
+              
+                <li class="const"><code>COLIDPLOT_AXISTEXT</code></li>
+              
+                <li class="const"><code>COLIDPLOT_AXISGRID</code></li>
+              
+                <li class="const"><code>COLIDPLOT_AXISTICK</code></li>
+              
+                <li class="const"><code>COLIDPLOT_AXISBG</code></li>
+              
+                <li class="const"><code>COLIDPLOT_AXISBGHOVERED</code></li>
+              
+                <li class="const"><code>COLIDPLOT_AXISBGACTIVE</code></li>
+              
+                <li class="const"><code>COLIDPLOT_SELECTION</code></li>
+              
+                <li class="const"><code>COLIDPLOT_CROSSHAIRS</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>StylePlotVar </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>STYLEPLOTVAR_LINEWEIGHT</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MARKER</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MARKERSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_FILLALPHA</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_ERRORBARSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_ERRORBARWEIGHT</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_DIGITALBITHEIGHT</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_DIGITALBITGAP</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_PLOTBORDERSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MINORALPHA</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MAJORTICKLEN</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MINORTICKLEN</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MAJORTICKSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MINORTICKSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MAJORGRIDSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MINORGRIDSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_PLOTPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_LABELPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_LEGENDPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_LEGENDINNERPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_LEGENDSPACING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_MOUSEPOSPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_ANNOTAIONPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_FITPADDING</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_PLOTDEFAULTSIZE</code></li>
+              
+                <li class="const"><code>STYLEPLOTVAR_PLOTMINSIZE</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>WidgetPlot</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;gui.WidgetType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>axis_limits</summary>
+                <p><code>axis_limits(self, xmin float, xmax float, ymin float, ymax float, cond int&lt;gui.Condition&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>flags</summary>
+                <p><code>flags(self, flags int&lt;guiplot.PlotFlags&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>set_xaxis_label</summary>
+                <p><code>set_xaxis_label(self, axis int&lt;guiplot.PlotAxis&gt;, label string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>set_yaxis_label</summary>
+                <p><code>set_yaxis_label(self, axis int&lt;guiplot.PlotAxis&gt;, label string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size</summary>
+                <p><code>size(self, width float, height float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>x_axeflags</summary>
+                <p><code>x_axeflags(self, flags int&lt;guiplot.PlotAxisFlags&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>xticks</summary>
+                <p><code>xticks(self, ticks []struct&lt;guiplot.PlotTicker&gt;, default bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>y_axeflags</summary>
+                <p><code>y_axeflags(self, flags1 int&lt;guiplot.PlotAxisFlags&gt;, flags2 int&lt;guiplot.PlotAxisFlags&gt;, flags3 int&lt;guiplot.PlotAxisFlags&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>yticks</summary>
+                <p><code>yticks(self, ticks []struct&lt;guiplot.PlotTicker&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>plots</summary>
+                <p><code>plots(self, []struct&lt;guiplot.Plot&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotTicker</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">position  <code class="type">float</code>  </li>
+                
+                <li class="prop">label  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>PlotBarH</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+                <li class="prop">data  <code class="type">[]float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>height</summary>
+                <p><code>height(self, height float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>offset</summary>
+                <p><code>offset(self, offset float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>shift</summary>
+                <p><code>shift(self, shift float) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotBar</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+                <li class="prop">data  <code class="type">[]float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>width</summary>
+                <p><code>width(self, width float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>offset</summary>
+                <p><code>offset(self, offset float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>shift</summary>
+                <p><code>shift(self, shift float) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotLine</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+                <li class="prop">data  <code class="type">[]float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>set_plot_y_axis</summary>
+                <p><code>set_plot_y_axis(self, axis int&lt;guiplot.PlotYAxis&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>offset</summary>
+                <p><code>offset(self, offset float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>x0</summary>
+                <p><code>x0(self, x0 float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>xscale</summary>
+                <p><code>xscale(self, xscale float) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotLineXY</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+                <li class="prop">xdata  <code class="type">[]float</code>  </li>
+                
+                <li class="prop">ydata  <code class="type">[]float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>set_plot_y_axis</summary>
+                <p><code>set_plot_y_axis(self, axis int&lt;guiplot.PlotYAxis&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>offset</summary>
+                <p><code>offset(self, offset float) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotPieChart</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">labels  <code class="type">[]string</code>  </li>
+                
+                <li class="prop">data  <code class="type">[]float</code>  </li>
+                
+                <li class="prop">x  <code class="type">float</code>  </li>
+                
+                <li class="prop">y  <code class="type">float</code>  </li>
+                
+                <li class="prop">radius  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>angle0</summary>
+                <p><code>angle0(self, angle0 float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>label_format</summary>
+                <p><code>label_format(self, format string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>normalize</summary>
+                <p><code>normalize(self, bool) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotScatter</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+                <li class="prop">data  <code class="type">[]float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>offset</summary>
+                <p><code>offset(self, offset float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>x0</summary>
+                <p><code>x0(self, x0 float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>xscale</summary>
+                <p><code>xscale(self, xscale float) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotScatterXY</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">title  <code class="type">string</code>  </li>
+                
+                <li class="prop">xdata  <code class="type">[]float</code>  </li>
+                
+                <li class="prop">ydata  <code class="type">[]float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>offset</summary>
+                <p><code>offset(self, offset float) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PlotCustom</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+                <li class="prop">builder  <code class="type">function()</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Plot</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;guiplot.PlotType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+      </section>
+    </main>
+  </body>
+</html>

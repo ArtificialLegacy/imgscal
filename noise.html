@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Noise - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Noise</h1>
+      <p>
+        Library for generating and interacting with noise maps. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/noise.go">
+            pkg/lua/lib/noise.go</a></code> 
+        | 
+        Import: <code>noise</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>simplex_image_new</summary>
+            <p><code>simplex_image_new(seed, coef, normalize, name, encoding, width, height, model?, disableColor?, disableAlpha?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+            <p>
+              Creates a new image, setting each pixel of the image to the simplex_2d result of the x,y pos multiplied by coef. If color is disabled, r,g,b values are set to 255. If alpha is disabled, alpha is set to 255. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">seed  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">coef  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">normalize  <code class="type">bool</code>   - Use noise values between (0,1) instead of (-1,1).</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableColor </i> <code class="type">bool</code>   - Don&#39;t set r,g,b values using noise.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableAlpha </i> <code class="type">bool</code>   - Don&#39;t set alpha values using noise.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>simplex_image_map</summary>
+            <p><code>simplex_image_map(seed, coef, id, normalize, disableColor?, disableAlpha?, keep?)</code></p>
+            
+            
+            <p>
+              Loops over the pixels of an image, setting each pixel of the image to the simplex_2d result of the x,y pos multiplied by coef. If color is disabled, r,g,b values are set to 255. If alpha is disabled, alpha is set to 255. If keep is set, the disabled values will be kept in the image, useful for only changing the alpha channel of an image. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">seed  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">coef  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">normalize  <code class="type">bool</code>   - Use noise values between (0,1) instead of (-1,1).</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableColor </i> <code class="type">bool</code>   - Don&#39;t set r,g,b values using noise.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableAlpha </i> <code class="type">bool</code>   - Don&#39;t set alpha values using noise.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>keep </i> <code class="type">bool</code>   - Maintain color or alpha channels if they&#39;re disabled.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>simplex_2d</summary>
+            <p><code>simplex_2d(seed, x, y, normalize?) - float</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">seed  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>normalize </i> <code class="type">bool</code>   - Use noise values between (0,1) instead of (-1,1).</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>simplex_3d</summary>
+            <p><code>simplex_3d(seed, x, y, z, normalize?) -&gt; float</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">seed  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">z  <code class="type">float</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>normalize </i> <code class="type">bool</code>   - Use noise values between (0,1) instead of (-1,1).</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>simplex_4d</summary>
+            <p><code>simplex_4d(seed, x, y, z, w, normalize?) -&gt; float</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">seed  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">z  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">w  <code class="type">float</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>normalize </i> <code class="type">bool</code>   - Use noise values between (0,1) instead of (-1,1).</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

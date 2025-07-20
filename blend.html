@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Blend - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Blend</h1>
+      <p>
+        Combines images using different blend modes. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/blend.go">
+            pkg/lua/lib/blend.go</a></code> 
+        | 
+        Import: <code>blend</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>add</summary>
+            <p><code>add(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_burn</summary>
+            <p><code>color_burn(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_dodge</summary>
+            <p><code>color_dodge(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>darken</summary>
+            <p><code>darken(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>difference</summary>
+            <p><code>difference(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>divide</summary>
+            <p><code>divide(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>exclusion</summary>
+            <p><code>exclusion(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>lighten</summary>
+            <p><code>lighten(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>linear_burn</summary>
+            <p><code>linear_burn(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>linear_light</summary>
+            <p><code>linear_light(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>multiply</summary>
+            <p><code>multiply(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>normal</summary>
+            <p><code>normal(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>overlay</summary>
+            <p><code>overlay(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>screen</summary>
+            <p><code>screen(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>soft_light</summary>
+            <p><code>soft_light(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>subtract</summary>
+            <p><code>subtract(bg, fg, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>opacity</summary>
+            <p><code>opacity(bg, fg, percent, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">bg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fg  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Between 0 and 1.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the new image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

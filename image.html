@@ -1,0 +1,3392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Image - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Image</h1>
+      <p>
+        Library including the basic tools for handling images and colors. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/image.go">
+            pkg/lua/lib/image.go</a></code> 
+        | 
+        Import: <code>image</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>new</summary>
+            <p><code>new(name, encoding, width, height, model?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>new_filled</summary>
+            <p><code>new_filled(name, encoding, width, height, color, model?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>new_random</summary>
+            <p><code>new_random(name, encoding, width, height, enableAlpha?, model?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>enableAlpha </i> <code class="type">bool</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>new_empty</summary>
+            <p><code>new_empty(name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+            <p>
+              Creates a 1px by 1px gray image. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>remove</summary>
+            <p><code>remove(id)</code></p>
+            
+            
+            <p>
+              Removes the image from the collection. This is a shortcut for collection.collect(collection.IMAGE, id). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>name</summary>
+            <p><code>name(id, name)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The new name to use for the image, not including the file extension.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>name_ext</summary>
+            <p><code>name_ext(id, options)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">options  <code class="type">struct&lt;image.ImageNameOptions&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encoding</summary>
+            <p><code>encoding(id, encoding)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>model</summary>
+            <p><code>model(id) -&gt; int&lt;image.ColorModel&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>size</summary>
+            <p><code>size(id) -&gt; int, int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - Image width.</li>
+                
+                  <li class="return"><code class="type">int</code>  - Image height.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>crop</summary>
+            <p><code>crop(id, x1, y1, x2, y2)</code></p>
+            
+            
+            <p>
+              Overwrites the image. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>subimg</summary>
+            <p><code>subimg(id, name, x1, y1, x2, y2, copy?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name for the new image.</li>
+                  
+                
+                  <li class="arg">x1  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>copy </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>copy</summary>
+            <p><code>copy(id, name, model) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">model  <code class="type">int&lt;image.ColorModel&gt;</code>   - Use -1 to maintain the color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>clone</summary>
+            <p><code>clone(id, src, model)</code></p>
+            
+            
+            <p>
+              Clones image src to id with the new model. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">src  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">model  <code class="type">int&lt;image.ColorModel&gt;</code>   - Use -1 to maintain the color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>convert</summary>
+            <p><code>convert(id, model)</code></p>
+            
+            
+            <p>
+              Replaces the image inplace with a new image with the new model. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">model  <code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>refresh</summary>
+            <p><code>refresh(id)</code></p>
+            
+            
+            <p>
+              Shortcut for redrawing the image to guarantee the bounds of the image start at (0,0). This is sometimes needed as thirdparty libraries don&#39;t always account for non-zero min bounds. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>clear</summary>
+            <p><code>clear(id)</code></p>
+            
+            
+            <p>
+              Resets all pixels to 0,0,0,0. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>alpha_set</summary>
+            <p><code>alpha_set(id, alpha)</code></p>
+            
+            
+            <p>
+              This has no effect on gray, gray16, or cmyk images. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">alpha  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>pixel</summary>
+            <p><code>pixel(id, x, y) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pixel_set</summary>
+            <p><code>pixel_set(id, x, y, color)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>point</summary>
+            <p><code>point(x?, y?) -&gt; struct&lt;image.Point&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  
+                    <li class="arg-opt"><i>x </i> <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>y </i> <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.Point&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_hex_to_rgba</summary>
+            <p><code>color_hex_to_rgba(hex) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">hex  <code class="type">string</code>   - Accepts the formats RGBA, RGB, RRGGBBAA, RRGGBB, and an optional prefix of &#34;#&#34;, &#34;$&#34;, or &#34;0x&#34;.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_hex_to_rgba_bgr</summary>
+            <p><code>color_hex_to_rgba_bgr(hex) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">hex  <code class="type">string</code>   - Accepts the formats ABGR, BGR, AABBGGRR, BBGGRR, and an optional prefix of &#34;#&#34;, &#34;$&#34;, or &#34;0x&#34;.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_hex</summary>
+            <p><code>color_to_hex(color, noalpha?, prefix?, lowercase?) -&gt; string</code></p>
+            
+            
+            <p>
+              In the format RRGGBBAA or RRGGBB. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>noalpha </i> <code class="type">bool</code>   - Set to true to exclude the alpha channel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>prefix </i> <code class="type">string</code>   - Should be &#34;&#34;, &#34;#&#34;, &#39;$&#39;, or &#34;0x&#34;.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>lowercase </i> <code class="type">bool</code>   - Set to true to use lowercase letters in the hex string.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_hex_bgr</summary>
+            <p><code>color_to_hex_bgr(color, noalpha?, prefix?, lowercase?) -&gt; string</code></p>
+            
+            
+            <p>
+              In the format AABBGGRR or BBGGRR. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>noalpha </i> <code class="type">bool</code>   - Set to true to exclude the alpha channel.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>prefix </i> <code class="type">string</code>   - Should be &#34;&#34;, &#34;#&#34;, &#39;$&#39;, or &#34;0x&#34;.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>lowercase </i> <code class="type">bool</code>   - Set to true to use lowercase letters in the hex string.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_8bit_to_16bit</summary>
+            <p><code>color_8bit_to_16bit(c) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_16bit_to_8bit</summary>
+            <p><code>color_16bit_to_8bit(c) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_24bit_to_rgba</summary>
+            <p><code>color_24bit_to_rgba(c) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_32bit_to_rgba</summary>
+            <p><code>color_32bit_to_rgba(c) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_24bit</summary>
+            <p><code>color_to_24bit(color) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_32bit</summary>
+            <p><code>color_to_32bit(color) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_rgb</summary>
+            <p><code>color_rgb(r, g, b) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+            <p>
+              Alpha channel is set to 255. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">r  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">g  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">b  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_rgba</summary>
+            <p><code>color_rgba(r, g, b, a) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">r  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">g  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">b  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_hsv</summary>
+            <p><code>color_hsv(h, s, v) -&gt; struct&lt;image.ColorHSVA&gt;</code></p>
+            
+            
+            <p>
+              Alpha channel is set to 255. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">h  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">s  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">v  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorHSVA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_hsva</summary>
+            <p><code>color_hsva(h, s, v, a) -&gt; struct&lt;image.ColorHSVA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">h  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">s  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">v  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorHSVA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_hsl</summary>
+            <p><code>color_hsl(h, s, l) -&gt; struct&lt;image.ColorHSLA&gt;</code></p>
+            
+            
+            <p>
+              Alpha channel is set to 255. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">h  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">s  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">l  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorHSLA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_hsla</summary>
+            <p><code>color_hsla(h, s, l, a) -&gt; struct&lt;image.ColorHSLA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">h  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">s  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">l  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorHSLA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_alpha</summary>
+            <p><code>color_alpha(a) -&gt; struct&lt;image.ColorALPHA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorALPHA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_alpha16</summary>
+            <p><code>color_alpha16(a) -&gt; struct&lt;image.ColorALPHA16&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorALPHA16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_gray</summary>
+            <p><code>color_gray(v) -&gt; struct&lt;image.ColorGRAY&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">v  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAY&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_gray16</summary>
+            <p><code>color_gray16(v) -&gt; struct&lt;image.ColorGRAY16&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">v  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAY16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_graya</summary>
+            <p><code>color_graya(v, a) -&gt; struct&lt;image.ColorGRAYA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">v  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_graya16</summary>
+            <p><code>color_graya16(v, a) -&gt; struct&lt;image.ColorGRAYA16&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">v  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_cmyk</summary>
+            <p><code>color_cmyk(c, m, y, k) -&gt; struct&lt;image.ColorCMYK&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">m  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">k  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorCMYK&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_cmyka</summary>
+            <p><code>color_cmyka(c, m, y, k, a) -&gt; struct&lt;image.ColorCMYKA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">c  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">m  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">k  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorCMYKA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_zero</summary>
+            <p><code>color_zero() -&gt; struct&lt;image.ColorZERO&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorZERO&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_rgb</summary>
+            <p><code>color_to_rgb(color) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_hsv</summary>
+            <p><code>color_to_hsv(color) -&gt; struct&lt;image.ColorHSVA&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorHSVA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_hsl</summary>
+            <p><code>color_to_hsl(color) -&gt; struct&lt;image.ColorHSLA&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorHSLA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_gray</summary>
+            <p><code>color_to_gray(color) -&gt; struct&lt;image.ColorGRAY&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAY&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_gray_average</summary>
+            <p><code>color_to_gray_average(color) -&gt; struct&lt;image.ColorGRAY&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAY&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_gray_weight</summary>
+            <p><code>color_to_gray_weight(color, rWeight, gWeight, bWeight) -&gt; struct&lt;image.ColorGRAY&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  <li class="arg">rWeight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">gWeight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">bWeight  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAY&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_graya</summary>
+            <p><code>color_to_graya(color) -&gt; struct&lt;image.ColorGRAYA&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_graya_average</summary>
+            <p><code>color_to_graya_average(color) -&gt; struct&lt;image.ColorGRAYA&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_graya_weight</summary>
+            <p><code>color_to_graya_weight(color, rWeight, gWeight, bWeight) -&gt; struct&lt;image.ColorGRAYA&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  <li class="arg">rWeight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">gWeight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">bWeight  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_graya16</summary>
+            <p><code>color_to_graya16(color) -&gt; struct&lt;image.ColorGRAYA16&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_graya16_average</summary>
+            <p><code>color_to_graya16_average(color) -&gt; struct&lt;image.ColorGRAYA16&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_graya16_weight</summary>
+            <p><code>color_to_graya16_weight(color, rWeight, gWeight, bWeight) -&gt; struct&lt;image.ColorGRAYA16&gt;</code></p>
+            
+            
+            <p>
+              Alpha is maintained. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  <li class="arg">rWeight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">gWeight  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">bWeight  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorGRAYA16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_alpha</summary>
+            <p><code>color_to_alpha(color) -&gt; struct&lt;image.ColorALPHA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorALPHA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_alpha16</summary>
+            <p><code>color_to_alpha16(color) -&gt; struct&lt;image.ColorALPHA16&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorALPHA16&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_cmyk</summary>
+            <p><code>color_to_cmyk(color) -&gt; struct&lt;image.ColorCMYK&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorCMYK&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_to_cmyka</summary>
+            <p><code>color_to_cmyka(color) -&gt; struct&lt;image.ColorCMYKA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorCMYKA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>convert_color</summary>
+            <p><code>convert_color(model, color) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">model  <code class="type">int&lt;image.ColorModel&gt;</code> </li>
+                  
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>draw</summary>
+            <p><code>draw(id, src, x, y, width?, height?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">src  <code class="type">int&lt;collection.IMAGE&gt;</code>   - To draw onto the base image.</li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>width </i> <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>height </i> <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>map</summary>
+            <p><code>map(id, fn, invert?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">fn  <code class="type">function(x int, y int, color struct&lt;image.ColorRGBA&gt;) -&gt; struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>invert </i> <code class="type">bool</code>   - Reverses the looping order from columns to rows.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>compare</summary>
+            <p><code>compare(id1, id2) -&gt; bool</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              Compares two images pixel by pixel. Early returns if the image ids are the same, without scheduling any tasks. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id1  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">id2  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>ext_to_encoding</summary>
+            <p><code>ext_to_encoding(ext) -&gt; int&lt;image.Encoding&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ext  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;image.Encoding&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>path_to_encoding</summary>
+            <p><code>path_to_encoding(pth) -&gt; int&lt;image.Encoding&gt;</code></p>
+            
+            
+            <p>
+              First gets the ext from the path. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pth  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;image.Encoding&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encoding_to_ext</summary>
+            <p><code>encoding_to_ext(encoding) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>extract_colors</summary>
+            <p><code>extract_colors(img) -&gt; []struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>extract_colors_config</summary>
+            <p><code>extract_colors_config(img, downSizeTo, smallBucket) -&gt; []struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">downSizeTo  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">smallBucket  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>png_data_chunk</summary>
+            <p><code>png_data_chunk(key, data) -&gt; struct&lt;image.PNGDataChunk&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">key  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.PNGDataChunk&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gif</summary>
+            <p><code>gif(imgs, delay, loopCount, disposal?, backgroundIndex?) -&gt; struct&lt;image.GIF&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">imgs  <code class="type">[]int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">delay  <code class="type">[]int</code> </li>
+                  
+                
+                  <li class="arg">loopCount  <code class="type">int</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disposal </i> <code class="type">[]int&lt;image.GIFDisposal&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>backgroundIndex </i> <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.GIF&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>ColorModel </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>MODEL_RGBA</code></li>
+              
+                <li class="const"><code>MODEL_RGBA64</code></li>
+              
+                <li class="const"><code>MODEL_NRGBA</code></li>
+              
+                <li class="const"><code>MODEL_NRGBA64</code></li>
+              
+                <li class="const"><code>MODEL_ALPHA</code></li>
+              
+                <li class="const"><code>MODEL_ALPHA16</code></li>
+              
+                <li class="const"><code>MODEL_GRAY</code></li>
+              
+                <li class="const"><code>MODEL_GRAY16</code></li>
+              
+                <li class="const"><code>MODEL_CMYK</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Encoding </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>ENCODING_PNG</code></li>
+              
+                <li class="const"><code>ENCODING_JPEG</code></li>
+              
+                <li class="const"><code>ENCODING_GIF</code></li>
+              
+                <li class="const"><code>ENCODING_TIFF</code></li>
+              
+                <li class="const"><code>ENCODING_BMP</code></li>
+              
+                <li class="const"><code>ENCODING_ICO</code></li>
+              
+                <li class="const"><code>ENCODING_CUR</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>ColorType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>COLOR_TYPE_RGBA</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_HSVA</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_HSLA</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_GRAY</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_GRAY16</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_GRAYA</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_GRAYA16</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_ALPHA</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_ALPHA16</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_CMYK</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_CMYKA</code></li>
+              
+                <li class="const"><code>COLOR_TYPE_ZERO</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>GIFDisposal </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>GIFDISPOSAL_NONE</code></li>
+              
+                <li class="const"><code>GIFDISPOSAL_BACKGROUND</code></li>
+              
+                <li class="const"><code>GIFDISPOSAL_PREVIOUS</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>WebPPreset </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>WEBPPRESET_DEFAULT</code></li>
+              
+                <li class="const"><code>WEBPPRESET_PICTURE</code></li>
+              
+                <li class="const"><code>WEBPPRESET_PHOTO</code></li>
+              
+                <li class="const"><code>WEBPPRESET_DRAWING</code></li>
+              
+                <li class="const"><code>WEBPPRESET_ICON</code></li>
+              
+                <li class="const"><code>WEBPPRESET_TEXT</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>ImageNameOptions</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+                <li class="prop">prefix  <code class="type">string</code>  </li>
+                
+                <li class="prop">suffix  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>Point</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">x  <code class="type">int</code>  </li>
+                
+                <li class="prop">y  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorRGBA</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">red  <code class="type">int</code>  </li>
+                
+                <li class="prop">green  <code class="type">int</code>  </li>
+                
+                <li class="prop">blue  <code class="type">int</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorHSVA</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">hue  <code class="type">int</code>  </li>
+                
+                <li class="prop">sat  <code class="type">int</code>  </li>
+                
+                <li class="prop">value  <code class="type">int</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorHSLA</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">hue  <code class="type">int</code>  </li>
+                
+                <li class="prop">light  <code class="type">int</code>  </li>
+                
+                <li class="prop">value  <code class="type">int</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorALPHA</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorALPHA16</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorGRAY</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">gray  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorGRAY16</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">gray  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorGRAYA</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">gray  <code class="type">int</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorGRAYA16</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">gray  <code class="type">int</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorCMYK</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">cyan  <code class="type">int</code>  </li>
+                
+                <li class="prop">magenta  <code class="type">int</code>  </li>
+                
+                <li class="prop">yellow  <code class="type">int</code>  </li>
+                
+                <li class="prop">key  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorCMYKA</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+                <li class="prop">cyan  <code class="type">int</code>  </li>
+                
+                <li class="prop">magenta  <code class="type">int</code>  </li>
+                
+                <li class="prop">yellow  <code class="type">int</code>  </li>
+                
+                <li class="prop">key  <code class="type">int</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorZERO</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>PNGDataChunk</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">key  <code class="type">string</code>  </li>
+                
+                <li class="prop">data  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>GIF</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">img  <code class="type">[]int&lt;collection.IMAGE&gt;</code>  </li>
+                
+                <li class="prop">delay  <code class="type">[]int</code>  </li>
+                
+                <li class="prop">disposal  <code class="type">[]int&lt;image.GIFDisposal&gt;</code>  </li>
+                
+                <li class="prop">loop_count  <code class="type">int</code>  </li>
+                
+                <li class="prop">background_index  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Color</summary>
+            <p>
+              Color structs are automatically converted into the needed type. Do mind that some functions may return a different type than what was passed into it. 
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;image.ColorType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+      </section>
+    </main>
+  </body>
+</html>

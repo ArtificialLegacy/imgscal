@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>IO - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>IO</h1>
+      <p>
+        Library for handling io operations with the file system. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/io.go">
+            pkg/lua/lib/io.go</a></code> 
+        | 
+        Import: <code>io</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>decode</summary>
+            <p><code>decode(path, model?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_string</summary>
+            <p><code>decode_string(name, encoding, data, model?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_config</summary>
+            <p><code>decode_config(path) -&gt; int, int, bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The width of the image.</li>
+                
+                  <li class="return"><code class="type">int</code>  - The height of the image.</li>
+                
+                  <li class="return"><code class="type">bool</code>  - If the image can be decoded.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_config_string</summary>
+            <p><code>decode_config_string(encoding, data) -&gt; int, int, bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The width of the image.</li>
+                
+                  <li class="return"><code class="type">int</code>  - The height of the image.</li>
+                
+                  <li class="return"><code class="type">bool</code>  - If the image can be decoded.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_into</summary>
+            <p><code>decode_into(path, id, model?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.INT&gt;</code>   - Image ID to overwrite with decoded image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>decode_into_string</summary>
+            <p><code>decode_into_string(name, encoding, data, id, model?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.INT&gt;</code>   - Image ID to overwrite with decoded image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>decode_cached</summary>
+            <p><code>decode_cached(path, model?) -&gt; int&lt;collection.CRATE_CACHEDIMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.CRATE_CACHEDIMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_cached_string</summary>
+            <p><code>decode_cached_string(encoding, data, model?) -&gt; int&lt;collection.CRATE_CACHEDIMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.CRATE_CACHEDIMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_png_data</summary>
+            <p><code>decode_png_data(path, model?) -&gt; int&lt;collection.IMAGE&gt;, []struct&lt;image.PNGDataChunk&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+                  <li class="return"><code class="type">[]struct&lt;image.PNGDataChunk&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_png_data_string</summary>
+            <p><code>decode_png_data_string(name, data, model?) -&gt; int&lt;collection.IMAGE&gt;, []struct&lt;image.PNGDataChunk&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+                  <li class="return"><code class="type">[]struct&lt;image.PNGDataChunk&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_favicon</summary>
+            <p><code>decode_favicon(path, encoding, model?) -&gt; []int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+            <p>
+              Decodes an ICO type favicon file into an array of images. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - The encoding to use for the extracted images.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_favicon_string</summary>
+            <p><code>decode_favicon_string(name, data, encoding, model?) -&gt; []int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+            <p>
+              Decodes an ICO type favicon into an array of images. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - The encoding to use for the extracted images.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_favicon_cursor</summary>
+            <p><code>decode_favicon_cursor(path, encoding, model?) -&gt; []int&lt;collection.IMAGE&gt;, []int</code></p>
+            
+            
+            <p>
+              Decodes a CUR type favicon file into an array of images and hotspots. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - The encoding to use for the extracted images.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int&lt;collection.IMAGE&gt;</code> </li>
+                
+                  <li class="return"><code class="type">[]int</code>  - Pairs of ints representing the hotspot of each cursor. e.g. [x1, y1, x2, y2, ...]</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_favicon_cursor_string</summary>
+            <p><code>decode_favicon_cursor_string(name, data, encoding, model?) -&gt; []int&lt;collection.IMAGE&gt;, []int</code></p>
+            
+            
+            <p>
+              Decodes a CUR type favicon into an array of images and hotspots. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code>   - The encoding to use for the extracted images.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]int&lt;collection.IMAGE&gt;</code> </li>
+                
+                  <li class="return"><code class="type">[]int</code>  - Pairs of ints representing the hotspot of each cursor. e.g. [x1, y1, x2, y2, ...]</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_favicon_config</summary>
+            <p><code>decode_favicon_config(path) -&gt; struct&lt;io.FaviconConfig&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to grab the image from.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;io.FaviconConfig&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_favicon_config_string</summary>
+            <p><code>decode_favicon_config_string(data) -&gt; struct&lt;io.FaviconConfig&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;io.FaviconConfig&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_gif</summary>
+            <p><code>decode_gif(path, name, encoding, model?) -&gt; struct&lt;image.GIF&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.Model&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.GIF&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_gif_string</summary>
+            <p><code>decode_gif_string(data, name, encoding, model?) -&gt; struct&lt;image.GIF&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.Model&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.GIF&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>load_embedded</summary>
+            <p><code>load_embedded(embedded, model?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">embedded  <code class="type">int&lt;io.Embedded&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.ColorModel&gt;</code>   - Used only to specify default of unsupported color models.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode</summary>
+            <p><code>encode(id, path)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image id to encode and save to file.</li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to save the file to.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encode_string</summary>
+            <p><code>encode_string(id) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image id to encode and save to file.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_png_data</summary>
+            <p><code>encode_png_data(id, chunks, path)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image id to encode and save to file.</li>
+                  
+                
+                  <li class="arg">chunks  <code class="type">[]struct&lt;image.PNGDataChunk&gt;</code>   - The PNG data chunks to encode with the image.</li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to save the file to.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encode_png_data_string</summary>
+            <p><code>encode_png_data_string(id, chunks) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image id to encode and save to file.</li>
+                  
+                
+                  <li class="arg">chunks  <code class="type">[]struct&lt;image.PNGDataChunk&gt;</code>   - The PNG data chunks to encode with the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_favicon</summary>
+            <p><code>encode_favicon(name, ids, path)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the favicon file, without the extension.</li>
+                  
+                
+                  <li class="arg">ids  <code class="type">[]int&lt;collection.IMAGE&gt;</code>   - List of image ids to encode and save into a favicon.</li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to save the file to.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encode_favicon_string</summary>
+            <p><code>encode_favicon_string(ids) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ids  <code class="type">[]int&lt;collection.IMAGE&gt;</code>   - List of image ids to encode and save into a favicon.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_favicon_cursor</summary>
+            <p><code>encode_favicon_cursor(name, ids, hotspots, path)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the favicon file, without the extension.</li>
+                  
+                
+                  <li class="arg">ids  <code class="type">[]int&lt;collection.IMAGE&gt;</code>   - List of image ids to encode and save into a favicon.</li>
+                  
+                
+                  <li class="arg">hotspots  <code class="type">[]int</code>   - Pairs of ints representing the hotspot of each cursor.</li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to save the file to.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encode_favicon_cursor_string</summary>
+            <p><code>encode_favicon_cursor_string(ids, hotspots) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ids  <code class="type">[]int&lt;collection.IMAGE&gt;</code>   - List of image ids to encode and save into a favicon.</li>
+                  
+                
+                  <li class="arg">hotspots  <code class="type">[]int</code>   - Pairs of ints representing the hotspot of each cursor.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_gif</summary>
+            <p><code>encode_gif(name, gif, path)</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Excluding the extension.</li>
+                  
+                
+                  <li class="arg">gif  <code class="type">struct&lt;image.GIF&gt;</code> </li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to save the file to.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encode_gif_string</summary>
+            <p><code>encode_gif_string(gif) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Excluding the extension.</li>
+                  
+                
+                  <li class="arg">gif  <code class="type">struct&lt;image.GIF&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_webp</summary>
+            <p><code>encode_webp(id, path, preset, lossy, level)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image id to encode and save to file.</li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to save the file to.</li>
+                  
+                
+                  <li class="arg">preset  <code class="type">int&lt;image.WebPPreset&gt;</code> </li>
+                  
+                
+                  <li class="arg">lossy  <code class="type">bool</code> </li>
+                  
+                
+                  <li class="arg">level  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>encode_webp_string</summary>
+            <p><code>encode_webp_string(id, preset, lossy, lvel) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image id to encode and save to file.</li>
+                  
+                
+                  <li class="arg">preset  <code class="type">int&lt;image.WebPPreset&gt;</code> </li>
+                  
+                
+                  <li class="arg">lossy  <code class="type">bool</code> </li>
+                  
+                
+                  <li class="arg">level  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>load_palette</summary>
+            <p><code>load_palette(path) -&gt; []struct&lt;image.Color&gt;</code></p>
+            
+            
+            <p>
+              Use to load a hex color palette file; For example, from lospec. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - Path to a .hex file for the palette.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]struct&lt;image.Color&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>save_palette</summary>
+            <p><code>save_palette(path, colors)</code></p>
+            
+            
+            <p>
+              Discards alpha channels. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - File to save hex data to, filename should end in .hex.</li>
+                  
+                
+                  <li class="arg">colors  <code class="type">[]struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>remove</summary>
+            <p><code>remove(path, all?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>all </i> <code class="type">bool</code>   - If to remove all directories going to the given path.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>exists</summary>
+            <p><code>exists(path) -&gt; bool, bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code>  - If the file exists.</li>
+                
+                  <li class="return"><code class="type">bool</code>  - If the file is a directory.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir</summary>
+            <p><code>dir(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing all file paths in the directory.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_img</summary>
+            <p><code>dir_img(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan for images.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to each valid image in the directory.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_txt</summary>
+            <p><code>dir_txt(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan for txt.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to each valid txt in the directory.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_json</summary>
+            <p><code>dir_json(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan for json.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to each valid json in the directory.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_dir</summary>
+            <p><code>dir_dir(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan for directories.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to each valid dir in the directory.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_filter</summary>
+            <p><code>dir_filter(path, filter) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan.</li>
+                  
+                
+                  <li class="arg">filter  <code class="type">[]string</code>   - Array of file extensions to include.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to all files that match the filter.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_recursive</summary>
+            <p><code>dir_recursive(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan for files, within all sub-directories.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to each valid file in the directory and sub-directories.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>dir_recursive_filter</summary>
+            <p><code>dir_recursive_filter(path, filter) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The directory path to scan for files, within all sub-directories.</li>
+                  
+                
+                  <li class="arg">filter  <code class="type">[]string</code>   - Array of file extensions to include.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - Array containing paths to each valid file in the directory and sub-directories.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>mkdir</summary>
+            <p><code>mkdir(path, all?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>all </i> <code class="type">bool</code>   - If to create all directories going to the given path.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>path_join</summary>
+            <p><code>path_join(paths...) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">paths  <code class="type">string...</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>wd</summary>
+            <p><code>wd() -&gt; string</code></p>
+            
+            
+            <p>
+              Returns the dir of the currently running workflow. 
+            </p>
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>default_input</summary>
+            <p><code>default_input() -&gt; string</code></p>
+            
+            
+            <p>
+              Returns the default input directory specified in the config file. 
+            </p>
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>default_output</summary>
+            <p><code>default_output() -&gt; string</code></p>
+            
+            
+            <p>
+              Returns the default output directory specified in the config file. 
+            </p>
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>base</summary>
+            <p><code>base(pth) -&gt; string</code></p>
+            
+            
+            <p>
+              Returns the name of the file only, without the extension or trailing path. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pth  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>path_to</summary>
+            <p><code>path_to(pth) -&gt; string</code></p>
+            
+            
+            <p>
+              Returns the path to a file. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pth  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>ext</summary>
+            <p><code>ext(pth) -&gt; string</code></p>
+            
+            
+            <p>
+              Returns the ext of the file only. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pth  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Embedded </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code> EMBEDDED_ICONCIRCLE_16x16</code></li>
+              
+                <li class="const"><code> EMBEDDED_ICONCIRCLE_32x32</code></li>
+              
+                <li class="const"><code> EMBEDDED_ICON_16x16</code></li>
+              
+                <li class="const"><code> EMBEDDED_ICON_32x32</code></li>
+              
+                <li class="const"><code> EMBEDDED_ICON_180x180</code></li>
+              
+                <li class="const"><code> EMBEDDED_ICON_192x192</code></li>
+              
+                <li class="const"><code> EMBEDDED_ICON_512x512</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>ICOType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>ICOTYPE_ICO</code></li>
+              
+                <li class="const"><code>ICOTYPE_CUR</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>FaviconConfig</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;io.ICOType&gt;</code>  - The type of favicon. </li>
+                
+                <li class="prop">count  <code class="type">int</code>  - The number of images in the favicon. </li>
+                
+                <li class="prop">largest  <code class="type">int</code>  - The index of the largest image in the favicon. </li>
+                
+                <li class="prop">entries  <code class="type">[]struct&lt;io.ICOEntry&gt;</code>  - The entries of the favicon. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ICOEntry</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">width  <code class="type">int</code>  - The width of the image. </li>
+                
+                <li class="prop">height  <code class="type">int</code>  - The height of the image. </li>
+                
+                <li class="prop">data1  <code class="type">int</code>  - The x hotspot of the cursor; always 0 for icons. </li>
+                
+                <li class="prop">data2  <code class="type">int</code>  - The y hotspot of the cursor; always 0 for icons. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

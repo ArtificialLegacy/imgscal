@@ -1,0 +1,2755 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Filter - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Filter</h1>
+      <p>
+        Library for applying lists of filters onto images. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/filter.go">
+            pkg/lua/lib/filter.go</a></code> 
+        | 
+        Import: <code>filter</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>draw</summary>
+            <p><code>draw(id1, id2, filters, disableParallelization?)</code></p>
+            
+            
+            <p>
+              Applies the filters to image1 with the output going into image2. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id1  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">id2  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">filters  <code class="type">[]struct&lt;filter.Filter&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableParallelization </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_at</summary>
+            <p><code>draw_at(id1, id2, point, op, filters, disableParallelization?)</code></p>
+            
+            
+            <p>
+              Applies the filters to image1 with the output going into image2. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id1  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">id2  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">point  <code class="type">struct&lt;image.Point&gt;</code> </li>
+                  
+                
+                  <li class="arg">op  <code class="type">int&lt;filter.Operator&gt;</code> </li>
+                  
+                
+                  <li class="arg">filters  <code class="type">[]struct&lt;filter.Filter&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableParallelization </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_at_xy</summary>
+            <p><code>draw_at_xy(id1, id2, x, y, op, filters, disableParallelization?)</code></p>
+            
+            
+            <p>
+              Applies the filters to image1 with the output going into image2. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id1  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">id2  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">op  <code class="type">int&lt;filter.Operator&gt;</code> </li>
+                  
+                
+                  <li class="arg">filters  <code class="type">[]struct&lt;filter.Filter&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableParallelization </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>bounds</summary>
+            <p><code>bounds(id, filters, disableParallelization?) -&gt; int, int, int, int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              Gets the resulting bounds of the image after the filters are applied. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">filters  <code class="type">[]struct&lt;filter.Filter&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableParallelization </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - X position of the top left corner of the images bounds after the filters are applied.</li>
+                
+                  <li class="return"><code class="type">int</code>  - Y position of the top left corner of the images bounds after the filters are applied.</li>
+                
+                  <li class="return"><code class="type">int</code>  - X position of the bottom right corner of the images bounds after the filters are applied.</li>
+                
+                  <li class="return"><code class="type">int</code>  - Y position of the bottom right corner of the images bounds after the filters are applied.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>bounds_size</summary>
+            <p><code>bounds_size(id, filters, disableParallelization?) -&gt; int, int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              Gets the resulting size of the image after the filters are applied. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">filters  <code class="type">[]struct&lt;filter.Filter&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>disableParallelization </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - Width of the image after the filters are applied.</li>
+                
+                  <li class="return"><code class="type">int</code>  - Height of the image after the filters are applied.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>brightness</summary>
+            <p><code>brightness(percent) -&gt; struct&lt;filter.FilterBrightness&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Percent value between -100 and 100.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterBrightness&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_balance</summary>
+            <p><code>color_balance(percentRed, percentGreen, percentBlue) -&gt; struct&lt;filter.FilterColorBalance&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">percentRed  <code class="type">float</code>   - Percent values between -100 and 500.</li>
+                  
+                
+                  <li class="arg">percentGreen  <code class="type">float</code>   - Percent values between -100 and 500.</li>
+                  
+                
+                  <li class="arg">percentBlue  <code class="type">float</code>   - Percent values between -100 and 500.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterColorBalance&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>colorize</summary>
+            <p><code>colorize(hue, saturation, percent) -&gt; struct&lt;filter.FilterColorize&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">hue  <code class="type">float</code>   - Hue value between 0 and 360.</li>
+                  
+                
+                  <li class="arg">saturation  <code class="type">float</code>   - Saturation value between 0 and 100.</li>
+                  
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Percent value between 0 and 100.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterColorize&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>colorspace_linear_to_srgb</summary>
+            <p><code>colorspace_linear_to_srgb() -&gt; struct&lt;filter.FilterColorspaceLinearToSRGB&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterColorspaceLinearToSRGB&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>colorspace_srgb_to_linear</summary>
+            <p><code>colorspace_srgb_to_linear() -&gt; struct&lt;filter.FilterColorspaceSRGBToLinear&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterColorspaceSRGBToLinear&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>contrast</summary>
+            <p><code>contrast(percent) -&gt; struct&lt;filter.FilterContrast&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Percent values between -100 and 100.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterContrast&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>convolution</summary>
+            <p><code>convolution(kernel, normalize, alpha, abs, delta) -&gt; struct&lt;filter.FilterConvolution&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">kernel  <code class="type">[]float</code>   - Must have a length of an odd square, e.g. 3x3=9 or 5x5=25.</li>
+                  
+                
+                  <li class="arg">normalize  <code class="type">bool</code> </li>
+                  
+                
+                  <li class="arg">alpha  <code class="type">bool</code> </li>
+                  
+                
+                  <li class="arg">abs  <code class="type">bool</code> </li>
+                  
+                
+                  <li class="arg">delta  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterConvolution&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>crop</summary>
+            <p><code>crop(min, max) -&gt; struct&lt;filter.FilterCrop&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">min  <code class="type">struct&lt;image.Point&gt;</code>   - Top left corner of new image.</li>
+                  
+                
+                  <li class="arg">max  <code class="type">struct&lt;image.Point&gt;</code>   - Bottom right corner of new image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterCrop&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>crop_xy</summary>
+            <p><code>crop_xy(xmin, ymin, xmax, ymax) -&gt; struct&lt;filter.FilterCrop&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">xmin  <code class="type">int</code>   - X position of the top left corner.</li>
+                  
+                
+                  <li class="arg">ymin  <code class="type">int</code>   - Y position of the top left corner.</li>
+                  
+                
+                  <li class="arg">xmax  <code class="type">int</code>   - X position of the bottom right corner.</li>
+                  
+                
+                  <li class="arg">ymax  <code class="type">int</code>   - Y position of the bottom right corner.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterCrop&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>crop_to_size</summary>
+            <p><code>crop_to_size(width, height, anchor) -&gt; struct&lt;filter.FilterCropToSize&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code>   - Width of the new image.</li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code>   - Height of the new image.</li>
+                  
+                
+                  <li class="arg">anchor  <code class="type">int&lt;filter.Anchor&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterCropToSize&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>flip_horizontal</summary>
+            <p><code>flip_horizontal() -&gt; struct&lt;filter.FilterFlipHorizontal&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterFlipHorizontal&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>flip_vertical</summary>
+            <p><code>flip_vertical() -&gt; struct&lt;filter.FilterFlipVertical&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterFlipVertical&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gamma</summary>
+            <p><code>gamma(gamma) -&gt; struct&lt;filter.FilterGamma&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">gamma  <code class="type">float</code>   - Must be positive, a value of 1 maintains the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterGamma&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gaussian_blur</summary>
+            <p><code>gaussian_blur(sigma) -&gt; struct&lt;filter.FilterGaussianBlur&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">sigma  <code class="type">float</code>   - Radius of blur is ~3*sigma.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterGaussianBlur&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>grayscale</summary>
+            <p><code>grayscale() -&gt; struct&lt;filter.FilterGreyscale&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterGreyscale&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>invert</summary>
+            <p><code>invert() -&gt; struct&lt;filter.FilterInvert&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterInvert&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>rotate</summary>
+            <p><code>rotate(angle, bgcolor, interpolation) -&gt; struct&lt;filter.FilterRotate&gt;</code></p>
+            
+            
+            <p>
+              When doing rotations on multiples of 90 degrees, it is best to use the rotate filters for 90, 180, and 270. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">angle  <code class="type">float</code>   - Angle value in degrees.</li>
+                  
+                
+                  <li class="arg">bgcolor  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  <li class="arg">interpolation  <code class="type">int&lt;filter.Interpolation&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterRotate&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>rotate_90</summary>
+            <p><code>rotate_90() -&gt; struct&lt;filter.FilterRotate90&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterRotate90&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>rotate_180</summary>
+            <p><code>rotate_180() -&gt; struct&lt;filter.FilterRotate180&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterRotate180&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>rotate_270</summary>
+            <p><code>rotate_270() -&gt; struct&lt;filter.FilterRotate270&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterRotate270&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>hue</summary>
+            <p><code>hue(shift) -&gt; struct&lt;filter.FilterHue&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">shift  <code class="type">float</code>   - Shift value between -180 and 180.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterHue&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>saturation</summary>
+            <p><code>saturation(percent) -&gt; struct&lt;filter.FilterSaturation&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Percent value between -100 and 500.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterSaturation&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>sepia</summary>
+            <p><code>sepia(percent) -&gt; struct&lt;filter.FilterSepia&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Percent value between 0 and 100.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterSepia&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pixelate</summary>
+            <p><code>pixelate(size) -&gt; struct&lt;filter.FilterPixelate&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">size  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterPixelate&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>threshold</summary>
+            <p><code>threshold(percent) -&gt; struct&lt;filter.FilterThreshold&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">percent  <code class="type">float</code>   - Percent value between 0 and 100.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterThreshold&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>transpose</summary>
+            <p><code>transpose() -&gt; struct&lt;filter.FilterTranspose&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterTranspose&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>transverse</summary>
+            <p><code>transverse() -&gt; struct&lt;filter.FilterTransverse&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterTranverse&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>sobel</summary>
+            <p><code>sobel() -&gt; struct&lt;filter.FilterSobel&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterSobel&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>maximum</summary>
+            <p><code>maximum(ksize, disk) -&gt; struct&lt;filter.FilterMaximum&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ksize  <code class="type">int</code>   - Must be odd int, e.g. 3, 5, 7.</li>
+                  
+                
+                  <li class="arg">disk  <code class="type">bool</code>   - If the kernel used should be disk shaped instead of a square.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterMaximum&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>mean</summary>
+            <p><code>mean(ksize, disk) -&gt; struct&lt;filter.FilterMean&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ksize  <code class="type">int</code>   - Must be odd int, e.g. 3, 5, 7.</li>
+                  
+                
+                  <li class="arg">disk  <code class="type">bool</code>   - If the kernel used should be disk shaped instead of a square.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterMean&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>median</summary>
+            <p><code>median(ksize, disk) -&gt; struct&lt;filter.FilterMedian&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ksize  <code class="type">int</code>   - Must be odd int, e.g. 3, 5, 7.</li>
+                  
+                
+                  <li class="arg">disk  <code class="type">bool</code>   - If the kernel used should be disk shaped instead of a square.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterMedian&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>minimum</summary>
+            <p><code>minimum(ksize, disk) -&gt; struct&lt;filter.FilterMinimum&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ksize  <code class="type">int</code>   - Must be odd int, e.g. 3, 5, 7.</li>
+                  
+                
+                  <li class="arg">disk  <code class="type">bool</code>   - If the kernel used should be disk shaped instead of a square.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterMinimum&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>sigmoid</summary>
+            <p><code>sigmoid(midpoint, factor) -&gt; struct&lt;filter.FilterSigmoid&gt;</code></p>
+            
+            
+            <p>
+              Adjusts the contrast of the image, but on a curve instead of linearly. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">midpoint  <code class="type">float</code>   - Value between 0 and 1.</li>
+                  
+                
+                  <li class="arg">factor  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterSigmoid&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>unsharp_mask</summary>
+            <p><code>unsharp_mask(sigma, amount, threshold) -&gt; struct&lt;filter.FilterUnsharpMask&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">sigma  <code class="type">float</code>   - Radius is ~3*sigma.</li>
+                  
+                
+                  <li class="arg">amount  <code class="type">float</code>   - Typically between 0.5 and 1.5.</li>
+                  
+                
+                  <li class="arg">threshold  <code class="type">float</code>   - Minimum brightness change to sharpen, typically between 0 and 0.05.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterUnsharpMask&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>resize</summary>
+            <p><code>resize(width, height, resampling) -&gt; struct&lt;filter.FilterResize&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">resampling  <code class="type">int&lt;filter.Resampling&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterResize&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>resize_to_fill</summary>
+            <p><code>resize_to_fill(width, height, resampling, anchor) -&gt; struct&lt;filter.FilterResizeToFill&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">resampling  <code class="type">int&lt;filter.Resampling&gt;</code> </li>
+                  
+                
+                  <li class="arg">anchor  <code class="type">int&lt;filter.Anchor&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterResizeToFill&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>resize_to_fit</summary>
+            <p><code>resize_to_fit(width, height, resampling) -&gt; struct&lt;filter.FilterResizeToFit&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">resampling  <code class="type">int&lt;filter.Resampling&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterResizeToFit&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_func</summary>
+            <p><code>color_func(fn) -&gt; struct&lt;filter.FilterColorFunc&gt;</code></p>
+            
+            
+            <p>
+              Color values are floats between 0 and 1. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">fn  <code class="type">function(r float, g float, b float, a float) -&gt; float, float, float, float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterColorFunc&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_func_unsafe</summary>
+            <p><code>color_func_unsafe(fn) -&gt; struct&lt;filter.FilterColorFuncUnsafe&gt;</code></p>
+            
+            
+            <p>
+              Color values are floats between 0 and 1. Note parallelization must be disabled when drawing for this to work. This has the benefit of not requiring new lua threads on each function call, but this means it is not thread safe. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">fn  <code class="type">function(r float, g float, b float, a float) -&gt; float, float, float, float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;filter.FilterColorFuncUnsafe&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Anchor </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>ANCHOR_CENTER</code></li>
+              
+                <li class="const"><code>ANCHOR_TOPLEFT</code></li>
+              
+                <li class="const"><code>ANCHOR_TOP</code></li>
+              
+                <li class="const"><code>ANCHOR_TOPRIGHT</code></li>
+              
+                <li class="const"><code>ANCHOR_LEFT</code></li>
+              
+                <li class="const"><code>ANCHOR_RIGHT</code></li>
+              
+                <li class="const"><code>ANCHOR_BOTTOMLEFT</code></li>
+              
+                <li class="const"><code>ANCHOR_BOTTOM</code></li>
+              
+                <li class="const"><code>ANCHOR_BOTTOMRIGHT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Interpolation </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>INTERPOLATION_NEARESTNEIGHBOR</code></li>
+              
+                <li class="const"><code>INTERPOLATION_LINEAR</code></li>
+              
+                <li class="const"><code>INTERPOLATION_CUBIC</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Operator </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>OPERATOR_COPY</code></li>
+              
+                <li class="const"><code>OPERATOR_OVER</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Resampling </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>RESAMPLING_BOX</code></li>
+              
+                <li class="const"><code>RESAMPLING_CUBIC</code></li>
+              
+                <li class="const"><code>RESAMPLING_LANCZOS</code></li>
+              
+                <li class="const"><code>RESAMPLING_LINEAR</code></li>
+              
+                <li class="const"><code>RESAMPLING_NEARESTNEIGHBOR</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>FilterType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>FILTER_BRIGHTNESS</code></li>
+              
+                <li class="const"><code>FILTER_COLOR_BALANCE</code></li>
+              
+                <li class="const"><code>FILTER_COLORIZE</code></li>
+              
+                <li class="const"><code>FILTER_COLORSPACE_LINEAR_TO_SRGB</code></li>
+              
+                <li class="const"><code>FILTER_COLORSPACE_SRGB_TO_LINEAR</code></li>
+              
+                <li class="const"><code>FILTER_CONTRAST</code></li>
+              
+                <li class="const"><code>FILTER_CONVOLUTION</code></li>
+              
+                <li class="const"><code>FILTER_CROP</code></li>
+              
+                <li class="const"><code>FILTER_CROP_TO_SIZE</code></li>
+              
+                <li class="const"><code>FILTER_FLIP_HORIZONTAL</code></li>
+              
+                <li class="const"><code>FILTER_FLIP_VERTICAL</code></li>
+              
+                <li class="const"><code>FILTER_GAMMA</code></li>
+              
+                <li class="const"><code>FILTER_GAUSSIAN_BLUR</code></li>
+              
+                <li class="const"><code>FILTER_GRAYSCALE</code></li>
+              
+                <li class="const"><code>FILTER_INVERT</code></li>
+              
+                <li class="const"><code>FILTER_ROTATE</code></li>
+              
+                <li class="const"><code>FILTER_ROTATE90</code></li>
+              
+                <li class="const"><code>FILTER_ROTATE180</code></li>
+              
+                <li class="const"><code>FILTER_ROTATE270</code></li>
+              
+                <li class="const"><code>FILTER_HUE</code></li>
+              
+                <li class="const"><code>FILTER_SATURATION</code></li>
+              
+                <li class="const"><code>FILTER_SEPIA</code></li>
+              
+                <li class="const"><code>FILTER_THRESHOLD</code></li>
+              
+                <li class="const"><code>FILTER_PIXELATE</code></li>
+              
+                <li class="const"><code>FILTER_SOBEL</code></li>
+              
+                <li class="const"><code>FILTER_TRANSPOSE</code></li>
+              
+                <li class="const"><code>FILTER_TRANSVERSE</code></li>
+              
+                <li class="const"><code>FILTER_MAXIMUM</code></li>
+              
+                <li class="const"><code>FILTER_MEAN</code></li>
+              
+                <li class="const"><code>FILTER_MEDIAN</code></li>
+              
+                <li class="const"><code>FILTER_MINIMUM</code></li>
+              
+                <li class="const"><code>FILTER_SIGMOID</code></li>
+              
+                <li class="const"><code>FILTER_UNSHARP_MASK</code></li>
+              
+                <li class="const"><code>FILTER_RESIZE</code></li>
+              
+                <li class="const"><code>FILTER_RESIZE_TO_FILL</code></li>
+              
+                <li class="const"><code>FILTER_RESIZE_TO_FIT</code></li>
+              
+                <li class="const"><code>FILTER_COLOR_FUNC</code></li>
+              
+                <li class="const"><code>FILTER_COLOR_FUNC_UNSAFE</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>FilterBrightness</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">percent  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterColorBalance</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">percentRed  <code class="type">float</code>  </li>
+                
+                <li class="prop">percentGreen  <code class="type">float</code>  </li>
+                
+                <li class="prop">percentBlue  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterColorize</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">hue  <code class="type">float</code>  </li>
+                
+                <li class="prop">saturation  <code class="type">float</code>  </li>
+                
+                <li class="prop">percent  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterColorspaceLinearToSRGB</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterColorspaceSRGBToLinear</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterContrast</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">percent  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterConvolution</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">kernel  <code class="type">[]float</code>  </li>
+                
+                <li class="prop">normalize  <code class="type">bool</code>  </li>
+                
+                <li class="prop">alpha  <code class="type">bool</code>  </li>
+                
+                <li class="prop">abs  <code class="type">bool</code>  </li>
+                
+                <li class="prop">delta  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterCrop</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">xmin  <code class="type">int</code>  </li>
+                
+                <li class="prop">ymin  <code class="type">int</code>  </li>
+                
+                <li class="prop">xmax  <code class="type">int</code>  </li>
+                
+                <li class="prop">ymax  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterCropToSize</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">width  <code class="type">int</code>  </li>
+                
+                <li class="prop">height  <code class="type">int</code>  </li>
+                
+                <li class="prop">anchor  <code class="type">int&lt;filter.Anchor&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterFlipHorizontal</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterFlipVertical</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterGamma</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">gamma  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterGaussianBlur</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">sigma  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterGrayscale</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterInvert</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterRotate</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">angle  <code class="type">float</code>  </li>
+                
+                <li class="prop">bgcolor  <code class="type">struct&lt;image.Color&gt;</code>  </li>
+                
+                <li class="prop">interpolation  <code class="type">int&lt;filter.Interpolation&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterRotate90</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterRotate180</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterRotate270</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterHue</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">shift  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterSaturation</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">percent  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterSepia</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">percent  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterThreshold</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">percent  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterPixelate</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">size  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterTranspose</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterTransverse</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterSobel</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterMaximum</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">ksize  <code class="type">int</code>  </li>
+                
+                <li class="prop">disk  <code class="type">bool</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterMean</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">ksize  <code class="type">int</code>  </li>
+                
+                <li class="prop">disk  <code class="type">bool</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterMedian</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">ksize  <code class="type">int</code>  </li>
+                
+                <li class="prop">disk  <code class="type">bool</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterMinimum</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">ksize  <code class="type">int</code>  </li>
+                
+                <li class="prop">disk  <code class="type">bool</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterSigmoid</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">midpoint  <code class="type">float</code>  </li>
+                
+                <li class="prop">factor  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterUnsharpMask</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">sigma  <code class="type">float</code>  </li>
+                
+                <li class="prop">amount  <code class="type">float</code>  </li>
+                
+                <li class="prop">threshold  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterResize</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">width  <code class="type">int</code>  </li>
+                
+                <li class="prop">height  <code class="type">int</code>  </li>
+                
+                <li class="prop">resampling  <code class="type">int&lt;filter.Resampling&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterResizeToFill</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">width  <code class="type">int</code>  </li>
+                
+                <li class="prop">height  <code class="type">int</code>  </li>
+                
+                <li class="prop">resampling  <code class="type">int&lt;filter.Resampling&gt;</code>  </li>
+                
+                <li class="prop">anchor  <code class="type">int&lt;filter.Anchor&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterResizeToFit</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">width  <code class="type">int</code>  </li>
+                
+                <li class="prop">height  <code class="type">int</code>  </li>
+                
+                <li class="prop">resampling  <code class="type">int&lt;filter.Resampling&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterColorFunc</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">fn  <code class="type">function(r float, g float, b float, a float) -&gt; float, float, float, float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>FilterColorFuncUnsafe</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+                <li class="prop">fn  <code class="type">function(r float, g float, b float, a float) -&gt; float, float, float, float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Filter</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;filter.FilterType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+      </section>
+    </main>
+  </body>
+</html>

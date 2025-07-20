@@ -1,0 +1,3510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Context - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Context</h1>
+      <p>
+        Library for creating and drawing to canvases. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/context.go">
+            pkg/lua/lib/context.go</a></code> 
+        | 
+        Import: <code>context</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>degrees</summary>
+            <p><code>degrees(radians) -&gt; float</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">radians  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  - Degrees.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>radians</summary>
+            <p><code>radians(degrees) -&gt; float</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">degrees  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  - Radians.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>point</summary>
+            <p><code>point(x, y) -&gt; struct&lt;context.Point&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>distance</summary>
+            <p><code>distance(p1, p2) -&gt; float</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">p1  <code class="type">struct&lt;context.Point&gt;</code> </li>
+                  
+                
+                  <li class="arg">p2  <code class="type">struct&lt;context.Point&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>interpolate</summary>
+            <p><code>interpolate(p1, p2, t) -&gt; struct&lt;context.Point&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">p1  <code class="type">struct&lt;context.Point&gt;</code> </li>
+                  
+                
+                  <li class="arg">p2  <code class="type">struct&lt;context.Point&gt;</code> </li>
+                  
+                
+                  <li class="arg">t  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Point&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>new</summary>
+            <p><code>new(width, height) -&gt; int&lt;collection.CONTEXT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>new_image</summary>
+            <p><code>new_image(id) -&gt; int&lt;collection.CONTEXT&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>new_direct</summary>
+            <p><code>new_direct(id) -&gt; int&lt;collection.CONTEXT&gt;</code></p>
+            
+            
+            <p>
+              Creates a new context directly on the image, this requires the image to use the RGBA color model. If not it will be converted to RGBA. This is also not thread safe, as modifying either the image or the context will affect the other, with no guarantee of the order of operations. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>to_image</summary>
+            <p><code>to_image(id, name, encoding, model?, copy?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.Model&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>copy </i> <code class="type">bool</code>   - Set to true to copy the image, otherwise continuing to draw can affect the image.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>to_mask</summary>
+            <p><code>to_mask(id, name, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The returned image will use the &#39;image.MODEL_ALPHA&#39; color model.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>mask</summary>
+            <p><code>mask(id, img)</code></p>
+            
+            
+            <p>
+              The image will be copied and converted to &#39;image.MODEL_ALPHA&#39;. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>size</summary>
+            <p><code>size(id) -&gt; int, int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The width of the context.</li>
+                
+                  <li class="return"><code class="type">int</code>  - The height of the context.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>font_height</summary>
+            <p><code>font_height(id) -&gt; float</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  - The height of text rendered with the current font.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>string_measure</summary>
+            <p><code>string_measure(id, str) -&gt; float, float</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  - The width of text rendered with the current font.</li>
+                
+                  <li class="return"><code class="type">float</code>  - The height of text rendered with the current font.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>string_measure_multiline</summary>
+            <p><code>string_measure_multiline(id, str, spacing) -&gt; float, float</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">spacing  <code class="type">float</code>   - The space between each line.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  - The width of text rendered with the current font.</li>
+                
+                  <li class="return"><code class="type">float</code>  - The height of text rendered with the current font.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>current_point</summary>
+            <p><code>current_point(id) -&gt; float, float, bool</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  - The x location of the current point.</li>
+                
+                  <li class="return"><code class="type">float</code>  - The y location of the current point.</li>
+                
+                  <li class="return"><code class="type">bool</code>  - If the current point has been set.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>transform_point</summary>
+            <p><code>transform_point(id, x, y) -&gt; float, float</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+            <p>
+              Multiplies a point by the current matrix. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">float</code>  -&gt; New x position.</li>
+                
+                  <li class="return"><code class="type">float</code>  -&gt; New y position.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>clear</summary>
+            <p><code>clear(id)</code></p>
+            
+            
+            <p>
+              Fills the context with the current color. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>clip</summary>
+            <p><code>clip(id, preserve?)</code></p>
+            
+            
+            <p>
+              Updates the clipping region by intersecting the current clipping region with the current path as it would be filled by fill(). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>preserve </i> <code class="type">bool</code>   - Set in order to keep the current path.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>clip_reset</summary>
+            <p><code>clip_reset(id)</code></p>
+            
+            
+            <p>
+              Clears the clipping region. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>path_clear</summary>
+            <p><code>path_clear(id)</code></p>
+            
+            
+            <p>
+              Removes all points from the current path. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>path_close</summary>
+            <p><code>path_close(id)</code></p>
+            
+            
+            <p>
+              Adds a line segment from the current point to the initial point. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>path_to</summary>
+            <p><code>path_to(id, x, y)</code></p>
+            
+            
+            <p>
+              Starts a new subpath starting at the given point. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>subpath</summary>
+            <p><code>subpath(id)</code></p>
+            
+            
+            <p>
+              Starts a new subpath starting at the current point. No current point will be set after. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_cubic</summary>
+            <p><code>draw_cubic(id, x1, y1, x2, y2, x3, y3)</code></p>
+            
+            
+            <p>
+              Draws a cubic bezier curve to the path starting at the current point, if there isn&#39;t a current point, it moves to (x1, y1). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x3  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y3  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_quadratic</summary>
+            <p><code>draw_quadratic(id, x1, y1, x2, y2)</code></p>
+            
+            
+            <p>
+              Draws a quadratic bezier curve to the path starting at the current point, if there isn&#39;t a current point, it moves to (x1, y1). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_arc</summary>
+            <p><code>draw_arc(id, x, y, r, angle1, angle2)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">angle1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">angle2  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_circle</summary>
+            <p><code>draw_circle(id, x, y, r)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_ellipse</summary>
+            <p><code>draw_ellipse(id, x, y, rx, xy)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">rx  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ry  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_elliptical_arc</summary>
+            <p><code>draw_elliptical_arc(id, x, y, rx, ry, angle1, angle2)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">rx  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ry  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">angle1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">angle2  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_image</summary>
+            <p><code>draw_image(id, img, x, y)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_image_anchor</summary>
+            <p><code>draw_image_anchor(id, img, x, y, ax, ay)</code></p>
+            
+            
+            <p>
+              The anchor is a point between (0,0) and (1,1), so (0.5,0.5) is centered. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">img  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">ax  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ay  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_line</summary>
+            <p><code>draw_line(id, x1, y1, x2, y2)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_line_to</summary>
+            <p><code>draw_line_to(id, x, y)</code></p>
+            
+            
+            <p>
+              Draws a line to the point, starting from the current point. If there is no current point, no line will be drawn and the current point will be set. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_point</summary>
+            <p><code>draw_point(id, x, y, r)</code></p>
+            
+            
+            <p>
+              Similar to draw_circle but ensures that a circle of the specified size is drawn regardless of the current transformation matrix. The position is still transformed, but not the shape of the point. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_rect</summary>
+            <p><code>draw_rect(id, x, y, width, height)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_rect_round</summary>
+            <p><code>draw_rect_round(id, x, y, width, height, r)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_polygon</summary>
+            <p><code>draw_polygon(id, n, x, y, r, rotation)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">n  <code class="type">int</code>   - The number of sides.</li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">rotation  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_string</summary>
+            <p><code>draw_string(id, str, x, y)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_string_anchor</summary>
+            <p><code>draw_string_anchor(id, str, x, y, ax, ay)</code></p>
+            
+            
+            <p>
+              The anchor is a point between (0,0) and (1,1), so (0.5,0.5) is centered. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ax  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ay  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>draw_string_wrap</summary>
+            <p><code>draw_string_wrap(id, str, x, y, ax, ay, width, spacing, align)</code></p>
+            
+            
+            <p>
+              The anchor is a point between (0,0) and (1,1), so (0.5,0.5) is centered. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ax  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">ay  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">spacing  <code class="type">float</code>   - The spacing between each line.</li>
+                  
+                
+                  <li class="arg">align  <code class="type">int&lt;context.Align&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>fill</summary>
+            <p><code>fill(id, preserve?)</code></p>
+            
+            
+            <p>
+              Fills the current path with the current color. Closes open paths. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>preserve </i> <code class="type">bool</code>   - Set in order to keep the current path.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>fill_rule</summary>
+            <p><code>fill_rule(id, rule)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">rule  <code class="type">int&lt;context.FillRule&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>stroke</summary>
+            <p><code>stroke(id, preserve?)</code></p>
+            
+            
+            <p>
+              Strokes the current path with the current color. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>preserve </i> <code class="type">bool</code>   - Set in order to keep the current path.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>identity</summary>
+            <p><code>identity(id)</code></p>
+            
+            
+            <p>
+              Resets the current transformation matrix to the identity matrix. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>mask_invert</summary>
+            <p><code>mask_invert(id)</code></p>
+            
+            
+            <p>
+              Inverts the alpha values of the clipping mask. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>invert_y</summary>
+            <p><code>invert_y(id)</code></p>
+            
+            
+            <p>
+              Flips the y axis so that Y=0 is at the bottom of the image. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>push</summary>
+            <p><code>push(id)</code></p>
+            
+            
+            <p>
+              Push the current context state to the stack. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>pop</summary>
+            <p><code>pop(id)</code></p>
+            
+            
+            <p>
+              Pop the current context state to the stack. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>rotate</summary>
+            <p><code>rotate(id, angle)</code></p>
+            
+            
+            <p>
+              Rotates the transformation matrix around the origin. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">angle  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>rotate_about</summary>
+            <p><code>rotate_about(id, angle, x, y)</code></p>
+            
+            
+            <p>
+              Rotates the transformation matrix around the point. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">angle  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>scale</summary>
+            <p><code>scale(id, x, y)</code></p>
+            
+            
+            <p>
+              Scales the transformation matrix by a factor. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>scale_about</summary>
+            <p><code>scale_about(id, sx, sy, x, y)</code></p>
+            
+            
+            <p>
+              Scales the transformation matrix by a factor (sx,sy) starting at the point (x,y). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">sx  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">sy  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_hex</summary>
+            <p><code>color_hex(id, hex)</code></p>
+            
+            
+            <p>
+              Supports hex colors in the follow formats: #RGB #RRGGBB #RRGGBBAA. The leading # is optional. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">hex  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color</summary>
+            <p><code>color(id, color)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_rgb</summary>
+            <p><code>color_rgb(id, r, g, b)</code></p>
+            
+            
+            <p>
+              Float values for r,g,b between 0 and 1. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">g  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">b  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_rgb255</summary>
+            <p><code>color_rgb255(id, r, g, b)</code></p>
+            
+            
+            <p>
+              Interger values for r,g,b between 0 and 255. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">g  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">b  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_rgba</summary>
+            <p><code>color_rgba(id, r, g, b, a)</code></p>
+            
+            
+            <p>
+              Float values for r,g,b,a between 0 and 1. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">g  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">b  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_rgba255</summary>
+            <p><code>color_rgba255(id, r, g, b, a)</code></p>
+            
+            
+            <p>
+              Interger values for r,g,b,a between 0 and 255. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">r  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">g  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">b  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">a  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>dash_set</summary>
+            <p><code>dash_set(id, pattern)</code></p>
+            
+            
+            <p>
+              Sets the dash pattern to use. Call with empty array to disable dashes. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">pattern  <code class="type">[]float</code>   - Each float value is a dash with a length of the value.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>dash_set_offset</summary>
+            <p><code>dash_set_offset(id, offset)</code></p>
+            
+            
+            <p>
+              The initial offset for the dash pattern. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">offset  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>line_cap</summary>
+            <p><code>line_cap(id, cap)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">cap  <code class="type">int&lt;context.LineCap&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>line_join</summary>
+            <p><code>line_join(id, join)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">join  <code class="type">int&lt;context.LineJoin&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>line_width</summary>
+            <p><code>line_width(id, width)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>pixel_set</summary>
+            <p><code>pixel_set(id, x, y)</code></p>
+            
+            
+            <p>
+              Sets a pixel to the current color. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>shear</summary>
+            <p><code>shear(id, x, y)</code></p>
+            
+            
+            <p>
+              Updates the current matrix with a shearing angle, at the origin. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>shear_about</summary>
+            <p><code>shear_about(id, sx, sy, x, y)</code></p>
+            
+            
+            <p>
+              Updates the current matrix with a shearing angle (sx,sy), at the given point (x,y). 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">sx  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">sy  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>translate</summary>
+            <p><code>translate(id, x, y)</code></p>
+            
+            
+            <p>
+              Updates the current matrix with a translation. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>word_wrap</summary>
+            <p><code>word_wrap(id, str, width) -&gt; []string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code>  - The original string split into line breaks at the set width.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>matrix_new</summary>
+            <p><code>matrix_new(xx, yx, xy, yy, x0, y0) -&gt; struct&lt;context.Matrix&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">xx  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">yx  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">xy  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">yy  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y0  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Matrix&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>matrix_identity</summary>
+            <p><code>matrix_identity() -&gt; struct&lt;context.Matrix&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Matrix&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>matrix_rotate</summary>
+            <p><code>matrix_rotate(angle) -&gt; struct&lt;context.Matrix&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">angle  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Matrix&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>matrix_scale</summary>
+            <p><code>matrix_scale(x, y) -&gt; struct&lt;context.Matrix&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Matrix&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>matrix_shear</summary>
+            <p><code>matrix_shear(x, y) -&gt; struct&lt;context.Matrix&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Matrix&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>matrix_translate</summary>
+            <p><code>matrix_translate(x, y) -&gt; struct&lt;context.Matrix&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.Matrix&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>point_cubic_bezier</summary>
+            <p><code>point_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3) -&gt; []struct&lt;context.Point&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x3  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y3  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]struct&lt;context.Point&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>point_quadratic_bezier</summary>
+            <p><code>point_quadratic_bezier(x0, y0, x1, y1, x2, y2) -&gt; []struct&lt;context.Point&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]struct&lt;context.Point&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pattern_solid</summary>
+            <p><code>pattern_solid(color) -&gt; struct&lt;context.PatternSolid&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.PatternSolid&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pattern_surface</summary>
+            <p><code>pattern_surface(id, repeat_op) -&gt; struct&lt;context.PatternSurface&gt;</code></p>
+            
+            
+            <p>
+              Images are only grabbed when the pattern is set, not when this is called. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">repeat_op  <code class="type">int&lt;context.RepeatOp&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.PatternSurface&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pattern_surface_sync</summary>
+            <p><code>pattern_surface_sync(id, repeat_op) -&gt; struct&lt;context.PatternSurfaceSync&gt;</code></p>
+            
+            
+            <p>
+              This does not wait for the image to be ready or idle, if the image is not loaded it will grab an empy image. This also means it is not thread safe, it is unknown what state the image will be in when grabbed. Images are also only grabbed when the pattern is set, not when this is called. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+                  <li class="arg">repeat_op  <code class="type">int&lt;context.RepeatOp&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.PatternSurfaceSync&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>pattern_custom</summary>
+            <p><code>pattern_custom(fn) -&gt; struct&lt;context.PatternCustom&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">fn  <code class="type">function(x int, y int) -&gt; struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.PatternCustom&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gradient_linear</summary>
+            <p><code>gradient_linear(x0, y0, x1, y1) -&gt; struct&lt;context.PatternGradientLinear&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.PatternGradientLinear&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>gradient_radial</summary>
+            <p><code>gradient_radial(x0, y0, r0, x1, y1, r1) -&gt; struct&lt;context.PatternGradientRadial&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">x0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r0  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">float</code> </li>
+                  
+                
+                  <li class="arg">r1  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;context.PatternGradientRadial&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>fill_style</summary>
+            <p><code>fill_style(id, pattern)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">pattern  <code class="type">struct&lt;context.Pattern&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>stroke_style</summary>
+            <p><code>stroke_style(id, pattern)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CONTEXT&gt;</code> </li>
+                  
+                
+                  <li class="arg">pattern  <code class="type">struct&lt;context.Pattern&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>font_load</summary>
+            <p><code>font_load(path, points)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">points  <code class="type">float</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>FillRule </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>FILLRULE_WINDING</code></li>
+              
+                <li class="const"><code>FILLRULE_EVENODD</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>LineCap </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>LINECAP_ROUND</code></li>
+              
+                <li class="const"><code>LINECAP_BUTT</code></li>
+              
+                <li class="const"><code>LINECAP_SQUARE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>LineJoin </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>LINEJOIN_ROUND</code></li>
+              
+                <li class="const"><code>LINEJOIN_BEVEL</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>RepeatOp </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>REPEAT_BOTH</code></li>
+              
+                <li class="const"><code>REPEAT_X</code></li>
+              
+                <li class="const"><code>REPEAT_Y</code></li>
+              
+                <li class="const"><code>REPEAT_NONE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Align </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>ALIGN_LEFT</code></li>
+              
+                <li class="const"><code>ALIGN_CENTER</code></li>
+              
+                <li class="const"><code>ALIGN_RIGHT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>PatternType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>PATTERN_SOLID</code></li>
+              
+                <li class="const"><code>PATTERN_SURFACE</code></li>
+              
+                <li class="const"><code>PATTERN_SURFACE_SYNC</code></li>
+              
+                <li class="const"><code>PATTERN_GRADIENT_LINEAR</code></li>
+              
+                <li class="const"><code>PATTERN_GRADIENT_RADIAL</code></li>
+              
+                <li class="const"><code>PATTERN_CUSTOM</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Point</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">x  <code class="type">float</code>  </li>
+                
+                <li class="prop">y  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>Matrix</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">xx  <code class="type">float</code>  </li>
+                
+                <li class="prop">yx  <code class="type">float</code>  </li>
+                
+                <li class="prop">xy  <code class="type">float</code>  </li>
+                
+                <li class="prop">yy  <code class="type">float</code>  </li>
+                
+                <li class="prop">x0  <code class="type">float</code>  </li>
+                
+                <li class="prop">y0  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>multiply</summary>
+                <p><code>multiply(self, struct&lt;context.Matrix&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>rotate</summary>
+                <p><code>rotate(self, angle float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>scale</summary>
+                <p><code>scale(self, x float, y float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>shear</summary>
+                <p><code>shear(self, x float, y float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>translate</summary>
+                <p><code>translate(self, x float, y float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>transform_point</summary>
+                <p><code>transform_point(x float, y float) -&gt; float, float</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>transform_vector</summary>
+                <p><code>transform_vector(x float, y float) -&gt; float, float</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PatternSolid</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+                <li class="prop">color  <code class="type">struct&lt;image.Color&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>PatternSurface</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int&lt;collection.IMAGE&gt;</code>  </li>
+                
+                <li class="prop">repeatOp  <code class="type">int&lt;context.RepeatOp&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>PatternSurfaceSync</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int&lt;collection.IMAGE&gt;</code>  </li>
+                
+                <li class="prop">repeatOp  <code class="type">int&lt;context.RepeatOp&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>PatternGradientLinear</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+                <li class="prop">x0  <code class="type">float</code>  </li>
+                
+                <li class="prop">y0  <code class="type">float</code>  </li>
+                
+                <li class="prop">x1  <code class="type">float</code>  </li>
+                
+                <li class="prop">y1  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>color_stop</summary>
+                <p><code>color_stop(offset float, struct&lt;image.Color&gt;)</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PatternGradientRadial</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+                <li class="prop">x0  <code class="type">float</code>  </li>
+                
+                <li class="prop">y0  <code class="type">float</code>  </li>
+                
+                <li class="prop">r0  <code class="type">float</code>  </li>
+                
+                <li class="prop">x1  <code class="type">float</code>  </li>
+                
+                <li class="prop">y1  <code class="type">float</code>  </li>
+                
+                <li class="prop">r1  <code class="type">float</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>color_stop</summary>
+                <p><code>color_stop(offset float, struct&lt;image.Color&gt;)</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>PatternCustom</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+                <li class="prop">fn  <code class="type">function(x int, y int) -&gt; struct&lt;image.ColorRGBA&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Pattern</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;context.PatternType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+      </section>
+    </main>
+  </body>
+</html>
