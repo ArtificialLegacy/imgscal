@@ -64,9 +64,9 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 		[]lua.Arg{},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			/// @struct Options
-			/// @method required(bool) -> self
-			/// @method validate({function([]string) -> string}) -> self - Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.
-			/// @method default(any, int<cmd.DefaultType>) -> self - The first value should match the default type given.
+			/// @method required(self, bool) -> self
+			/// @method validate(self, {function([]string) -> string}) -> self - Takes in all values for the argument, and returns an error if there was one. Use an empty string for when there is no error.
+			/// @method default(self, any, int<cmd.DefaultType>) -> self - The first value should match the default type given.
 
 			t := state.NewTable()
 
@@ -370,7 +370,7 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 
 	/// @func arg_float_pos(options?) -> int<[]ref.FLOAT>
 	/// @arg? options {struct<cmd.Options>}
-	/// @returns {int<[]ref.FLOAT>}
+	/// @returns {int<ref.FLOAT>}
 	lib.CreateFunction(tab, "arg_float_pos",
 		[]lua.Arg{
 			{Type: lua.RAW_TABLE, Name: "options", Optional: true},

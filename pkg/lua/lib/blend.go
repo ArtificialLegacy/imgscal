@@ -25,7 +25,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "add",
 		[]lua.Arg{
@@ -45,7 +45,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "color_burn",
 		[]lua.Arg{
@@ -65,7 +65,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "color_dodge",
 		[]lua.Arg{
@@ -85,7 +85,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "darken",
 		[]lua.Arg{
@@ -105,7 +105,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "difference",
 		[]lua.Arg{
@@ -125,7 +125,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "divide",
 		[]lua.Arg{
@@ -145,7 +145,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "exclusion",
 		[]lua.Arg{
@@ -165,7 +165,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "lighten",
 		[]lua.Arg{
@@ -185,7 +185,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "linear_burn",
 		[]lua.Arg{
@@ -205,7 +205,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "linear_light",
 		[]lua.Arg{
@@ -225,7 +225,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "multiply",
 		[]lua.Arg{
@@ -245,7 +245,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "normal",
 		[]lua.Arg{
@@ -265,7 +265,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "overlay",
 		[]lua.Arg{
@@ -285,7 +285,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "screen",
 		[]lua.Arg{
@@ -305,7 +305,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "soft_light",
 		[]lua.Arg{
@@ -325,7 +325,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg bg {int<collection.IMAGE>}
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "subtract",
 		[]lua.Arg{
@@ -346,7 +346,7 @@ func RegisterBlend(r *lua.Runner, lg *log.Logger) {
 	/// @arg fg {int<collection.IMAGE>}
 	/// @arg percent {float} - Between 0 and 1.
 	/// @arg name {string} - The name of the new image.
-	/// @arg encoding {int<image.ENCODING>}
+	/// @arg encoding {int<image.Encoding>}
 	/// @returns {int<collection.IMAGE>}
 	lib.CreateFunction(tab, "opacity",
 		[]lua.Arg{
