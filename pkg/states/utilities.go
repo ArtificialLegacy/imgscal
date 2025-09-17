@@ -86,6 +86,10 @@ func viewConfig(cfg *config.Config) {
 	if cfg.AlwaysConfirm {
 		acColor = configTrueColor
 	}
+	dbColor := configFalseColor
+	if cfg.DisableBell {
+		dbColor = configTrueColor
+	}
 
 	fmt.Printf("\n\n  %sImgScal Config%s v%s\n", cli.COLOR_BOLD, cli.COLOR_RESET, cfg.ConfigVersion)
 	fmt.Printf("  %s%s%s\n\n", configPathColor, cfgPath, cli.COLOR_RESET)
@@ -97,10 +101,10 @@ func viewConfig(cfg *config.Config) {
 		"output_directory",
 		"input_directory",
 		"plugin_directory",
+		"default_author",
 		"disable_logs",
 		"always_confirm",
 		"disable_bell",
-		"default_author",
 	}
 
 	pathStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Underline(true)
@@ -115,7 +119,7 @@ func viewConfig(cfg *config.Config) {
 		fmt.Sprintf("%s\"%s\"%s", cli.COLOR_YELLOW, cfg.DefaultAuthor, cli.COLOR_RESET),
 		fmt.Sprintf("%s%t%s", dlColor, cfg.DisableLogs, cli.COLOR_RESET),
 		fmt.Sprintf("%s%t%s", acColor, cfg.AlwaysConfirm, cli.COLOR_RESET),
-		fmt.Sprintf("%s%t%s", acColor, cfg.DisableBell, cli.COLOR_RESET),
+		fmt.Sprintf("%s%t%s", dbColor, cfg.DisableBell, cli.COLOR_RESET),
 	}
 
 	strFields := ""
