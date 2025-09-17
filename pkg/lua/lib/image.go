@@ -1806,6 +1806,71 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func draw_overlay(id, src, x, y, width?, height?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg? width {int}
+	/// @arg? height {int}
+	/// @desc
+	/// Similar to image.draw but ignores pixels in src with an alpha of 0.
+	lib.CreateFunction(tab, "draw_overlay",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "src"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "width", Optional: true},
+			{Type: lua.INT, Name: "height", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var img image.Image
+
+			r.IC.SchedulePipe(state, args["src"].(int), args["id"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
+				},
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						x := args["x"].(int)
+						y := args["y"].(int)
+						width := args["width"].(int)
+						height := args["height"].(int)
+
+						if width == 0 {
+							width = img.Bounds().Dx() - x
+						}
+						if height == 0 {
+							height = img.Bounds().Dy() - y
+						}
+
+						srcx := x + img.Bounds().Min.X
+						srcy := y + img.Bounds().Min.Y
+						dstx := i.Self.Image.Bounds().Min.X
+						dsty := i.Self.Image.Bounds().Min.Y
+
+						for x1 := range width {
+							for y1 := range height {
+								cr, cg, cb, ca := imageutil.ColorTableToRGBA(imageutil.GetColor(img, state, x1+srcx, y1+srcy))
+
+								if ca > 0 {
+									imageutil.Set(i.Self.Image, x1+dstx, y1+dsty, int(cr), int(cg), int(cb), int(ca))
+								}
+							}
+						}
+					},
+				})
+
+			return 0
+		})
+
 	/// @func map(id, fn, invert?)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg fn {function(x int, y int, color struct<image.ColorRGBA>) -> struct<image.Color>}
