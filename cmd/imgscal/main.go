@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/ArtificialLegacy/imgscal/pkg/cli"
 	"github.com/ArtificialLegacy/imgscal/pkg/config"
@@ -38,14 +39,21 @@ func main() {
 		panic(fmt.Sprintf("cannot access user home directory! (%s)", err))
 	}
 
+	cfgLoc := path.Join(cfgDir, "imgscal")
+
 	cfgPath := path.Join(cfgDir, "imgscal", "config.json")
 	if envCfg, exists := os.LookupEnv("IMGSCAL_CONFIG"); exists {
+		if strings.HasPrefix(envCfg, "~") {
+			envCfg = path.Join(homeDir, strings.TrimPrefix(envCfg, "~"))
+		}
+
 		cfgPath = envCfg
+		cfgLoc = cfgDir
 	}
 
 	_, err = os.Stat(cfgPath)
 	if err != nil {
-		err = os.MkdirAll(path.Join(cfgDir, "imgscal"), 0o777)
+		err = os.MkdirAll(path.Join(cfgLoc, "imgscal"), 0o777)
 		if err != nil {
 			panic(fmt.Sprintf("failed to make config directory! (%s)", err))
 		}
