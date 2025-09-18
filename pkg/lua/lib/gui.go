@@ -6401,7 +6401,7 @@ func inputIntTable(state *golua.LState, intref int) *golua.LTable {
 	/// @prop type {string<gui.WidgetType>}
 	/// @prop i32ref {int<ref.INT32>}
 	/// @method size(self, width float) -> self
-	/// @method on_change({function(int, int<ref.INT32>)}) -> self
+	/// @method on_change(self, {function(int, int<ref.INT32>)}) -> self
 	/// @method flags(self, flags int<gui.InputFlags>) -> self
 	/// @method label(self, label string) -> self
 	/// @method step_size(self, stepsize int) -> self
