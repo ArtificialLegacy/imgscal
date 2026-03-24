@@ -16,7 +16,10 @@ This is not for development of ImgScal itself.
 
 ### LSP Configs
 
+> Note: Neoconf no longer works in newer versions of Neovim.
+
 * [Neovim (neoconf)](/editor_configs/lsp/.neoconf.json)
+* [Neovim (codesettings)](/editor_configs/lsp/codesettings.json)
 
 ### JSON Schemas
 
