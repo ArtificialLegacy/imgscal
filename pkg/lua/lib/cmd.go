@@ -465,10 +465,10 @@ func RegisterCmd(r *lua.Runner, lg *log.Logger) {
 	/// @const DEFAULT_FLOAT
 	/// @const DEFAULT_STRING
 	/// @const DEFAULT_BOOL
-	tab.RawSetString("DEFAULT_INT", golua.LString(DEFAULT_INT))
-	tab.RawSetString("DEFAULT_FLOAT", golua.LString(DEFAULT_FLOAT))
-	tab.RawSetString("DEFAULT_STRING", golua.LString(DEFAULT_STRING))
-	tab.RawSetString("DEFAULT_BOOL", golua.LString(DEFAULT_BOOL))
+	tab.RawSetString("DEFAULT_INT", golua.LNumber(DEFAULT_INT))
+	tab.RawSetString("DEFAULT_FLOAT", golua.LNumber(DEFAULT_FLOAT))
+	tab.RawSetString("DEFAULT_STRING", golua.LNumber(DEFAULT_STRING))
+	tab.RawSetString("DEFAULT_BOOL", golua.LNumber(DEFAULT_BOOL))
 }
 
 const (
