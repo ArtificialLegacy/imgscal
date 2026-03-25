@@ -127,6 +127,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 		},
 		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
 			id := args["id"].(int)
+			fn := args["func"].(*golua.LFunction)
 
 			var scheduledState *golua.LState
 
@@ -137,7 +138,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemTask]) {
 						scheduledState = collection.NewThread(state, id, collection.TYPE_TASK)
-						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, fn)
 					},
 					Fail: func(i *collection.Item[collection.ItemTask]) {
 						scheduledState.Close()
@@ -149,7 +150,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemImage]) {
 						scheduledState = collection.NewThread(state, id, collection.TYPE_IMAGE)
-						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, fn)
 					},
 					Fail: func(i *collection.Item[collection.ItemImage]) {
 						scheduledState.Close()
@@ -161,7 +162,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemContext]) {
 						scheduledState = collection.NewThread(state, id, collection.TYPE_CONTEXT)
-						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, fn)
 					},
 					Fail: func(i *collection.Item[collection.ItemContext]) {
 						scheduledState.Close()
@@ -173,7 +174,7 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 					Name: d.Name,
 					Fn: func(i *collection.Item[collection.ItemQR]) {
 						scheduledState = collection.NewThread(state, id, collection.TYPE_QR)
-						callScheduledFunction(scheduledState, args["func"].(*golua.LFunction))
+						callScheduledFunction(scheduledState, fn)
 					},
 					Fail: func(i *collection.Item[collection.ItemQR]) {
 						scheduledState.Close()
@@ -330,6 +331,33 @@ func RegisterCollection(r *lua.Runner, lg *log.Logger) {
 				r.CC.Collect(state, args["id"].(int))
 			case collection.TYPE_QR:
 				r.QR.Collect(state, args["id"].(int))
+			}
+			return 0
+		})
+
+	/// @func collect_blocking(type, id)
+	/// @arg type {int<collection.Type>}
+	/// @arg id {int<collection.Type.*>} - An ID from the same collection as the above type.
+	/// @blocking
+	/// @desc
+	/// Items are collected automatically at the end of execution,
+	/// but this can be used to collect early in workflows that create a large amount of items.
+	/// This is important for collections that open files, as they are only closed when collected.
+	lib.CreateFunction(tab, "collect_blocking",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "type"},
+			{Type: lua.INT, Name: "id"},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			switch lua.ParseEnum(args["type"].(int), collection.CollectionList, lib) {
+			case collection.TYPE_TASK:
+				<-r.TC.CollectBlocking(state, args["id"].(int))
+			case collection.TYPE_IMAGE:
+				<-r.IC.CollectBlocking(state, args["id"].(int))
+			case collection.TYPE_CONTEXT:
+				<-r.CC.CollectBlocking(state, args["id"].(int))
+			case collection.TYPE_QR:
+				<-r.QR.CollectBlocking(state, args["id"].(int))
 			}
 			return 0
 		})

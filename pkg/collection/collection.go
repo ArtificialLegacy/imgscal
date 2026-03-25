@@ -517,6 +517,42 @@ func (c *Collection[T]) Collect(state *golua.LState, id int) {
 	})
 }
 
+func (c *Collection[T]) CollectBlocking(state *golua.LState, id int) <-chan struct{} {
+	wait := make(chan struct{}, 2)
+
+	i := c.items[id]
+	if i.collect || i.failed || i.cleaned {
+		wait <- struct{}{}
+		return wait
+	}
+
+	i.collect = true
+	i.wg.Add(1)
+
+	c.lg.Append(fmt.Sprintf("item %d collection queued [%T]", id, i.Self), log.LEVEL_INFO)
+	c.Schedule(state, id, &Task[T]{
+		Lib:  "internal",
+		Name: "collect",
+		Fn: func(i *Item[T]) {
+			i.Lg.Append(fmt.Sprintf("item %d collected  [%T]", id, i.Self), log.LEVEL_INFO)
+
+			if c.onCollect != nil {
+				c.onCollect(i)
+			}
+			i.Self = nil
+			i.cleaned = true
+			wait <- struct{}{}
+		},
+		Fail: func(i *Item[T]) {
+			i.Self = nil
+			i.cleaned = true
+			wait <- struct{}{}
+		},
+	})
+
+	return wait
+}
+
 func (c *Collection[T]) Next() int {
 	return len(c.items)
 }
