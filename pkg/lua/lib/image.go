@@ -1806,6 +1806,62 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 			return 0
 		})
 
+	/// @func draw_subimg(id, src, x, y, pointx, pointy, width?, height?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg pointx {int} - X position on src.
+	/// @arg pointy {int} - Y position on src.
+	/// @arg? width {int}
+	/// @arg? height {int}
+	lib.CreateFunction(tab, "draw_subimg",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "src"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "pointx"},
+			{Type: lua.INT, Name: "pointy"},
+			{Type: lua.INT, Name: "width", Optional: true},
+			{Type: lua.INT, Name: "height", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var img image.Image
+
+			r.IC.SchedulePipe(state, args["src"].(int), args["id"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
+				},
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+						y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+						pointx := args["pointx"].(int)
+						pointy := args["pointy"].(int)
+						width := args["width"].(int)
+						height := args["height"].(int)
+
+						if width == 0 {
+							width = i.Self.Image.Bounds().Dx() - args["x"].(int)
+						}
+						if height == 0 {
+							height = i.Self.Image.Bounds().Dy() - args["y"].(int)
+						}
+
+						imageutil.DrawSubimg(i.Self.Image, img, x, y, pointx, pointy, width, height)
+					},
+				})
+
+			return 0
+		})
+
 	/// @func draw_overlay(id, src, x, y, width?, height?)
 	/// @arg id {int<collection.IMAGE>}
 	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
@@ -1851,10 +1907,10 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 							height = img.Bounds().Dy() - y
 						}
 
-						srcx := x + img.Bounds().Min.X
-						srcy := y + img.Bounds().Min.Y
-						dstx := i.Self.Image.Bounds().Min.X
-						dsty := i.Self.Image.Bounds().Min.Y
+						srcx := img.Bounds().Min.X
+						srcy := img.Bounds().Min.Y
+						dstx := x + i.Self.Image.Bounds().Min.X
+						dsty := y + i.Self.Image.Bounds().Min.Y
 
 						for x1 := range width {
 							for y1 := range height {
@@ -1865,6 +1921,171 @@ func RegisterImage(r *lua.Runner, lg *log.Logger) {
 								}
 							}
 						}
+					},
+				})
+
+			return 0
+		})
+
+	/// @func draw_overlay_subimg(id, src, x, y, pointx, pointy, width?, height?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg pointx {int} - X position on src.
+	/// @arg pointy {int} - Y position on src.
+	/// @arg? width {int}
+	/// @arg? height {int}
+	/// @desc
+	/// Similar to image.draw_subimg but ignores pixels in src with an alpha of 0.
+	lib.CreateFunction(tab, "draw_overlay_subimg",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "src"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "pointx"},
+			{Type: lua.INT, Name: "pointy"},
+			{Type: lua.INT, Name: "width", Optional: true},
+			{Type: lua.INT, Name: "height", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			var img image.Image
+
+			r.IC.SchedulePipe(state, args["src"].(int), args["id"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						img = i.Self.Image
+					},
+				},
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						x := args["x"].(int)
+						y := args["y"].(int)
+						pointx := args["pointx"].(int)
+						pointy := args["pointy"].(int)
+						width := args["width"].(int)
+						height := args["height"].(int)
+
+						if width == 0 {
+							width = img.Bounds().Dx() - x
+						}
+						if height == 0 {
+							height = img.Bounds().Dy() - y
+						}
+
+						srcx := pointx + img.Bounds().Min.X
+						srcy := pointy + img.Bounds().Min.Y
+						dstx := x + i.Self.Image.Bounds().Min.X
+						dsty := y + i.Self.Image.Bounds().Min.Y
+
+						for x1 := range width {
+							for y1 := range height {
+								cr, cg, cb, ca := imageutil.ColorTableToRGBA(imageutil.GetColor(img, state, x1+srcx, y1+srcy))
+
+								if ca > 0 {
+									imageutil.Set(i.Self.Image, x1+dstx, y1+dsty, int(cr), int(cg), int(cb), int(ca))
+								}
+							}
+						}
+					},
+				})
+
+			return 0
+		})
+
+	/// @func draw_unsafe(id, src, x, y, width?, height?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg? width {int}
+	/// @arg? height {int}
+	/// @desc
+	/// Note: Does not schedule a task onto `src`.
+	lib.CreateFunction(tab, "draw_unsafe",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "src"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "width", Optional: true},
+			{Type: lua.INT, Name: "height", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(state, args["id"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+						y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+						width := args["width"].(int)
+						height := args["height"].(int)
+
+						if width == 0 {
+							width = i.Self.Image.Bounds().Dx() - args["x"].(int)
+						}
+						if height == 0 {
+							height = i.Self.Image.Bounds().Dy() - args["y"].(int)
+						}
+
+						src := r.IC.Item(args["src"].(int))
+						imageutil.Draw(i.Self.Image, src.Self.Image, x, y, width, height)
+					},
+				})
+
+			return 0
+		})
+
+	/// @func draw_unsafe_subimg(id, src, x, y, width?, height?)
+	/// @arg id {int<collection.IMAGE>}
+	/// @arg src {int<collection.IMAGE>} - To draw onto the base image.
+	/// @arg x {int}
+	/// @arg y {int}
+	/// @arg pointx {int} - X position on src.
+	/// @arg pointy {int} - Y position on src.
+	/// @arg? width {int}
+	/// @arg? height {int}
+	/// @desc
+	/// Note: Does not schedule a task onto `src`.
+	lib.CreateFunction(tab, "draw_unsafe_subimg",
+		[]lua.Arg{
+			{Type: lua.INT, Name: "id"},
+			{Type: lua.INT, Name: "src"},
+			{Type: lua.INT, Name: "x"},
+			{Type: lua.INT, Name: "y"},
+			{Type: lua.INT, Name: "pointx"},
+			{Type: lua.INT, Name: "pointy"},
+			{Type: lua.INT, Name: "width", Optional: true},
+			{Type: lua.INT, Name: "height", Optional: true},
+		},
+		func(state *golua.LState, d lua.TaskData, args map[string]any) int {
+			r.IC.Schedule(state, args["id"].(int),
+				&collection.Task[collection.ItemImage]{
+					Lib:  d.Lib,
+					Name: d.Name,
+					Fn: func(i *collection.Item[collection.ItemImage]) {
+						x := args["x"].(int) + i.Self.Image.Bounds().Min.X
+						y := args["y"].(int) + i.Self.Image.Bounds().Min.Y
+						pointx := args["pointx"].(int)
+						pointy := args["pointy"].(int)
+						width := args["width"].(int)
+						height := args["height"].(int)
+
+						if width == 0 {
+							width = i.Self.Image.Bounds().Dx() - args["x"].(int)
+						}
+						if height == 0 {
+							height = i.Self.Image.Bounds().Dy() - args["y"].(int)
+						}
+
+						src := r.IC.Item(args["src"].(int))
+						imageutil.DrawSubimg(i.Self.Image, src.Self.Image, x, y, pointx, pointy, width, height)
 					},
 				})
 
