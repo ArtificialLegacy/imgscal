@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>QRCode - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>QRCode</h1>
+      <p>
+        Library for creating qrcodes, does not support decoding. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/qrcode.go">
+            pkg/lua/lib/qrcode.go</a></code> 
+        | 
+        Import: <code>qrcode</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>new</summary>
+            <p><code>new(content, recovery) -&gt; int&lt;collection.QRCODE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">content  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">recovery  <code class="type">int&lt;qrcode.Recovery&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>to_image</summary>
+            <p><code>to_image(id, name, size, encoding) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name for the image created.</li>
+                  
+                
+                  <li class="arg">size  <code class="type">int</code>   - Positive sets a fixed size, negative sets a scaled size.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>to_string</summary>
+            <p><code>to_string(id, inverse) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  <li class="arg">inverse  <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>to_small_string</summary>
+            <p><code>to_small_string(id, inverse) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  <li class="arg">inverse  <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_set_foreground</summary>
+            <p><code>color_set_foreground(id, color)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_set_background</summary>
+            <p><code>color_set_background(id, color)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  <li class="arg">color  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>color_foreground</summary>
+            <p><code>color_foreground(id) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_background</summary>
+            <p><code>color_background(id) -&gt; struct&lt;image.ColorRGBA&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;image.ColorRGBA&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border</summary>
+            <p><code>border(id) -&gt; bool</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>recovery_level</summary>
+            <p><code>recovery_level(id) -&gt; int&lt;qrcode.Recovery&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;qrcode.Recovery&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>version</summary>
+            <p><code>version(id) -&gt; int</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_set</summary>
+            <p><code>border_set(id, border?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>border </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>content_set</summary>
+            <p><code>content_set(id, content)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+                  <li class="arg">content  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>content</summary>
+            <p><code>content(id) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.QRCODE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Recovery </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>RECOVERY_LOW</code></li>
+              
+                <li class="const"><code>RECOVERY_MEDIUM</code></li>
+              
+                <li class="const"><code>RECOVERY_HIGH</code></li>
+              
+                <li class="const"><code>RECOVERY_HIGHEST</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>
