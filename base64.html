@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Base64 - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Base64</h1>
+      <p>
+        Utility library for encoding and decoding base64 data. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/base64.go">
+            pkg/lua/lib/base64.go</a></code> 
+        | 
+        Import: <code>base64</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>encode</summary>
+            <p><code>encode(data, url?, raw?) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>url </i> <code class="type">bool</code>   - If true, use URL encoding.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>raw </i> <code class="type">bool</code>   - If true, use raw encoding.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The base64 encoded data.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode</summary>
+            <p><code>decode(data, url?, raw?) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>url </i> <code class="type">bool</code>   - If true, use URL encoding.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>raw </i> <code class="type">bool</code>   - If true, use raw encoding.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The base64 decoded data.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_image</summary>
+            <p><code>encode_image(id, raw?) -&gt; string</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image to encode.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>raw </i> <code class="type">bool</code>   - If true, use raw encoding.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The base64 encoded data.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>encode_image_to_file</summary>
+            <p><code>encode_image_to_file(id, path, raw?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code>   - The image to encode.</li>
+                  
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to save the image.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>raw </i> <code class="type">bool</code>   - If true, use raw encoding.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>decode_image</summary>
+            <p><code>decode_image(data, name, encoding, model?, raw?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">data  <code class="type">string</code>   - The base64 encoded image data.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.ENCODING&gt;</code>   - The image encoding must match the encoding of the data.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.MODEL&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>raw </i> <code class="type">bool</code>   - If true, use raw encoding.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The decoded image.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>decode_image_from_file</summary>
+            <p><code>decode_image_from_file(path, name, encoding, model?, raw?) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   - The path to the base64 encoded image data.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - The name of the image.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.ENCODING&gt;</code>   - The image encoding must match the encoding of the data.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>model </i> <code class="type">int&lt;image.MODEL&gt;</code>   - Used only to specify default when there is an unsupported color model.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>raw </i> <code class="type">bool</code>   - If true, use raw encoding.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.IMAGE&gt;</code>  - The decoded image.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

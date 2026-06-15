@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Gamemaker - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Gamemaker</h1>
+      <p>
+        Library for working with Gamemaker projects. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/gamemaker.go">
+            pkg/lua/lib/gamemaker.go</a></code> 
+        | 
+        Import: <code>gamemaker</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>project_load</summary>
+            <p><code>project_load(path) -&gt; int&lt;collection.CRATE_GAMEMAKER&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code>   -&gt; Path to the directory containing a Gamemaker project.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>project_save</summary>
+            <p><code>project_save(id)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>project_close</summary>
+            <p><code>project_close(id, save?)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>save </i> <code class="type">bool</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>folder_add</summary>
+            <p><code>folder_add(id, name, folderpath) -&gt; struct&lt;gamemaker.ResourceNode&gt;, string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the folder asset.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>folderpath </i> <code class="type">string</code>   - Parent path for the folder asset, use an empty string for the root folder.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>tags </i> <code class="type">[]string</code>   - List of tags to assign to the folder.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                
+                  <li class="return"><code class="type">string</code>  - Path to the folder asset.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>folder_get</summary>
+            <p><code>folder_get(id, folderpath) -&gt; struct&lt;gamemaker.ResourceNode&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">folderpath  <code class="type">string</code>   - Path to the folder asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>folder_delete</summary>
+            <p><code>folder_delete(id, folderpath)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">folderpath  <code class="type">string</code>   - Path to the folder asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>folder_exists</summary>
+            <p><code>folder_exists(id, folderpath) -&gt; bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">folderpath  <code class="type">string</code>   - Path to the folder asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>sprite</summary>
+            <p><code>sprite(name, width, height, parent, texgroup) -&gt; struct&lt;gamemaker.Sprite&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the sprite asset.</li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">parent  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                  
+                
+                  <li class="arg">texgroup  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.Sprite&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>sprite_save</summary>
+            <p><code>sprite_save(id, sprite)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">sprite  <code class="type">struct&lt;gamemaker.Sprite&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>sprite_delete</summary>
+            <p><code>sprite_delete(id, name)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the sprite asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>sprite_exists</summary>
+            <p><code>sprite_exists(id, name) -&gt; bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the sprite asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>sprite_load</summary>
+            <p><code>sprite_load(id, name, encoding) -&gt; struct&lt;gamemaker.Sprite&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the sprite asset.</li>
+                  
+                
+                  <li class="arg">encoding  <code class="type">int&lt;image.Encoding</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.Sprite&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>note</summary>
+            <p><code>note(name, text, parent) -&gt; struct&lt;gamemaker.Note&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the note asset.</li>
+                  
+                
+                  <li class="arg">text  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">parent  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.Note&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>note_save</summary>
+            <p><code>note_save(id, note)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">note  <code class="type">struct&lt;gamemaker.Note&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>note_delete</summary>
+            <p><code>note_delete(id, name)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the note asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>note_exists</summary>
+            <p><code>note_exists(id, name) -&gt; bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the note asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>note_load</summary>
+            <p><code>note_load(id, name) -&gt; struct&lt;gamemaker.Note&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the note asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.Note&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>script</summary>
+            <p><code>script(name, code, parent) -&gt; struct&lt;gamemaker.Script&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+                  <li class="arg">code  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">parent  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.Script&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>script_save</summary>
+            <p><code>script_save(id, script)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">script  <code class="type">struct&lt;gamemaker.Script&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>script_delete</summary>
+            <p><code>script_delete(id, name)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>script_exists</summary>
+            <p><code>script_exists(id, name) -&gt; bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>script_load</summary>
+            <p><code>script_load(id, name) -&gt; struct&lt;gamemaker.Script&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.Script&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>datafile_from_file</summary>
+            <p><code>datafile_from_file(name, filepath, frompath) -&gt; struct&lt;gamemaker.DataFile&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+                  <li class="arg">filepath  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">frompath  <code class="type">string</code>   - File path to read file from. Note that this file is not read until the resource is saved.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.DataFile&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>datafile_from_string</summary>
+            <p><code>datafile_from_string(name, filepath, data) -&gt; struct&lt;gamemaker.DataFile&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+                  <li class="arg">filepath  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">data  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.DataFile&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>datafile_from_image</summary>
+            <p><code>datafile_from_image(name, filepath, id) -&gt; struct&lt;gamemaker.DataFile&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">name  <code class="type">string</code>   - Name of the script asset.</li>
+                  
+                
+                  <li class="arg">filepath  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.DataFile&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>datafile_save</summary>
+            <p><code>datafile_save(id, datafile)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">datafile  <code class="type">struct&lt;gamemaker.DataFile&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>datafile_delete</summary>
+            <p><code>datafile_delete(id, filepath, name)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">filepath  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>datafile_exists</summary>
+            <p><code>datafile_exists(id, filepath, name) -&gt; bool</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+                  <li class="arg">filepath  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>project_as_parent</summary>
+            <p><code>project_as_parent(id) -&gt; struct&lt;gamemaker.ResourceNode&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_GAMEMAKER&gt;</code>   - ID for the loaded Gamemaker project.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>texgroup_default</summary>
+            <p><code>texgroup_default() -&gt; struct&lt;gamemaker.ResourceNode&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.ResourceNode&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>bbox</summary>
+            <p><code>bbox() -&gt; struct&lt;gamemaker.BBOX&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">top  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">left  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">bottom  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">right  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;gamemaker.BBOX&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>SpriteOrigin </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>SPRITEORIGIN_TOPLEFT</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_TOPCENTER</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_TOPRIGHT</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_MIDDLELEFT</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_MIDDLECENTER</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_MIDDLERIGHT</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_BOTTOMLEFT</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_BOTTOMCENTER</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_BOTTOMRIGHT</code></li>
+              
+                <li class="const"><code>SPRITEORIGIN_CUSTOM</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>CollMask </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>COLLMASK_PRECISE</code></li>
+              
+                <li class="const"><code>COLLMASK_RECT</code></li>
+              
+                <li class="const"><code>COLLMASK_ELLIPSE</code></li>
+              
+                <li class="const"><code>COLLMASK_DIAMOND</code></li>
+              
+                <li class="const"><code>COLLMASK_PRECISEFRAME</code></li>
+              
+                <li class="const"><code>COLLMASK_RECTROT</code></li>
+              
+                <li class="const"><code>COLLMASK_SPINE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>BBOXMode </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>BBOXMODE_AUTO</code></li>
+              
+                <li class="const"><code>BBOXMODE_FULL</code></li>
+              
+                <li class="const"><code>BBOXMODE_MANUAL</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>NinesliceTile </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>NINESLICETILE_STRETCH</code></li>
+              
+                <li class="const"><code>NINESLICETILE_REPEAT</code></li>
+              
+                <li class="const"><code>NINESLICETILE_MIRROR</code></li>
+              
+                <li class="const"><code>NINESLICETILE_BLANKREPEAT</code></li>
+              
+                <li class="const"><code>NINESLICETILE_HIDE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>NinesliceSlice </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>NINESLICESLICE_LEFT</code></li>
+              
+                <li class="const"><code>NINESLICESLICE_TOP</code></li>
+              
+                <li class="const"><code>NINESLICESLICE_RIGHT</code></li>
+              
+                <li class="const"><code>NINESLICESLICE_BOTTOM</code></li>
+              
+                <li class="const"><code>NINESLICESLICE_CENTER</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>PlaybackUnit </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>PLAYBACK_PERSECOND</code></li>
+              
+                <li class="const"><code>PLAYBACK_PERFRAME</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Directories </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>DIR_DATAFILES</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Color </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>COLOR_AQUA</code></li>
+              
+                <li class="const"><code>COLOR_BLACK</code></li>
+              
+                <li class="const"><code>COLOR_BLUE</code></li>
+              
+                <li class="const"><code>COLOR_DKGRAY</code></li>
+              
+                <li class="const"><code>COLOR_FUCHSIA</code></li>
+              
+                <li class="const"><code>COLOR_GRAY</code></li>
+              
+                <li class="const"><code>COLOR_GREEN</code></li>
+              
+                <li class="const"><code>COLOR_LIME</code></li>
+              
+                <li class="const"><code>COLOR_LTGRAY</code></li>
+              
+                <li class="const"><code>COLOR_MAROON</code></li>
+              
+                <li class="const"><code>COLOR_NAVY</code></li>
+              
+                <li class="const"><code>COLOR_OLIVE</code></li>
+              
+                <li class="const"><code>COLOR_ORANGE</code></li>
+              
+                <li class="const"><code>COLOR_PURPLE</code></li>
+              
+                <li class="const"><code>COLOR_RED</code></li>
+              
+                <li class="const"><code>COLOR_SILVER</code></li>
+              
+                <li class="const"><code>COLOR_TEAL</code></li>
+              
+                <li class="const"><code>COLOR_WHITE</code></li>
+              
+                <li class="const"><code>COLOR_YELLOW</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>ResourceNode</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+                <li class="prop">filepath  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>Sprite</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+                <li class="prop">width  <code class="type">int</code>  </li>
+                
+                <li class="prop">height  <code class="type">int</code>  </li>
+                
+                <li class="prop">parent  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code>  </li>
+                
+                <li class="prop">texgroup  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>layers</summary>
+                <p><code>layers(self) -&gt; struct&lt;gamemaker.SpriteLayers&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>frames</summary>
+                <p><code>frames(self) -&gt; struct&lt;gamemaker.SpriteFrames&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tags</summary>
+                <p><code>tags(self, string...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tag_list</summary>
+                <p><code>tag_list(self, []string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tile</summary>
+                <p><code>tile(self, htile bool, vtile bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>origin</summary>
+                <p><code>origin(self, int&lt;gamemaker.SpriteOrigin&gt;, xorigin int?, yorigin int?) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>collision</summary>
+                <p><code>collision(self, int&lt;gamemaker.BBOXMode&gt;, int&lt;gamemaker.CollMask&gt;, struct&lt;gamemaker.BBOX&gt;?, tolerance int?) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>premultiply_alpha</summary>
+                <p><code>premultiply_alpha(self, bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>edge_filtering</summary>
+                <p><code>edge_filtering(self, bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>dynamic_texturepage</summary>
+                <p><code>dynamic_texturepage(self, bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>nineslice</summary>
+                <p><code>nineslice(self, top int, left int, bottom int, right int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>nineslice_tilemode</summary>
+                <p><code>nineslice_tilemode(self, int&lt;gamemaker.NineSliceSlice&gt;, int&lt;gamemaker.NineSliceTile&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>broadcast_message</summary>
+                <p><code>broadcast_message(self, frame int, msg string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>playback</summary>
+                <p><code>playback(self, speed int, units int&lt;gamemaker.PlaybackUnit&gt;?) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>SpriteLayers</summary>
+            <p>
+              
+            </p>
+
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>image</summary>
+                <p><code>image(self, name string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>default</summary>
+                <p><code>default(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>folder</summary>
+                <p><code>folder(self, name string) -&gt; struct&lt;gamemaker.SpriteLayerFolder&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>back</summary>
+                <p><code>back(self) -&gt; struct&lt;gamemaker.Sprite&gt;</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>SpriteLayerImage</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;gamemaker.LayerType&gt;</code>  </li>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>SpriteLayerFolder</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">string&lt;gamemaker.LayerType&gt;</code>  </li>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>image</summary>
+                <p><code>image(self, name string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>default</summary>
+                <p><code>default(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>folder</summary>
+                <p><code>folder(self, name string) -&gt; struct&lt;gamemaker.SpriteLayerFolder&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>back</summary>
+                <p><code>back(self) -&gt; struct&lt;gamemaker.SpriteLayers&gt;</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>SpriteFrames</summary>
+            <p>
+              
+            </p>
+
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>add</summary>
+                <p><code>add(self, []int&lt;collection.IMAGE&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>back</summary>
+                <p><code>back(self) -&gt; struct&lt;gamemaker.Sprite&gt;</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>Note</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+                <li class="prop">text  <code class="type">string</code>  </li>
+                
+                <li class="prop">parent  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>tags</summary>
+                <p><code>tags(self, string...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tag_list</summary>
+                <p><code>tag_list(self, []string) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>Script</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+                <li class="prop">code  <code class="type">string</code>  </li>
+                
+                <li class="prop">parent  <code class="type">struct&lt;gamemaker.ResourceNode&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>tags</summary>
+                <p><code>tags(self, string...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tag_list</summary>
+                <p><code>tag_list(self, []string) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>BBOX</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">top  <code class="type">int</code>  </li>
+                
+                <li class="prop">left  <code class="type">int</code>  </li>
+                
+                <li class="prop">bottom  <code class="type">int</code>  </li>
+                
+                <li class="prop">right  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>DataFile</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">name  <code class="type">string</code>  </li>
+                
+                <li class="prop">filepath  <code class="type">string</code>  </li>
+                
+                <li class="prop">data  <code class="type">string | int&lt;collection.IMAGE&gt;</code>  </li>
+                
+                <li class="prop">datatype  <code class="type">int&lt;gamemaker.DataFileType&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

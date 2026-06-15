@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Text - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Text</h1>
+      <p>
+        Library for reading and writing to text files. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/txt.go">
+            pkg/lua/lib/txt.go</a></code> 
+        | 
+        Import: <code>txt</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>write</summary>
+            <p><code>write(path, text)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">text  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>write_lines</summary>
+            <p><code>write_lines(path, lines)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">lines  <code class="type">[]string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>truncate</summary>
+            <p><code>truncate(path)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>append</summary>
+            <p><code>append(path, text)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">text  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>append_lines</summary>
+            <p><code>append_lines(path, lines)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">lines  <code class="type">[]string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>read</summary>
+            <p><code>read(path) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>read_lines</summary>
+            <p><code>read_lines(path) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>line_count</summary>
+            <p><code>line_count(path) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>line</summary>
+            <p><code>line(path, index) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">index  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - Returns an empty string if the index is out of bounds.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>iter</summary>
+            <p><code>iter(path, func)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">func  <code class="type">function(line string, index int)</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>map</summary>
+            <p><code>map(path, func) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">func  <code class="type">function(line string, index int) -&gt; string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>map_lines</summary>
+            <p><code>map_lines(path, func) -&gt; []string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">path  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">func  <code class="type">function(line string, index int) -&gt; string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">[]string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Shader - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Shader</h1>
+      <p>
+        Library for running GPU shaders. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/shader.go">
+            pkg/lua/lib/shader.go</a></code> 
+        | 
+        Import: <code>shader</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>device</summary>
+            <p><code>device() -&gt; int&lt;collection.CRATE_SHADER&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>release</summary>
+            <p><code>release(device)</code></p>
+            
+            
+            <p>
+              After a device is released, it and any associated buffers and kernels cannot be used. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>add_program</summary>
+            <p><code>add_program(device, program)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">program  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>add_program_file</summary>
+            <p><code>add_program_file(device, path)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">path <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>kernel</summary>
+            <p><code>kernel(device, name, []globals, []locals) -&gt; int&lt;shader.KERNEL&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">name  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">globals  <code class="type">[]int</code>   - List of the global work sizes to use.</li>
+                  
+                
+                  <li class="arg">locals  <code class="type">[]int</code>   - List of the local work sizes to use.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;shader.KERNEL&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>run</summary>
+            <p><code>run(device, kernel, buffers...)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">kernel  <code class="type">int&lt;shader.KERNEL&gt;</code> </li>
+                  
+                
+                  <li class="arg">buffers  <code class="type">struct&lt;shader.Buffer&gt;...</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>buffer_image</summary>
+            <p><code>buffer_image(device, type, width, height) -&gt; struct&lt;shader.BufferImage&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">type  <code class="type">int&lt;shader.ImageType&gt;</code> </li>
+                  
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;shader.BufferImage&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>buffer_image_ext</summary>
+            <p><code>buffer_image_ext(device, type, p1, p2) -&gt; struct&lt;shader.BufferImage&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">type  <code class="type">int&lt;shader.ImageType&gt;</code> </li>
+                  
+                
+                  <li class="arg">p1  <code class="type">struct&lt;image.Point&gt;</code> </li>
+                  
+                
+                  <li class="arg">p2  <code class="type">struct&lt;image.Point&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;shader.BufferImage&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>buffer_image_ext_xy</summary>
+            <p><code>buffer_image_ext_xy(device, type, x1, y1, x2, y2) -&gt; struct&lt;shader.BufferImage&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">type  <code class="type">int&lt;shader.ImageType&gt;</code> </li>
+                  
+                
+                  <li class="arg">x1  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y1  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">x2  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">y2  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;shader.BufferImage&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>buffer_image_from</summary>
+            <p><code>buffer_image_from(device, id) -&gt; struct&lt;shader.BufferImage&gt;</code></p>
+            
+            <blockquote>@blocking</blockquote>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">id  <code class="type">int&lt;collection.IMAGE&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;shader.BufferImage&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>buffer_vector</summary>
+            <p><code>buffer_vector(device, length) -&gt; struct&lt;shader.BufferVector&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">length  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;shader.BufferVector&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>buffer_bytes</summary>
+            <p><code>buffer_bytes(device, size) -&gt; struct&lt;shader.BufferBytes&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code> </li>
+                  
+                
+                  <li class="arg">size  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;shader.BufferBytes&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>BufferType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>BUFFER_IMAGE</code></li>
+              
+                <li class="const"><code>BUFFER_VECTOR</code></li>
+              
+                <li class="const"><code>BUFFER_BYTES</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>ImageType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>IMAGE_RGBA</code></li>
+              
+                <li class="const"><code>IMAGE_GRAY</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>ID </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>KERNEL</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>BufferImage</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;shader.BufferType&gt;</code>  </li>
+                
+                <li class="prop">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>bounds</summary>
+                <p><code>bounds() -&gt; int, int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>copy</summary>
+                <p><code>copy(self, int&lt;collection.IMAGE&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>data</summary>
+                <p><code>data(name string, int&lt;image.Encoding&gt;) -&gt; int&lt;collection.IMAGE&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>data_into</summary>
+                <p><code>data_into(self, int&lt;collection.IMAGE&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>BufferVector</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;shader.BufferType&gt;</code>  </li>
+                
+                <li class="prop">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>copy</summary>
+                <p><code>copy(self, []float) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>data</summary>
+                <p><code>data() -&gt; []float</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>length</summary>
+                <p><code>length() -&gt; int</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>BufferBytes</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;shader.BufferType&gt;</code>  </li>
+                
+                <li class="prop">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>copy</summary>
+                <p><code>copy(self, []int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>data</summary>
+                <p><code>data() -&gt; []int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size</summary>
+                <p><code>size() -&gt; int</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Buffer</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;shader.BufferType&gt;</code>  </li>
+                
+                <li class="prop">device  <code class="type">int&lt;collection.CRATE_SHADER&gt;</code>  </li>
+                
+                <li class="prop">id  <code class="type">int</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+      </section>
+    </main>
+  </body>
+</html>

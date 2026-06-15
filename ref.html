@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>References - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>References</h1>
+      <p>
+        Library for creating and referencing pointers. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/ref.go">
+            pkg/lua/lib/ref.go</a></code> 
+        | 
+        Import: <code>ref</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+        
+        <section class="sect">
+          
+          <p>This is used when both go and lua need to reference the same mutable data.</p>
+          
+        </section>
+        
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>new</summary>
+            <p><code>new(value, type?) -&gt; int&lt;ref.REFType.*&gt;</code></p>
+            
+            
+            <p>
+              References are used when go and lua need to share a reference to the same value. The primitive type versions must be used when that value must be a Go value. Also note that when refs are used for indexes in Go that they must start at 0 not 1. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">value  <code class="type">any</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>type </i> <code class="type">int&lt;ref.REFType&gt;</code>   - Must be compatible with the above value.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>new_slice</summary>
+            <p><code>new_slice(ln, type?) -&gt; int&lt;ref.REFType.*&gt;</code></p>
+            
+            
+            <p>
+              References are used when go and lua need to share a reference to the same value. The primitive type versions must be used when that value must be a Go value. Also note that when refs are used for indexes in Go that they must start at 0 not 1. This also includes the slice created here, it&#39;s index starts at 0. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ln  <code class="type">int</code>   - A fixed length for the slice.</li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>type </i> <code class="type">int&lt;ref.REFType&gt;</code>   - Must be compatible with the values set into the slice.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>get</summary>
+            <p><code>get(id) -&gt; any</code></p>
+            
+            
+            <p>
+              Note: this is a copy of the value being referenced, to mutate the ref use &#39;ref.set()&#39;. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">any</code>  - Will be a set type deteremined by the REFType.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>get_slice</summary>
+            <p><code>get_slice(id, index) -&gt; any</code></p>
+            
+            
+            <p>
+              Note: this is a copy of the value being referenced, to mutate the ref use &#39;ref.set_slice()&#39;. 
+            </p>
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                  
+                
+                  <li class="arg">index  <code class="type">int</code>   - Must be within the range of 0 to 1 less than the set length.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">any</code>  - Will be a set type determined by the REFType.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>len_slice</summary>
+            <p><code>len_slice(id) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The length of the slice in the ref.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>set</summary>
+            <p><code>set(id, value)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                  
+                
+                  <li class="arg">value  <code class="type">any</code>   - Must be compatible with the set REFType.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>set_slice</summary>
+            <p><code>set_slice(id, index, value)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                  
+                
+                  <li class="arg">index  <code class="type">int</code>   - Must be in range 0 to 1 less than the set length.</li>
+                  
+                
+                  <li class="arg">value  <code class="type">any</code>   - Must be compatible with the set REFType.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>del</summary>
+            <p><code>del(id)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">id  <code class="type">int&lt;ref.REFType.*&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>del_many</summary>
+            <p><code>del_many(ids...)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">ids  <code class="type">int&lt;ref.REFType.*&gt;...</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>REFType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>LUA</code></li>
+              
+                <li class="const"><code>BOOL</code></li>
+              
+                <li class="const"><code>INT</code></li>
+              
+                <li class="const"><code>INT32</code></li>
+              
+                <li class="const"><code>FLOAT</code></li>
+              
+                <li class="const"><code>FLOAT32</code></li>
+              
+                <li class="const"><code>STRING</code></li>
+              
+                <li class="const"><code>RGBA - Use in lua as struct&lt;image.Color&gt;.</code></li>
+              
+                <li class="const"><code>TIME - Use in lua as a number representing the time in ms.</code></li>
+              
+                <li class="const"><code>FONT - Internal &#39;giu.FontInfo&#39;, cannot be created or set, getting will return the result of &#39;font.String()&#39;.</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+
+        
+      </section>
+    </main>
+  </body>
+</html>

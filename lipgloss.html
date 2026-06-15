@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LipGloss - ImgScal Documentation</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <header>
+      <h1>LipGloss</h1>
+      <p>
+        Wrapper for lipgloss library. 
+      </p>
+      
+      <hr>
+      <p>
+        Source: <code>
+          <a href="https://github.com/ArtificialLegacy/imgscal/blob/main/pkg/lua/lib/lipgloss.go">
+            pkg/lua/lib/lipgloss.go</a></code> 
+        | 
+        Import: <code>lipgloss</code>
+      </p>
+      
+    </header>
+
+    <main>
+      <nav>
+        <h2>Library Pages</h2>
+        <hr>
+        <ul class="libs">
+          
+          
+            
+            <li class="lib"><a href="./ascii.html">ASCII</a></li>
+            
+          
+            
+            <li class="lib"><a href="./base64.html">Base64</a></li>
+            
+          
+            
+            <li class="lib"><a href="./bit.html">Bit</a></li>
+            
+          
+            
+            <li class="lib"><a href="./blend.html">Blend</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cache.html">Cache</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cli.html">CLI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./cmd.html">Command</a></li>
+            
+          
+            
+            <li class="lib"><a href="./collection.html">Collection</a></li>
+            
+          
+            
+            <li class="lib"><a href="./context.html">Context</a></li>
+            
+          
+            
+            <li class="lib"><a href="./filter.html">Filter</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gamemaker.html">Gamemaker</a></li>
+            
+          
+            
+            <li class="lib"><a href="./gui.html">GUI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guicode.html">GUI Code</a></li>
+            
+          
+            
+            <li class="lib"><a href="./guiplot.html">GUI Plots</a></li>
+            
+          
+            
+            <li class="lib"><a href="./image.html">Image</a></li>
+            
+          
+            
+            <li class="lib"><a href="./imger.html">Imger</a></li>
+            
+          
+            
+            <li class="lib"><a href="./index.html">ImgScal</a></li>
+            
+          
+            
+            <li class="lib"><a href="./io.html">IO</a></li>
+            
+          
+            
+            <li class="lib"><a href="./json.html">JSON</a></li>
+            
+          
+            
+            <li class="lib-current"><a href="./lipgloss.html">LipGloss</a></li>
+            
+          
+            
+            <li class="lib"><a href="./net.html">Networking</a></li>
+            
+          
+            
+            <li class="lib"><a href="./noise.html">Noise</a></li>
+            
+          
+            
+            <li class="lib"><a href="./nsfw.html">NSFW</a></li>
+            
+          
+            
+            <li class="lib"><a href="./palette.html">Palette</a></li>
+            
+          
+            
+            <li class="lib"><a href="./pipe.html">Pipe</a></li>
+            
+          
+            
+            <li class="lib"><a href="./qrcode.html">QRCode</a></li>
+            
+          
+            
+            <li class="lib"><a href="./ref.html">References</a></li>
+            
+          
+            
+            <li class="lib"><a href="./shader.html">Shader</a></li>
+            
+          
+            
+            <li class="lib"><a href="./spritesheet.html">SpriteSheet</a></li>
+            
+          
+            
+            <li class="lib"><a href="./std.html">Standard</a></li>
+            
+          
+            
+            <li class="lib"><a href="./strings.html">Strings</a></li>
+            
+          
+            
+            <li class="lib"><a href="./template.html">Template</a></li>
+            
+          
+            
+            <li class="lib"><a href="./test.html">Testing</a></li>
+            
+          
+            
+            <li class="lib"><a href="./time.html">Time</a></li>
+            
+          
+            
+            <li class="lib"><a href="./tui.html">Terminal UI</a></li>
+            
+          
+            
+            <li class="lib"><a href="./txt.html">Text</a></li>
+            
+          
+            
+            <li class="lib"><a href="./uuid.html">UUID</a></li>
+            
+          
+        </ul>
+      </nav>
+
+      <section class="docs">
+        
+
+        
+
+        
+        <section>
+          <h2>Functions</h2>
+          <hr>
+          
+          
+          <details>
+            <summary>has_dark_background</summary>
+            <p><code>has_dark_background() -&gt; bool</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">bool</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>size</summary>
+            <p><code>size(str) -&gt; int, int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">str  <code class="type">string</code>   - The string to measure.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The width of the string.</li>
+                
+                  <li class="return"><code class="type">int</code>  - The height of the string.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>width</summary>
+            <p><code>width(str) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">str  <code class="type">string</code>   - The string to measure.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The width of the string.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>height</summary>
+            <p><code>height(str) -&gt; int</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">str  <code class="type">string</code>   - The string to measure.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">int</code>  - The height of the string.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>join_horizontal</summary>
+            <p><code>join_horizontal(pos, str...) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pos  <code class="type">float&lt;lipgloss.Position&gt;</code>   - Percentage between 0 and 1.</li>
+                  
+                
+                  <li class="arg">str  <code class="type">string...</code>   - The strings to join.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The joined string.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>join_vertical</summary>
+            <p><code>join_vertical(pos, str...) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">pos  <code class="type">float&lt;lipgloss.Position&gt;</code>   - Percentage between 0 and 1.</li>
+                  
+                
+                  <li class="arg">str  <code class="type">string...</code>   - The strings to join.</li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code>  - The joined string.</li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color</summary>
+            <p><code>color(col) -&gt; struct&lt;lipgloss.Color&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">col  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Color&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_rgb</summary>
+            <p><code>color_rgb(col) -&gt; struct&lt;lipgloss.Color&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">col  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Color&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_none</summary>
+            <p><code>color_none() -&gt; struct&lt;lipgloss.ColorNone&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.ColorNone&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_ansi</summary>
+            <p><code>color_ansi(col) -&gt; struct&lt;lipgloss.ColorAnsi&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">col  <code class="type">int</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Color&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_adaptive</summary>
+            <p><code>color_adaptive(light, dark) -&gt; struct&lt;lipgloss.ColorAdaptive&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">light  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">dark  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.ColorAdaptive&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_adaptive_rgb</summary>
+            <p><code>color_adaptive_rgb(light, dark) -&gt; struct&lt;lipgloss.ColorAdaptive&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">light  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+                  <li class="arg">dark  <code class="type">struct&lt;image.Color&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.ColorAdaptive&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_complete</summary>
+            <p><code>color_complete(truecolor, ansi256, ansi) -&gt; struct&lt;lipgloss.ColorComplete&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">truecolor  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">ansi256  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">ansi  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.ColorComplete&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>color_complete_adaptive</summary>
+            <p><code>color_complete_adaptive(light, dark) -&gt; struct&lt;lipgloss.ColorCompleteAdaptive&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">light  <code class="type">struct&lt;lipgloss.ColorComplete&gt;</code> </li>
+                  
+                
+                  <li class="arg">dark  <code class="type">struct&lt;lipgloss.ColorComplete&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.ColorCompleteAdaptive&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border</summary>
+            <p><code>border(top, bottom, left, right, topleft, topright, bottomleft, bottomright, middleleft, middleright, middle, middletop, middlebottom) -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">top  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">bottom  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">left  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">right  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">topleft  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">topright  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">bottomleft  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">bottomright  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">middleleft  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">middleright  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">middle  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">middletop  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">middlebottom  <code class="type">string</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_block</summary>
+            <p><code>border_block() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_double</summary>
+            <p><code>border_double() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_hidden</summary>
+            <p><code>border_hidden() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_block_inner_half</summary>
+            <p><code>border_block_inner_half() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_normal</summary>
+            <p><code>border_normal() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_block_outer_half</summary>
+            <p><code>border_block_outer_half() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_rounded</summary>
+            <p><code>border_rounded() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>border_thick</summary>
+            <p><code>border_thick() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Border&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>whitespace_option</summary>
+            <p><code>whitespace_option() -&gt; struct&lt;lipgloss.WhitespaceOption&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.WhitespaceOption&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>place</summary>
+            <p><code>place(width, height, hpos, vpos, str, opts?) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">hpos  <code class="type">float&lt;lipgloss.Position&gt;</code> </li>
+                  
+                
+                  <li class="arg">vpos  <code class="type">float&lt;lipgloss.Position&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>opts </i> <code class="type">struct&lt;lipgloss.WhitespaceOption&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>place_horizontal</summary>
+            <p><code>place_horizontal(width, hpos, str, opts?) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">width  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">hpos  <code class="type">float&lt;lipgloss.Position&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>opts </i> <code class="type">struct&lt;lipgloss.WhitespaceOption&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>place_vertical</summary>
+            <p><code>place_vertical(height, vpos, str, opts?) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">height  <code class="type">int</code> </li>
+                  
+                
+                  <li class="arg">vpos  <code class="type">float&lt;lipgloss.Position&gt;</code> </li>
+                  
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  
+                    <li class="arg-opt"><i>opts </i> <code class="type">struct&lt;lipgloss.WhitespaceOption&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>style</summary>
+            <p><code>style() -&gt; struct&lt;lipgloss.Style&gt;</code></p>
+            
+            
+
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">struct&lt;lipgloss.Style&gt;</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>style_delete</summary>
+            <p><code>style_delete(style)</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">style  <code class="type">struct&lt;lipgloss.Style&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>style_runes</summary>
+            <p><code>style_runes(str, indices, match, unmatch) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">indices  <code class="type">[]int</code> </li>
+                  
+                
+                  <li class="arg">match  <code class="type">struct&lt;lipgloss.Style&gt;</code> </li>
+                  
+                
+                  <li class="arg">unmatch  <code class="type">struct&lt;lipgloss.Style&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>style_string</summary>
+            <p><code>style_string(str, style) -&gt; string</code></p>
+            
+            
+
+            
+            <figure>
+              <figcaption>Arguments</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="arg">str  <code class="type">string</code> </li>
+                  
+                
+                  <li class="arg">style  <code class="type">struct&lt;lipgloss.Style&gt;</code> </li>
+                  
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Return Values</figcaption>
+              <hr>
+              <ul>
+                
+                  <li class="return"><code class="type">string</code> </li>
+                
+              </ul>
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Constants</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Position </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>POSITION_TOP</code></li>
+              
+                <li class="const"><code>POSITION_BOTTOM</code></li>
+              
+                <li class="const"><code>POSITION_CENTER</code></li>
+              
+                <li class="const"><code>POSITION_LEFT</code></li>
+              
+                <li class="const"><code>POSITION_RIGHT</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>ColorType </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>COLOR</code></li>
+              
+                <li class="const"><code>COLOR_NONE</code></li>
+              
+                <li class="const"><code>COLOR_ANSI</code></li>
+              
+                <li class="const"><code>COLOR_ADAPTIVE</code></li>
+              
+                <li class="const"><code>COLOR_COMPLETE</code></li>
+              
+                <li class="const"><code>COLOR_COMPLETEADAPTIVE</code></li>
+              
+            </ul>
+          </details>
+          
+          <details>
+            <summary>Special </summary>
+            <hr>
+            <ul class="const-group">
+              
+                <li class="const"><code>NOTAB_CONVERSION</code></li>
+              
+            </ul>
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Structs</h2>
+          <hr>
+
+          
+          <details>
+            <summary>Color</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+                <li class="prop">value  <code class="type">string</code>  - The color value. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorNone</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorAnsi</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+                <li class="prop">value  <code class="type">int</code>  - The color value. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorAdaptive</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+                <li class="prop">light  <code class="type">string</code>  - The color value for light backgrounds. </li>
+                
+                <li class="prop">dark  <code class="type">string</code>  - The color value for dark backgrounds. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorComplete</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+                <li class="prop">truecolor  <code class="type">string</code>  </li>
+                
+                <li class="prop">ansi256  <code class="type">string</code>  </li>
+                
+                <li class="prop">ansi  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>ColorCompleteAdaptive</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+                <li class="prop">light  <code class="type">struct&lt;lipgloss.ColorComplete&gt;</code>  </li>
+                
+                <li class="prop">dark  <code class="type">struct&lt;lipgloss.ColorComplete&gt;</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+          <details>
+            <summary>Border</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">top  <code class="type">string</code>  </li>
+                
+                <li class="prop">bottom  <code class="type">string</code>  </li>
+                
+                <li class="prop">left  <code class="type">string</code>  </li>
+                
+                <li class="prop">right  <code class="type">string</code>  </li>
+                
+                <li class="prop">topleft  <code class="type">string</code>  </li>
+                
+                <li class="prop">topright  <code class="type">string</code>  </li>
+                
+                <li class="prop">bottomleft  <code class="type">string</code>  </li>
+                
+                <li class="prop">bottomright  <code class="type">string</code>  </li>
+                
+                <li class="prop">middleleft  <code class="type">string</code>  </li>
+                
+                <li class="prop">middleright  <code class="type">string</code>  </li>
+                
+                <li class="prop">middle  <code class="type">string</code>  </li>
+                
+                <li class="prop">middletop  <code class="type">string</code>  </li>
+                
+                <li class="prop">middlebottom  <code class="type">string</code>  </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>size_top</summary>
+                <p><code>size_top() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size_bottom</summary>
+                <p><code>size_bottom() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size_left</summary>
+                <p><code>size_left() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>size_right</summary>
+                <p><code>size_right() -&gt; int</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>WhitespaceOption</summary>
+            <p>
+              
+            </p>
+
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>foreground</summary>
+                <p><code>foreground(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>background</summary>
+                <p><code>background(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>chars</summary>
+                <p><code>chars(self, string) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+          <details>
+            <summary>Style</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">id  <code class="type">int&lt;collection.CRATE_LIPGLOSS&gt;</code>  - The ID of the style. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+            <figure>
+              <figcaption>Methods</figcaption>
+              <hr>
+              
+              <details class="method">
+                <summary>render</summary>
+                <p><code>render(string...) -&gt; string</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align</summary>
+                <p><code>align() -&gt; float&lt;lipgloss.Position&gt;, float&lt;lipgloss.Position&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_set</summary>
+                <p><code>align_set(self, hpos float&lt;lipgloss.Position&gt;, vpos float&lt;lipgloss.Position&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_unset</summary>
+                <p><code>align_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_horizontal</summary>
+                <p><code>align_horizontal() -&gt; float&lt;lipgloss.Position&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_horizontal_set</summary>
+                <p><code>align_horizontal_set(self, hpos float&lt;lipgloss.Position&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_horizontal_unset</summary>
+                <p><code>align_horizontal_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_vertical</summary>
+                <p><code>align_vertical() -&gt; float&lt;lipgloss.Position&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_vertical_set</summary>
+                <p><code>align_vertical_set(self, vpos float&lt;lipgloss.Position&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>align_vertical_unset</summary>
+                <p><code>align_vertical_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>blink</summary>
+                <p><code>blink() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>blink_set</summary>
+                <p><code>blink_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>blink_unset</summary>
+                <p><code>blink_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>bold</summary>
+                <p><code>bold() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>bold_set</summary>
+                <p><code>bold_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>bold_unset</summary>
+                <p><code>bold_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>faint</summary>
+                <p><code>faint() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>faint_set</summary>
+                <p><code>faint_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>faint_unset</summary>
+                <p><code>faint_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>italic</summary>
+                <p><code>italic() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>italic_set</summary>
+                <p><code>italic_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>italic_unset</summary>
+                <p><code>italic_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>underline</summary>
+                <p><code>underline() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>underline_set</summary>
+                <p><code>underline_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>underline_unset</summary>
+                <p><code>underline_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>underline_spaces</summary>
+                <p><code>underline_spaces() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>underline_spaces_set</summary>
+                <p><code>underline_spaces_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>underline_spaces_unset</summary>
+                <p><code>underline_spaces_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>strikethrough</summary>
+                <p><code>strikethrough() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>strikethrough_set</summary>
+                <p><code>strikethrough_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>strikethrough_unset</summary>
+                <p><code>strikethrough_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>strikethrough_spaces</summary>
+                <p><code>strikethrough_spaces() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>strikethrough_spaces_set</summary>
+                <p><code>strikethrough_spaces_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>strikethrough_spaces_unset</summary>
+                <p><code>strikethrough_spaces_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>reverse</summary>
+                <p><code>reverse() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>reverse_set</summary>
+                <p><code>reverse_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>reverse_unset</summary>
+                <p><code>reverse_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>foreground</summary>
+                <p><code>foreground() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>foreground_set</summary>
+                <p><code>foreground_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>foreground_unset</summary>
+                <p><code>foreground_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>background</summary>
+                <p><code>background() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>background_set</summary>
+                <p><code>background_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>background_unset</summary>
+                <p><code>background_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>inline</summary>
+                <p><code>inline() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>inline_set</summary>
+                <p><code>inline_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>inline_unset</summary>
+                <p><code>inline_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>width</summary>
+                <p><code>width() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>width_set</summary>
+                <p><code>width_set(self, width int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>width_unset</summary>
+                <p><code>width_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>height</summary>
+                <p><code>height() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>height_set</summary>
+                <p><code>height_set(self, height int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>height_unset</summary>
+                <p><code>height_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>width_max</summary>
+                <p><code>width_max() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>width_max_set</summary>
+                <p><code>width_max_set(self, width int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>width_max_unset</summary>
+                <p><code>width_max_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>height_max</summary>
+                <p><code>height_max() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>height_max_set</summary>
+                <p><code>height_max_set(self, height int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>height_max_unset</summary>
+                <p><code>height_max_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tab_width</summary>
+                <p><code>tab_width() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tab_width_set</summary>
+                <p><code>tab_width_set(self, width int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>tab_width_unset</summary>
+                <p><code>tab_width_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border</summary>
+                <p><code>border() -&gt; struct&lt;lipgloss.Border&gt;, bool, bool, bool, bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_set</summary>
+                <p><code>border_set(self, border struct&lt;lipgloss.Border&gt;, sides bool...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_unset</summary>
+                <p><code>border_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_foreground_set</summary>
+                <p><code>border_foreground_set(self, color struct&lt;lipgloss.ColorAny&gt;...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_background_set</summary>
+                <p><code>border_background_set(self, color struct&lt;lipgloss.ColorAny&gt;...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_style</summary>
+                <p><code>border_style() -&gt; struct&lt;lipgloss.Border&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_style_set</summary>
+                <p><code>border_style_set(self, border struct&lt;lipgloss.Border&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_style_unset</summary>
+                <p><code>border_style_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top</summary>
+                <p><code>border_top() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_set</summary>
+                <p><code>border_top_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_unset</summary>
+                <p><code>border_top_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_foreground</summary>
+                <p><code>border_top_foreground() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_foreground_set</summary>
+                <p><code>border_top_foreground_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_foreground_unset</summary>
+                <p><code>border_top_foreground_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_background</summary>
+                <p><code>border_top_background() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_background_set</summary>
+                <p><code>border_top_background_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_top_background_unset</summary>
+                <p><code>border_top_background_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom</summary>
+                <p><code>border_bottom() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_set</summary>
+                <p><code>border_bottom_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_unset</summary>
+                <p><code>border_bottom_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_foreground</summary>
+                <p><code>border_bottom_foreground() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_foreground_set</summary>
+                <p><code>border_bottom_foreground_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_foreground_unset</summary>
+                <p><code>border_bottom_foreground_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_background</summary>
+                <p><code>border_bottom_background() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_background_set</summary>
+                <p><code>border_bottom_background_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_bottom_background_unset</summary>
+                <p><code>border_bottom_background_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left</summary>
+                <p><code>border_left() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_set</summary>
+                <p><code>border_left_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_unset</summary>
+                <p><code>border_left_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_foreground</summary>
+                <p><code>border_left_foreground() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_foreground_set</summary>
+                <p><code>border_left_foreground_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_foreground_unset</summary>
+                <p><code>border_left_foreground_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_background</summary>
+                <p><code>border_left_background() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_background_set</summary>
+                <p><code>border_left_background_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_left_background_unset</summary>
+                <p><code>border_left_background_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right</summary>
+                <p><code>border_right() -&gt; bool</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_set</summary>
+                <p><code>border_right_set(self, enabled bool) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_unset</summary>
+                <p><code>border_right_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_foreground</summary>
+                <p><code>border_right_foreground() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_foreground_set</summary>
+                <p><code>border_right_foreground_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_foreground_unset</summary>
+                <p><code>border_right_foreground_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_background</summary>
+                <p><code>border_right_background() -&gt; struct&lt;lipgloss.ColorAny&gt;</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_background_set</summary>
+                <p><code>border_right_background_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>border_right_background_unset</summary>
+                <p><code>border_right_background_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin</summary>
+                <p><code>margin() -&gt; int, int, int, int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_set</summary>
+                <p><code>margin_set(self, sides int...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_unset</summary>
+                <p><code>margin_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_top</summary>
+                <p><code>margin_top() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_top_set</summary>
+                <p><code>margin_top_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_top_unset</summary>
+                <p><code>margin_top_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_bottom</summary>
+                <p><code>margin_bottom() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_bottom_set</summary>
+                <p><code>margin_bottom_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_bottom_unset</summary>
+                <p><code>margin_bottom_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_left</summary>
+                <p><code>margin_left() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_left_set</summary>
+                <p><code>margin_left_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_left_unset</summary>
+                <p><code>margin_left_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_right</summary>
+                <p><code>margin_right() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_right_set</summary>
+                <p><code>margin_right_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_right_unset</summary>
+                <p><code>margin_right_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_background_set</summary>
+                <p><code>margin_background_set(self, color struct&lt;lipgloss.ColorAny&gt;) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>margin_background_unset</summary>
+                <p><code>margin_background_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding</summary>
+                <p><code>padding() -&gt; int, int, int, int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_set</summary>
+                <p><code>padding_set(self, sides int...) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_unset</summary>
+                <p><code>padding_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_top</summary>
+                <p><code>padding_top() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_top_set</summary>
+                <p><code>padding_top_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_top_unset</summary>
+                <p><code>padding_top_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_bottom</summary>
+                <p><code>padding_bottom() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_bottom_set</summary>
+                <p><code>padding_bottom_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_bottom_unset</summary>
+                <p><code>padding_bottom_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_left</summary>
+                <p><code>padding_left() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_left_set</summary>
+                <p><code>padding_left_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_left_unset</summary>
+                <p><code>padding_left_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_right</summary>
+                <p><code>padding_right() -&gt; int</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_right_set</summary>
+                <p><code>padding_right_set(self, size int) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>padding_right_unset</summary>
+                <p><code>padding_right_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>transform_set</summary>
+                <p><code>transform_set(self, transform func(string) -&gt; string) -&gt; self</code></p>
+                
+              </details>
+              
+              <details class="method">
+                <summary>transform_unset</summary>
+                <p><code>transform_unset(self) -&gt; self</code></p>
+                
+              </details>
+              
+            </figure>
+            
+          </details>
+          
+        </section>
+        
+
+        
+        <section>
+          <h2>Interfaces</h2>
+          <hr>
+
+          
+          <details>
+            <summary>ColorAny</summary>
+            <p>
+              
+            </p>
+
+            
+            <figure>
+              <figcaption>Properties</figcaption>
+              <hr>
+              <ul>
+                
+                <li class="prop">type  <code class="type">int&lt;lipgloss.ColorType&gt;</code>  - The type of color. </li>
+                
+              </ul>
+            </figure>
+            
+
+            
+          </details>
+          
+        </section>
+        
+      </section>
+    </main>
+  </body>
+</html>
