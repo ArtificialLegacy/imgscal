@@ -166,7 +166,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			} else {
 				state.Push(golua.LTrue)
 			}
-			return 0
+			return 3
 		})
 
 	/// @func decode_config_string(encoding, data) -> int, int, bool
@@ -192,7 +192,7 @@ func RegisterIO(r *lua.Runner, lg *log.Logger) {
 			} else {
 				state.Push(golua.LTrue)
 			}
-			return 0
+			return 3
 		})
 
 	/// @func decode_into(path, id, model?)
